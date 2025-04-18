@@ -1,0 +1,24 @@
+<h1>{{this.id ? "Update" : "Create"}} Group</h1>
+@if (hasLoaded) {
+  <mat-card class="form-card">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput type="text" formControlName="name">
+          @if (form.controls.name.errors) {
+          <mat-error>{{form.controls.name.errors | validationError}}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-card-actions>
+          <button mat-button [disabled]="form.invalid || form.pristine" type="submit">{{this.id ? "Update" : "Create"}}</button>
+          @if (id) {
+            <button mat-button type="button" (click)="remove()">Delete</button>
+          }
+        </mat-card-actions>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+}

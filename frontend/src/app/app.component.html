@@ -1,0 +1,25 @@
+<div class="container" style="min-height:100%;">
+  <app-header (toggleSidenav)="drawer.toggle()"></app-header>
+  <mat-drawer-container class="container">
+    <mat-drawer (click)="drawer.close()" #drawer position="end">
+      <mat-nav-list>
+        <a mat-list-item routerLink="/">Profile</a>
+        <mat-divider></mat-divider>
+        @if (isAdmin) {
+          <div mat-subheader>Admin</div>
+          <a mat-list-item routerLink="/admin/users">Users</a>
+          <a mat-list-item routerLink="/admin/invitations">Invitations</a>
+          <a mat-list-item routerLink="/admin/groups">Groups</a>
+          <a mat-list-item routerLink="/admin/clients">Clients</a>
+          <mat-divider></mat-divider>
+        }
+        <a mat-list-item href="/oidc/session/end">Logout</a>
+      </mat-nav-list>
+    </mat-drawer>
+  
+    <div class="container">
+      <router-outlet />
+    </div>
+  
+  </mat-drawer-container>
+</div>

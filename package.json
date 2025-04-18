@@ -1,0 +1,50 @@
+{
+  "name": "unknown-auth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "concurrently \"npm run server:watch\" \"npm run frontend:watch\"",
+    "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && tsx server/index.ts\"",
+    "frontend:watch": "cd frontend && npm run watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.notquitenothing.com/notquitenothing/unknown-auth.git"
+  },
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE FILE",
+  "dependencies": {
+    "@angular/cli": "^19.2.0",
+    "@angular/material": "^19.2.1",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "csrf-csrf": "^3.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.0.1",
+    "express-validator": "^7.2.1",
+    "generate-password": "^1.7.1",
+    "helmet": "^8.1.0",
+    "knex": "^3.1.0",
+    "nanoid": "^5.1.5",
+    "nodemailer": "^6.10.0",
+    "oidc-provider": "^8.8.0",
+    "pug": "^3.0.3",
+    "sass": "^1.85.0",
+    "sqlite3": "^5.1.7",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.5",
+    "@types/nodemailer": "^6.4.17",
+    "@types/oidc-provider": "^8.8.0",
+    "@types/pug": "^2.0.10",
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9"
+  }
+}

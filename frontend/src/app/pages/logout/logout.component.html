@@ -1,0 +1,15 @@
+<h1>Logout</h1>
+<mat-card class="form-card">
+  <mat-card-content>
+    <form autocomplete="off" [action]="host + '/oidc/session/end/confirm'" method="post">
+      <p>
+        Do you want to log out{{host ? ' of '+host : ''}}?
+      </p>
+      <input type="hidden" name="xsrf" [value]="secret" />
+      <mat-card-actions>
+        <button mat-flat-button autofocus="" [disabled]="!secret" type="submit" value="yes" name="logout">Yes</button>
+        <button mat-button [disabled]="!secret" type="submit">No</button>
+      </mat-card-actions>
+    </form>
+  </mat-card-content>
+</mat-card>

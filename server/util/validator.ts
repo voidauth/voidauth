@@ -1,0 +1,87 @@
+import type { NextFunction, Request, Response } from "express";
+import { checkSchema, validationResult, type ParamSchema, type Schema } from "express-validator";
+import type { RemoveKeys, RequireKeys } from '@shared/utils';
+import { ADMIN_GROUP } from "@shared/constants";
+
+type IsGenericKey<T> = string extends T ? true : number extends T ? true : false;
+
+type ExcludeGenericKeys<T> = {
+  [K in keyof T as IsGenericKey<K> extends true ? never : K]: T[K];
+};
+
+type OnlyGenericKeys<T> = {
+  [K in keyof T as IsGenericKey<K> extends false ? never : K]: T[K];
+};
+
+type IsOptionalKey<T, K extends keyof T> = T extends Record<K, T[K]> ? false : true;
+
+type DN<T> = any extends T ? never : T extends (infer U)[]
+  ? ('*' | `${`*.${DN<U>}`}`)
+  : T extends object
+  ? { [K in keyof ExcludeGenericKeys<T>]-?:
+    `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
+    |
+    `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DN<T[K]>}`}`
+    
+  }[keyof ExcludeGenericKeys<T>]
+  : never;
+
+type WasOptionalKey<T extends string> = T extends `${infer A}?${infer B}` 
+  ? true 
+  : IsGenericKey<T> extends true 
+  ? true 
+  : false;
+
+type FixOptionalKey<T extends string> = T extends `${infer A}?${infer B}` ? FixOptionalKey<`${A}${B}`> : T;
+
+type UncheckedParamSchema = RemoveKeys<ParamSchema<any>, "isString" | "isEmail">;
+type StringParamSchema = RequireKeys<ParamSchema, "isString" | "stripLow" | "trim"> | RequireKeys<ParamSchema, "isString" | "matches">;
+type EmailParamSchema = ParamSchema & Required<Pick<ParamSchema, "isEmail" | "normalizeEmail" | "trim">>
+type URLParamSchema = ParamSchema & Required<Pick<ParamSchema, "isURL" | "trim">>
+
+export type ValidParamSchema = UncheckedParamSchema | StringParamSchema | EmailParamSchema | URLParamSchema;
+
+export type TypedSchema<T extends object> = {
+  [K in DN<T> as WasOptionalKey<K> extends false ? K : never]: ValidParamSchema
+} & {
+  [K in DN<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ValidParamSchema
+} & {
+  [key: string | number]: ValidParamSchema
+};
+
+export function validate<T extends object = any>(schema: TypedSchema<T> | TypedSchema<T>[]) {
+  const schemas: TypedSchema<T>[] = (schema instanceof Array ? schema : [schema])
+  return [
+    ...schemas.map((s) => {
+      return checkSchema(s as Schema)
+    }),
+    handleValidatorError
+  ]
+}
+
+export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+    res.sendStatus(401)
+    return
+  }
+  next()
+}
+
+export function checkAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.user?.groups?.some((g) => g === ADMIN_GROUP)) {
+    res.sendStatus(403)
+    return
+  }
+  next()
+}
+
+function handleValidatorError(req: Request, res: Response, next: NextFunction) {
+  const result = validationResult(req).array({
+    // onlyFirstError: true
+  })
+  if (result.length) {
+    res.status(400).send(result)
+  } else {
+    next()
+  }
+}

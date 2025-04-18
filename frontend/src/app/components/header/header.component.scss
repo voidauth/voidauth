@@ -1,0 +1,25 @@
+.example-spacer {
+  flex: 1 1 auto;
+}
+
+mat-toolbar {
+  background-color: color-mix(in oklab, var(--mat-sys-surface) 90%, #000 10%);
+}
+
+.header-logo img {
+  padding: 4px;
+}
+
+.left-actions > * {
+  margin-right: 12px;
+}
+
+.right-actions > * {
+  margin-left: 12px;
+}
+
+span {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}

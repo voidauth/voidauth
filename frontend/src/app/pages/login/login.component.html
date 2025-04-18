@@ -1,0 +1,32 @@
+<h1>Login</h1>
+<mat-card class="form-card">
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="login()">
+      <mat-form-field appearance="outline">
+        <mat-label>Email or Username</mat-label>
+        <input matInput type="text" formControlName="email">
+        @if (form.controls.email.errors) {
+        <mat-error>{{form.controls.email.errors | validationError}}</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field style="padding-right: 4px;" appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput [type]="pwdShow ? 'text': 'password'" formControlName="password">
+        <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="pwdShow = !pwdShow">
+          <mat-icon fontSet="material-icons-round" matSuffix>{{pwdShow ? 'visibility' : 'visibility_off'}}</mat-icon>
+        </button>
+        @if (form.controls.password.errors) {
+        <mat-error>{{form.controls.password.errors | validationError}}</mat-error>
+        }
+      </mat-form-field>
+      <mat-checkbox formControlName="rememberMe">Remember Me</mat-checkbox>
+
+      <mat-card-actions>
+        <button mat-button [disabled]="form.invalid" type="submit">Login</button>
+        @if (config?.registration) {
+          <a routerLink="/register" mat-button type="button">Register</a>
+        }
+      </mat-card-actions>
+    </form>
+  </mat-card-content>
+</mat-card>

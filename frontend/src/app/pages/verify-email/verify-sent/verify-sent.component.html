@@ -1,0 +1,7 @@
+<span style="flex-grow: 1;"></span>
+<h1>{{sent ? 'Verification Email Sent' : 'Email Verification Required'}}</h1>
+<span style="flex-grow: 1;"></span>
+<button mat-button (click)="sendVerification()">
+  {{sent ? 'Send Again' : 'Send Verification Email' }}
+</button>
+<span style="flex-grow: 1;"></span>

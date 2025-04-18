@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "moduleDetection": "force",
+
+        "module": "Preserve",
+
+        "resolveJsonModule": true,
+
+        "strict": true,
+        
+        "noImplicitAny": true,
+
+        "noUncheckedIndexedAccess": true,
+
+        "verbatimModuleSyntax": true,
+
+        "esModuleInterop": true,
+
+        "isolatedModules": true,
+
+        "moduleResolution": "node10",
+
+        "skipLibCheck": true,
+
+        "allowSyntheticDefaultImports": true,
+
+        "target": "ESNext",
+
+        "allowImportingTsExtensions": true,
+
+        "noEmit": true,
+
+        "paths": {
+            "@shared/*": ["./shared/*"]
+        }
+    },
+    "include": ["server/", "shared/", "migrations/"]
+}

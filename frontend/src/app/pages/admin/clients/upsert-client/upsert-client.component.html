@@ -1,0 +1,82 @@
+<h1>{{this.client_id ? "Update" : "Create"}} Client</h1>
+@if (hasLoaded) {
+  <mat-card class="form-card">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Client ID</mat-label>
+          <input matInput type="text" formControlName="client_id">
+          @if (form.controls.client_id.errors) {
+          <mat-error>{{form.controls.client_id.errors | validationError}}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Client Secret</mat-label>
+          <input matInput type="text" formControlName="client_secret">
+          <button class="field-suffix" type="button" 
+            mat-icon-button matSuffix 
+            (click)="generateSecret()">
+            <mat-icon matSuffix>autorenew</mat-icon>
+          </button>
+          @if (form.controls.client_secret.errors) {
+          <mat-error>{{form.controls.client_secret.errors | validationError}}</mat-error>
+          }
+        </mat-form-field>
+
+        
+        <mat-list [ngClass]="{invalid: form.controls.redirect_uris.errors}">
+          <mat-form-field appearance="outline">
+            <mat-label>New Redirect URL</mat-label>
+            <input #redirect matInput type="text" [formControl]="redirectUrlControl">
+            <button class="field-suffix" type="button" 
+              mat-icon-button matSuffix 
+              [disabled]="redirectUrlControl.errors || !redirect.value"
+              (click)="addRedirectUrl(redirect.value); redirect.value=''">
+              <mat-icon fontSet="material-icons-round" matSuffix>add_circle</mat-icon>
+            </button>
+            @if (redirectUrlControl.errors) {
+              <mat-error>{{redirectUrlControl.errors | validationError}}</mat-error>
+            }
+          </mat-form-field>
+          <div mat-subheader>Redirect URLs:</div>
+          @for (uri of form.value.redirect_uris; track uri) {
+            <mat-list-item>
+              <mat-icon matListItemIcon class="clickable" (click)="removeRedirectUrl(uri)">cancel</mat-icon>
+              <div matListItemTitle>{{uri}}</div>
+            </mat-list-item>
+          }
+          @if (!form.value.redirect_uris?.length) {
+            <mat-list-item>
+            </mat-list-item>
+          }
+        </mat-list>
+        @if (form.controls.redirect_uris.errors) {
+          <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px;">
+            {{form.controls.redirect_uris.errors | validationError}}
+          </mat-error>
+        }
+        
+        <mat-form-field>
+          <mat-label>Token Endpoint Auth Method</mat-label>
+          <mat-select formControlName="token_endpoint_auth_method">
+            @for (method of authMethods; track method) {
+              <mat-option [value]="method">{{method}}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.token_endpoint_auth_method.errors) {
+            <mat-error>{{form.controls.token_endpoint_auth_method.errors | validationError}}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-card-actions>
+          <button mat-button [disabled]="form.invalid || form.pristine" type="submit">{{this.client_id ? "Update" : "Create"}}</button>
+          @if (client_id) {
+            <button mat-button type="button" (click)="deleteClient()">Delete</button>
+          }
+        </mat-card-actions>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+}

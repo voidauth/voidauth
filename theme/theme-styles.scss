@@ -1,0 +1,25 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use '@angular/material' as mat;
+@use './_theme-colors';
+// Plus imports for other components in your app.
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat.core();
+
+html {
+  // Must specify color-scheme for theme mixin to automatically work
+  color-scheme: dark;
+
+  // Create one theme that works automatically for light and dark theme
+  @include mat.theme((
+    color: (
+      primary: theme-colors.$primary-palette,
+      tertiary: theme-colors.$tertiary-palette,
+    ),
+    typography: monospace,
+    density: 0,
+  ));
+}

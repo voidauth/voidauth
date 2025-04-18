@@ -1,0 +1,26 @@
+mat-drawer-container {
+  min-width: var(--form-min-width);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+mat-nav-list {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+mat-divider {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 90%;
+}
+
+::ng-deep router-outlet ~ * {
+  display: flex;
+  margin: 12px;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: center;
+}

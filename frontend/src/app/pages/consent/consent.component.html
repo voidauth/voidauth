@@ -1,0 +1,17 @@
+<h1>Confirm</h1>
+@if (details) {
+  <mat-card class="form-card">
+    <mat-card-content>
+      <form autocomplete="off" action="/api/interaction/{{details.uid}}/confirm" method="post">
+        <p>
+          Do you allow {{details.redirectUri}} to access your account
+          information? ({{details.scopes.join(' ,')}})
+        </p>
+        
+        <mat-card-actions>
+          <button mat-flat-button type="submit">Authorize</button>
+        </mat-card-actions>
+      </form>
+    </mat-card-content>
+  </mat-card>
+}
