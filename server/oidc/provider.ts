@@ -12,7 +12,6 @@ for (e in errors) {
   Object.defineProperty(errors[e].prototype, 'allow_redirect', { value: false });
 }
 
-
 const configuration: Configuration = {
   features: {
     devInteractions: {
@@ -45,11 +44,22 @@ const configuration: Configuration = {
   cookies: {
     // TODO: generate secret value for this
     keys: ["test"],
+    names: {
+      interaction: 'x-void-auth-interaction',
+      resume: 'x-void-auth-resume',
+      session: 'x-void-auth-session'
+    },
     long: {
       signed: true,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
     },
     short: {
       signed: true,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
     }
   },
   jwks: {
@@ -110,6 +120,7 @@ const configuration: Configuration = {
     required: () => false
   },
   renderError: (ctx, out, error) => {
+    console.error(error)
     ctx.status = 500
     ctx.body = {
       error: out
@@ -121,3 +132,16 @@ const configuration: Configuration = {
 }
 
 export const provider = new Provider(`${appConfig.APP_DOMAIN}/oidc`, configuration)
+
+// If session cookie assigned, assign a session-id cookie as well with samesite=none
+provider.on('interaction.ended', (ctx) => {
+  const sessionCookie = ctx.cookies.get("x-void-auth-session")
+  if (sessionCookie) {
+    ctx.cookies.set("x-void-auth-session-id", sessionCookie, {
+      signed: true,
+      httpOnly: true,
+      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+    })
+  }
+})

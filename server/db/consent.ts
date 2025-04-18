@@ -3,15 +3,19 @@ import { db } from "./db"
 import { createAudit, createExpiration, mergeKeys } from "./util";
 import { TTLs } from "@shared/constants";
 
-export async function getExistingConsent(redirectUri?: string, userId?: string) {
-  return (await db.select().table<Consent>('consent').where({ redirectUri, userId }).first())
+export async function getExistingConsent(userId: string, redirectUri: string) {
+  return await db.select().table<Consent>('consent').where({ userId, redirectUri }).first()
 }
 
-export async function addConsent(redirectUri: string, userId: string) {
-  const consent: Consent = { userId, redirectUri, expiresAt: createExpiration(TTLs.CONSENT), ...createAudit(userId) }
+export async function addConsent(redirectUri: string, userId: string, scope: string) {
+  const consent: Consent = { userId, redirectUri, scope, expiresAt: createExpiration(TTLs.CONSENT), ...createAudit(userId) }
   await db
     .table<Consent>('consent')
     .insert(consent)
     .onConflict(['userId', 'redirectUri'])
     .merge(mergeKeys(consent));
+}
+
+export function getConsentScopes(consent: Consent) {
+  return consent.scope.split(",").map(s => s.trim())
 }

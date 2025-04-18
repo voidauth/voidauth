@@ -11,7 +11,6 @@ import { adminRouter } from "./admin";
 import { SMTP_VERIFIED } from "../util/email";
 import type { UserDetails } from "@shared/api-response/UserDetails";
 import { authRouter } from "./auth";
-import { doubleCsrf } from "csrf-csrf";
 
 declare global {
   namespace Express {
@@ -23,36 +22,8 @@ declare global {
 
 export const router = Router()
 
-// Set up csrf protection
-const {
-  generateToken, // Use this in your routes to provide a CSRF hash + token cookie and token.
-  doubleCsrfProtection, // This is the default CSRF protection middleware.
-} = doubleCsrf({
-  // TODO: use generated secret from DB (keygrip?)
-  getSecret: () => { return "123" },
-  cookieName: "__Host.x-csrf-token",
-  cookieOptions: {
-    httpOnly: false
-  },
-  getTokenFromRequest: (req) => {
-    let header = req.headers["x-xsrf-token"]
-    if (Array.isArray(header)) {
-      header = header?.[0]
-    }
-    return header?.split('|')[0]
-  }
-});
-
-// use csrf protection
-router.use(
-  (req, res, next) => {
-  generateToken(req, res)
-  next()
-}, 
-doubleCsrfProtection)
-
 // Set user on reqest
-router.use(async (req: Request, res, next) => {
+router.use(async (req, res, next) => {
   try {
     const ctx = provider.app.createContext(req, res)
     const session = await provider.Session.get(ctx)

@@ -1,11 +1,7 @@
-// @ts-expect-error
-import instance from "oidc-provider/lib/helpers/weak_cache"
-// @ts-expect-error
-import * as ssHandler from "oidc-provider/lib/helpers/samesite_handler"
 import { Router, type Request, type Response } from "express";
 import { provider } from "../oidc/provider";
 import { getUserByInput } from "../db/user";
-import { addConsent, getExistingConsent } from "../db/consent";
+import { addConsent, getConsentScopes, getExistingConsent } from "../db/consent";
 import { matchedData } from "express-validator";
 import { validate } from "../util/validator";
 import type { Redirect } from "@shared/api-response/Redirect";
@@ -23,19 +19,19 @@ import { randomUUID } from "crypto";
 import { REDIRECT_PATHS, TTLs } from "@shared/constants";
 import type { Interaction } from "oidc-provider";
 import { allowNull, defaultNull, emailValidation, nameValidation, stringValidation, usernameValidation, uuidValidation } from "../util/validators";
-import { nanoid } from "nanoid";
 import type { ConsentDetails } from "@shared/api-response/ConsentDetails";
 import { isExpired, createAudit, createExpiration } from "../db/util";
 import type { UserWithoutPassword } from "@shared/api-response/UserDetails";
 import { getInvitation } from "../db/invitations";
 import type { Invitation } from "@shared/db/Invitation";
 import type { Knex } from "knex";
+import type { Consent } from "@shared/db/Consent";
 
 const HOUR = 60 * 60; // seconds in an hour
 
 export const router = Router()
 
-// If no interaction found, create one with default parameters
+// If no interaction found, redirect to homepage for login
 router.use(async (req, res, next) => {
   try {
     if (await provider.interactionDetails(req, res)) {
@@ -46,82 +42,7 @@ router.use(async (req, res, next) => {
     // do nothing, no interaction found
   }
 
-  const ctx = provider.app.createContext(req, res)
-  const session = await provider.Session.get(ctx)
-
-  const uid = nanoid()
-
-  const cookieOptions = instance(provider).configuration('cookies.short');
-  const returnTo = `${appConfig.APP_DOMAIN}/oidc/auth/${uid}`
-
-  // @ts-expect-error
-  const interactionSession = new provider.Interaction(uid, {
-    returnTo,
-    prompt: {name: 'login', reasons: ['no_session'], details: {}},
-    // lastSubmission: oidc.result,
-    accountId: session?.accountId,
-    params: {client_id: 'unknown_auth_internal_client', redirect_uri: `${appConfig.APP_DOMAIN}/api/status`, response_type: 'none', scope: 'openid'},
-    // trusted: oidc.trusted,
-    session: session,
-    // grant: oidc.grant,
-    cid: nanoid(),
-    // deviceCode: oidc.deviceCode?.jti,
-    // parJti: oidc.entities.PushedAuthorizationRequest?.jti || oidc.entities.Interaction?.parJti,
-  });
-
-  let ttl = instance(provider).configuration('ttl.Interaction');
-
-  if (typeof ttl === 'function') {
-    ttl = ttl(ctx, interactionSession);
-  }
-
-  await interactionSession.save(ttl);
-  // ctx.oidc.entity('Interaction', interactionSession);
-  const { url: interactionUrl } = instance(provider).configuration('interactions');
-  const destination = await interactionUrl(ctx, interactionSession);
-
-  // @ts-expect-error
-  const interactionCookieName = provider.cookieName('interaction')
-  // @ts-expect-error
-  const resumeCookieName = provider.cookieName('resume')
-
-  ssHandler.set(
-    ctx.cookies,
-    interactionCookieName,
-    uid,
-    {
-      path: new URL(destination, provider.issuer).pathname,
-      ...cookieOptions,
-      maxAge: ttl * 1000,
-    },
-  );
-
-  ssHandler.set(
-    ctx.cookies,
-    resumeCookieName,
-    uid,
-    {
-      ...cookieOptions,
-      path: new URL(returnTo).pathname,
-      domain: undefined,
-      httpOnly: true,
-      maxAge: ttl * 1000,
-    },
-  );
-
-  const setCookie = res.getHeaders()['set-cookie']
-  const setCookieList = (setCookie ? Array.isArray(setCookie) ? setCookie : [setCookie] : []).filter(c => {
-    return c.startsWith(interactionCookieName) || c.startsWith(resumeCookieName)
-  })
-
-  req.headers.cookie = (req.headers.cookie ? [req.headers.cookie] : [])
-    .concat(setCookieList)
-    .map(c => c.split(';')?.[0] ?? "")
-    .join('; ')
-
-  // provider.emit('interaction.started', ctx, prompt)
-
-  next()
+  res.redirect(`/`)
 })
 
 router.get("/", async (req, res) => {
@@ -133,11 +54,12 @@ router.get("/", async (req, res) => {
     res.redirect(`/${REDIRECT_PATHS.LOGIN}`)
   } else if (prompt.name === 'consent') {
     // Check conditions to skip consent
-    if (typeof params.redirect_uri === "string") {
+    if (typeof params.redirect_uri === "string" && typeof params.scope === "string") {
       // Check if the redirect is to to APP_DOMAIN
-      const appUrl = new URL(appConfig.APP_DOMAIN)
-      const redirectUrl = new URL(params.redirect_uri)
-      if (appUrl.protocol === redirectUrl.protocol &&
+      const appUrl = URL.parse(appConfig.APP_DOMAIN)
+      const redirectUrl = URL.parse(params.redirect_uri)
+      if (appUrl && redirectUrl && 
+        appUrl.protocol === redirectUrl.protocol &&
         appUrl.host === redirectUrl.host &&
         appUrl.port === redirectUrl.port) {
 
@@ -149,7 +71,8 @@ router.get("/", async (req, res) => {
       }
 
       // Check if the user has already consented to this client/redirect
-      if (accountId && await getExistingConsent(params.redirect_uri, accountId)) {
+      const consent = accountId && await getExistingConsent(accountId, params.redirect_uri)
+      if (consent && !consentMissingScopes(consent, params.scope)) {
         const grantId = await applyConsent(await provider.interactionDetails(req, res))
         await provider.interactionFinished(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
@@ -249,8 +172,8 @@ async (req: Request, res: Response) => {
 
   if (name === 'consent') {
     const grantId = await applyConsent(await provider.interactionDetails(req, res))
-    if (typeof params.redirect_uri === "string" && session?.accountId) {
-      await addConsent(params.redirect_uri, session.accountId)
+    if (typeof params.redirect_uri === "string" && typeof params.scope === "string" && session?.accountId) {
+      await addConsent(params.redirect_uri, session.accountId, params.scope)
     }
     await provider.interactionFinished(req, res, { consent: { grantId } }, {
       mergeWithLastSubmission: true,
@@ -263,7 +186,6 @@ async (req: Request, res: Response) => {
 })
 
 router.post('/register',
-  // TODO: invitation fields are optional, and get them from invite
   ...validate<RegisterUser>({
     username: {
       ...defaultNull,
@@ -419,6 +341,14 @@ router.post("/verify_email",
     return
   }
 )
+
+function consentMissingScopes(consent: Consent, scope: string) {
+  const scopes = scope.split(",").map(s => s.trim())
+  const consentScopes = getConsentScopes(consent)
+  return scopes.filter((s) => {
+    !consentScopes.includes(s)
+  })
+}
 
 async function applyConsent(interactionDetails: Interaction) {
   const {

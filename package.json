@@ -1,6 +1,6 @@
 {
-  "name": "unknown-auth",
-  "version": "1.0.0",
+  "name": "void-auth",
+  "version": "0.0.1",
   "description": "",
   "main": "server/index.ts",
   "type": "module",
@@ -9,18 +9,13 @@
     "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && tsx server/index.ts\"",
     "frontend:watch": "cd frontend && npm run watch"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://git.notquitenothing.com/notquitenothing/unknown-auth.git"
-  },
-  "author": "",
+  "author": "notquitenothing",
   "license": "SEE LICENSE IN LICENSE FILE",
   "dependencies": {
     "@angular/cli": "^19.2.0",
     "@angular/material": "^19.2.1",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
-    "csrf-csrf": "^3.1.0",
     "dotenv": "^16.4.7",
     "express": "^5.0.1",
     "express-validator": "^7.2.1",

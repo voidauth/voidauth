@@ -44,6 +44,7 @@ export async function up(knex: Knex): Promise<void> {
     .createTable('consent', (table) => {
       table.string('userId').notNullable().references('id').inTable('user').onDelete('CASCADE')
       table.string('redirectUri').notNullable()
+      table.string('scope').notNullable()
       table.string('createdAt').notNullable()
 
       table.string('expiresAt').notNullable()

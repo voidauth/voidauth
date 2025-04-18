@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import * as path from 'node:path'
 
+process.env.NODE_ENV ??= "production"
+
 // an exception
 const CONFIG_DIR = process.env.CONFIG_DIR || './config'
 
