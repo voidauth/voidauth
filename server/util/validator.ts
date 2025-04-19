@@ -15,16 +15,32 @@ type OnlyGenericKeys<T> = {
 
 type IsOptionalKey<T, K extends keyof T> = T extends Record<K, T[K]> ? false : true;
 
-type DN<T> = any extends T ? never : T extends (infer U)[]
-  ? ('*' | `${`*.${DN<U>}`}`)
+type DotNotation<T> = any extends T ? never : T extends (infer U)[]
+  ? ('*' | `${`*.${DotNotation<U>}`}`)
   : T extends object
   ? { [K in keyof ExcludeGenericKeys<T>]-?:
     `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
     |
-    `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DN<T[K]>}`}`
+    `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
     
   }[keyof ExcludeGenericKeys<T>]
   : never;
+
+type DotNotationLeaves<T> = any extends T 
+? never 
+: T extends (infer U)[]
+  ? U extends object
+    ? `${`*.${DotNotationLeaves<U>}`}`
+    : '*'
+  : T extends object
+    ? { [K in keyof ExcludeGenericKeys<T>]-?:
+      (
+        Required<T>[K] extends object
+        ? `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotationLeaves<T[K]>}`}`
+        : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
+      )      
+    }[keyof ExcludeGenericKeys<T>]
+    : never;
 
 type WasOptionalKey<T extends string> = T extends `${infer A}?${infer B}` 
   ? true 
@@ -34,20 +50,22 @@ type WasOptionalKey<T extends string> = T extends `${infer A}?${infer B}`
 
 type FixOptionalKey<T extends string> = T extends `${infer A}?${infer B}` ? FixOptionalKey<`${A}${B}`> : T;
 
-type UncheckedParamSchema = RemoveKeys<ParamSchema<any>, "isString" | "isEmail">;
-type StringParamSchema = RequireKeys<ParamSchema, "isString" | "stripLow" | "trim"> | RequireKeys<ParamSchema, "isString" | "matches">;
-type EmailParamSchema = ParamSchema & Required<Pick<ParamSchema, "isEmail" | "normalizeEmail" | "trim">>
-type URLParamSchema = ParamSchema & Required<Pick<ParamSchema, "isURL" | "trim">>
+type UncheckedParamSchema = RemoveKeys<ParamSchema<any>, "isString" | "isEmail" | "isURL">;
+type StringParamSchema = RequireKeys<ParamSchema, "isString" | "stripLow" | "trim"> 
+  | RequireKeys<ParamSchema, "isString" | "matches">;
+type EmailParamSchema = Required<Pick<ParamSchema, "isEmail" | "normalizeEmail" | "trim">>
+type URLParamSchema = Required<Pick<ParamSchema, "isURL" | "trim">>
 
 export type ValidParamSchema = UncheckedParamSchema | StringParamSchema | EmailParamSchema | URLParamSchema;
 
 export type TypedSchema<T extends object> = {
-  [K in DN<T> as WasOptionalKey<K> extends false ? K : never]: ValidParamSchema
+  [K in DotNotationLeaves<T> as WasOptionalKey<K> extends false ? K : never]: ValidParamSchema
 } & {
-  [K in DN<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ValidParamSchema
-} & {
-  [key: string | number]: ValidParamSchema
-};
+  [K in DotNotationLeaves<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ValidParamSchema
+} 
+// & {
+//   [key: string | number]: ValidParamSchema
+// };
 
 export function validate<T extends object = any>(schema: TypedSchema<T> | TypedSchema<T>[]) {
   const schemas: TypedSchema<T>[] = (schema instanceof Array ? schema : [schema])

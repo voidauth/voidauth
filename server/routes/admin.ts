@@ -30,9 +30,6 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
       }
     },
   },
-  redirect_uris: {
-    isArray: true
-  },
   "redirect_uris.*": {
     isURL: {
       options: {
@@ -181,9 +178,6 @@ adminRouter.patch("/user",
     },
     approved: {
       isBoolean: true
-    },
-    groups: {
-      isArray: true
     },
     "groups.*": stringValidation
   }),
@@ -364,9 +358,6 @@ adminRouter.post("/invitation",
       ...allowNull,
       optional: true,
       ...emailValidation
-    },
-    groups: {
-      isArray: true
     },
     "groups.*": stringValidation
   }),
