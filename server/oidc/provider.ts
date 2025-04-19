@@ -45,21 +45,17 @@ const configuration: Configuration = {
     }
   },
   cookies: {
-    // TODO: generate secret value for this
-    keys: ["test"],
     names: {
       interaction: 'x-void-auth-interaction',
       resume: 'x-void-auth-resume',
       session: 'x-void-auth-session'
     },
     long: {
-      signed: true,
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     },
     short: {
-      signed: true,
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -138,11 +134,11 @@ const configuration: Configuration = {
 export const provider = new Provider(`${appConfig.APP_DOMAIN}/oidc`, configuration)
 
 // If session cookie assigned, assign a session-id cookie as well with samesite=none
+// Used for ForwardAuth/AuthRequest proxy auth
 provider.on('interaction.ended', (ctx) => {
   const sessionCookie = ctx.cookies.get("x-void-auth-session")
   if (sessionCookie) {
     ctx.cookies.set("x-void-auth-session-id", sessionCookie, {
-      signed: true,
       httpOnly: true,
       sameSite: "none",
       secure: process.env.NODE_ENV === "production",
