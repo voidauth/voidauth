@@ -1,5 +1,6 @@
 export type ConfigResponse = {
-  emailActive: boolean,
+  appName: string
+  emailActive: boolean
   emailVerification: boolean
   registration: boolean
 }

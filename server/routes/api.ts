@@ -71,6 +71,7 @@ router.get("/status", (req: Request, res: Response) => {
 
 router.get("/config", (req, res) => {
   const configResponse: ConfigResponse = {
+    appName: appConfig.APP_TITLE,
     emailActive: SMTP_VERIFIED,
     emailVerification: appConfig.EMAIL_VERIFICATION,
     registration: appConfig.SIGNUP

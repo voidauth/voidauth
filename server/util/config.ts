@@ -15,7 +15,7 @@ class Config {
   THEME_DIR = "./theme"
 
   PORT = '80'
-  APP_TITLE = 'unknown' // TODO: come up with an app name
+  APP_TITLE = 'void-auth'
   APP_DOMAIN = 'http://localhost'
 
   SQLITE_DIR = './db'

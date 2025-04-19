@@ -6,6 +6,7 @@ import { UserService } from './services/user.service';
 import { ConfigService } from './services/config.service';
 import { ADMIN_GROUP } from '@shared/constants';
 import type { UserDetails } from '@shared/api-response/UserDetails';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-root',
@@ -19,13 +20,17 @@ import type { UserDetails } from '@shared/api-response/UserDetails';
     styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
-  title = 'unknown';
-
   private user?: UserDetails
   public isAdmin: boolean = false
 
-  constructor(private userService: UserService, private configService: ConfigService) {
-    this.configService.getConfig()
+  private userService = inject(UserService)
+  private configService = inject(ConfigService)
+  private titleService = inject(Title)
+
+  constructor() {
+    this.configService.getConfig().then((c) => {
+      this.titleService.setTitle(c.appName)
+    })
   }
 
   async ngOnInit() {

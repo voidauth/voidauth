@@ -83,7 +83,7 @@ const configuration: Configuration = {
   },
   clients: [
     {
-      client_id: "unknown_auth_internal_client",
+      client_id: "auth_internal_client",
       client_secret: generate({
         length: 32,
         numbers: true

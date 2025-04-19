@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, type OnInit } from '@angular/core';
+import { Component, inject, type OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MaterialModule } from '../../../material-module';
+import { SnackbarService } from '../../../services/snackbar.service';
 
 @Component({
     selector: 'app-verify',
@@ -17,17 +18,19 @@ import { MaterialModule } from '../../../material-module';
 export class VerifyComponent implements OnInit {
 
   title: string = 'Verifying Email...'
-  error: string | null = null
   userid?: string
 
-  constructor(private activatedRoute: ActivatedRoute, private authService: AuthService) {}
+  private activatedRoute = inject(ActivatedRoute)
+  private authService = inject(AuthService)
+  private snackbarService = inject(SnackbarService)
+
+  constructor() {}
 
   async ngOnInit() {
     const params = this.activatedRoute.snapshot.paramMap
 
     try {
       this.title = 'Verifying Email...'
-      this.error = null
 
       const id = params.get("id")
       const challenge = params.get("challenge")
@@ -42,25 +45,29 @@ export class VerifyComponent implements OnInit {
         userId: this.userid,
         challenge: challenge
       })
+      
+      // Not always verified email
+      // interaction session might not exist and redirect is to get it
 
       location.assign(redirect.location)
     } catch (e) {
       console.error(e)
+      let error: string
 
       if (e instanceof HttpErrorResponse) {
-        this.error ||= e.error?.message
+        error ||= e.error?.message
       } else {
-        this.error ||= (e as Error)?.message
+        error ||= (e as Error)?.message
       }
 
-      this.error ||= "Something went wrong."
+      error ||= "Something went wrong."
+      this.snackbarService.error(error)
       this.title = "Email Could Not Be Verified :("
     }
   }
 
   public async sendVerification() {
     this.title = "Sending New Verification..."
-    this.error = null
     try {
       if (!this.userid) {
         throw new Error("Missing User ID.")
@@ -68,14 +75,17 @@ export class VerifyComponent implements OnInit {
       await this.authService.sendEmailVerification({id: this.userid})
     } catch (e) {
       console.error(e)
+      let error: string
 
       if (e instanceof HttpErrorResponse) {
-        this.error ??= e.error?.message
+        error ||= e.error?.message
       } else {
-        this.error ??= (e as Error)?.message
+        error ||= (e as Error)?.message
       }
 
-      this.error ??= "Something went wrong."
+      error ||= "Something went wrong."
+      this.title = "Email Verification Not Be Sent :("
+      this.snackbarService.error(error)
     }
   }
 }

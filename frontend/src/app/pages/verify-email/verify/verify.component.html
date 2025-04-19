@@ -1,7 +1,6 @@
 <span style="flex-grow: 1;"></span>
 <h1>{{title}}</h1>
-<p class="error" style="color: var(--mat-form-field-error-text-color)">{{error}}</p>
 <span style="flex-grow: 1;"></span>
-<button [ngClass]="{'hidden': !(error && userid)}" mat-button (click)="sendVerification()">
+<button [ngClass]="{'hidden': !userid}" mat-button (click)="sendVerification()">
   Send Again
 </button>
