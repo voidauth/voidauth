@@ -35,7 +35,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
-    "@types/node": "^22.13.5",
+    "@types/node": "^22.14.1",
     "@types/nodemailer": "^6.4.17",
     "@types/oidc-provider": "^8.8.0",
     "@types/pug": "^2.0.10",
