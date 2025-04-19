@@ -32,16 +32,6 @@ app.use(cookieParser())
 
 app.use("/api", router)
 
-// branding folder static assets
-if (!fs.existsSync(appConfig.BRANDING_DIR)) {
-  fs.mkdirSync(appConfig.BRANDING_DIR, {
-    recursive: true
-  })
-}
-app.use(express.static(appConfig.BRANDING_DIR, {
-  fallthrough: true
-}))
-
 // theme folder static assets
 if (!fs.existsSync(appConfig.THEME_DIR)) {
   fs.mkdirSync(appConfig.THEME_DIR, {
@@ -49,6 +39,19 @@ if (!fs.existsSync(appConfig.THEME_DIR)) {
   })
 }
 app.use(express.static(appConfig.THEME_DIR, {
+  fallthrough: true
+}))
+
+// branding folder static assets
+if (!fs.existsSync(appConfig.BRANDING_DIR)) {
+  fs.mkdirSync(appConfig.BRANDING_DIR, {
+    recursive: true
+  })
+}
+fs.cpSync(path.join(appConfig.THEME_DIR, 'custom.css'), path.join(appConfig.BRANDING_DIR, 'custom.css'), {
+  force: false
+})
+app.use(express.static(appConfig.BRANDING_DIR, {
   fallthrough: true
 }))
 
