@@ -7,10 +7,13 @@ import { KnexAdapter } from "./adapter";
 import { errors } from 'oidc-provider';
 import { generate } from "generate-password";
 import { REDIRECT_PATHS } from "@shared/constants";
+import type { OIDCExtraParams } from "@shared/utils";
 let e: keyof typeof errors
 for (e in errors) {
   Object.defineProperty(errors[e].prototype, 'allow_redirect', { value: false });
 }
+
+const extraParams: (keyof OIDCExtraParams)[] = ['login_type', 'login_id', 'login_challenge']
 
 const configuration: Configuration = {
   features: {
@@ -126,7 +129,7 @@ const configuration: Configuration = {
       error: out
     }
   },
-  extraParams: ['login_type', 'login_id', 'login_challenge'],
+  extraParams: extraParams,
   clientBasedCORS: () => true,
   findAccount: findAccount,
   adapter: KnexAdapter

@@ -26,7 +26,7 @@ import { getInvitation } from "../db/invitations";
 import type { Invitation } from "@shared/db/Invitation";
 import type { Knex } from "knex";
 import type { Consent } from "@shared/db/Consent";
-import { oidcLoginPath } from "@shared/utils";
+import { oidcLoginPath, type OIDCExtraParams } from "@shared/utils";
 
 export const router = Router()
 
@@ -51,7 +51,7 @@ router.get("/", async (req, res) => {
 
   if (prompt.name === 'login') {
     // Determine which 'login' type page to redirect to
-    switch (params.login_type) {
+    switch (params.login_type as OIDCExtraParams["login_type"]) {
       case 'register':
         if (params.login_id) {
           res.redirect(`/${REDIRECT_PATHS.INVITE}?invite=${params.login_id}&challenge=${params.login_challenge}`)
