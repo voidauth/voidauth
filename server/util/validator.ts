@@ -42,7 +42,7 @@ type DotNotationLeaves<T> = any extends T
     }[keyof ExcludeGenericKeys<T>]
     : never;
 
-type WasOptionalKey<T extends string> = T extends `${infer A}?${infer B}` 
+type WasOptionalKey<T extends string> = T extends `${infer _A}?${infer _B}` 
   ? true 
   : IsGenericKey<T> extends true 
   ? true 
