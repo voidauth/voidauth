@@ -15,6 +15,7 @@ import { UsersComponent } from './pages/admin/users/users.component';
 import { UserComponent } from './pages/admin/users/user/user.component';
 import { InvitationsComponent } from './pages/admin/invitations/invitations.component';
 import { InvitationComponent } from './pages/admin/invitations/invitation/invitation.component';
+import { ApprovalRequiredComponent } from './pages/approval-required/approval-required.component';
 
 export const routes: Routes = [
   { path: "", component: HomeComponent },
@@ -26,6 +27,8 @@ export const routes: Routes = [
   { path: `${REDIRECT_PATHS.VERIFY_EMAIL}/:id/:challenge`, component: VerifyComponent },
 
   { path: `${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/:id`, component: VerifySentComponent},
+
+  { path: `${REDIRECT_PATHS.APPROVAL_REQUIRED}`, component: ApprovalRequiredComponent},
 
   { path: "consent/:uid", component: ConsentComponent },
 
