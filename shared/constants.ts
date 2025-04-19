@@ -10,7 +10,8 @@ export const REDIRECT_PATHS = {
   APPROVAL_REQUIRED: "approval_required",
   VERIFICATION_EMAIL_SENT: "verification_email_sent",
   VERIFY_EMAIL: "verify_email",
-  REGISTER: "register"
+  REGISTER: "register",
+  INVITE: "invite", // registration page also
 } as const
 
 // Time-to-Live(s) in seconds

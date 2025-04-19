@@ -9,24 +9,22 @@ import type { Redirect } from '@shared/api-response/Redirect';
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails';
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails';
 import { ConfigService } from './config.service';
-import type { Nullable } from '@shared/utils';
+import { oidcLoginPath, type Nullable } from '@shared/utils';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private configService = inject(ConfigService)
   private http = inject(HttpClient)
 
   constructor() {}
 
-  getLoginRedirect() {
-    const redirectUri = this.configService.getCurrentHost()
-    return `/oidc/auth?client_id=unknown_auth_internal_client&response_type=none&scope=openid&redirect_uri=${redirectUri}/api/status`
-  }
-
   async getInteractionDetails(uid: string) {
     return firstValueFrom(this.http.get<ConsentDetails>(`${environment.apiUrl}/interaction/${uid}/detail`))
+  }
+
+  async interactionExists() {
+    return firstValueFrom(this.http.get<void>(`${environment.apiUrl}/interaction/exists`))
   }
 
   async register(body: Partial<Nullable<RegisterUser>>) {

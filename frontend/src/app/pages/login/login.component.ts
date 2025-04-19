@@ -10,6 +10,7 @@ import { SnackbarService } from '../../services/snackbar.service';
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse';
 import { ConfigService } from '../../services/config.service';
 import { UserService } from '../../services/user.service';
+import { oidcLoginPath } from '@shared/utils';
 
 @Component({
     selector: 'app-login',
@@ -64,9 +65,17 @@ export class LoginComponent implements OnInit {
         this.router.navigate(["/"], {
           replaceUrl: true
         })
+        return
       }
     } catch (e) {
       // This is expected, that the user is not logged in
+    }
+
+    try {
+      await this.authService.interactionExists()
+    } catch (e) {
+      // interaction session is missing, could not log in without it
+      window.location.assign(oidcLoginPath(this.configService.getCurrentHost(), 'login'))
     }
   }
 

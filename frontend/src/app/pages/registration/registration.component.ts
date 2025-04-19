@@ -10,6 +10,8 @@ import { SnackbarService } from '../../services/snackbar.service';
 import { emptyOrMinLength } from '../../validators/validators';
 import { USERNAME_REGEX } from '@shared/constants';
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails';
+import { oidcLoginPath } from '@shared/utils';
+import { ConfigService } from '../../services/config.service';
 @Component({
     selector: 'app-registration',
     templateUrl: './registration.component.html',
@@ -53,6 +55,7 @@ export class RegistrationComponent implements OnInit {
 
   private snackbarService = inject(SnackbarService)
   private authService = inject(AuthService)
+  private configService = inject(ConfigService)
   private route = inject(ActivatedRoute)
 
   constructor() {}
@@ -79,6 +82,13 @@ export class RegistrationComponent implements OnInit {
           this.form.controls.name.reset(this.invitation.name)
           this.form.controls.name.disable()
         }
+      }
+
+      try {
+        await this.authService.interactionExists()
+      } catch (e) {
+        // interaction session is missing, could not log in without it
+        window.location.assign(oidcLoginPath(this.configService.getCurrentHost(), 'register', inviteId, challenge))
       }
     })
   }

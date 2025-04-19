@@ -9,6 +9,8 @@ import { UserService } from '../../services/user.service';
 import { emptyOrMinLength } from '../../validators/validators';
 import { USERNAME_REGEX } from '@shared/constants';
 import type { UserDetails } from '@shared/api-response/UserDetails';
+import { oidcLoginPath } from '@shared/utils';
+import { ConfigService } from '../../services/config.service';
 
 @Component({
     selector: 'app-home',
@@ -72,7 +74,7 @@ export class HomeComponent implements OnInit{
     }, [Validators.required, Validators.email])
   })
 
-  private authService = inject(AuthService)
+  private configService = inject(ConfigService)
   private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
 
@@ -112,7 +114,7 @@ export class HomeComponent implements OnInit{
       this.hasLoaded = true
     } catch (e) {
       // user just isn't logged in
-      window.location.assign(this.authService.getLoginRedirect())
+      window.location.assign(oidcLoginPath(this.configService.getCurrentHost()))
     }
   }
 

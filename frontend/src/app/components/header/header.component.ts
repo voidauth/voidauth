@@ -7,6 +7,8 @@ import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
 import { ADMIN_GROUP } from '@shared/constants';
 import type { UserDetails } from '@shared/api-response/UserDetails';
+import { oidcLoginPath } from '@shared/utils';
+import { ConfigService } from '../../services/config.service';
 
 @Component({
     selector: 'app-header',
@@ -28,13 +30,13 @@ export class HeaderComponent implements OnInit {
   public toggleSidenav = output()
 
   private userService = inject(UserService)
-  private authService = inject(AuthService)
+  private configService = inject(ConfigService)
   public router = inject(Router)
 
   constructor(){}
 
   async ngOnInit() {
-    this.loginRedirect = this.authService.getLoginRedirect()
+    this.loginRedirect = oidcLoginPath(this.configService.getCurrentHost())
     
     try {
       this.userLoading = true

@@ -99,7 +99,7 @@ adminRouter.post("/client",
       await upsertClient(clientMetadata, provider.app.createContext(req, res))
       res.send()
     } catch (e) {
-      res.status(400).send()
+      res.sendStatus(400)
     }
   }
 )
@@ -118,7 +118,7 @@ adminRouter.patch("/client",
       await upsertClient(clientMetadata, provider.app.createContext(req, res))
       res.send()
     } catch (e) {
-      res.status(400).send()
+      res.sendStatus(400)
     }
   }
 )
@@ -455,6 +455,6 @@ adminRouter.post("/send_invitation/:id",
     }
 
     await sendInvitation(invitation, invitation.email)
-    res.status(200).send()
+    res.send()
   }
 )

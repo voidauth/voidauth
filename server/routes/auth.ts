@@ -15,7 +15,7 @@ authRouter.post('/send_verify_email',
   }),
   async (req: Request, res: Response) => {
     if (!appConfig.EMAIL_VERIFICATION) {
-      res.status(400).send()
+      res.sendStatus(400)
       return
     }
     const { id } = matchedData<{ id: string }>(req)
@@ -23,13 +23,13 @@ authRouter.post('/send_verify_email',
     let user = await getUserById(id)
 
     if (!user) {
-      res.status(404).send()
+      res.sendStatus(404)
       return
     }
 
     await createEmailVerification(user)
 
-    res.status(200).send()
+    res.send()
     return
   }
 )

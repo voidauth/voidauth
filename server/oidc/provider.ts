@@ -126,6 +126,7 @@ const configuration: Configuration = {
       error: out
     }
   },
+  extraParams: ['login_type', 'login_id', 'login_challenge'],
   clientBasedCORS: () => true,
   findAccount: findAccount,
   adapter: KnexAdapter

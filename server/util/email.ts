@@ -109,7 +109,7 @@ export async function sendInvitation(invitation: Invitation, email: string) {
     primary_contrast_color: appConfig.PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
     name: invitation.name || invitation.username,
-    invitation_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.REGISTER}?${query}`
+    invitation_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.INVITE}?${query}`
   })
 
   if (!subject || (!html && !text)) {

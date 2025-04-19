@@ -26,44 +26,61 @@ import { getInvitation } from "../db/invitations";
 import type { Invitation } from "@shared/db/Invitation";
 import type { Knex } from "knex";
 import type { Consent } from "@shared/db/Consent";
-
-const HOUR = 60 * 60; // seconds in an hour
+import { oidcLoginPath } from "@shared/utils";
 
 export const router = Router()
 
-// If no interaction found, redirect to homepage for login
-router.use(async (req, res, next) => {
-  try {
-    if (await provider.interactionDetails(req, res)) {
-      next()
-      return
-    }
-  } catch (e) {
-    // do nothing, no interaction found
+router.get("/exists", async (req, res) => {
+  if (await getInteractionDetails(req, res)) {
+    res.send()
+    return
   }
 
-  res.redirect(`/`)
+  res.sendStatus(404)
 })
 
 router.get("/", async (req, res) => {
-  const { uid, prompt, params, session } = await provider.interactionDetails(req, res)
+  const interaction = await getInteractionDetails(req, res)
+  if (!interaction) {
+    res.redirect(`/`)
+    return
+  }
+  const { uid, prompt, params, session } = interaction
 
   const accountId = session?.accountId
 
   if (prompt.name === 'login') {
-    res.redirect(`/${REDIRECT_PATHS.LOGIN}`)
+    // Determine which 'login' type page to redirect to
+    switch (params.login_type) {
+      case 'register':
+        if (params.login_id) {
+          res.redirect(`/${REDIRECT_PATHS.INVITE}?invite=${params.login_id}&challenge=${params.login_challenge}`)
+        } else {
+          res.redirect(`/${REDIRECT_PATHS.REGISTER}`)
+        }
+        return
+
+      case 'verify_email':
+        res.redirect(`/${REDIRECT_PATHS.VERIFY_EMAIL}/${params.login_id}/${params.login_challenge}`)
+        return
+
+      case 'login':
+      default:
+        res.redirect(`/${REDIRECT_PATHS.LOGIN}`)
+        return
+    }
   } else if (prompt.name === 'consent') {
     // Check conditions to skip consent
     if (typeof params.redirect_uri === "string" && typeof params.scope === "string") {
       // Check if the redirect is to to APP_DOMAIN
       const appUrl = URL.parse(appConfig.APP_DOMAIN)
       const redirectUrl = URL.parse(params.redirect_uri)
-      if (appUrl && redirectUrl && 
+      if (appUrl && redirectUrl &&
         appUrl.protocol === redirectUrl.protocol &&
         appUrl.host === redirectUrl.host &&
         appUrl.port === redirectUrl.port) {
 
-        const grantId = await applyConsent(await provider.interactionDetails(req, res))
+        const grantId = await applyConsent(interaction)
         await provider.interactionFinished(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
@@ -73,7 +90,7 @@ router.get("/", async (req, res) => {
       // Check if the user has already consented to this client/redirect
       const consent = accountId && await getExistingConsent(accountId, params.redirect_uri)
       if (consent && !consentMissingScopes(consent, params.scope)) {
-        const grantId = await applyConsent(await provider.interactionDetails(req, res))
+        const grantId = await applyConsent(interaction)
         await provider.interactionFinished(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
@@ -89,7 +106,12 @@ router.get("/", async (req, res) => {
 
 router.get("/:uid/detail",
   async (req: Request, res: Response) => {
-    const { uid, params } = await provider.interactionDetails(req, res)
+    const interaction = await getInteractionDetails(req, res)
+    if (!interaction) {
+      res.sendStatus(400)
+      return
+    }
+    const { uid, params } = interaction
     const scope = typeof params?.scope === "string" ? params.scope : ""
 
     const details: ConsentDetails = {
@@ -105,7 +127,7 @@ router.get("/:uid/detail",
 
 router.post("/login",
   ...validate<LoginUser>({
-    input: { 
+    input: {
       ...stringValidation,
       isLength: { options: { min: 4, max: 32 } },
       toLowerCase: true,
@@ -114,10 +136,16 @@ router.post("/login",
     remember: { isBoolean: true },
   }),
   async (req: Request, res: Response) => {
+    const interaction = await getInteractionDetails(req, res)
+    if (!interaction) {
+      res.status(400).send({
+        message: "Login session is invalid, refresh the page."
+      })
+      return
+    }
+    const { prompt: { name } } = interaction
+
     const { input, password, remember } = matchedData<LoginUser>(req)
-    const {
-      prompt: { name },
-    } = await provider.interactionDetails(req, res)
 
     if (name !== 'login') {
       res.sendStatus(400)
@@ -142,35 +170,36 @@ router.post("/login",
           remember: remember
         }
       },
-      { mergeWithLastSubmission: false })
+        { mergeWithLastSubmission: false })
     }
-    
-    res.status(200).send(redir)
-    return
+
+    res.send(redir)
   }
 )
 
 router.post("/:uid/confirm/",
-...validate<{uid: string}>({
-  uid: stringValidation,
-}),
-async (req: Request, res: Response) => {
-  const {
-    uid,
-    prompt,
-    params,
-    session
-  } = await provider.interactionDetails(req, res)
-  const { uid: uidParam } = matchedData<{uid: string}>(req)
+  ...validate<{ uid: string }>({
+    uid: stringValidation,
+  }),
+  async (req: Request, res: Response) => {
+    const {
+      uid,
+      prompt,
+      params,
+      session
+    } = await provider.interactionDetails(req, res)
+    const { uid: uidParam } = matchedData<{ uid: string }>(req)
 
-  if (uid !== uidParam) {
-    res.status(400).send({ message: "Consent form is no longer valid." })
-    return
-  }
+    if (uid !== uidParam) {
+      res.status(400).send({ message: "Consent form is no longer valid." })
+      return
+    }
 
-  const { name } = prompt
+    if (prompt.name !== 'consent') {
+      res.sendStatus(400)
+      return
+    }
 
-  if (name === 'consent') {
     const grantId = await applyConsent(await provider.interactionDetails(req, res))
     if (typeof params.redirect_uri === "string" && typeof params.scope === "string" && session?.accountId) {
       await addConsent(params.redirect_uri, session.accountId, params.scope)
@@ -178,12 +207,8 @@ async (req: Request, res: Response) => {
     await provider.interactionFinished(req, res, { consent: { grantId } }, {
       mergeWithLastSubmission: true,
     })
-    return
-  } else {
-    res.sendStatus(400)
-    return
   }
-})
+)
 
 router.post('/register',
   ...validate<RegisterUser>({
@@ -224,18 +249,26 @@ router.post('/register',
     try {
       const registration = matchedData<RegisterUser>(req)
 
+      if (!getInteractionDetails(req, res)) {
+        const action = registration.inviteId ? 'Invite' : 'Registration'
+        res.status(400).send({
+          message: `${action} session is invalid, refresh the page.`
+        })
+        return
+      }
+
       const invitation = registration.inviteId ? await getInvitation(registration.inviteId, trx) : null
-      const invitationValid = invitation && 
-        !isExpired(invitation.expiresAt) && 
+      const invitationValid = invitation &&
+        !isExpired(invitation.expiresAt) &&
         invitation.challenge === registration.challenge
-  
+
       if (!invitationValid && !appConfig.SIGNUP) {
-        res.status(400).send()
+        res.sendStatus(400)
         return
       }
 
       const passwordHash = await bcrypt.hash(registration.password, 10);
-  
+
       const id = randomUUID()
       const { createdAt, updatedAt } = createAudit(id)
       const user: User = {
@@ -249,24 +282,24 @@ router.post('/register',
         createdAt,
         updatedAt,
       }
-  
+
       // check username and email not taken
       let conflictingUser = await getUserByInput(user.username, trx) || (user.email && await getUserByInput(user.email, trx))
-  
+
       if (conflictingUser) {
-        let message = conflictingUser.username === user.username || 
+        let message = conflictingUser.username === user.username ||
           conflictingUser.email === user.username ? "Username taken." : "Email taken."
         res.status(409).send({ message: message })
         return
       }
-  
+
       // insert user into table
       await trx.table<User>('user').insert(user)
-  
+
       if (invitationValid) {
         await trx.table<Invitation>('invitation').delete().where({ id: invitation.id })
       }
-  
+
       const { passwordHash: _passwordHash, ...userWithoutPassword } = user
 
       const loginRedirect = await canUserLogin(userWithoutPassword, trx)
@@ -280,8 +313,8 @@ router.post('/register',
           remember: false // non-password logins are never remembered
         })
       }
-  
-      res.status(200).send(redirect)
+
+      res.send(redirect)
     } catch (e) {
       if (!trx.isCompleted()) {
         trx.rollback()
@@ -298,22 +331,29 @@ router.post("/verify_email",
   }),
   async (req: Request, res: Response) => {
     const { userId, challenge } = matchedData<VerifyUserEmail>(req)
-    const { uid } = await provider.interactionDetails(req, res)
+
+    if (!await getInteractionDetails(req, res)) {
+      const redir: Redirect = {
+        location: oidcLoginPath(appConfig.APP_DOMAIN, 'verify_email', userId, challenge)
+      }
+      res.send(redir)
+      return
+    }
 
     const user = await db.select().table<User>("user").where({ id: userId }).first()
     if (!user) {
-      res.status(404).send()
+      res.sendStatus(404)
       return
     }
 
     const emailVerification = await getEmailVerification(userId)
     if (!emailVerification) {
-      res.status(404).send()
+      res.sendStatus(404)
       return
     }
 
     if (emailVerification.challenge !== challenge) {
-      res.status(404).send()
+      res.sendStatus(404)
       return
     }
 
@@ -334,13 +374,21 @@ router.post("/verify_email",
           remember: false // non-password logins are never remembered
         }
       },
-      { mergeWithLastSubmission: false })
+        { mergeWithLastSubmission: false })
     }
-    
-    res.status(200).send(redir)
+
+    res.send(redir)
     return
   }
 )
+
+async function getInteractionDetails(req: Request, res: Response) {
+  try {
+    return await provider.interactionDetails(req, res)
+  } catch (e) {
+    return null
+  }
+}
 
 function consentMissingScopes(consent: Consent, scope: string) {
   const scopes = scope.split(",").map(s => s.trim())
@@ -405,7 +453,7 @@ async function isUserEmailUnverified(user: UserWithoutPassword, trx?: Knex.Trans
     if (!await getEmailVerification(user.id, trx)) {
       await createEmailVerification(user, null, trx)
     }
-    
+
     const redirect: Redirect = {
       location: `/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user.id}?sent=true`
     }
@@ -413,13 +461,6 @@ async function isUserEmailUnverified(user: UserWithoutPassword, trx?: Knex.Trans
   }
 }
 
-/**
- * 
- * @param user the user that will be verified
- * @param options.uid the interaction id that will automatically log the user in if they verify on the same device
- * @param options.email the users new email. If not set, verifies the users existing email
- * @returns 
- */
 export async function createEmailVerification(user: UserWithoutPassword, email?: string | null, trx?: Knex.Transaction) {
   // Do not create an email verification for an unapproved user
   if (await isUserUnapproved(user)) {

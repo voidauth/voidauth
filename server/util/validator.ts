@@ -80,7 +80,7 @@ function handleValidatorError(req: Request, res: Response, next: NextFunction) {
     // onlyFirstError: true
   })
   if (result.length) {
-    res.status(400).send(result)
+    res.status(422).send(result)
   } else {
     next()
   }

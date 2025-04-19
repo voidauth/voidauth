@@ -43,12 +43,7 @@ export class VerifyComponent implements OnInit {
         challenge: challenge
       })
 
-      this.title = "Email Verified! Redirecting..."
-
-      setTimeout(() => {
-        location.assign(redirect.location)
-      }, 2000)
-
+      location.assign(redirect.location)
     } catch (e) {
       console.error(e)
 

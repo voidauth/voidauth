@@ -30,6 +30,7 @@ export const routes: Routes = [
   { path: "consent/:uid", component: ConsentComponent },
 
   { path: `${REDIRECT_PATHS.REGISTER}`, component: RegistrationComponent },
+  { path: `${REDIRECT_PATHS.INVITE}`, component: RegistrationComponent },
 
   { path: "admin/clients", component: ClientsComponent },
   { path: "admin/client/:client_id", component: UpsertClientComponent },
