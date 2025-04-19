@@ -1,4 +1,3 @@
-// @ts-expect-error
 import instance from "oidc-provider/lib/helpers/weak_cache"
 import type { Client, ClientMetadata } from "oidc-provider"
 import { db } from "./db"
