@@ -2,12 +2,12 @@ import Provider, { type Configuration } from "oidc-provider";
 import { findAccount } from "../db/user";
 import appConfig from "../util/config";
 import { KnexAdapter } from "./adapter";
+import type { OIDCExtraParams } from "@shared/oidc";
+import { generate } from "generate-password";
+import { REDIRECT_PATHS } from "@shared/constants";
 
 // Do not allow any oidc-provider errors to redirect back to redirect_uri of client
 import { errors } from 'oidc-provider';
-import { generate } from "generate-password";
-import { REDIRECT_PATHS } from "@shared/constants";
-import type { OIDCExtraParams } from "@shared/utils";
 let e: keyof typeof errors
 for (e in errors) {
   Object.defineProperty(errors[e].prototype, 'allow_redirect', { value: false });

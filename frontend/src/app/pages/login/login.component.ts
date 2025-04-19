@@ -10,7 +10,7 @@ import { SnackbarService } from '../../services/snackbar.service';
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse';
 import { ConfigService } from '../../services/config.service';
 import { UserService } from '../../services/user.service';
-import { oidcLoginPath } from '@shared/utils';
+import { oidcLoginPath } from '@shared/oidc';
 
 @Component({
     selector: 'app-login',

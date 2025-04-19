@@ -8,8 +8,7 @@ import type { VerifyUserEmail } from '@shared/api-request/VerifyUserEmail';
 import type { Redirect } from '@shared/api-response/Redirect';
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails';
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails';
-import { ConfigService } from './config.service';
-import { oidcLoginPath, type Nullable } from '@shared/utils';
+import { type Nullable } from '@shared/utils';
 
 @Injectable({
   providedIn: 'root'

@@ -10,8 +10,8 @@ import { SnackbarService } from '../../services/snackbar.service';
 import { emptyOrMinLength } from '../../validators/validators';
 import { USERNAME_REGEX } from '@shared/constants';
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails';
-import { oidcLoginPath } from '@shared/utils';
 import { ConfigService } from '../../services/config.service';
+import { oidcLoginPath } from '@shared/oidc';
 @Component({
     selector: 'app-registration',
     templateUrl: './registration.component.html',

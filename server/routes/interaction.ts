@@ -26,7 +26,7 @@ import { getInvitation } from "../db/invitations";
 import type { Invitation } from "@shared/db/Invitation";
 import type { Knex } from "knex";
 import type { Consent } from "@shared/db/Consent";
-import { oidcLoginPath, type OIDCExtraParams } from "@shared/utils";
+import { type OIDCExtraParams, oidcLoginPath } from "@shared/oidc";
 
 export const router = Router()
 

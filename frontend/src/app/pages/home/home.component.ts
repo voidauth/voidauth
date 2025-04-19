@@ -9,8 +9,8 @@ import { UserService } from '../../services/user.service';
 import { emptyOrMinLength } from '../../validators/validators';
 import { USERNAME_REGEX } from '@shared/constants';
 import type { UserDetails } from '@shared/api-response/UserDetails';
-import { oidcLoginPath } from '@shared/utils';
 import { ConfigService } from '../../services/config.service';
+import { oidcLoginPath } from '@shared/oidc';
 
 @Component({
     selector: 'app-home',

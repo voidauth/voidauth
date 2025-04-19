@@ -7,8 +7,8 @@ import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
 import { ADMIN_GROUP } from '@shared/constants';
 import type { UserDetails } from '@shared/api-response/UserDetails';
-import { oidcLoginPath } from '@shared/utils';
 import { ConfigService } from '../../services/config.service';
+import { oidcLoginPath } from '@shared/oidc';
 
 @Component({
     selector: 'app-header',
