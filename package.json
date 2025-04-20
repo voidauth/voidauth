@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "concurrently \"npm run server:watch\" \"npm run frontend:watch\"",
+    "start:server": "tsc && tsx server/index.ts",
     "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && tsx server/index.ts\"",
     "frontend:watch": "cd frontend && npm run watch"
   },
