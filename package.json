@@ -13,8 +13,8 @@
   "author": "notquitenothing",
   "license": "SEE LICENSE IN LICENSE FILE",
   "dependencies": {
-    "@angular/cli": "^19.2.8",
-    "@angular/material": "^19.2.1",
+    "@angular/cli": "^19.2.0",
+    "@angular/material": "^19.2.10",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
