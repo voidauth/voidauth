@@ -10,7 +10,7 @@
     "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && tsx server/index.ts\"",
     "frontend:watch": "cd frontend && npm run watch"
   },
-  "author": "notquitenothing",
+  "author": "Derek Paschal",
   "license": "SEE LICENSE IN LICENSE FILE",
   "dependencies": {
     "@angular/cli": "^19.2.0",

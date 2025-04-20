@@ -6,10 +6,11 @@ WORKDIR /app/frontend
 # Build the frontend
 COPY ./frontend/package-lock.json ./
 COPY ./frontend/package.json ./
-RUN npm ci --omit=dev
+RUN npm i
 
 # Copy frontend source
 COPY ./frontend ./
+COPY ./shared ../shared
 
 # Build the page
 RUN npm run build

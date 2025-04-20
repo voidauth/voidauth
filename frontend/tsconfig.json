@@ -26,6 +26,7 @@
       "ES2022",
       "dom"
     ],
+    "typeRoots": ["node_modules/@types"],
     "paths": {
       "@shared/*": [
         "../shared/*"
