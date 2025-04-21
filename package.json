@@ -27,7 +27,7 @@
     "nodemailer": "^6.10.0",
     "oidc-provider": "^8.8.0",
     "pug": "^3.0.3",
-    "sass": "^1.85.0",
+    "sass": "^1.86.3",
     "sqlite3": "^5.1.7",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
