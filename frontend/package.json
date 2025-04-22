@@ -9,7 +9,7 @@
     "test": "ng test"
   },
   "dependencies": {
-    "@angular-devkit/build-angular": "^19.2.0",
+    "@angular-devkit/build-angular": "^19.2.8",
     "@angular/animations": "^19.2.7",
     "@angular/cdk": "^19.2.1",
     "@angular/cli": "^19.2.8",
@@ -37,7 +37,6 @@
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "typescript": "~5.8.3",
-    "uuid": "^10.0.0",
-    "zone.js": "~0.15.0"
+    "zone.js": "^0.15.0"
   }
 }
