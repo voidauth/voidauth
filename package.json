@@ -22,7 +22,7 @@
     "generate-password": "^1.7.1",
     "knex": "^3.1.0",
     "nanoid": "^5.1.5",
-    "nodemailer": "^6.10.0",
+    "nodemailer": "^6.10.1",
     "oidc-provider": "^8.8.0",
     "pug": "^3.0.3",
     "sass": "^1.85.0",
