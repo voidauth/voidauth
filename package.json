@@ -16,7 +16,7 @@
     "@angular/cli": "^19.2.0",
     "@angular/material": "^19.2.10",
     "bcrypt": "^5.1.1",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
     "generate-password": "^1.7.1",
