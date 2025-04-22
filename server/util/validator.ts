@@ -15,28 +15,32 @@ type OnlyGenericKeys<T> = {
 
 type IsOptionalKey<T, K extends keyof T> = T extends Record<K, T[K]> ? false : true;
 
-type DotNotation<T> = any extends T ? never : T extends (infer U)[]
-  ? ('*' | `${`*.${DotNotation<U>}`}`)
-  : T extends object
-  ? { [K in keyof ExcludeGenericKeys<T>]-?:
-    `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
-    |
-    `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
+// type DotNotation<T> = any extends T ? never : T extends (infer U)[]
+//   ? ('*' | `${`*.${DotNotation<U>}`}`)
+//   : T extends object
+//   ? { [K in keyof ExcludeGenericKeys<T>]-?:
+//     `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
+//     |
+//     `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
     
-  }[keyof ExcludeGenericKeys<T>]
-  : never;
+//   }[keyof ExcludeGenericKeys<T>]
+//   : never;
 
-type DotNotationLeaves<T> = any extends T 
+type DotNotation<T> = any extends T 
 ? never 
 : T extends (infer U)[]
   ? U extends object
-    ? `${`*.${DotNotationLeaves<U>}`}`
+    ? `${`*.${DotNotation<U>}`}`
     : '*'
   : T extends object
     ? { [K in keyof ExcludeGenericKeys<T>]-?:
       (
         Required<T>[K] extends object
-        ? `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotationLeaves<T[K]>}`}`
+        ? Required<T>[K] extends (infer _V)[]
+          ? `${IsOptionalKey<T, K> extends false ? K : `${K}?`}` 
+            | 
+            `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
+          : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
         : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
       )      
     }[keyof ExcludeGenericKeys<T>]
@@ -59,9 +63,9 @@ type URLParamSchema = Required<Pick<ParamSchema, "isURL" | "trim">>
 export type ValidParamSchema = UncheckedParamSchema | StringParamSchema | EmailParamSchema | URLParamSchema;
 
 export type TypedSchema<T extends object> = {
-  [K in DotNotationLeaves<T> as WasOptionalKey<K> extends false ? K : never]: ValidParamSchema
+  [K in DotNotation<T> as WasOptionalKey<K> extends false ? K : never]: ValidParamSchema
 } & {
-  [K in DotNotationLeaves<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ValidParamSchema
+  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ValidParamSchema
 } 
 // & {
 //   [key: string | number]: ValidParamSchema

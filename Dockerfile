@@ -6,7 +6,7 @@ WORKDIR /app/frontend
 # Build the frontend
 COPY ./frontend/package-lock.json ./
 COPY ./frontend/package.json ./
-RUN npm i
+RUN npm ci
 
 # Copy frontend source
 COPY ./frontend ./
@@ -32,12 +32,16 @@ COPY ./package*.json ./
 RUN npm ci --omit=dev
 
 # Copy server files
-COPY ./server ./
-COPY ./shared ./
-COPY ./theme ./
-COPY ./migrations ./
-COPY ./default_email_templates ./
-COPY ./custom_typings ./
+COPY ./theme ./theme
+COPY ./default_email_templates ./default_email_templates
 
+COPY ./tsconfig.json ./
+
+COPY ./server ./server
+COPY ./shared ./shared
+COPY ./migrations ./migrations
+COPY ./custom_typings ./custom_typings
+
+VOLUME ["/app/db", "/app/config"]
 EXPOSE 80
 CMD [ "npm", "run", "start:server" ]

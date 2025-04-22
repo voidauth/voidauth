@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "concurrently \"npm run server:watch\" \"npm run frontend:watch\"",
-    "start:server": "tsc && tsx server/index.ts",
+    "start:server": "tsx server/index.ts",
     "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && tsx server/index.ts\"",
     "frontend:watch": "cd frontend && npm run watch"
   },
@@ -16,12 +16,10 @@
     "@angular/cli": "^19.2.0",
     "@angular/material": "^19.2.10",
     "bcrypt": "^5.1.1",
-    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
     "generate-password": "^1.7.1",
-    "helmet": "^8.1.0",
     "knex": "^3.1.0",
     "nanoid": "^5.1.5",
     "nodemailer": "^6.10.0",
@@ -34,7 +32,6 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.1",
     "@types/node": "^22.14.1",
     "@types/nodemailer": "^6.4.17",

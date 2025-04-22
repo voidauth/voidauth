@@ -26,7 +26,7 @@ export class AdminService {
 
   getInviteLink(id: string, challenge: string) {
     const query = `invite=${id}&challenge=${challenge}`
-    return `${this.configService.getCurrentHost()}/${REDIRECT_PATHS.REGISTER}?${query}`
+    return `${this.configService.getCurrentHost()}/${REDIRECT_PATHS.INVITE}?${query}`
   }
 
   async clients() {

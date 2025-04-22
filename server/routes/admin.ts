@@ -30,6 +30,9 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
       }
     },
   },
+  redirect_uris: {
+    isArray: true
+  },
   "redirect_uris.*": {
     isURL: {
       options: {
@@ -178,6 +181,9 @@ adminRouter.patch("/user",
     },
     approved: {
       isBoolean: true
+    },
+    groups: {
+      isArray: true
     },
     "groups.*": stringValidation
   }),
@@ -359,12 +365,15 @@ adminRouter.post("/invitation",
       optional: true,
       ...emailValidation
     },
+    groups: {
+      isArray: true
+    },
     "groups.*": stringValidation
   }),
   async (req: Request, res: Response) => {
     await db.transaction(async (trx) => {
       const invitationUpsert = matchedData<InvitationUpsert>(req)
-      const { groups: _, ...invitationData } = invitationUpsert;
+      const { groups: groupNames, ...invitationData } = invitationUpsert;
 
       const id = invitationData.id ?? randomUUID()
 
@@ -386,7 +395,7 @@ adminRouter.post("/invitation",
         })
       }
 
-      const groups: Group[] = await trx.select().table<Group>("group").whereIn("name", invitationUpsert.groups)
+      const groups: Group[] = await trx.select().table<Group>("group").whereIn("name", groupNames)
       const invitationGroups: InvitationGroup[] = groups.map((g) => {
         return {
           groupId: g.id,

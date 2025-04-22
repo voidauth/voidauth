@@ -53,7 +53,10 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "security": {
+              "autoCsp": true
+            }
           },
           "configurations": {
             "production": {

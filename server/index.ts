@@ -5,8 +5,6 @@ import fs from 'node:fs'
 import { provider } from './oidc/provider'
 import { generateTheme } from './util/theme'
 import { router } from './routes/api'
-import cookieParser from 'cookie-parser'
-import helmet from 'helmet'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? ".")
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -14,21 +12,12 @@ const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
 await generateTheme()
 
 const app = express()
-
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      "form-action": null
-    }
-  }
-}))
 app.enable("trust proxy")
 
 app.use("/oidc", provider.callback())
 
 app.use(express.json({ limit: "1Mb" }))
 app.use(express.urlencoded({ limit: "1Mb", extended: true }))
-app.use(cookieParser())
 
 app.use("/api", router)
 

@@ -1,0 +1,11 @@
+services:
+  void-auth: 
+    build:
+      context: .
+    ports:
+      - 80:80
+    volumes:
+      - "./db:/app/db"
+      - "./config:/app/config"
+    environment:
+      - APP_TITLE="void-auth"
