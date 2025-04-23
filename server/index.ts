@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import { provider } from './oidc/provider'
 import { generateTheme } from './util/theme'
 import { router } from './routes/api'
+import helmet from "helmet";
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? ".")
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -12,7 +13,22 @@ const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
 await generateTheme()
 
 const app = express()
+
+// MUST be hosted behind ssl terminating proxy
 app.enable("trust proxy")
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    // use safe defaults, and also...
+    useDefaults: true,
+    directives: {
+      "script-src": ["'self'", "'unsafe-inline'"], // angular uses inline scripts for loading
+      "font-src": ["'self'", "data:"], // no external fonts
+      "style-src": ["'self'", "'unsafe-inline'"], // no external styles
+      "form-action": ["'self'", "https:"] // must be able to form action to external site
+    },
+  }
+}));
 
 app.use("/oidc", provider.callback())
 
@@ -48,7 +64,7 @@ app.use(express.static(appConfig.BRANDING_DIR, {
 app.use(express.static(FE_ROOT))
 
 // Unresolved GET requests should return frontend
-app.get(/(.*)/, (req, res) => {
+app.get(/(.*)/, (_req, res) => {
   res.sendFile(path.join(FE_ROOT, "./index.html"))
 })
 
@@ -58,7 +74,7 @@ app.use((req, res) => {
 })
 
 // Last chance error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
   console.error(err)
   res.sendStatus(500)
 })
