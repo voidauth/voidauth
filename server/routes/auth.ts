@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express"
-import { validate } from "../util/validator"
+import { validate } from "../util/validate"
 import { matchedData } from "express-validator"
 import { getUserById } from "../db/user"
 import appConfig from "../util/config"

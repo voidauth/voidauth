@@ -1,3 +1,9 @@
 <button mat-icon-button (click)="toggleTheme()">
-  <mat-icon fontSet="material-icons-round">{{ isLightMode ? 'nights_stay' : 'wb_sunny' }}</mat-icon>
+  <mat-icon fontSet="material-icons-round">
+    @if (themeMode === "dark") {
+      dark_mode
+    } @else {
+      light_mode
+    }
+  </mat-icon>
 </button>

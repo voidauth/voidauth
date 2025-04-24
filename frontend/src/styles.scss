@@ -26,6 +26,10 @@ body {
   ));
 }
 
+body.dark {
+  color-scheme: dark;
+}
+
 body.light {
   color-scheme: light;
 }

@@ -3,7 +3,7 @@ import { provider } from "../oidc/provider";
 import { getUserByInput } from "../db/user";
 import { addConsent, getConsentScopes, getExistingConsent } from "../db/consent";
 import { matchedData } from "express-validator";
-import { validate } from "../util/validator";
+import { validate } from "../util/validate";
 import type { Redirect } from "@shared/api-response/Redirect";
 import type { LoginUser } from "@shared/api-request/LoginUser";
 import appConfig from "../util/config";

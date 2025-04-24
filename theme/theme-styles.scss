@@ -11,7 +11,7 @@
 
 html {
   // Must specify color-scheme for theme mixin to automatically work
-  color-scheme: dark;
+  color-scheme: light dark;
 
   // Create one theme that works automatically for light and dark theme
   @include mat.theme((

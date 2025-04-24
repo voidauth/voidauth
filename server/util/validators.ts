@@ -1,5 +1,22 @@
-import { USERNAME_REGEX } from "@shared/constants"
-import type { ValidParamSchema } from "./validator"
+import { ADMIN_GROUP, USERNAME_REGEX } from "@shared/constants"
+import type { ValidParamSchema } from "./validate"
+import type { NextFunction, Request, Response } from "express"
+
+export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+    res.sendStatus(401)
+    return
+  }
+  next()
+}
+
+export function checkAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.user?.groups?.some((g) => g === ADMIN_GROUP)) {
+    res.sendStatus(403)
+    return
+  }
+  next()
+}
 
 export const defaultNull: ValidParamSchema = {
   default: {

@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { checkSchema, validationResult, type ParamSchema, type Schema } from "express-validator";
 import type { RemoveKeys, RequireKeys } from '@shared/utils';
-import { ADMIN_GROUP } from "@shared/constants";
 
 type IsGenericKey<T> = string extends T ? true : number extends T ? true : false;
 
@@ -9,9 +8,9 @@ type ExcludeGenericKeys<T> = {
   [K in keyof T as IsGenericKey<K> extends true ? never : K]: T[K];
 };
 
-type OnlyGenericKeys<T> = {
-  [K in keyof T as IsGenericKey<K> extends false ? never : K]: T[K];
-};
+// type OnlyGenericKeys<T> = {
+//   [K in keyof T as IsGenericKey<K> extends false ? never : K]: T[K];
+// };
 
 type IsOptionalKey<T, K extends keyof T> = T extends Record<K, T[K]> ? false : true;
 
@@ -79,22 +78,6 @@ export function validate<T extends object = any>(schema: TypedSchema<T> | TypedS
     }),
     handleValidatorError
   ]
-}
-
-export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
-  if (!req.user) {
-    res.sendStatus(401)
-    return
-  }
-  next()
-}
-
-export function checkAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.user?.groups?.some((g) => g === ADMIN_GROUP)) {
-    res.sendStatus(403)
-    return
-  }
-  next()
 }
 
 function handleValidatorError(req: Request, res: Response, next: NextFunction) {
