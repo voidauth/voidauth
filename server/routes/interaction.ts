@@ -14,7 +14,7 @@ import type { EmailVerification } from "@shared/db/EmailVerification";
 import type { User } from "@shared/db/User";
 import { db } from "../db/db";
 import type { RegisterUser } from "@shared/api-request/RegisterUser";
-import bcrypt from 'bcrypt'
+import * as argon2 from "argon2";
 import { randomUUID } from "crypto";
 import { REDIRECT_PATHS, TTLs } from "@shared/constants";
 import type { Interaction } from "oidc-provider";
@@ -155,7 +155,7 @@ router.post("/login",
     const user = await getUserByInput(input)
 
     // check user password
-    if (!user || !await bcrypt.compare(password, user.passwordHash)) {
+    if (!user || !await argon2.verify(user.passwordHash, password)) {
       res.sendStatus(401)
       return
     }
@@ -267,7 +267,7 @@ router.post('/register',
         return
       }
 
-      const passwordHash = await bcrypt.hash(registration.password, 10);
+      const passwordHash = await argon2.hash(registration.password);
 
       const id = randomUUID()
       const { createdAt, updatedAt } = createAudit(id)

@@ -3,7 +3,7 @@ import { validate } from "../util/validate"
 import type { UpdateProfile } from "@shared/api-request/UpdateProfile"
 import { matchedData } from "express-validator"
 import { db } from "../db/db"
-import bcrypt from 'bcrypt'
+import * as argon2 from "argon2";
 import type { UpdateEmail } from "@shared/api-request/UpdateEmail"
 import appConfig from "../util/config"
 import { createEmailVerification } from "./interaction"
@@ -79,12 +79,12 @@ userRouter.patch("/password",
       .table<User>("user")
       .where({ id: user.id }).first())?.passwordHash
 
-    if (!passwordHash || !(await bcrypt.compare(oldPassword, passwordHash))) {
+    if (!passwordHash || !(await argon2.verify(passwordHash, oldPassword))) {
       res.sendStatus(403)
       return
     }
 
-    await db.table<User>("user").update({ passwordHash: await bcrypt.hash(newPassword, 10) }).where({ id: user.id })
+    await db.table<User>("user").update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
     res.send()
   }
 )

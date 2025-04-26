@@ -112,9 +112,9 @@ export class UpsertClientComponent implements OnInit {
       this.disablePage()
 
       if (this.client_id) {
-        await this.adminService.updateClient(this.form.value)
+        await this.adminService.updateClient(this.form.getRawValue())
       } else {
-        await this.adminService.addClient(this.form.value)
+        await this.adminService.addClient(this.form.getRawValue())
       }
       
       this.snackbarService.show(`Client ${this.client_id ? "updated" : "created"}.`)

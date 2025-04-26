@@ -174,7 +174,7 @@ export class InvitationComponent {
     try {
       this.disablePage()
 
-      const invitation = await this.adminService.upsertInvitation({ ...this.form.value, id: this.id })
+      const invitation = await this.adminService.upsertInvitation({ ...this.form.getRawValue(), id: this.id })
 
       this.snackbarService.show(`Invitation ${this.id ? "updated" : "created"}.`)
 

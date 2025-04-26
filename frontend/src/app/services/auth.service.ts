@@ -26,7 +26,7 @@ export class AuthService {
     return firstValueFrom(this.http.get<void>(`${environment.apiUrl}/interaction/exists`))
   }
 
-  async register(body: Partial<Nullable<RegisterUser>>) {
+  async register(body: Nullable<RegisterUser>) {
     return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/interaction/register`, body));
   }
 

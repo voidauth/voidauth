@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ThemeService, type ThemeMode } from '../../services/theme.service';
 import { MaterialModule } from '../../material-module';
 
@@ -11,25 +11,14 @@ import { MaterialModule } from '../../material-module';
 export class ThemeToggleComponent {
   public themeMode: ThemeMode = "system";
 
-  constructor(private themeService: ThemeService) {
+  themeService = inject(ThemeService)
+
+  constructor() {
     this.themeMode = this.themeService.themeMode;
   }
 
-  toggleTheme() {
-    switch (this.themeMode) {
-      case "system":
-        this.themeService.themeMode = "dark"
-        break
-      case "dark":
-        this.themeService.themeMode = "light"
-        break
-      case "light":
-        this.themeService.themeMode = "dark"
-        break
-      default:
-        this.themeService.themeMode = "dark"
-    }
-
-    this.themeMode = this.themeService.themeMode
+  setTheme(mode: ThemeMode) {
+    this.themeService.themeMode = mode
+    this.themeMode = mode
   }
 }

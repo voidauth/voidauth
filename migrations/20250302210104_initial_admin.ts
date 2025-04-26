@@ -3,8 +3,8 @@ import type { Knex } from "knex";
 import { generate } from "generate-password";
 import type { User } from "@shared/db/User";
 import type { Group, UserGroup } from "@shared/db/Group";
-import bcrypt from 'bcrypt'
 import { ADMIN_GROUP, ADMIN_USER } from "@shared/constants";
+import * as argon2 from "argon2";
 
 const password = generate({
   length: 32,
@@ -16,7 +16,7 @@ const initialAdminUser: User = {
   username: ADMIN_USER,
   name: "Auth Admin",
   email: `admin@localhost`,
-  passwordHash: await bcrypt.hash(password, 10),
+  passwordHash: await argon2.hash(password),
   emailVerified: true,
   approved: true,
   createdAt: Date(),

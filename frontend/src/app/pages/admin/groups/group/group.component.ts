@@ -73,7 +73,7 @@ export class GroupComponent {
     try {
       this.disablePage()
 
-      const group = await this.adminService.upsertGroup({...this.form.value, id: this.id})
+      const group = await this.adminService.upsertGroup({...this.form.getRawValue(), id: this.id})
       this.snackbarService.show(`Group ${this.id ? "updated" : "created"}.`)
       
       this.id = group.id

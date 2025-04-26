@@ -1,9 +1,31 @@
-<button mat-icon-button (click)="toggleTheme()">
+<button mat-icon-button [matMenuTriggerFor]="menu">
   <mat-icon fontSet="material-icons-round">
     @if (themeMode === "dark") {
       dark_mode
-    } @else {
+    } @else if (themeMode === "light") {
       light_mode
+    } @else {
+      brightness_medium
     }
   </mat-icon>
 </button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="setTheme('system')">
+    <mat-icon fontSet="material-icons-round">
+      brightness_medium
+    </mat-icon>
+    System
+  </button>
+  <button mat-menu-item (click)="setTheme('light')">
+    <mat-icon fontSet="material-icons-round">
+      light_mode
+    </mat-icon>
+    Light
+  </button>
+  <button mat-menu-item (click)="setTheme('dark')">
+    <mat-icon fontSet="material-icons-round">
+      dark_mode
+    </mat-icon>
+    Dark
+  </button>
+</mat-menu>

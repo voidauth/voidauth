@@ -37,11 +37,11 @@ export class AdminService {
     return firstValueFrom(this.http.get<ClientMetadata>(`${environment.apiUrl}/admin/client/${client_id}`));
   }
 
-  async addClient(client: Partial<Nullable<ClientUpsert>>) {
+  async addClient(client: Nullable<ClientUpsert>) {
     return firstValueFrom(this.http.post<void>(`${environment.apiUrl}/admin/client`, client));
   }
 
-  async updateClient(client: Partial<Nullable<ClientUpsert>>) {
+  async updateClient(client: Nullable<ClientUpsert>) {
     return firstValueFrom(this.http.patch<void>(`${environment.apiUrl}/admin/client`, client));
   }
 
@@ -58,7 +58,7 @@ export class AdminService {
     return firstValueFrom(this.http.get<Group>(`${environment.apiUrl}/admin/group/${id}`));
   }
 
-  async upsertGroup(group: Partial<Nullable<GroupUpsert>>) {
+  async upsertGroup(group: Nullable<GroupUpsert>) {
     return firstValueFrom(this.http.post<Group>(`${environment.apiUrl}/admin/group`, group));
   }
 
@@ -75,7 +75,7 @@ export class AdminService {
     return firstValueFrom(this.http.get<UserDetails>(`${environment.apiUrl}/admin/user/${id}`));
   }
 
-  async updateUser(user: Partial<Nullable<UserUpdate>>) {
+  async updateUser(user: Nullable<UserUpdate>) {
     return firstValueFrom(this.http.patch<void>(`${environment.apiUrl}/admin/user`, user));
   }
 
@@ -91,7 +91,7 @@ export class AdminService {
     return firstValueFrom(this.http.get<InvitationDetails>(`${environment.apiUrl}/admin/invitation/${id}`));
   }
 
-  async upsertInvitation(invitation: Partial<Nullable<InvitationUpsert>>) {
+  async upsertInvitation(invitation: Nullable<InvitationUpsert>) {
     return firstValueFrom(this.http.post<InvitationDetails>(`${environment.apiUrl}/admin/invitation`, invitation));
   }
 

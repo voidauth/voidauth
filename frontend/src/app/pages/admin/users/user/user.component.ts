@@ -149,7 +149,7 @@ export class UserComponent {
     try {
       this.disablePage()
 
-      await this.adminService.updateUser({ ...this.form.value, id: this.id })
+      await this.adminService.updateUser({ ...this.form.getRawValue(), id: this.id })
       this.snackbarService.show(`User updated.`)
     } catch (e) {
       this.snackbarService.error(`Could not update user.`)
