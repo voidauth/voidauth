@@ -24,7 +24,7 @@
     "knex": "^3.1.0",
     "nanoid": "^5.1.5",
     "nodemailer": "^6.10.1",
-    "oidc-provider": "^8.8.0",
+    "oidc-provider": "^9.0.1",
     "pug": "^3.0.3",
     "sass": "^1.86.0",
     "sqlite3": "^5.1.7",
