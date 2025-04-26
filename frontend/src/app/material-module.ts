@@ -9,7 +9,7 @@ import { MatListModule } from '@angular/material/list'
 import { MatCardModule } from '@angular/material/card'
 import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatCheckboxModule } from '@angular/material/checkbox'
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { DragDropModule } from '@angular/cdk/drag-drop'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatTableModule } from '@angular/material/table'
@@ -39,7 +39,8 @@ import { ClipboardModule } from '@angular/cdk/clipboard'
     MatSortModule,
     MatSelectModule,
     MatAutocompleteModule,
-    MatTooltipModule
-  ]
+    MatTooltipModule,
+  ],
 })
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class MaterialModule {}

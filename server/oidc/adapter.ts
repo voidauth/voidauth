@@ -1,7 +1,8 @@
-import type { Adapter } from "oidc-provider";
-import { db } from "../db/db";
+/* eslint-disable */
+import type { Adapter } from 'oidc-provider'
+import { db } from '../db/db'
 
-const tableName = 'oidc_payloads';
+const tableName = 'oidc_payloads'
 
 export type PayloadTypes = 'Session' |
   'AccessToken' |
@@ -21,42 +22,42 @@ export type PayloadTypes = 'Session' |
 function getExpireAt(expiresIn: number) {
   return expiresIn
     ? new Date(Date.now() + expiresIn * 1000)
-    : undefined;
+    : undefined
 }
 
 export class KnexAdapter implements Adapter {
   payloadType: string
   constructor(pt: string) {
     // this.name = name;
-    this.payloadType = pt;
+    this.payloadType = pt
   }
 
   get _table() {
-    return db
+    return db()
       .table(tableName)
-      .where('type', this.payloadType);
+      .where('type', this.payloadType)
   }
 
   _rows(obj: any) {
-    return this._table.where(obj);
+    return this._table.where(obj)
   }
 
   _result(r: any) {
     return r.length > 0
       ? {
-        ...JSON.parse(r[0].payload),
-        ...(r[0].consumedAt ? { consumed: true } : undefined),
-      }
-      : undefined;
+          ...JSON.parse(r[0].payload),
+          ...(r[0].consumedAt ? { consumed: true } : undefined),
+        }
+      : undefined
   }
 
   _findBy(obj: any) {
-    return this._rows(obj).then(this._result);
+    return this._rows(obj).then(this._result)
   }
 
   async upsert(id: string, payload: any, expiresIn: number) {
-    const expiresAt = getExpireAt(expiresIn);
-    await db
+    const expiresAt = getExpireAt(expiresIn)
+    await db()
       .table(tableName)
       .insert({
         id,
@@ -68,33 +69,33 @@ export class KnexAdapter implements Adapter {
         expiresAt,
       })
       .onConflict(['id', 'type'])
-      .merge();
+      .merge()
   }
 
   async find(id: string) {
-    return this._findBy({ id });
+    return this._findBy({ id })
   }
 
   async findByUserCode(userCode: string) {
-    return this._findBy({ userCode });
+    return this._findBy({ userCode })
   }
 
   async findByUid(uid: string) {
-    return this._findBy({ uid });
+    return this._findBy({ uid })
   }
 
   async destroy(id: string) {
-    await this._rows({ id }).delete();
+    await this._rows({ id }).delete()
     return
   }
 
   async revokeByGrantId(grantId: string) {
-    await this._rows({ grantId }).delete();
+    await this._rows({ grantId }).delete()
     return
   }
 
   async consume(id: string) {
-    await this._rows({ id }).update({ consumedAt: new Date() });
+    await this._rows({ id }).update({ consumedAt: new Date() })
     return
   }
 };

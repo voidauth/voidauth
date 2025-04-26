@@ -1,4 +1,4 @@
 export type UpdatePassword = {
-  oldPassword: string,
+  oldPassword: string
   newPassword: string
 }

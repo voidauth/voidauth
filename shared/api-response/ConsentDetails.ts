@@ -1,6 +1,6 @@
 export type ConsentDetails = {
-  uid: string,
-  clientId: string,
-  redirectUri: string,
-  scopes: string[],
+  uid: string
+  clientId: string
+  redirectUri: string
+  scopes: string[]
 }

@@ -1,5 +1,5 @@
 export type LoginUser = {
   input: string
-  password: string,
+  password: string
   remember?: boolean
 }

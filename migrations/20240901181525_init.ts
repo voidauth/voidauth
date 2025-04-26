@@ -1,7 +1,7 @@
-import type { Knex } from "knex"
+import type { Knex } from 'knex'
 
 export async function up(knex: Knex): Promise<void> {
-  return await knex.schema
+  await knex.schema
     .createTable('constant', (table) => {
       table.string('key').primary().notNullable()
       table.string('value')
@@ -21,7 +21,7 @@ export async function up(knex: Knex): Promise<void> {
       // Email should be unique or null
       table.unique('email', {
         predicate: knex.whereNotNull('email'),
-      });
+      })
     })
     .createTable('group', (table) => {
       table.string('id').primary().notNullable()
@@ -84,7 +84,7 @@ export async function up(knex: Knex): Promise<void> {
 };
 
 export async function down(knex: Knex): Promise<void> {
-  return await knex.schema
+  await knex.schema
     .dropTable('invitation')
     .dropTable('email_verification')
     .dropTable('consent')

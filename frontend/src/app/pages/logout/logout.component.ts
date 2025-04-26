@@ -1,20 +1,18 @@
-import { Component, inject, type OnInit } from '@angular/core';
-import { MaterialModule } from '../../material-module';
-import { ActivatedRoute } from '@angular/router';
-import { SnackbarService } from '../../services/snackbar.service';
-import { AuthService } from '../../services/auth.service';
-import { ConfigService } from '../../services/config.service';
+import { Component, inject, type OnInit } from '@angular/core'
+import { MaterialModule } from '../../material-module'
+import { ActivatedRoute } from '@angular/router'
+import { SnackbarService } from '../../services/snackbar.service'
+import { ConfigService } from '../../services/config.service'
 
 @Component({
   selector: 'app-logout',
   imports: [
-    MaterialModule
+    MaterialModule,
   ],
   templateUrl: './logout.component.html',
-  styleUrl: './logout.component.scss'
+  styleUrl: './logout.component.scss',
 })
 export class LogoutComponent implements OnInit {
-
   protected secret?: string
 
   private configService = inject(ConfigService)
@@ -23,14 +21,14 @@ export class LogoutComponent implements OnInit {
 
   public host = this.configService.getCurrentHost()
 
-  async ngOnInit() {
+  ngOnInit() {
     const params = this.route.snapshot.paramMap
 
-    const secret = params.get("secret")
+    const secret = params.get('secret')
     if (secret) {
       this.secret = secret
     } else {
-      this.snackbarService.error("Invalid logout request.")
+      this.snackbarService.error('Invalid logout request.')
     }
   }
 }

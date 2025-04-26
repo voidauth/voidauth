@@ -1,8 +1,9 @@
-import { ADMIN_GROUP, USERNAME_REGEX } from "@shared/constants"
-import type { ValidParamSchema } from "./validate"
-import type { NextFunction, Request, Response } from "express"
+import { ADMIN_GROUP, USERNAME_REGEX } from '@shared/constants'
+import type { ValidParamSchema } from './validate'
+import type { NextFunction, Request, Response } from 'express'
 
 export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!req.user) {
     res.sendStatus(401)
     return
@@ -11,7 +12,7 @@ export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
 }
 
 export function checkAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.user?.groups?.some((g) => g === ADMIN_GROUP)) {
+  if (!req.user.groups.some(g => g === ADMIN_GROUP)) {
     res.sendStatus(403)
     return
   }
@@ -20,17 +21,19 @@ export function checkAdmin(req: Request, res: Response, next: NextFunction) {
 
 export const defaultNull: ValidParamSchema = {
   default: {
-    options: null
-  }
+    options: null,
+  },
 }
 
 export const allowNull: ValidParamSchema = {
   allowNull: {
-    custom: () => { return true },
-    if: (value: any) => {
+    custom: () => {
+      return true
+    },
+    if: (value: unknown) => {
       return value !== null
     },
-  }
+  },
 }
 
 export const stringValidation: ValidParamSchema = { isString: true, stripLow: true, trim: true }
@@ -39,8 +42,8 @@ export const emailValidation: ValidParamSchema = {
   isEmail: {
     options: {
       require_tld: false,
-    }
-  }, normalizeEmail: true, trim: true
+    },
+  }, normalizeEmail: true, trim: true,
 }
 
 export const usernameValidation: ValidParamSchema = {

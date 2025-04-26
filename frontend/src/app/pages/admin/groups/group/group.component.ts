@@ -1,13 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MaterialModule } from '../../../../material-module';
-import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe';
-import { AdminService } from '../../../../services/admin.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { SnackbarService } from '../../../../services/snackbar.service';
-import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component';
-import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert';
+import { CommonModule } from '@angular/common'
+import { Component, inject } from '@angular/core'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { MaterialModule } from '../../../../material-module'
+import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
+import { AdminService } from '../../../../services/admin.service'
+import { ActivatedRoute, Router } from '@angular/router'
+import { SnackbarService } from '../../../../services/snackbar.service'
+import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 
 @Component({
   selector: 'app-group',
@@ -15,21 +15,20 @@ import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert';
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   templateUrl: './group.component.html',
-  styleUrl: './group.component.scss'
+  styleUrl: './group.component.scss',
 })
 export class GroupComponent {
-
   public id: string | null = null
   public hasLoaded = false
 
-  public form = new FormGroup<TypedFormGroup<Omit<GroupUpsert, "id">>>({
-      name: new FormControl<string>({
-        value: '',
-        disabled: false
-      }, [Validators.required]),
+  public form = new FormGroup<TypedFormGroup<Omit<GroupUpsert, 'id'>>>({
+    name: new FormControl<string>({
+      value: '',
+      disabled: false,
+    }, [Validators.required]),
   })
 
   private adminService = inject(AdminService)
@@ -40,7 +39,7 @@ export class GroupComponent {
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
       try {
-        const id = params.get("id")
+        const id = params.get('id')
 
         this.disablePage()
 
@@ -48,7 +47,7 @@ export class GroupComponent {
           this.id = id
           const group = await this.adminService.group(this.id)
           this.form.reset({
-            name: group.name ?? "",
+            name: group.name,
           })
         }
 
@@ -56,7 +55,7 @@ export class GroupComponent {
         this.hasLoaded = true
       } catch (e) {
         console.error(e)
-        this.snackbarService.error("Error loading group.")
+        this.snackbarService.error('Error loading group.')
       }
     })
   }
@@ -73,20 +72,20 @@ export class GroupComponent {
     try {
       this.disablePage()
 
-      const group = await this.adminService.upsertGroup({...this.form.getRawValue(), id: this.id})
-      this.snackbarService.show(`Group ${this.id ? "updated" : "created"}.`)
-      
+      const group = await this.adminService.upsertGroup({ ...this.form.getRawValue(), id: this.id })
+      this.snackbarService.show(`Group ${this.id ? 'updated' : 'created'}.`)
+
       this.id = group.id
-      this.router.navigate(["/admin/group", this.id], {
-        replaceUrl: true
+      await this.router.navigate(['/admin/group', this.id], {
+        replaceUrl: true,
       })
-    } catch (e) {
-      this.snackbarService.error(`Could not ${this.id ? "update" : "create"} group.`)
+    } catch (_e) {
+      this.snackbarService.error(`Could not ${this.id ? 'update' : 'create'} group.`)
     } finally {
       this.enablePage()
     }
   }
-  
+
   async remove() {
     try {
       this.disablePage()
@@ -94,10 +93,10 @@ export class GroupComponent {
       if (this.id) {
         await this.adminService.deleteGroup(this.id)
       }
-      
+
       this.snackbarService.show(`Group deleted.`)
-      this.router.navigate(["/admin/groups"])
-    } catch (e) {
+      await this.router.navigate(['/admin/groups'])
+    } catch (_e) {
       this.snackbarService.error(`Could not delete group.`)
     } finally {
       this.enablePage()

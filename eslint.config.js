@@ -11,7 +11,18 @@ export default tseslint.config(
   {
     rules: {
       "@stylistic/semi": ["error", "never"],
-      "@stylistic/max-len": ["error", 120, 2],
+      "@stylistic/max-len": ["error", 120, 2, {
+        "ignoreTemplateLiterals": true,
+      }],
+      "@stylistic/quote-props": ["error", "as-needed"],
+      "@stylistic/brace-style": ["error", "1tbs"],
+      "@typescript-eslint/no-unsafe-member-access": ["warn"],
+      "@typescript-eslint/unbound-method": ["error", {
+        "ignoreStatic": true,
+      }],
+      "@typescript-eslint/no-misused-promises": ["error", {
+        "checksVoidReturn": false,
+      }],
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
@@ -21,7 +32,7 @@ export default tseslint.config(
           "caughtErrorsIgnorePattern": "^_",
           "destructuredArrayIgnorePattern": "^_",
           "varsIgnorePattern": "^_",
-          "ignoreRestSiblings": true
+          "ignoreRestSiblings": true,
         }
       ]
     }
@@ -35,6 +46,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['./eslint.config.js']
+    ignores: ['./eslint.config.js', '**/node_modules', '**/dist', "knexfile.js"]
   }
 );

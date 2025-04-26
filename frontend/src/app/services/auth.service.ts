@@ -1,41 +1,39 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core'
+import { HttpClient } from '@angular/common/http'
 import environment from '../../environment/environment'
-import { firstValueFrom } from 'rxjs';
-import type { RegisterUser } from '@shared/api-request/RegisterUser';
-import type { LoginUser } from '@shared/api-request/LoginUser';
-import type { VerifyUserEmail } from '@shared/api-request/VerifyUserEmail';
-import type { Redirect } from '@shared/api-response/Redirect';
-import type { ConsentDetails } from '@shared/api-response/ConsentDetails';
-import type { InvitationDetails } from '@shared/api-response/InvitationDetails';
-import { type Nullable } from '@shared/utils';
+import { firstValueFrom } from 'rxjs'
+import type { RegisterUser } from '@shared/api-request/RegisterUser'
+import type { LoginUser } from '@shared/api-request/LoginUser'
+import type { VerifyUserEmail } from '@shared/api-request/VerifyUserEmail'
+import type { Redirect } from '@shared/api-response/Redirect'
+import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
+import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
+import { type Nullable } from '@shared/utils'
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient)
-
-  constructor() {}
 
   async getInteractionDetails(uid: string) {
     return firstValueFrom(this.http.get<ConsentDetails>(`${environment.apiUrl}/interaction/${uid}/detail`))
   }
 
   async interactionExists() {
-    return firstValueFrom(this.http.get<void>(`${environment.apiUrl}/interaction/exists`))
+    return firstValueFrom(this.http.get<null>(`${environment.apiUrl}/interaction/exists`))
   }
 
   async register(body: Nullable<RegisterUser>) {
-    return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/interaction/register`, body));
+    return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/interaction/register`, body))
   }
 
   async login(body: LoginUser) {
-    return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/interaction/login`, body));
+    return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/interaction/login`, body))
   }
 
   async consent(uid: string) {
-    return firstValueFrom(this.http.post<void>(`${environment.apiUrl}/interaction/${uid}/confirm`, null));
+    return firstValueFrom(this.http.post<null>(`${environment.apiUrl}/interaction/${uid}/confirm`, null))
   }
 
   async verifyEmail(body: VerifyUserEmail) {
