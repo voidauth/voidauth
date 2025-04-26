@@ -12,13 +12,3 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync()
   ]
 };
-
-function getCookies() {
-  return document.cookie.split(";").reduce((m: any, c) => {
-    const [name, value] = c.split("=")
-    if (name) {
-      m[name]=value
-    }
-    return m
-  }, {})
-}
