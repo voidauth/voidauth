@@ -2,9 +2,15 @@ import type { Knex } from 'knex'
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema
-    .createTable('constant', (table) => {
-      table.string('key').primary().notNullable()
-      table.string('value')
+    .createTable('key', (table) => {
+      table.string('id').primary().notNullable()
+      table.string('type').notNullable()
+      // The key will be encrypted
+      table.string('value').notNullable()
+      table.string('metadata').notNullable()
+      table.string('expiresAt').notNullable()
+
+      table.check(`type in ('oidc_jwk', 'cookie_key')`)
     })
     .createTable('user', (table) => {
       table.string('id').primary().notNullable()
@@ -85,11 +91,12 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema
+    .dropTable('invitation_group')
     .dropTable('invitation')
     .dropTable('email_verification')
     .dropTable('consent')
     .dropTable('user_group')
     .dropTable('group')
     .dropTable('user')
-    .dropTable('constant')
+    .dropTable('key')
 };

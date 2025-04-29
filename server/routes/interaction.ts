@@ -168,9 +168,10 @@ router.post('/login',
         login: {
           accountId: user.id,
           remember: remember,
+          amr: ['pwd'],
         },
       },
-      { mergeWithLastSubmission: false }),
+      { mergeWithLastSubmission: true }),
     }
 
     res.send(redir)
@@ -277,8 +278,8 @@ router.post('/register',
         name: invitation?.name || registration.name,
         email: invitation?.email || registration.email,
         passwordHash,
-        approved: !!invitationValid, // invited users are approved
-        emailVerified: !!invitation?.email, // invited users emails are verified
+        approved: !!invitationValid, // invited users are approved by default
+        emailVerified: false,
         createdAt,
         updatedAt,
       }
@@ -314,7 +315,8 @@ router.post('/register',
         location: await provider.interactionResult(req, res, {
           accountId: user.id,
           remember: false, // non-password logins are never remembered
-        }),
+          amr: [],
+        }, { mergeWithLastSubmission: true }),
       }
 
       res.send(redirect)
@@ -373,6 +375,7 @@ router.post('/verify_email',
         login: {
           accountId: user.id,
           remember: false, // non-password logins are never remembered
+          amr: ['email'],
         },
       },
       { mergeWithLastSubmission: false }),

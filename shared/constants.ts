@@ -14,6 +14,12 @@ export const REDIRECT_PATHS = {
   INVITE: 'invite', // registration page also
 } as const
 
+// Key types for the key table
+export const KEY_TYPES = {
+  OIDC_JWK: 'oidc_jwk',
+  COOKIE_KEY: 'cookie_key',
+} as const
+
 // Time-to-Live(s) in seconds
 const HOUR = 60 * 60
 const DAY = HOUR * 24
@@ -22,4 +28,9 @@ export const TTLs = {
   VERIFICATION_EMAIL: 2 * HOUR,
   INVITATION: 1 * WEEK,
   CONSENT: 52 * WEEK,
+
+  OIDC_JWK: 2 * WEEK,
+  COOKIE_KEY: 2 * WEEK,
 } as const
+
+// TODO: Make sure TTLs are valid and will not conflict

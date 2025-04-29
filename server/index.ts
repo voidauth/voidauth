@@ -6,6 +6,8 @@ import { provider } from './oidc/provider'
 import { generateTheme } from './util/theme'
 import { router } from './routes/api'
 import helmet from 'helmet'
+import { makeKeysValid } from './db/key'
+import { randomInt } from 'node:crypto'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -82,3 +84,9 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 app.listen(appConfig.PORT, () => {
   console.log(`Listening on port: ${appConfig.PORT}`)
 })
+
+// interval to keep keys up to date every 10 minutes +- 1 minute
+setInterval(async () => {
+  await makeKeysValid()
+  // TODO: update cookie keys and jwks in oidc-provider
+}, ((9 * 60) + randomInt(2 * 60)) * 1000)

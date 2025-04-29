@@ -25,5 +25,13 @@ export function createExpiration(ttl: number) {
 }
 
 export function isExpired(expires: string) {
-  return ((new Date(expires)).getTime() - Date.now()) < 0
+  return timeToExpiration(expires) < 0
+}
+
+export function timeToExpiration(expires: string) {
+  return ((new Date(expires)).getTime() - Date.now())
+}
+
+export function pastHalfExpired(ttl: number, expires: string) {
+  return timeToExpiration(expires) < (ttl * 1000 / 2)
 }

@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import * as path from 'node:path'
+import { exit } from 'node:process'
 
 process.env.NODE_ENV ??= 'production'
 
@@ -28,6 +29,11 @@ class Config {
 
   EMAIL_VERIFICATION = false
 
+  // required and checked for validity
+  STORAGE_KEY: string = ''
+
+  // Optional
+  STORAGE_KEY_SECONDARY?: string
   SMTP_HOST?: string
   SMTP_FROM?: string
   SMTP_PORT = 587
@@ -63,16 +69,16 @@ function assignConfigValue(key: keyof Config, value: unknown) {
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 
+    // required variables
+    case 'STORAGE_KEY':
+      appConfig[key] = stringOnly(value) ?? appConfig[key]
+      break
+
     // default null variables
+    case 'STORAGE_KEY_SECONDARY':
     case 'SMTP_HOST':
-      appConfig[key] = stringOnly(value) ?? appConfig[key]
-      break
     case 'SMTP_FROM':
-      appConfig[key] = stringOnly(value) ?? appConfig[key]
-      break
     case 'SMTP_USER':
-      appConfig[key] = stringOnly(value) ?? appConfig[key]
-      break
     case 'SMTP_PASS':
       appConfig[key] = stringOnly(value) ?? appConfig[key]
       break
@@ -121,5 +127,11 @@ const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
 configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
 })
+
+// check that STORAGE_KEY is set
+if (appConfig.STORAGE_KEY.length < 32) {
+  console.error('STORAGE_KEY must be set and be at least 32 characters long.')
+  exit(1)
+}
 
 export default appConfig
