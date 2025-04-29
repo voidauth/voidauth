@@ -13,8 +13,8 @@
   "author": "Derek Paschal",
   "license": "SEE LICENSE IN LICENSE FILE",
   "dependencies": {
-    "@angular/cli": "^19.2.0",
-    "@angular/material": "^19.2.10",
+    "@angular/cli": "^19.2.9",
+    "@angular/material": "^19.2.11",
     "argon2": "^0.43.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -43,6 +43,6 @@
     "concurrently": "^9.1.2",
     "eslint": "^9.25.1",
     "nodemon": "^3.1.10",
-    "typescript-eslint": "^8.31.0"
+    "typescript-eslint": "^8.31.1"
   }
 }
