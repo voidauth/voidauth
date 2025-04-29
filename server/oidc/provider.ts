@@ -18,6 +18,14 @@ const extraParams: (keyof OIDCExtraParams)[] = ['login_type', 'login_id', 'login
 const jwks = { keys: (await getJWKs()).map(k => k.jwk) }
 const cookieKeys = (await getCookieKeys()).map(k => k.value)
 
+if (!jwks.keys.length) {
+  throw new Error('No OIDC JWKs found, this error should not occur.')
+}
+
+if (!cookieKeys.length) {
+  throw new Error('No Cookie Signing Keys found, this error should not occur.')
+}
+
 const configuration: Configuration = {
   features: {
     devInteractions: {
