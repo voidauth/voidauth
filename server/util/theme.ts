@@ -23,22 +23,22 @@ export async function generateTheme() {
     }
     const themeContent = result.readContent(resultFile)
     if (themeContent) {
-      fs.mkdirSync(appConfig.THEME_DIR, {
+      fs.mkdirSync('./theme', {
         recursive: true,
       })
-      fs.writeFileSync(path.join(appConfig.THEME_DIR, resultFile), themeContent)
+      fs.writeFileSync(path.join('./theme', resultFile), themeContent)
     }
 
-    const compiled = sass.compile(path.join(appConfig.THEME_DIR, 'theme-styles.scss'), {
+    const compiled = sass.compile(path.join('./theme', 'theme-styles.scss'), {
       loadPaths: [
-        appConfig.THEME_DIR,
+        './theme',
         './node_modules',
       ],
     })
 
     // TODO: get primary contrast color for use in config
 
-    fs.writeFileSync(path.join(appConfig.THEME_DIR, 'generated-mat-theme.css'), compiled.css)
+    fs.writeFileSync(path.join('./theme', 'generated-mat-theme.css'), compiled.css)
   } catch (error) {
     console.error(error)
   }

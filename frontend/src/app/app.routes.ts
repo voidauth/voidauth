@@ -16,11 +16,14 @@ import { UserComponent } from './pages/admin/users/user/user.component'
 import { InvitationsComponent } from './pages/admin/invitations/invitations.component'
 import { InvitationComponent } from './pages/admin/invitations/invitation/invitation.component'
 import { ApprovalRequiredComponent } from './pages/approval-required/approval-required.component'
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component'
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
 
   { path: REDIRECT_PATHS.LOGIN, component: LoginComponent },
+
+  { path: REDIRECT_PATHS.FORGOT_PASSWORD, component: ForgotPasswordComponent },
 
   { path: `${REDIRECT_PATHS.LOGOUT}/:secret`, component: LogoutComponent },
 

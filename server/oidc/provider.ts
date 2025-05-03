@@ -7,6 +7,7 @@ import { generate } from 'generate-password'
 import { REDIRECT_PATHS } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs } from '../db/key'
+import Keygrip from 'keygrip'
 
 // Do not allow any oidc-provider errors to redirect back to redirect_uri of client
 let e: keyof typeof errors
@@ -15,14 +16,14 @@ for (e in errors) {
 }
 
 const extraParams: (keyof OIDCExtraParams)[] = ['login_type', 'login_id', 'login_challenge']
-const jwks = { keys: (await getJWKs()).map(k => k.jwk) }
-const cookieKeys = (await getCookieKeys()).map(k => k.value)
+export const initialJwks = { keys: (await getJWKs()).map(k => k.jwk) }
+export const providerCookieKeys = (await getCookieKeys()).map(k => k.value)
 
-if (!jwks.keys.length) {
+if (!initialJwks.keys.length) {
   throw new Error('No OIDC JWKs found.')
 }
 
-if (!cookieKeys.length) {
+if (!providerCookieKeys.length) {
   throw new Error('No Cookie Signing Keys found.')
 }
 
@@ -56,8 +57,8 @@ const configuration: Configuration = {
     },
   },
   cookies: {
-    // get cookie signing keys from the DB
-    keys: cookieKeys,
+    // keygrip for rotating cookie signing keys
+    keys: Keygrip(providerCookieKeys),
     names: {
       interaction: 'x-void-auth-interaction',
       resume: 'x-void-auth-resume',
@@ -74,7 +75,7 @@ const configuration: Configuration = {
       secure: process.env.NODE_ENV === 'production',
     },
   },
-  jwks,
+  jwks: initialJwks,
   clients: [
     {
       client_id: 'auth_internal_client',

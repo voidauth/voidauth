@@ -1,13 +1,15 @@
 import appConfig from './util/config'
+import * as _ from '../custom_typings/type_validator'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import path from 'node:path'
 import fs from 'node:fs'
-import { provider } from './oidc/provider'
+import { initialJwks, provider, providerCookieKeys } from './oidc/provider'
 import { generateTheme } from './util/theme'
 import { router } from './routes/api'
 import helmet from 'helmet'
-import { makeKeysValid } from './db/key'
+import { getCookieKeys, getJWKs, makeKeysValid } from './db/key'
 import { randomInt } from 'node:crypto'
+import initialize from 'oidc-provider/lib/helpers/initialize_keystore'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -40,25 +42,25 @@ app.use(express.urlencoded({ limit: '1Mb', extended: true }))
 app.use('/api', router)
 
 // theme folder static assets
-if (!fs.existsSync(appConfig.THEME_DIR)) {
-  fs.mkdirSync(appConfig.THEME_DIR, {
+if (!fs.existsSync('./theme')) {
+  fs.mkdirSync('./theme', {
     recursive: true,
   })
 }
-app.use(express.static(appConfig.THEME_DIR, {
+app.use(express.static('./theme', {
   fallthrough: true,
 }))
 
 // branding folder static assets
-if (!fs.existsSync(appConfig.BRANDING_DIR)) {
-  fs.mkdirSync(appConfig.BRANDING_DIR, {
+if (!fs.existsSync(path.join('./config', 'branding'))) {
+  fs.mkdirSync(path.join('./config', 'branding'), {
     recursive: true,
   })
 }
-fs.cpSync(path.join(appConfig.THEME_DIR, 'custom.css'), path.join(appConfig.BRANDING_DIR, 'custom.css'), {
+fs.cpSync(path.join('./theme', 'custom.css'), path.join('./config', 'branding', 'custom.css'), {
   force: false,
 })
-app.use(express.static(appConfig.BRANDING_DIR, {
+app.use(express.static(path.join('./config', 'branding'), {
   fallthrough: true,
 }))
 
@@ -86,7 +88,30 @@ app.listen(appConfig.PORT, () => {
 })
 
 // interval to keep keys up to date every 10 minutes +- 1 minute
+let previousJwks = initialJwks
 setInterval(async () => {
+  // make DB keys all valid
   await makeKeysValid()
-  // TODO: update cookie keys and jwks in oidc-provider
+
+  // update provider cookie keys
+  const cookieKeys = (await getCookieKeys()).map(k => k.value)
+  if (!cookieKeys.length) {
+    throw new Error('No Cookie Signing Keys found.')
+  }
+  if (new Set(providerCookieKeys).symmetricDifference(new Set(cookieKeys)).size) {
+    // cookieKeys are not the same as providerCookieKeys
+    providerCookieKeys.length = 0 // magic, deletes all entries
+    providerCookieKeys.unshift(...cookieKeys) // adds all db cookie keys
+  }
+
+  // update provider jwks
+  const jwks = { keys: (await getJWKs()).map(k => k.jwk) }
+  if (!jwks.keys.length) {
+    throw new Error('No OIDC JWKs found.')
+  }
+  if (new Set(previousJwks.keys.map(j => j.kid)).symmetricDifference(new Set(jwks.keys.map(j => j.kid))).size) {
+    // jwks have changed
+    initialize.call(provider, jwks)
+    previousJwks = jwks
+  }
 }, ((9 * 60) + randomInt(2 * 60)) * 1000)

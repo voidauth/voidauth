@@ -1,4 +1,4 @@
-FROM node:alpine AS build
+FROM node:lts-alpine AS build
 
 # Create app directory
 WORKDIR /app/frontend
@@ -17,7 +17,7 @@ RUN npm run build
 
 
 # Serve files and api endpoints
-FROM node:alpine AS serve
+FROM node:lts-alpine AS serve
 
 # Create app directory
 WORKDIR /app

@@ -9,3 +9,9 @@ declare module 'oidc-provider/lib/helpers/weak_cache' {
 
   export default instance
 }
+
+declare module 'oidc-provider/lib/helpers/initialize_keystore' {
+  function initialize(jwks: import('oidc-provider').JWKS)
+
+  export default initialize
+}

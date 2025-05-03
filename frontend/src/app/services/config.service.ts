@@ -23,6 +23,6 @@ export class ConfigService {
   }
 
   async getConfig() {
-    return firstValueFrom(this.http.get<ConfigResponse>(`${environment.apiUrl}/config`))
+    return firstValueFrom(this.http.get<ConfigResponse>(`${environment.apiUrl}/public/config`))
   }
 }

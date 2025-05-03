@@ -1,20 +1,10 @@
-import 'dotenv/config'
-import * as path from 'node:path'
 import { exit } from 'node:process'
 
+// NODE_ENV defaults to 'production' if not set
 process.env.NODE_ENV ??= 'production'
-
-// an exception
-const CONFIG_DIR = process.env.CONFIG_DIR || './config'
 
 // basic config for app
 class Config {
-  // read-only
-  CONFIG_DIR = CONFIG_DIR
-  EMAIL_TEMPLATE_DIR = path.join(CONFIG_DIR, 'email_templates')
-  BRANDING_DIR = path.join(CONFIG_DIR, 'branding')
-  THEME_DIR = './theme'
-
   PORT = '80'
   APP_TITLE = 'void-auth'
   APP_DOMAIN = 'http://localhost'
@@ -45,26 +35,15 @@ const appConfig = new Config()
 
 function assignConfigValue(key: keyof Config, value: unknown) {
   switch (key) {
-    // read only variables
-    case 'CONFIG_DIR':
-    case 'EMAIL_TEMPLATE_DIR':
-    case 'BRANDING_DIR':
-    case 'THEME_DIR':
-      break
-
-    // non-string variables
+    // positive ints
     case 'SMTP_PORT':
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
+
+    // booleans
     case 'SMTP_SECURE':
-      appConfig[key] = booleanString(value) ?? appConfig[key]
-      break
     case 'EMAIL_VERIFICATION':
-      appConfig[key] = booleanString(value) ?? appConfig[key]
-      break
     case 'SIGNUP':
-      appConfig[key] = booleanString(value) ?? appConfig[key]
-      break
     case 'SIGNUP_REQUIRES_APPROVAL':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break

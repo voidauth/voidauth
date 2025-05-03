@@ -6,6 +6,7 @@ export const USERNAME_REGEX = /^[A-Za-z0-9_]{4,32}$/
 // Paths that the server might redirect the frontend toward
 export const REDIRECT_PATHS = {
   LOGIN: 'login',
+  FORGOT_PASSWORD: 'forgot_password',
   LOGOUT: 'logout',
   APPROVAL_REQUIRED: 'approval_required',
   VERIFICATION_EMAIL_SENT: 'verification_email_sent',
@@ -21,16 +22,19 @@ export const KEY_TYPES = {
 } as const
 
 // Time-to-Live(s) in seconds
-const HOUR = 60 * 60
+const MINUTE = 60
+const HOUR = MINUTE * 60
 const DAY = HOUR * 24
 const WEEK = DAY * 7
+const YEAR = DAY * 365
 export const TTLs = {
   VERIFICATION_EMAIL: 2 * HOUR,
   INVITATION: 1 * WEEK,
   CONSENT: 52 * WEEK,
 
-  OIDC_JWK: 2 * WEEK,
-  COOKIE_KEY: 2 * WEEK,
-} as const
+  // OIDC TTLs
 
-// TODO: Make sure TTLs are valid and will not conflict
+  // Should be longer than any OIDC TTLs
+  OIDC_JWK: 1 * YEAR,
+  COOKIE_KEY: 1 * YEAR,
+} as const

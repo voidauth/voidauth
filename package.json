@@ -4,24 +4,31 @@
   "description": "",
   "main": "server/index.ts",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "start": "concurrently \"npm run server:watch\" \"npm run frontend:watch\"",
-    "start:server": "tsx server/index.ts",
-    "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && tsx server/index.ts\"",
-    "frontend:watch": "cd frontend && npm run watch"
+    "start:server": "tsx --env-file-if-exists=.env server/index.ts",
+    "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && tsx --env-file-if-exists=.env server/index.ts\"",
+    "frontend:watch": "cd frontend && npm run watch",
+    "postinstall": "husky"
   },
   "author": "Derek Paschal",
   "license": "SEE LICENSE IN LICENSE FILE",
+  "lint-staged": {
+    "*": "eslint --fix"
+  },
   "dependencies": {
     "@angular/cli": "^19.2.9",
     "@angular/material": "^19.2.11",
     "argon2": "^0.43.0",
-    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
     "generate-password": "^1.7.1",
     "helmet": "^8.1.0",
     "jose": "^6.0.10",
+    "keygrip": "^1.1.0",
     "knex": "^3.1.0",
     "nanoid": "^5.1.5",
     "nodemailer": "^6.10.1",
@@ -42,6 +49,8 @@
     "@types/pug": "^2.0.10",
     "concurrently": "^9.1.2",
     "eslint": "^9.25.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1",
     "nodemon": "^3.1.10",
     "typescript-eslint": "^8.31.1"
   }

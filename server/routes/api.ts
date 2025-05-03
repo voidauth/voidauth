@@ -1,17 +1,15 @@
-import { Router, type Request, type Response } from 'express'
+import { Router } from 'express'
 import { router as interactionRouter } from './interaction'
 import { provider } from '../oidc/provider'
 import { db } from '../db/db'
 import { getUserById } from '../db/user'
 import { userRouter } from './user'
-import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import appConfig from '../util/config'
 import type { Group, UserGroup } from '@shared/db/Group'
 import { adminRouter } from './admin'
-import { SMTP_VERIFIED } from '../util/email'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
 import { als } from '../util/als'
+import { publicRouter } from './public'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -60,6 +58,8 @@ router.use(async (req, res, next) => {
   next()
 })
 
+router.use('/public', publicRouter)
+
 router.use('/auth', authRouter)
 
 router.use('/interaction', interactionRouter)
@@ -68,7 +68,7 @@ router.use('/user', userRouter)
 
 router.use('/admin', adminRouter)
 
-router.get('/status', (req: Request, res: Response) => {
+publicRouter.get('/status', (req, res) => {
   const { error, error_description, iss } = req.query
   if (error) {
     res.status(500).send({
@@ -79,17 +79,6 @@ router.get('/status', (req: Request, res: Response) => {
     return
   }
   res.redirect('/')
-})
-
-router.get('/config', (_req, res) => {
-  const configResponse: ConfigResponse = {
-    appName: appConfig.APP_TITLE,
-    emailActive: SMTP_VERIFIED,
-    emailVerification: appConfig.EMAIL_VERIFICATION,
-    registration: appConfig.SIGNUP,
-  }
-
-  res.send(configResponse)
 })
 
 // API route was not found

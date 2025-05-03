@@ -33,7 +33,7 @@ if (appConfig.SMTP_HOST) {
 }
 
 // move default email templates to email templates dir
-fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, appConfig.EMAIL_TEMPLATE_DIR, {
+fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, path.join('./config', 'email_templates'), {
   recursive: true,
   force: false,
 })
@@ -41,7 +41,7 @@ fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, appConfig.EMAIL_TEMPLATE_DIR, {
 // compile email pug templates
 function compileTemplates(name: string) {
   const templates: { subject?: pug.compileTemplate, html?: pug.compileTemplate, text?: pug.compileTemplate } = {}
-  const template_dir = path.join(appConfig.EMAIL_TEMPLATE_DIR, name)
+  const template_dir = path.join('./config', 'email_templates', name)
   if (fs.existsSync(path.join(template_dir, 'subject.pug'))) {
     templates.subject = pug.compileFile(path.join(template_dir, 'subject.pug'))
   }
