@@ -19,6 +19,7 @@ import { randomUUID } from 'crypto'
 import { REDIRECT_PATHS, TTLs } from '@shared/constants'
 import type { Interaction } from 'oidc-provider'
 import { allowNull, defaultNull, emailValidation, nameValidation,
+  newPasswordValidation,
   stringValidation, usernameValidation, uuidValidation } from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { isExpired, createExpiration } from '../db/util'
@@ -226,10 +227,7 @@ router.post('/register',
       optional: true,
       ...emailValidation,
     },
-    password: {
-      ...stringValidation,
-      isLength: { options: { min: 8, max: 128 } },
-    },
+    password: newPasswordValidation,
     inviteId: {
       optional: {
         options: {

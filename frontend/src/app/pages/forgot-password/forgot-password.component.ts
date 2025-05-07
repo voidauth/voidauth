@@ -4,6 +4,9 @@ import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } 
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
+import { AuthService } from '../../services/auth.service'
+import { SnackbarService } from '../../services/snackbar.service'
+import { HttpErrorResponse } from '@angular/common/http'
 
 @Component({
   selector: 'app-forgot-password',
@@ -19,21 +22,52 @@ import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 })
 export class ForgotPasswordComponent implements OnInit {
   emailActive: boolean = false
+  emailSent: boolean = false
 
   public form = new FormGroup({
-    email: new FormControl<string>({
+    input: new FormControl<string>({
       value: '',
       disabled: false,
     }, [Validators.required]),
   })
 
   configService = inject(ConfigService)
+  authService = inject(AuthService)
+  snackbarService = inject(SnackbarService)
 
   async ngOnInit() {
     this.emailActive = (await this.configService.getConfig()).emailActive
   }
 
-  send() {
-    console.log('send')
+  async send() {
+    try {
+      const input = this.form.controls.input.value
+      if (!input) {
+        throw new Error('Invalid email or username.')
+      }
+
+      const result = await this.authService.sendPasswordReset(input)
+      this.emailSent = result.emailSent
+
+      this.snackbarService.show(this.emailSent ? 'Password reset link sent.' : 'Password reset link created.')
+    } catch (e) {
+      let shownError: string | null = null
+
+      if (e instanceof HttpErrorResponse) {
+        const status = e.status
+
+        if (status === 404) {
+          shownError = 'User not found.'
+        }
+
+        shownError ??= e.error?.message
+      } else {
+        shownError ??= (e as Error).message
+      }
+
+      console.error(e)
+      shownError ??= 'Something went wrong.'
+      this.snackbarService.error(shownError)
+    }
   }
 }

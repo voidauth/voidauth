@@ -151,10 +151,10 @@ export class HomeComponent implements OnInit {
         newPassword: newPassword,
       })
       this.snackbarService.show('Password updated.')
+      await this.loadUser()
     } catch (_e) {
       this.snackbarService.error('Could not update password.')
     } finally {
-      await this.loadUser()
       this.enablePage()
     }
   }

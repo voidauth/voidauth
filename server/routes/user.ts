@@ -9,6 +9,7 @@ import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 import { checkLoggedIn, emailValidation, nameValidation,
+  newPasswordValidation,
   stringValidation, usernameValidation } from '../util/validators'
 import { getUserByInput } from '../db/user'
 import type { User } from '@shared/db/User'
@@ -67,10 +68,7 @@ userRouter.patch('/email',
 userRouter.patch('/password',
   ...validate<UpdatePassword>({
     oldPassword: stringValidation,
-    newPassword: {
-      ...stringValidation,
-      isLength: { options: { min: 8, max: 128 } },
-    },
+    newPassword: newPasswordValidation,
   }),
   async (req: Request, res: Response) => {
     const user = req.user

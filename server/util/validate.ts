@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextFunction, Request, Response } from 'express'
 import { checkSchema, validationResult, type ParamSchema, type Schema } from 'express-validator'
 import type { RemoveKeys, RequireKeys } from '@shared/utils'
@@ -25,7 +26,6 @@ type IsOptionalKey<T, K extends keyof T> = T extends Record<K, T[K]> ? false : t
 //   }[keyof ExcludeGenericKeys<T>]
 //   : never;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DotNotation<T> = any extends T
   ? never
   : T extends (infer U)[]
@@ -54,12 +54,11 @@ type WasOptionalKey<T extends string> = T extends `${infer _A}?${infer _B}`
 
 type FixOptionalKey<T extends string> = T extends `${infer A}?${infer B}` ? FixOptionalKey<`${A}${B}`> : T
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type UncheckedParamSchema = RemoveKeys<ParamSchema<any>, 'isString' | 'isEmail' | 'isURL'>
-type StringParamSchema = RequireKeys<ParamSchema, 'isString' | 'stripLow' | 'trim'>
-  | RequireKeys<ParamSchema, 'isString' | 'matches'>
-type EmailParamSchema = Required<Pick<ParamSchema, 'isEmail' | 'normalizeEmail' | 'trim'>>
-type URLParamSchema = Required<Pick<ParamSchema, 'isURL' | 'trim'>>
+type StringParamSchema = RequireKeys<ParamSchema<any>, 'isString' | 'stripLow' | 'trim'>
+  | RequireKeys<ParamSchema<any>, 'isString' | 'matches'>
+type EmailParamSchema = Required<Pick<ParamSchema<any>, 'isEmail' | 'normalizeEmail' | 'trim'>>
+type URLParamSchema = Required<Pick<ParamSchema<any>, 'isURL' | 'trim'>>
 
 export type ValidParamSchema = UncheckedParamSchema | StringParamSchema | EmailParamSchema | URLParamSchema
 
@@ -72,7 +71,6 @@ export type TypedSchema<T extends object> = {
 //   [key: string | number]: ValidParamSchema
 // };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validate<T extends object = any>(schema: TypedSchema<T> | TypedSchema<T>[]) {
   const schemas: TypedSchema<T>[] = (schema instanceof Array ? schema : [schema])
   return [

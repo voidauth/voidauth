@@ -1,6 +1,24 @@
 import { ADMIN_GROUP, USERNAME_REGEX } from '@shared/constants'
 import type { ValidParamSchema } from './validate'
 import type { NextFunction, Request, Response } from 'express'
+import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
+import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
+import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
+import appConfig from './config'
+
+const options = {
+  // recommended
+  dictionary: {
+    ...zxcvbnCommonPackage.dictionary,
+    ...zxcvbnEnPackage.dictionary,
+  },
+  // recommended
+  graphs: zxcvbnCommonPackage.adjacencyGraphs,
+  // recommended
+  useLevenshteinDistance: true,
+}
+
+zxcvbnOptions.setOptions(options)
 
 export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -57,4 +75,13 @@ export const nameValidation: ValidParamSchema = {
   optional: true,
   ...stringValidation,
   matches: { options: /^[\w\s]{4,64}$/ },
+}
+
+export const newPasswordValidation: ValidParamSchema = {
+  ...stringValidation,
+  zxcvbn: {
+    custom: (value: unknown) => {
+      return typeof value === 'string' && zxcvbn(value).score >= appConfig.ZXCVBN_MIN
+    },
+  },
 }

@@ -11,6 +11,7 @@ import { nanoid } from 'nanoid'
 import { db } from '../db/db'
 import { createExpiration } from '../db/util'
 import { TTLs } from '@shared/constants'
+import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
 
 /**
  * routes that do not require any auth
@@ -29,7 +30,7 @@ publicRouter.get('/config', (_req, res) => {
   res.send(configResponse)
 })
 
-publicRouter.post('password_reset',
+publicRouter.post('/send_password_reset',
   ...validate<{ input: string }>({
     input: stringValidation,
   }),
@@ -48,15 +49,20 @@ publicRouter.post('password_reset',
       createdAt: Date(),
       expiresAt: createExpiration(TTLs.PASSWORD_RESET),
     }
+    await db().delete().table<PasswordReset>('password_reset').where('userId', user.id)
     await db().table<PasswordReset>('password_reset').insert(passwordReset)
 
     // If possible, send email
     const email = user.email
-    if (email) {
+    const result: SendPasswordResetResponse = { emailSent: false }
+    if (email && SMTP_VERIFIED) {
       const { passwordHash, ...userWithoutPassword } = user
       await sendPasswordReset(passwordReset, userWithoutPassword, email)
+      result.emailSent = true
     }
 
-    res.send(200)
+    res.send(result)
   },
 )
+
+// TODO: password_reset
