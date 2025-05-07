@@ -21,7 +21,7 @@ import type { Interaction } from 'oidc-provider'
 import { allowNull, defaultNull, emailValidation, nameValidation,
   stringValidation, usernameValidation, uuidValidation } from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
-import { isExpired, createAudit, createExpiration } from '../db/util'
+import { isExpired, createExpiration } from '../db/util'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
@@ -271,7 +271,6 @@ router.post('/register',
       const passwordHash = await argon2.hash(registration.password)
 
       const id = randomUUID()
-      const { createdAt, updatedAt } = createAudit(id)
       const user: User = {
         id: id,
         username: invitation?.username || registration.username,
@@ -280,8 +279,8 @@ router.post('/register',
         passwordHash,
         approved: !!invitationValid, // invited users are approved by default
         emailVerified: false,
-        createdAt,
-        updatedAt,
+        createdAt: Date(),
+        updatedAt: Date(),
       }
 
       // check username and email not taken
@@ -488,7 +487,7 @@ export async function createEmailVerification(
     email: sentEmail,
     challenge: challenge,
     expiresAt: createExpiration(TTLs.VERIFICATION_EMAIL),
-    ...createAudit(user.id),
+    createdAt: Date(),
   }
   // invalidate old email verification challenges
   await db().delete().table<EmailVerification>('email_verification').where('userId', user.id)

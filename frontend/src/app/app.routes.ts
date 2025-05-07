@@ -17,6 +17,7 @@ import { InvitationsComponent } from './pages/admin/invitations/invitations.comp
 import { InvitationComponent } from './pages/admin/invitations/invitation/invitation.component'
 import { ApprovalRequiredComponent } from './pages/approval-required/approval-required.component'
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component'
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component'
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -24,6 +25,8 @@ export const routes: Routes = [
   { path: REDIRECT_PATHS.LOGIN, component: LoginComponent },
 
   { path: REDIRECT_PATHS.FORGOT_PASSWORD, component: ForgotPasswordComponent },
+
+  { path: REDIRECT_PATHS.RESET_PASSWORD, component: ResetPasswordComponent },
 
   { path: `${REDIRECT_PATHS.LOGOUT}/:secret`, component: LogoutComponent },
 

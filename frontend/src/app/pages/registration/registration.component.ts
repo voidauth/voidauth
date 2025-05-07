@@ -12,6 +12,7 @@ import { USERNAME_REGEX } from '@shared/constants'
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import { ConfigService } from '../../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
+import { NewPasswordInputComponent } from '../../components/new-password-input/new-password-input.component'
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
@@ -23,6 +24,7 @@ import { oidcLoginPath } from '@shared/oidc'
     CommonModule,
     ValidationErrorPipe,
     RouterLink,
+    NewPasswordInputComponent,
   ],
 })
 export class RegistrationComponent implements OnInit {

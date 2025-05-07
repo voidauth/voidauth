@@ -1,0 +1,17 @@
+div(style='font-family:monospace;font-weight:bold;margin:2rem;')
+  h1(align='center') Reset Your Password
+  h2(align='center') At #{app_title}
+  br
+  p(align='center')
+    | #{username}, you can reset your password by clicking the button below:
+  br
+  div(align='center')
+    a(style=`background-color:${primary_color};color:${primary_contrast_color};text-decoration:none;padding:1rem;border-radius:100px;` href=`${verification_url}`)
+      | Reset Password
+  br
+  p(align='center' style='margin-top: 4rem;') Or, paste the following link into your browser:
+  div(align='center')
+    a(href=`${reset_url}`) #{reset_url}
+  p(align='center') This password reset is only valid for 2 hours.
+  footer(style='font-size:small;margin:10rem 2rem;')
+    | You received this email because you requested a password reset at #{app_title}, if you didn't, please ignore this email and do not click any buttons or links.

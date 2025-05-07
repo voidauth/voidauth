@@ -62,7 +62,12 @@ export async function up(knex: Knex): Promise<void> {
       table.string('email').notNullable()
       table.string('challenge').notNullable()
       table.string('createdAt').notNullable()
-      table.string('createdBy').notNullable().references('id').inTable('user')
+      table.string('expiresAt').notNullable()
+    })
+    .createTable('password_reset', (table) => {
+      table.string('userId').primary().notNullable().references('id').inTable('user').onDelete('CASCADE')
+      table.string('challenge').notNullable()
+      table.string('createdAt').notNullable()
       table.string('expiresAt').notNullable()
     })
     .createTable('invitation', (table) => {
@@ -93,6 +98,7 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema
     .dropTable('invitation_group')
     .dropTable('invitation')
+    .dropTable('password_reset')
     .dropTable('email_verification')
     .dropTable('consent')
     .dropTable('user_group')

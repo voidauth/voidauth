@@ -1,124 +1,85 @@
 <!-- TODO: Actual homepage -->
 <h1>Settings</h1>
 @if (hasLoaded) {
-  <mat-card class="form-card">
-    <mat-card-header>
-      <mat-card-title>
-        Change Profile
-      </mat-card-title>
-    </mat-card-header>
-  
-    <mat-card-content>
-      <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>
+      Change Profile
+    </mat-card-title>
+  </mat-card-header>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Username</mat-label>
-          <input matInput type="text" formControlName="username">
-          @if (profileForm.controls.username.errors) {
-          <mat-error>{{profileForm.controls.username.errors | validationError:"Only A-Z,0-9,and _ allowed"}}</mat-error>
-          }
-        </mat-form-field>
-  
-        <mat-form-field appearance="outline">
-          <mat-label>Name</mat-label>
-          <input matInput type="text" formControlName="name">
-          @if (profileForm.controls.name.errors) {
-          <mat-error>{{profileForm.controls.name.errors | validationError}}</mat-error>
-          }
-        </mat-form-field>
-  
-        <mat-card-actions>
-          <button mat-button type="submit" [disabled]="!profileForm.enabled || !profileForm.valid || !profileForm.dirty">
-            Update Profile
-          </button>
-        </mat-card-actions>
-  
-      </form>
-    </mat-card-content>
-  </mat-card>
-  
-  <mat-divider class="divider"></mat-divider>
-  
-  <!-- email change form -->
-  <mat-card class="form-card">
-    <mat-card-header>
-      <mat-card-title>
-        Change Email
-      </mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <form [formGroup]="emailForm" (ngSubmit)="updateEmail()">
-        <mat-form-field appearance="outline">
-          <mat-label>Email</mat-label>
-          <input matInput type="text" formControlName="email">
-          @if (emailForm.controls.email.errors) {
-          <mat-error>{{emailForm.controls.email.errors | validationError}}</mat-error>
-          }
-        </mat-form-field>
-  
-        <mat-card-actions>
-          <button mat-button type="submit" [disabled]="!emailForm.enabled || !emailForm.valid || !emailForm.dirty">
-            Update Email
-          </button>
-        </mat-card-actions>
-      </form>
-    </mat-card-content>
-  </mat-card>
-  
-  <mat-divider class="divider"></mat-divider>
-  
-  <!-- password change form -->
-  <mat-card class="form-card">
-    <mat-card-header>
-      <mat-card-title>
-        Change Password
-      </mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-  
-  <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
-    <mat-form-field appearance="outline">
-      <mat-label>Old Password</mat-label>
-      <input matInput [type]="pwdShow ? 'text': 'password'" formControlName="oldPassword">
-      <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="pwdShow = !pwdShow">
-        <mat-icon fontSet="material-icons-round" matSuffix>{{pwdShow ? 'visibility' : 'visibility_off'}}</mat-icon>
-      </button>
-      @if (passwordForm.controls.oldPassword.errors) {
-      <mat-error>{{passwordForm.controls.oldPassword.errors | validationError}}</mat-error>
-      }
-    </mat-form-field>
-  
-    <mat-form-field appearance="outline">
-      <mat-label>New Password</mat-label>
-      <input matInput [type]="pwdShow ? 'text': 'password'" formControlName="newPassword">
-      <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="pwdShow = !pwdShow">
-        <mat-icon fontSet="material-icons-round" matSuffix>{{pwdShow ? 'visibility' : 'visibility_off'}}</mat-icon>
-      </button>
-      @if (passwordForm.controls.newPassword.errors) {
-      <mat-error>{{passwordForm.controls.newPassword.errors | validationError}}</mat-error>
-      }
-    </mat-form-field>
-  
-    <mat-form-field appearance="outline">
-      <mat-label>Confirm Password</mat-label>
-      <input matInput [type]="pwdShow ? 'text': 'password'" formControlName="confirmPassword">
-      <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="pwdShow = !pwdShow">
-        <mat-icon fontSet="material-icons-round" matSuffix>{{pwdShow ? 'visibility' : 'visibility_off'}}</mat-icon>
-      </button>
-      @if (passwordForm.controls.confirmPassword.errors) {
-      <mat-error>{{passwordForm.controls.confirmPassword.errors | validationError}}</mat-error>
-      }
-    </mat-form-field>
-  
-    <mat-card-actions>
-    <button mat-button type="submit" [disabled]="!passwordForm.enabled || !passwordForm.valid || !passwordForm.dirty">
-      Update Password
-    </button>
-  </mat-card-actions>
-  </form>
-  
+  <mat-card-content>
+    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Username</mat-label>
+        <input matInput type="text" formControlName="username">
+        @if (profileForm.controls.username.errors) {
+        <mat-error>{{profileForm.controls.username.errors | validationError:"Only A-Z,0-9,and _ allowed"}}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Name</mat-label>
+        <input matInput type="text" formControlName="name">
+        @if (profileForm.controls.name.errors) {
+        <mat-error>{{profileForm.controls.name.errors | validationError}}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-card-actions>
+        <button mat-button type="submit" [disabled]="!profileForm.enabled || !profileForm.valid || !profileForm.dirty">
+          Update Profile
+        </button>
+      </mat-card-actions>
+
+    </form>
   </mat-card-content>
-  </mat-card>
-  
-  <span style="flex-grow: 1;"></span>
+</mat-card>
+
+<mat-divider class="divider"></mat-divider>
+
+<!-- email change form -->
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>
+      Change Email
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="emailForm" (ngSubmit)="updateEmail()">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="text" formControlName="email">
+        @if (emailForm.controls.email.errors) {
+        <mat-error>{{emailForm.controls.email.errors | validationError}}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-card-actions>
+        <button mat-button type="submit" [disabled]="!emailForm.enabled || !emailForm.valid || !emailForm.dirty">
+          Update Email
+        </button>
+      </mat-card-actions>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<mat-divider class="divider"></mat-divider>
+
+<!-- password change form -->
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>
+      Change Password
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+
+    <app-password-reset [passwordForm]="passwordForm" (submit)="updatePassword()"></app-password-reset>
+
+  </mat-card-content>
+</mat-card>
+
+<span style="flex-grow: 1;"></span>
 }

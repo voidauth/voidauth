@@ -7,6 +7,7 @@ export const USERNAME_REGEX = /^[A-Za-z0-9_]{4,32}$/
 export const REDIRECT_PATHS = {
   LOGIN: 'login',
   FORGOT_PASSWORD: 'forgot_password',
+  RESET_PASSWORD: 'reset_password',
   LOGOUT: 'logout',
   APPROVAL_REQUIRED: 'approval_required',
   VERIFICATION_EMAIL_SENT: 'verification_email_sent',
@@ -29,6 +30,7 @@ const WEEK = DAY * 7
 const YEAR = DAY * 365
 export const TTLs = {
   VERIFICATION_EMAIL: 2 * HOUR,
+  PASSWORD_RESET: 2 * HOUR,
   INVITATION: 1 * WEEK,
   CONSENT: 52 * WEEK,
 

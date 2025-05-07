@@ -7,6 +7,7 @@ import type SMTPTransport from 'nodemailer/lib/smtp-transport'
 import { REDIRECT_PATHS } from '@shared/constants'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import type { Invitation } from '@shared/db/Invitation'
+import type { PasswordReset } from '@shared/db/PasswordReset'
 
 export let SMTP_VERIFIED = false
 const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
@@ -60,6 +61,7 @@ function compileTemplates(name: string) {
   }
 }
 const emailVerificationTemplates = compileTemplates('email_verification')
+const passwordResetTemplates = compileTemplates('reset_password')
 const invitationTemplate = compileTemplates('invitation')
 
 export async function sendEmailVerification(user: UserWithoutPassword, challenge: string, email: string) {
@@ -76,6 +78,40 @@ export async function sendEmailVerification(user: UserWithoutPassword, challenge
     app_title: appConfig.APP_TITLE,
     name: user.name || user.username,
     verification_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.VERIFY_EMAIL}/${user.id}/${challenge}`,
+  })
+
+  if (!subject || (!html && !text)) {
+    throw new Error('Missing email template.')
+  }
+
+  await transporter.sendMail({
+    from: {
+      name: appConfig.APP_TITLE,
+      address: appConfig.SMTP_FROM,
+    },
+    to: email,
+    subject: subject,
+    html: html,
+    text: text,
+  })
+}
+
+export async function sendPasswordReset(passwordReset: PasswordReset, user: UserWithoutPassword, email: string) {
+  if (!appConfig.SMTP_FROM) {
+    throw new Error('Email cannot be sent without valid SMTP_FROM config value.')
+  }
+  if (!SMTP_VERIFIED) {
+    throw new Error('SMTP transport could not be validated.')
+  }
+
+  const query = `id=${passwordReset.userId}&challenge=${passwordReset.challenge}`
+
+  const { subject, html, text } = passwordResetTemplates({
+    primary_color: appConfig.PRIMARY_COLOR,
+    primary_contrast_color: appConfig.PRIMARY_CONTRAST_COLOR,
+    app_title: appConfig.APP_TITLE,
+    name: user.name || user.username,
+    reset_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`,
   })
 
   if (!subject || (!html && !text)) {

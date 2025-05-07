@@ -10,6 +10,9 @@ import { USERNAME_REGEX } from '@shared/constants'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ConfigService } from '../../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
+import { PasswordResetComponent } from '../../components/password-reset/password-reset.component'
+import type { TypedFormGroup } from '../admin/clients/upsert-client/upsert-client.component'
+import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 
 @Component({
   selector: 'app-home',
@@ -19,6 +22,7 @@ import { oidcLoginPath } from '@shared/oidc'
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
+    PasswordResetComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -28,7 +32,6 @@ export class HomeComponent implements OnInit {
   user?: UserDetails
   public message?: string
   public error?: string
-  public pwdShow: boolean = false
 
   public profileForm = new FormGroup({
     username: new FormControl<string>({
@@ -41,7 +44,14 @@ export class HomeComponent implements OnInit {
     }, [emptyOrMinLength(4)]),
   })
 
-  public passwordForm = new FormGroup({
+  public emailForm = new FormGroup({
+    email: new FormControl<string>({
+      value: '',
+      disabled: false,
+    }, [Validators.required, Validators.email]),
+  })
+
+  public passwordForm: FormGroup<TypedFormGroup<UpdatePassword & { confirmPassword: string }>> = new FormGroup({
     oldPassword: new FormControl<string>({
       value: '',
       disabled: false,
@@ -49,7 +59,7 @@ export class HomeComponent implements OnInit {
     newPassword: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.required, Validators.minLength(8)]),
+    }, [Validators.required]),
     confirmPassword: new FormControl<string>({
       value: '',
       disabled: false,
@@ -64,13 +74,6 @@ export class HomeComponent implements OnInit {
       g.get('confirmPassword')?.setErrors(null)
       return null
     },
-  })
-
-  public emailForm = new FormGroup({
-    email: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required, Validators.email]),
   })
 
   private configService = inject(ConfigService)

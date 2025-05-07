@@ -24,6 +24,7 @@ class Config {
 
   // Optional
   STORAGE_KEY_SECONDARY?: string
+  ZXCVBN_MIN = 2
   SMTP_HOST?: string
   SMTP_FROM?: string
   SMTP_PORT = 587
@@ -37,6 +38,7 @@ function assignConfigValue(key: keyof Config, value: unknown) {
   switch (key) {
     // positive ints
     case 'SMTP_PORT':
+    case 'ZXCVBN_MIN':
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
 
@@ -110,6 +112,12 @@ configKeys.forEach((key: keyof Config) => {
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {
   console.error('STORAGE_KEY must be set and be at least 32 characters long.')
+  exit(1)
+}
+
+// check ZXCVBN_MIN is between 2 and 4
+if (appConfig.ZXCVBN_MIN < 2 || appConfig.ZXCVBN_MIN > 4) {
+  console.error('ZXCVBN_MIN must be between 2 and 4.')
   exit(1)
 }
 

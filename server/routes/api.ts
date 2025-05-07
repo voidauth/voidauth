@@ -68,7 +68,7 @@ router.use('/user', userRouter)
 
 router.use('/admin', adminRouter)
 
-publicRouter.get('/status', (req, res) => {
+router.get('/status', (req, res) => {
   const { error, error_description, iss } = req.query
   if (error) {
     res.status(500).send({

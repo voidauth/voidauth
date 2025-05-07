@@ -18,6 +18,7 @@ import { MatSelectModule } from '@angular/material/select'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { ClipboardModule } from '@angular/cdk/clipboard'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 
 @NgModule({
   exports: [
@@ -40,6 +41,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard'
     MatSelectModule,
     MatAutocompleteModule,
     MatTooltipModule,
+    MatProgressBarModule,
   ],
 })
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class

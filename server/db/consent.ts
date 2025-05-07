@@ -1,6 +1,6 @@
 import type { Consent } from '@shared/db/Consent'
 import { db } from './db'
-import { createAudit, createExpiration, mergeKeys } from './util'
+import { createExpiration, mergeKeys } from './util'
 import { TTLs } from '@shared/constants'
 
 export async function getExistingConsent(userId: string, redirectUri: string) {
@@ -13,7 +13,7 @@ export async function addConsent(redirectUri: string, userId: string, scope: str
     redirectUri,
     scope,
     expiresAt: createExpiration(TTLs.CONSENT),
-    ...createAudit(userId),
+    createdAt: Date(),
   }
   await db()
     .table<Consent>('consent')

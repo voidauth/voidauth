@@ -16,7 +16,7 @@ import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import { ADMIN_GROUP, TTLs } from '@shared/constants'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { getUserById, getUsers } from '../db/user'
-import { createAudit, createExpiration, mergeKeys } from '../db/util'
+import { createExpiration, mergeKeys } from '../db/util'
 import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
@@ -202,7 +202,10 @@ adminRouter.patch('/user',
         return {
           groupId: g.id,
           userId: userUpdate.id,
-          ...createAudit(req.user.id),
+          createdBy: req.user.id,
+          updatedBy: req.user.id,
+          createdAt: Date(),
+          updatedAt: Date(),
         }
       })
 
@@ -306,7 +309,10 @@ adminRouter.post('/group',
     const group: Group = {
       id: id ?? randomUUID(),
       name,
-      ...createAudit(req.user.id),
+      createdBy: req.user.id,
+      updatedBy: req.user.id,
+      createdAt: Date(),
+      updatedAt: Date(),
     }
 
     await db().table<Group>('group').insert(group).onConflict(['id']).merge(mergeKeys(group))
@@ -393,7 +399,10 @@ adminRouter.post('/invitation',
         // update
         await db().table<Invitation>('invitation').update({
           ...invitationData,
-          ...createAudit(req.user.id),
+          createdBy: req.user.id,
+          updatedBy: req.user.id,
+          createdAt: Date(),
+          updatedAt: Date(),
         }).where({ id: invitationData.id })
       } else {
         // insert
@@ -401,7 +410,10 @@ adminRouter.post('/invitation',
           ...invitationData,
           id,
           challenge: nanoid(),
-          ...createAudit(req.user.id),
+          createdBy: req.user.id,
+          updatedBy: req.user.id,
+          createdAt: Date(),
+          updatedAt: Date(),
           expiresAt: createExpiration(TTLs.INVITATION),
         })
       }
@@ -411,7 +423,10 @@ adminRouter.post('/invitation',
         return {
           groupId: g.id,
           invitationId: id,
-          ...createAudit(req.user.id),
+          createdBy: req.user.id,
+          updatedBy: req.user.id,
+          createdAt: Date(),
+          updatedAt: Date(),
         }
       })
 
