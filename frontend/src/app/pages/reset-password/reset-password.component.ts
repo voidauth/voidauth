@@ -1,64 +1,95 @@
 import { CommonModule } from '@angular/common'
-import { HttpErrorResponse } from '@angular/common/http'
 import { Component, inject } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { ActivatedRoute, Router } from '@angular/router'
 import { MaterialModule } from '../../material-module'
 import { AuthService } from '../../services/auth.service'
 import { SnackbarService } from '../../services/snackbar.service'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { PasswordResetComponent } from '../../components/password-reset/password-reset.component'
+import { REDIRECT_PATHS } from '@shared/constants'
+import { HttpErrorResponse } from '@angular/common/http'
 
 @Component({
   selector: 'app-reset-password',
   imports: [
     CommonModule,
     MaterialModule,
+    ReactiveFormsModule,
+    PasswordResetComponent,
   ],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss',
 })
 export class ResetPasswordComponent {
-  title: string = 'Reset Password'
   userid?: string
   challenge?: string
+
+  public passwordForm = new FormGroup({
+    newPassword: new FormControl<string>({
+      value: '',
+      disabled: false,
+    }, [Validators.required]),
+    confirmPassword: new FormControl<string>({
+      value: '',
+      disabled: false,
+    }, [Validators.required]),
+  }, {
+    validators: (g) => {
+      const passAreEqual = g.get('newPassword')?.value === g.get('confirmPassword')?.value
+      if (!passAreEqual) {
+        g.get('confirmPassword')?.setErrors({ notEqual: 'Must equal Password' })
+        return { notEqual: 'Passwords do not match' }
+      }
+      g.get('confirmPassword')?.setErrors(null)
+      return null
+    },
+  })
 
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
+  private router = inject(Router)
 
-  async ngOnInit() {
-    const params = this.activatedRoute.snapshot.paramMap
+  ngOnInit() {
+    const params = this.activatedRoute.snapshot.queryParamMap
 
+    const id = params.get('id')
+    const challenge = params.get('challenge')
+
+    if (!id || !challenge) {
+      this.snackbarService.error('Invalid Password Reset Link.')
+      return
+    }
+
+    this.userid = id
+    this.challenge = challenge
+  }
+
+  async send() {
     try {
-      const id = params.get('id')
-      const challenge = params.get('challenge')
-
-      if (!id || !challenge) {
-        throw new Error('Invalid Verification.')
+      if (!this.userid || !this.challenge || !this.passwordForm.controls.newPassword.value) {
+        throw new Error('Missing required parameters for submit.')
       }
 
-      this.userid = id
-
-      const redirect = await this.authService.verifyEmail({
+      await this.authService.resetPassword({
         userId: this.userid,
-        challenge: challenge,
+        challenge: this.challenge,
+        newPassword: this.passwordForm.controls.newPassword.value,
       })
-
-      // Not always verified email
-      // interaction session might not exist and redirect is to get it
-
-      location.assign(redirect.location)
+      this.snackbarService.show('Password Reset Complete.')
+      await this.router.navigate([REDIRECT_PATHS.LOGIN])
     } catch (e) {
       console.error(e)
-      let error: string
 
+      let shownError: string | null = null
       if (e instanceof HttpErrorResponse) {
-        error ||= e.error?.message
+        shownError ??= e.error?.message
       } else {
-        error ||= (e as Error).message
+        shownError ??= (e as Error).message
       }
 
-      error ||= 'Something went wrong.'
-      this.snackbarService.error(error)
-      this.title = 'Password Reset Link Invalid :('
+      shownError ??= 'Something went wrong.'
+      this.snackbarService.error(shownError)
     }
   }
 }

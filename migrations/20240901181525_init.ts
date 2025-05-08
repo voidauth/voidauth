@@ -58,14 +58,16 @@ export async function up(knex: Knex): Promise<void> {
       table.unique(['userId', 'redirectUri'])
     })
     .createTable('email_verification', (table) => {
-      table.string('userId').primary().notNullable().references('id').inTable('user').onDelete('CASCADE')
+      table.string('id').primary().notNullable()
+      table.string('userId').notNullable().references('id').inTable('user').onDelete('CASCADE')
       table.string('email').notNullable()
       table.string('challenge').notNullable()
       table.string('createdAt').notNullable()
       table.string('expiresAt').notNullable()
     })
     .createTable('password_reset', (table) => {
-      table.string('userId').primary().notNullable().references('id').inTable('user').onDelete('CASCADE')
+      table.string('id').primary().notNullable()
+      table.string('userId').notNullable().references('id').inTable('user').onDelete('CASCADE')
       table.string('challenge').notNullable()
       table.string('createdAt').notNullable()
       table.string('expiresAt').notNullable()

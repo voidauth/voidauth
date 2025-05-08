@@ -17,7 +17,7 @@ mat-divider {
   width: 90%;
 }
 
-::ng-deep router-outlet ~ * {
+:host ::ng-deep router-outlet ~ * {
   display: flex;
   margin: 12px;
   flex-direction: column;

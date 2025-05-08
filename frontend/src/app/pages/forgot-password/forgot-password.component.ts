@@ -1,6 +1,6 @@
 import { Component, inject, type OnInit } from '@angular/core'
 import { ConfigService } from '../../services/config.service'
-import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
@@ -12,7 +12,6 @@ import { HttpErrorResponse } from '@angular/common/http'
   selector: 'app-forgot-password',
   imports: [
     ReactiveFormsModule,
-    FormsModule,
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,

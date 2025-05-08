@@ -481,14 +481,13 @@ export async function createEmailVerification(
     numbers: true,
   })
   const email_verification: EmailVerification = {
+    id: randomUUID(),
     userId: user.id,
     email: sentEmail,
     challenge: challenge,
     expiresAt: createExpiration(TTLs.VERIFICATION_EMAIL),
     createdAt: Date(),
   }
-  // invalidate old email verification challenges
-  await db().delete().table<EmailVerification>('email_verification').where('userId', user.id)
   // insert new email verification challenge
   await db().table<EmailVerification>('email_verification').insert(email_verification)
   await sendEmailVerification(user, challenge, sentEmail)

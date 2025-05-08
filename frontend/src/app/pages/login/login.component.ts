@@ -1,6 +1,6 @@
 import { Component, inject, type OnInit } from '@angular/core'
 import { AuthService } from '../../services/auth.service'
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { CommonModule } from '@angular/common'
 import { Router, RouterLink } from '@angular/router'
 import { MaterialModule } from '../../material-module'
@@ -18,7 +18,6 @@ import { oidcLoginPath } from '@shared/oidc'
   styleUrls: ['./login.component.scss'],
   imports: [
     ReactiveFormsModule,
-    FormsModule,
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,

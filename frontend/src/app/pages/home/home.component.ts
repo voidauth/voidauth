@@ -1,6 +1,6 @@
 import { Component, inject, type OnInit } from '@angular/core'
 import { MaterialModule } from '../../material-module'
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { CommonModule } from '@angular/common'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
@@ -11,13 +11,10 @@ import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ConfigService } from '../../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
 import { PasswordResetComponent } from '../../components/password-reset/password-reset.component'
-import type { TypedFormGroup } from '../admin/clients/upsert-client/upsert-client.component'
-import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 
 @Component({
   selector: 'app-home',
   imports: [
-    FormsModule,
     ReactiveFormsModule,
     CommonModule,
     MaterialModule,
@@ -51,7 +48,7 @@ export class HomeComponent implements OnInit {
     }, [Validators.required, Validators.email]),
   })
 
-  public passwordForm: FormGroup<TypedFormGroup<UpdatePassword & { confirmPassword: string }>> = new FormGroup({
+  public passwordForm = new FormGroup({
     oldPassword: new FormControl<string>({
       value: '',
       disabled: false,

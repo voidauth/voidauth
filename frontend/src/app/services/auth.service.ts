@@ -10,6 +10,7 @@ import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import { type Nullable } from '@shared/utils'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
+import type { ResetPassword } from '@shared/api-request/ResetPassword'
 
 @Injectable({
   providedIn: 'root',
@@ -51,5 +52,9 @@ export class AuthService {
 
   async sendPasswordReset(input: string) {
     return firstValueFrom(this.http.post<SendPasswordResetResponse>(`${environment.apiUrl}/public/send_password_reset`, { input }))
+  }
+
+  async resetPassword(body: ResetPassword) {
+    return firstValueFrom(this.http.post<SendPasswordResetResponse>(`${environment.apiUrl}/public/reset_password`, body))
   }
 }

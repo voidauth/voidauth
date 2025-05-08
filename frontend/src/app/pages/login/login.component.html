@@ -19,14 +19,14 @@
         <mat-error>{{form.controls.password.errors | validationError}}</mat-error>
         }
       </mat-form-field>
+      <a routerLink="/forgot_password" mat-button type="button" style="margin-top: 0px;">Forgot Password</a>
       <mat-checkbox formControlName="rememberMe">Remember Me</mat-checkbox>
 
       <mat-card-actions>
-        <button mat-button [disabled]="form.invalid" type="submit">Login</button>
+        <button mat-flat-button [disabled]="form.invalid" type="submit">Login</button>
         @if (config?.registration) {
           <a routerLink="/register" mat-button type="button">Register</a>
         }
-        <a routerLink="/forgot_password" mat-button type="button">Forgot Password</a>
       </mat-card-actions>
     </form>
   </mat-card-content>

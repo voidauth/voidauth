@@ -38,6 +38,9 @@ export async function getCookieKeys() {
     .table<Key>('key')
     .where({ type: KEY_TYPES.COOKIE_KEY }))
     .filter(k => !isExpired(k.expiresAt))
+    .sort((a, b) => {
+      return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
+    })
     .reduce<Key[]>((ks, k) => {
       const value = decryptKeyString(k, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
       if (value) {
@@ -77,6 +80,9 @@ export async function getJWKs() {
     .table<Key>('key')
     .where({ type: KEY_TYPES.OIDC_JWK }))
     .filter(k => !isExpired(k.expiresAt))
+    .sort((a, b) => {
+      return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
+    })
     .reduce<Key[]>((ks, k) => {
       const value = decryptKeyString(k, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
       if (value) {

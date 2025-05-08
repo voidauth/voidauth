@@ -4,7 +4,7 @@ import type { ValidationErrors } from '@angular/forms'
   name: 'validationError',
 })
 export class ValidationErrorPipe implements PipeTransform {
-  transform(errors: ValidationErrors | null, defaultMessage: string = 'Invalid value.'): string[] {
+  transform(errors: ValidationErrors | null | undefined, defaultMessage: string = 'Invalid value.'): string[] {
     if (!errors) {
       return []
     }

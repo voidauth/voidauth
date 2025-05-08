@@ -28,7 +28,7 @@
       </mat-form-field>
 
       <mat-card-actions>
-        <button mat-button type="submit" [disabled]="!profileForm.enabled || !profileForm.valid || !profileForm.dirty">
+        <button mat-flat-button type="submit" [disabled]="!profileForm.enabled || !profileForm.valid || !profileForm.dirty">
           Update Profile
         </button>
       </mat-card-actions>
@@ -57,7 +57,7 @@
       </mat-form-field>
 
       <mat-card-actions>
-        <button mat-button type="submit" [disabled]="!emailForm.enabled || !emailForm.valid || !emailForm.dirty">
+        <button mat-flat-button type="submit" [disabled]="!emailForm.enabled || !emailForm.valid || !emailForm.dirty">
           Update Email
         </button>
       </mat-card-actions>
@@ -75,8 +75,20 @@
     </mat-card-title>
   </mat-card-header>
   <mat-card-content>
-
-    <app-password-reset [passwordForm]="passwordForm" (submit)="updatePassword()"></app-password-reset>
+    <form [formGroup]="passwordForm">
+      <app-password-reset style="width: 100%; margin-top: 0px;"
+        [oldPassword]="passwordForm.controls.oldPassword"
+        [newPassword]="passwordForm.controls.newPassword" 
+        [confirmPassword]="passwordForm.controls.confirmPassword">
+      </app-password-reset>
+    
+      <mat-card-actions>
+        <button mat-flat-button type="button" (click)="updatePassword()"
+          [disabled]="!passwordForm.enabled || !passwordForm.valid || !passwordForm.dirty">
+          Update Password
+        </button>
+      </mat-card-actions>
+    </form>
 
   </mat-card-content>
 </mat-card>
