@@ -24,7 +24,7 @@ const _db = knex({
   },
   pool: {
     // eslint-disable-next-line @stylistic/max-len
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     afterCreate: (conn: any, done: any) => conn.run('PRAGMA foreign_keys = ON', done),
   },
   useNullAsDefault: true,

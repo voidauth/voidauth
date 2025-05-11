@@ -6,7 +6,7 @@ import stylistic from '@stylistic/eslint-plugin';
 
 export default tseslint.config(
   eslint.configs.recommended,
-  tseslint.configs.strictTypeChecked,
+  tseslint.configs.recommendedTypeChecked,
   stylistic.configs.recommended,
   {
     rules: {
@@ -16,7 +16,7 @@ export default tseslint.config(
       }],
       "@stylistic/quote-props": ["error", "as-needed"],
       "@stylistic/brace-style": ["error", "1tbs"],
-      "@typescript-eslint/no-unsafe-member-access": ["warn"],
+      // "@typescript-eslint/no-unsafe-member-access": ["warn"],
       "@typescript-eslint/unbound-method": ["error", {
         "ignoreStatic": true,
       }],

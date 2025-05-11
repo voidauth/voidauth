@@ -99,9 +99,10 @@ adminRouter.post('/client',
         res.sendStatus(409)
       }
 
-      await upsertClient(clientMetadata, provider.app.createContext(req, res))
+      await upsertClient(provider, clientMetadata, provider.createContext(req, res))
       res.send()
-    } catch (_e) {
+    } catch (e) {
+      console.error(e)
       res.sendStatus(400)
     }
   },
@@ -118,7 +119,7 @@ adminRouter.patch('/client',
         res.sendStatus(404)
       }
 
-      await upsertClient(clientMetadata, provider.app.createContext(req, res))
+      await upsertClient(provider, clientMetadata, provider.createContext(req, res))
       res.send()
     } catch (_e) {
       res.sendStatus(400)

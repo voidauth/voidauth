@@ -1,13 +1,15 @@
-import Provider, { type Configuration } from 'oidc-provider'
+import Provider, { type Configuration, type KoaContextWithOIDC } from 'oidc-provider'
 import { findAccount } from '../db/user'
 import appConfig from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
-import { REDIRECT_PATHS } from '@shared/constants'
+import { REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs } from '../db/key'
 import Keygrip from 'keygrip'
+import * as psl from 'psl'
+import { createExpiration } from '../db/util'
 
 // Do not allow any oidc-provider errors to redirect back to redirect_uri of client
 let e: keyof typeof errors
@@ -55,6 +57,11 @@ const configuration: Configuration = {
     url: (_ctx, _interaction) => {
       return `/api/interaction`
     },
+  },
+  ttl: {
+    Session: TTLs.SESSION,
+    Grant: TTLs.GRANT,
+    Interaction: TTLs.SESSION,
   },
   cookies: {
     // keygrip for rotating cookie signing keys
@@ -113,10 +120,6 @@ const configuration: Configuration = {
     // Additional
     groups: ['groups'],
   },
-  pkce: {
-    methods: ['S256'],
-    required: () => false,
-  },
   renderError: (ctx, out, error) => {
     console.error(error)
     ctx.status = 500
@@ -132,15 +135,40 @@ const configuration: Configuration = {
 
 export const provider = new Provider(`${appConfig.APP_DOMAIN}/oidc`, configuration)
 
-// If session cookie assigned, assign a session-id cookie as well with samesite=none
+// If session cookie assigned, assign a session-id cookie as well with samesite=none on base domain
 // Used for ForwardAuth/AuthRequest proxy auth
-provider.on('interaction.ended', (ctx) => {
-  const sessionCookie = ctx.cookies.get('x-void-auth-session')
-  if (sessionCookie) {
-    ctx.cookies.set('x-void-auth-session-id', sessionCookie, {
-      httpOnly: true,
-      sameSite: 'none',
-      secure: process.env.NODE_ENV === 'production',
-    })
+provider.on('session.saved', (session) => {
+  const sessionCookie = session.uid
+  // @ts-expect-error ctx actually is a static getter on Provider
+  const ctx = Provider.ctx as KoaContextWithOIDC | undefined
+  if (!ctx || !sessionCookie) {
+    return
   }
+  // domain should be sld
+  const domain = psl.get(ctx.request.hostname)
+  const expires = new Date((ctx.oidc.session?.exp ?? 0) * 1000 || createExpiration(TTLs.SESSION))
+  ctx.cookies.set('x-void-auth-session-uid', sessionCookie, {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    expires,
+    domain: domain ?? undefined,
+  })
+})
+
+provider.on('session.destroyed', (_session) => {
+  // @ts-expect-error ctx actually is a static getter on Provider
+  const ctx = Provider.ctx as KoaContextWithOIDC | undefined
+  if (!ctx) {
+    return
+  }
+  // domain should be sld
+  const domain = psl.get(ctx.request.hostname)
+  ctx.cookies.set('x-void-auth-session-uid', '', {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 0,
+    domain: domain ?? undefined,
+  })
 })

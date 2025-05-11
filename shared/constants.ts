@@ -32,9 +32,12 @@ export const TTLs = {
   VERIFICATION_EMAIL: 2 * HOUR,
   PASSWORD_RESET: 2 * HOUR,
   INVITATION: 1 * WEEK,
-  CONSENT: 52 * WEEK,
+  CONSENT: 1 * YEAR,
 
   // OIDC TTLs
+  INTERACTION: 1 * HOUR,
+  SESSION: 1 * YEAR,
+  GRANT: 1 * YEAR,
 
   // Should be longer than any OIDC TTLs
   OIDC_JWK: 1 * YEAR,

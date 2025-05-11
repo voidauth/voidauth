@@ -29,7 +29,7 @@ export async function generateTheme() {
       fs.writeFileSync(path.join('./theme', resultFile), themeContent)
     }
 
-    const compiled = sass.compile(path.join('./theme', 'theme-styles.scss'), {
+    const compiled = await sass.compileAsync(path.join('./theme', 'theme-styles.scss'), {
       loadPaths: [
         './theme',
         './node_modules',

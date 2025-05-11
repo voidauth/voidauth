@@ -1,8 +1,8 @@
-import instance from 'oidc-provider/lib/helpers/weak_cache'
-import type { Client, ClientMetadata } from 'oidc-provider'
+import type { Client, ClientMetadata, Provider } from 'oidc-provider'
 import { db } from './db'
 import type { PayloadTypes } from '../oidc/adapter'
 import { provider } from '../oidc/provider'
+import add from 'oidc-provider/lib/helpers/add_client'
 
 const clientType: PayloadTypes = 'Client'
 
@@ -26,12 +26,13 @@ export async function getClient(client_id: string) {
   return client
 }
 
-export async function upsertClient(clientMetadata: ClientMetadata, ctx: unknown) {
-  const client: Client = await instance(provider).clientAdd(clientMetadata, { ctx, store: true })
+export async function upsertClient(provider: Provider, clientMetadata: ClientMetadata, ctx: unknown) {
+  const client: Client = await add(provider, clientMetadata, { ctx, store: true })
   return client
 }
 
 export async function removeClient(client_id: string) {
-  const client: Client = await instance(provider).clientRemove(client_id)
-  return client
+  // @ts-expect-error client adapter actually does exist
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  await provider.Client.adapter.destroy(client_id)
 }

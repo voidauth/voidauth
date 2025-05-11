@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, type Request } from 'express'
 import { router as interactionRouter } from './interaction'
 import { provider } from '../oidc/provider'
 import { db } from '../db/db'
@@ -28,10 +28,31 @@ router.use((_req, _res, next) => {
   })
 })
 
+// forward auth endpoint
+router.get('/verify', async (req: Request, res) => {
+  const ctx = provider.createContext(req, res)
+  const sessionId = ctx.cookies.get('x-void-auth-session-uid')
+  if (!sessionId) {
+    // TODO: redirect
+    res.sendStatus(400)
+    return
+  }
+  const session = await provider.Session.adapter.findByUid(sessionId)
+  const accountId = session?.accountId
+  if (!accountId) {
+    res.sendStatus(400)
+    return
+  }
+  const user = await getUserById(accountId)
+
+  // TODO: set headers
+  res.send(user)
+})
+
 // Set user on reqest
-router.use(async (req, res, next) => {
+router.use(async (req: Request, res, next) => {
   try {
-    const ctx = provider.app.createContext(req, res)
+    const ctx = provider.createContext(req, res)
     const session = await provider.Session.get(ctx)
     if (!session.accountId) {
       next()

@@ -1,13 +1,10 @@
-declare module 'oidc-provider/lib/helpers/weak_cache' {
-  function instance(provider: import('oidc-provider').Provider): {
-    clientAdd: (metadata: import('oidc-provider').ClientMetadata, {
-      ctx: unknown,
+declare module 'oidc-provider/lib/helpers/add_client' {
+  export default async function add(
+    provider: import('oidc-provider').Provider,
+    metadata: import('oidc-provider').ClientMetadata, {
+      ctx: never,
       store: boolean,
-    }) => Promise<import('oidc-provider').Client>
-    clientRemove: (clientId: string) => Promise<import('oidc-provider').Client>
-  }
-
-  export default instance
+    }): Promise<import('oidc-provider').Client>
 }
 
 declare module 'oidc-provider/lib/helpers/initialize_keystore' {
