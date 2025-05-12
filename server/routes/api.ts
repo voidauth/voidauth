@@ -10,6 +10,7 @@ import type { UserDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
 import { als } from '../util/als'
 import { publicRouter } from './public'
+import appConfig from '../util/config'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -28,25 +29,43 @@ router.use((_req, _res, next) => {
   })
 })
 
-// forward auth endpoint
+// proxy cookie auth endpoint
 router.get('/verify', async (req: Request, res) => {
   const ctx = provider.createContext(req, res)
   const sessionId = ctx.cookies.get('x-void-auth-session-uid')
   if (!sessionId) {
-    // TODO: redirect
-    res.sendStatus(400)
+    res.redirect(appConfig.APP_DOMAIN)
     return
   }
   const session = await provider.Session.adapter.findByUid(sessionId)
   const accountId = session?.accountId
   if (!accountId) {
-    res.sendStatus(400)
+    res.redirect(appConfig.APP_DOMAIN)
     return
   }
+
   const user = await getUserById(accountId)
 
-  // TODO: set headers
-  res.send(user)
+  if (!user) {
+    res.redirect(appConfig.APP_DOMAIN)
+    return
+  }
+
+  const groups = await db().select('name')
+    .table<Group>('group')
+    .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: user.id })
+
+  res.setHeader('Remote-User', user.username)
+  if (user.email) {
+    res.setHeader('Remote-Email', user.email)
+  }
+  if (user.name) {
+    res.setHeader('Remote-Name', user.name)
+  }
+  if (groups.length) {
+    res.setHeader('Remote-Groups', groups.map(g => g.name).join(','))
+  }
+  res.send()
 })
 
 // Set user on reqest

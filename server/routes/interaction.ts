@@ -18,8 +18,9 @@ import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
 import { REDIRECT_PATHS, TTLs } from '@shared/constants'
 import type { Interaction } from 'oidc-provider'
-import { allowNull, defaultNull, emailValidation, nameValidation,
+import { emailValidation, nameValidation,
   newPasswordValidation,
+  optionalNull,
   stringValidation, usernameValidation, uuidValidation } from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { isExpired, createExpiration } from '../db/util'
@@ -215,16 +216,22 @@ router.post('/:uid/confirm/',
 router.post('/register',
   ...validate<RegisterUser>({
     username: {
-      ...defaultNull,
-      ...allowNull,
-      optional: true,
+      default: {
+        options: null,
+      },
+      ...optionalNull,
       ...usernameValidation,
     },
     name: nameValidation,
     email: {
-      ...defaultNull,
-      ...allowNull,
-      optional: true,
+      default: {
+        options: null,
+      },
+      optional: {
+        options: {
+          values: 'null',
+        },
+      },
       ...emailValidation,
     },
     password: newPasswordValidation,
@@ -233,14 +240,16 @@ router.post('/register',
         options: {
           values: 'null',
         },
-      }, ...stringValidation,
+      },
+      ...stringValidation,
     },
     challenge: {
       optional: {
         options: {
           values: 'null',
         },
-      }, ...stringValidation,
+      },
+      ...stringValidation,
     },
   }),
   async (req: Request, res: Response) => {

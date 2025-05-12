@@ -36,45 +36,41 @@ export function checkAdmin(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-export const defaultNull: ValidParamSchema = {
-  default: {
-    options: null,
-  },
-}
-
-export const allowNull: ValidParamSchema = {
-  allowNull: {
-    custom: () => {
-      return true
-    },
-    if: (value: unknown) => {
-      return value !== null
+export const optionalNull: ValidParamSchema = {
+  optional: {
+    options: {
+      values: 'null',
     },
   },
-}
+} as const
 
-export const stringValidation: ValidParamSchema = { isString: true, stripLow: true, trim: true }
-export const uuidValidation: ValidParamSchema = { ...stringValidation, isUUID: true }
+export const stringValidation: ValidParamSchema = { isString: true, stripLow: true, trim: true } as const
+export const uuidValidation: ValidParamSchema = { ...stringValidation, isUUID: true } as const
 export const emailValidation: ValidParamSchema = {
   isEmail: {
     options: {
       require_tld: false,
     },
   }, normalizeEmail: true, trim: true,
-}
+} as const
 
 export const usernameValidation: ValidParamSchema = {
   ...stringValidation,
   matches: { options: USERNAME_REGEX },
-}
+} as const
 
 export const nameValidation: ValidParamSchema = {
-  ...defaultNull,
-  ...allowNull,
-  optional: true,
+  default: {
+    options: null,
+  },
+  optional: {
+    options: {
+      values: 'null',
+    },
+  },
   ...stringValidation,
   matches: { options: /^[\w\s]{4,64}$/ },
-}
+} as const
 
 export const newPasswordValidation: ValidParamSchema = {
   ...stringValidation,
@@ -83,4 +79,4 @@ export const newPasswordValidation: ValidParamSchema = {
       return typeof value === 'string' && zxcvbn(value).score >= appConfig.ZXCVBN_MIN
     },
   },
-}
+} as const

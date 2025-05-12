@@ -44,7 +44,11 @@ export class UpsertClientComponent implements OnInit {
     disabled: false,
   }, [isValidURL])
 
-  public form = new FormGroup<TypedFormGroup<ClientUpsert>>({
+  profile = new FormControl<boolean>(true)
+  email = new FormControl<boolean>(true)
+  groups = new FormControl<boolean>(true)
+
+  form = new FormGroup<TypedFormGroup<ClientUpsert>>({
     client_id: new FormControl<string>({
       value: '',
       disabled: false,
@@ -57,10 +61,15 @@ export class UpsertClientComponent implements OnInit {
       value: '',
       disabled: false,
     }, [Validators.required, Validators.minLength(4)]),
-    token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>({
-      value: 'none',
+    scope: new FormControl<string>({
+      value: 'openid',
       disabled: false,
-    }, []),
+    }, [Validators.required]),
+    token_endpoint_auth_method: new FormControl<Required<ClientUpsert>['token_endpoint_auth_method']>('none'),
+    logo_uri: new FormControl<string | null>({
+      value: null,
+      disabled: true,
+    }, [isValidURL]),
   })
 
   private adminService = inject(AdminService)
@@ -110,6 +119,9 @@ export class UpsertClientComponent implements OnInit {
   async submit() {
     try {
       this.disablePage()
+
+      const scopes = 'openid' + `${this.profile ? ' profile' : ''}` + `${this.email ? ' email' : ''}` + `${this.groups ? ' groups' : ''}`
+      this.form.controls.scope.setValue(scopes)
 
       if (this.client_id) {
         await this.adminService.updateClient(this.form.getRawValue())

@@ -7,7 +7,7 @@ import type { ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomUUID } from 'crypto'
 import {
-  allowNull, checkAdmin, checkLoggedIn, defaultNull, emailValidation,
+  checkAdmin, checkLoggedIn, emailValidation,
   nameValidation, stringValidation, usernameValidation, uuidValidation,
 } from '../util/validators'
 import { getClient, getClients, removeClient, upsertClient } from '../db/client'
@@ -54,9 +54,31 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
       },
     },
   },
+  scope: {
+    ...stringValidation,
+    isLength: {
+      options: {
+        min: 'openid'.length,
+      },
+    },
+  },
   token_endpoint_auth_method: {
     optional: true,
     ...stringValidation,
+  },
+  logo_uri: {
+    default: {
+      options: undefined,
+    },
+    optional: true,
+    isURL: {
+      options: {
+        protocols: ['http', 'https'],
+        require_tld: false,
+        require_protocol: true,
+      },
+    },
+    trim: true,
   },
 }
 
@@ -97,6 +119,7 @@ adminRouter.post('/client',
       const existingClient = await getClient(clientMetadata.client_id)
       if (existingClient) {
         res.sendStatus(409)
+        return
       }
 
       await upsertClient(provider, clientMetadata, provider.createContext(req, res))
@@ -117,6 +140,7 @@ adminRouter.patch('/client',
       const existingClient = await getClient(clientMetadata.client_id)
       if (!existingClient) {
         res.sendStatus(404)
+        return
       }
 
       await upsertClient(provider, clientMetadata, provider.createContext(req, res))
@@ -175,9 +199,14 @@ adminRouter.patch('/user',
     username: usernameValidation,
     name: nameValidation,
     email: {
-      ...defaultNull,
-      ...allowNull,
-      optional: true,
+      default: {
+        options: null,
+      },
+      optional: {
+        options: {
+          values: 'null',
+        },
+      },
       ...emailValidation,
     },
     emailVerified: {
@@ -371,16 +400,26 @@ adminRouter.post('/invitation',
       ...uuidValidation,
     },
     username: {
-      ...defaultNull,
-      ...allowNull,
-      optional: true,
+      default: {
+        options: null,
+      },
+      optional: {
+        options: {
+          values: 'null',
+        },
+      },
       ...usernameValidation,
     },
     name: nameValidation,
     email: {
-      ...defaultNull,
-      ...allowNull,
-      optional: true,
+      default: {
+        options: null,
+      },
+      optional: {
+        options: {
+          values: 'null',
+        },
+      },
       ...emailValidation,
     },
     groups: {

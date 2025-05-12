@@ -57,8 +57,8 @@ type FixOptionalKey<T extends string> = T extends `${infer A}?${infer B}` ? FixO
 type UncheckedParamSchema = RemoveKeys<ParamSchema<any>, 'isString' | 'isEmail' | 'isURL'>
 type StringParamSchema = RequireKeys<ParamSchema<any>, 'isString' | 'stripLow' | 'trim'>
   | RequireKeys<ParamSchema<any>, 'isString' | 'matches'>
-type EmailParamSchema = Required<Pick<ParamSchema<any>, 'isEmail' | 'normalizeEmail' | 'trim'>>
-type URLParamSchema = Required<Pick<ParamSchema<any>, 'isURL' | 'trim'>>
+type EmailParamSchema = RequireKeys<ParamSchema<any>, 'isEmail' | 'normalizeEmail' | 'trim'>
+type URLParamSchema = RequireKeys<ParamSchema<any>, 'isURL' | 'trim'>
 
 export type ValidParamSchema = UncheckedParamSchema | StringParamSchema | EmailParamSchema | URLParamSchema
 

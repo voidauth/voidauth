@@ -24,6 +24,16 @@
           }
         </mat-form-field>
 
+        <mat-list style="flex-direction: row;">
+          <div class="container"></div>
+          <div class="container">
+            <mat-checkbox disabled checked>openid</mat-checkbox>
+            <mat-checkbox [formControl]="profile">profile</mat-checkbox>
+            <mat-checkbox [formControl]="email">email</mat-checkbox>
+            <mat-checkbox [formControl]="groups">groups</mat-checkbox>
+          </div>
+          <div class="container"></div>
+        </mat-list>
         
         <mat-list [ngClass]="{invalid: form.controls.redirect_uris.errors}">
           <mat-form-field appearance="outline">
@@ -66,6 +76,14 @@
           </mat-select>
           @if (form.controls.token_endpoint_auth_method.errors) {
             <mat-error>{{form.controls.token_endpoint_auth_method.errors | validationError}}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Logo Url</mat-label>
+          <input matInput type="text" formControlName="logo_uri">
+          @if (form.controls.logo_uri.errors) {
+          <mat-error>{{form.controls.logo_uri.errors | validationError}}</mat-error>
           }
         </mat-form-field>
 
