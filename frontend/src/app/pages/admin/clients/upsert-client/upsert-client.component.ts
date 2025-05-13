@@ -61,10 +61,7 @@ export class UpsertClientComponent implements OnInit {
       value: '',
       disabled: false,
     }, [Validators.required, Validators.minLength(4)]),
-    scope: new FormControl<string>({
-      value: 'openid',
-      disabled: false,
-    }, [Validators.required]),
+    scope: new FormControl<string>(''),
     token_endpoint_auth_method: new FormControl<Required<ClientUpsert>['token_endpoint_auth_method']>('none'),
     logo_uri: new FormControl<string | null>({
       value: null,
@@ -91,7 +88,11 @@ export class UpsertClientComponent implements OnInit {
             client_secret: client.client_secret ?? '',
             redirect_uris: client.redirect_uris ?? [],
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'none',
+            logo_uri: client.logo_uri,
           })
+          this.profile.setValue(!!(client.scope?.includes('profile')))
+          this.email.setValue(!!(client.scope?.includes('email')))
+          this.groups.setValue(!!(client.scope?.includes('groups')))
         }
 
         this.enablePage()
@@ -120,7 +121,10 @@ export class UpsertClientComponent implements OnInit {
     try {
       this.disablePage()
 
-      const scopes = 'openid' + `${this.profile ? ' profile' : ''}` + `${this.email ? ' email' : ''}` + `${this.groups ? ' groups' : ''}`
+      const scopes = 'openid'
+        + `${this.profile.value ? ' profile' : ''}`
+        + `${this.email.value ? ' email' : ''}`
+        + `${this.groups.value ? ' groups' : ''}`
       this.form.controls.scope.setValue(scopes)
 
       if (this.client_id) {

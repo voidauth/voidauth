@@ -3,4 +3,5 @@ export type ConsentDetails = {
   clientId: string
   redirectUri: string
   scopes: string[]
+  logoUri?: string
 }

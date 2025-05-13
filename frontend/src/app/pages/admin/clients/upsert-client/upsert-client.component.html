@@ -28,9 +28,9 @@
           <div class="container"></div>
           <div class="container">
             <mat-checkbox disabled checked>openid</mat-checkbox>
-            <mat-checkbox [formControl]="profile">profile</mat-checkbox>
-            <mat-checkbox [formControl]="email">email</mat-checkbox>
-            <mat-checkbox [formControl]="groups">groups</mat-checkbox>
+            <mat-checkbox [formControl]="profile" (change)="form.markAsDirty()">profile</mat-checkbox>
+            <mat-checkbox [formControl]="email" (change)="form.markAsDirty()">email</mat-checkbox>
+            <mat-checkbox [formControl]="groups" (change)="form.markAsDirty()">groups</mat-checkbox>
           </div>
           <div class="container"></div>
         </mat-list>

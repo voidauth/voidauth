@@ -16,7 +16,7 @@ export default tseslint.config(
       }],
       "@stylistic/quote-props": ["error", "as-needed"],
       "@stylistic/brace-style": ["error", "1tbs"],
-      // "@typescript-eslint/no-unsafe-member-access": ["warn"],
+      "@typescript-eslint/no-unsafe-member-access": ["warn"],
       "@typescript-eslint/unbound-method": ["error", {
         "ignoreStatic": true,
       }],

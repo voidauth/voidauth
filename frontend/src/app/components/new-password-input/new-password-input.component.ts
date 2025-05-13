@@ -47,7 +47,7 @@ export class NewPasswordInputComponent implements OnInit {
         this.message = 'lets make a strong password 😊'
         this.meterColor = ''
       } else if (this.score === 1) {
-        this.message = 'very weak!! ❌❌'
+        this.message = 'very weak!! 💀'
         this.meterColor = 'red'
       } else if (this.score === 2) {
         this.message = 'too weak! ❌'

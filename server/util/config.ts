@@ -5,19 +5,17 @@ process.env.NODE_ENV ??= 'production'
 
 // basic config for app
 class Config {
-  PORT = '80'
   APP_TITLE = 'void-auth'
-  APP_DOMAIN = 'http://localhost'
+  APP_DOMAIN = ''
 
   SQLITE_DIR = './db'
 
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
+  EMAIL_VERIFICATION = false
 
   PRIMARY_COLOR = '#8864c4'
   PRIMARY_CONTRAST_COLOR = 'white' // TODO: get this from generated theme
-
-  EMAIL_VERIFICATION = false
 
   // required and checked for validity
   STORAGE_KEY: string = ''
@@ -108,6 +106,12 @@ const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
 configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
 })
+
+// check APP_DOMAIN is set
+if (!appConfig.APP_DOMAIN || !URL.parse(appConfig.APP_DOMAIN)) {
+  console.error('APP_DOMAIN must be set and be a valid URL.')
+  exit(1)
+}
 
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {

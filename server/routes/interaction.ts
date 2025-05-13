@@ -115,10 +115,11 @@ router.get('/:uid/detail',
     }
     const { uid, params } = interaction
     const scope = typeof params.scope === 'string' ? params.scope : ''
-
+    const client = await provider.Client.find(params.client_id as string)
     const details: ConsentDetails = {
       uid: uid,
       clientId: params.client_id as string,
+      logoUri: client?.logoUri,
       redirectUri: params.redirect_uri as string,
       scopes: scope.split(' '),
     }

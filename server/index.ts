@@ -13,6 +13,8 @@ import initialize from 'oidc-provider/lib/helpers/initialize_keystore'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
+const APP_URL = URL.parse(appConfig.APP_DOMAIN)
+const PORT = APP_URL?.port || (APP_URL?.protocol === 'https' ? '443' : '80')
 
 await generateTheme()
 
@@ -27,6 +29,7 @@ app.use(helmet({
     useDefaults: true,
     directives: {
       'script-src': ['\'self\'', '\'unsafe-inline\''], // angular uses inline scripts for loading
+      'img-src': ['\'self\'', 'data:', 'https:'], // needed to load client logoUri
       'font-src': ['\'self\'', 'data:'], // no external fonts
       'style-src': ['\'self\'', '\'unsafe-inline\''], // no external styles
       'form-action': ['\'self\'', 'https:'], // must be able to form action to external site
@@ -64,12 +67,23 @@ app.use(express.static(path.join('./config', 'branding'), {
   fallthrough: true,
 }))
 
+// override index.html return, inject app title
+app.get('/index.html', (_req, res) => {
+  const index = fs.readFileSync(path.join(FE_ROOT, './index.html'))
+    .toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
+  res.send(index)
+})
+
 // frontend
-app.use(express.static(FE_ROOT))
+app.use(express.static(FE_ROOT, {
+  index: false,
+}))
 
 // Unresolved GET requests should return frontend
 app.get(/(.*)/, (_req, res) => {
-  res.sendFile(path.join(FE_ROOT, './index.html'))
+  const index = fs.readFileSync(path.join(FE_ROOT, './index.html'))
+    .toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
+  res.send(index)
 })
 
 // All other unresolved are not found
@@ -83,8 +97,8 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.sendStatus(500)
 })
 
-app.listen(appConfig.PORT, () => {
-  console.log(`Listening on port: ${appConfig.PORT}`)
+app.listen(PORT, () => {
+  console.log(`Listening on port: ${PORT}`)
 })
 
 // interval to keep keys up to date every 10 minutes +- 1 minute

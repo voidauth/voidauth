@@ -3,10 +3,19 @@
   <mat-card class="form-card">
     <mat-card-content>
       <form autocomplete="off" action="/api/interaction/{{details.uid}}/confirm" method="post">
-        <p>
-          Do you allow {{details.redirectUri}} to access your account
-          information? ({{details.scopes.join(' ,')}})
-        </p>
+        <div style="text-align: center;">
+          @if (details.logoUri) {
+            <img style="width: 128px; height: 128px; border-radius: 16px;" [src]="details.logoUri" />
+          }
+          <br>
+          <br>
+          Do you allow <br> <h2>{{details.redirectUri}}</h2> <br> to access your account
+          information?
+          @if (scopes(); as info) {
+            <br> 
+            ({{info}})
+          }
+        </div>
         
         <mat-card-actions>
           <button mat-flat-button type="submit">Authorize</button>
