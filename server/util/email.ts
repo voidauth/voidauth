@@ -8,6 +8,7 @@ import { REDIRECT_PATHS } from '@shared/constants'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import type { Invitation } from '@shared/db/Invitation'
 import type { PasswordReset } from '@shared/db/PasswordReset'
+import { PRIMARY_CONTRAST_COLOR, PRIMARY_COLOR } from './theme'
 
 export let SMTP_VERIFIED = false
 const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
@@ -73,8 +74,8 @@ export async function sendEmailVerification(user: UserWithoutPassword, challenge
   }
 
   const { subject, html, text } = emailVerificationTemplates({
-    primary_color: appConfig.PRIMARY_COLOR,
-    primary_contrast_color: appConfig.PRIMARY_CONTRAST_COLOR,
+    primary_color: PRIMARY_COLOR,
+    primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
     name: user.name || user.username,
     verification_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.VERIFY_EMAIL}/${user.id}/${challenge}`,
@@ -107,8 +108,8 @@ export async function sendPasswordReset(passwordReset: PasswordReset, user: User
   const query = `id=${passwordReset.userId}&challenge=${passwordReset.challenge}`
 
   const { subject, html, text } = passwordResetTemplates({
-    primary_color: appConfig.PRIMARY_COLOR,
-    primary_contrast_color: appConfig.PRIMARY_CONTRAST_COLOR,
+    primary_color: PRIMARY_COLOR,
+    primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
     name: user.name || user.username,
     reset_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`,
@@ -141,8 +142,8 @@ export async function sendInvitation(invitation: Invitation, email: string) {
   const query = `invite=${invitation.id}&challenge=${invitation.challenge}`
 
   const { subject, html, text } = invitationTemplate({
-    primary_color: appConfig.PRIMARY_COLOR,
-    primary_contrast_color: appConfig.PRIMARY_CONTRAST_COLOR,
+    primary_color: PRIMARY_COLOR,
+    primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
     name: invitation.name || invitation.username,
     invitation_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.INVITE}?${query}`,

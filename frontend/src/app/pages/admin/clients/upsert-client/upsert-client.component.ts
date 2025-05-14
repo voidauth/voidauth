@@ -61,8 +61,8 @@ export class UpsertClientComponent implements OnInit {
       value: '',
       disabled: false,
     }, [Validators.required, Validators.minLength(4)]),
-    scope: new FormControl<string>(''),
-    token_endpoint_auth_method: new FormControl<Required<ClientUpsert>['token_endpoint_auth_method']>('none'),
+    token_endpoint_auth_method:
+      new FormControl<Required<ClientUpsert>['token_endpoint_auth_method']>('client_secret_basic'),
     logo_uri: new FormControl<string | null>({
       value: null,
       disabled: true,
@@ -87,7 +87,7 @@ export class UpsertClientComponent implements OnInit {
             client_id: client.client_id,
             client_secret: client.client_secret ?? '',
             redirect_uris: client.redirect_uris ?? [],
-            token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'none',
+            token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_basic',
             logo_uri: client.logo_uri,
           })
           this.profile.setValue(!!(client.scope?.includes('profile')))
@@ -120,12 +120,6 @@ export class UpsertClientComponent implements OnInit {
   async submit() {
     try {
       this.disablePage()
-
-      const scopes = 'openid'
-        + `${this.profile.value ? ' profile' : ''}`
-        + `${this.email.value ? ' email' : ''}`
-        + `${this.groups.value ? ' groups' : ''}`
-      this.form.controls.scope.setValue(scopes)
 
       if (this.client_id) {
         await this.adminService.updateClient(this.form.getRawValue())

@@ -16,7 +16,7 @@ const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
 const APP_URL = URL.parse(appConfig.APP_DOMAIN)
 const PORT = APP_URL?.port || (APP_URL?.protocol === 'https' ? '443' : '80')
 
-await generateTheme()
+void generateTheme()
 
 const app = express()
 
@@ -124,7 +124,7 @@ setInterval(async () => {
     throw new Error('No OIDC JWKs found.')
   }
   if (new Set(previousJwks.keys.map(j => j.kid)).symmetricDifference(new Set(jwks.keys.map(j => j.kid))).size) {
-    // jwks have changed
+    // db jwks have changed
     initialize.call(provider, jwks)
     previousJwks = jwks
   }

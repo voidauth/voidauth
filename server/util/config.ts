@@ -14,8 +14,7 @@ class Config {
   SIGNUP_REQUIRES_APPROVAL = true
   EMAIL_VERIFICATION = false
 
-  PRIMARY_COLOR = '#8864c4'
-  PRIMARY_CONTRAST_COLOR = 'white' // TODO: get this from generated theme
+  APP_COLOR = '#8864c4'
 
   // required and checked for validity
   STORAGE_KEY: string = ''

@@ -54,14 +54,6 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
       },
     },
   },
-  scope: {
-    ...stringValidation,
-    isLength: {
-      options: {
-        min: 'openid'.length,
-      },
-    },
-  },
   token_endpoint_auth_method: {
     optional: true,
     ...stringValidation,

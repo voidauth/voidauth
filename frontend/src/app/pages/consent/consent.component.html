@@ -1,26 +1,22 @@
 <h1>Confirm</h1>
 @if (details) {
-  <mat-card class="form-card">
-    <mat-card-content>
-      <form autocomplete="off" action="/api/interaction/{{details.uid}}/confirm" method="post">
-        <div style="text-align: center;">
-          @if (details.logoUri) {
-            <img style="width: 128px; height: 128px; border-radius: 16px;" [src]="details.logoUri" />
-          }
-          <br>
-          <br>
-          Do you allow <br> <h2>{{details.redirectUri}}</h2> <br> to access your account
-          information?
-          @if (scopes(); as info) {
-            <br> 
-            ({{info}})
-          }
-        </div>
-        
-        <mat-card-actions>
-          <button mat-flat-button type="submit">Authorize</button>
-        </mat-card-actions>
-      </form>
-    </mat-card-content>
-  </mat-card>
+<mat-card class="form-card">
+  <mat-card-content>
+    <form autocomplete="off" action="/api/interaction/{{details.uid}}/confirm" method="post">
+      <div style="text-align: center;">
+        @if (details.logoUri) {
+        <img style="width: 128px; height: 128px; border-radius: 16px;" [src]="details.logoUri" />
+        }
+        <br>
+        <br>
+        Do you allow <br>
+        <h2>{{details.redirectUri}}</h2> <br> to access your account dinformation?
+      </div>
+
+      <mat-card-actions>
+        <button mat-flat-button type="submit">Authorize</button>
+      </mat-card-actions>
+    </form>
+  </mat-card-content>
+</mat-card>
 }

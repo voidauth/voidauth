@@ -8,7 +8,7 @@ export async function up(knex: Knex): Promise<void> {
       // The key will be encrypted
       table.string('value').notNullable()
       table.string('metadata').notNullable()
-      table.string('expiresAt').notNullable()
+      table.timestamp('expiresAt', { useTz: true }).notNullable()
 
       table.check(`type in ('oidc_jwk', 'cookie_key')`)
     })
@@ -21,8 +21,8 @@ export async function up(knex: Knex): Promise<void> {
       table.boolean('emailVerified').notNullable().defaultTo(false) // email was verified
       table.boolean('approved').notNullable().defaultTo(false) // user was approved by an admin
 
-      table.string('createdAt').notNullable()
-      table.string('updatedAt').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('updatedAt', { useTz: true }).notNullable()
 
       // Email should be unique or null
       table.unique('email', {
@@ -34,16 +34,16 @@ export async function up(knex: Knex): Promise<void> {
       table.string('name').notNullable().unique()
       table.string('createdBy').notNullable().references('id').inTable('user')
       table.string('updatedBy').notNullable().references('id').inTable('user')
-      table.string('createdAt').notNullable()
-      table.string('updatedAt').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('updatedAt', { useTz: true }).notNullable()
     })
     .createTable('user_group', (table) => {
       table.string('userId').notNullable().references('id').inTable('user').onDelete('CASCADE')
       table.string('groupId').notNullable().references('id').inTable('group').onDelete('CASCADE')
       table.string('createdBy').notNullable().references('id').inTable('user')
       table.string('updatedBy').notNullable().references('id').inTable('user')
-      table.string('createdAt').notNullable()
-      table.string('updatedAt').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('updatedAt', { useTz: true }).notNullable()
 
       table.unique(['userId', 'groupId'])
     })
@@ -51,9 +51,9 @@ export async function up(knex: Knex): Promise<void> {
       table.string('userId').notNullable().references('id').inTable('user').onDelete('CASCADE')
       table.string('redirectUri').notNullable()
       table.string('scope').notNullable()
-      table.string('createdAt').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
 
-      table.string('expiresAt').notNullable()
+      table.timestamp('expiresAt', { useTz: true }).notNullable()
 
       table.unique(['userId', 'redirectUri'])
     })
@@ -62,15 +62,15 @@ export async function up(knex: Knex): Promise<void> {
       table.string('userId').notNullable().references('id').inTable('user').onDelete('CASCADE')
       table.string('email').notNullable()
       table.string('challenge').notNullable()
-      table.string('createdAt').notNullable()
-      table.string('expiresAt').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('expiresAt', { useTz: true }).notNullable()
     })
     .createTable('password_reset', (table) => {
       table.string('id').primary().notNullable()
       table.string('userId').notNullable().references('id').inTable('user').onDelete('CASCADE')
       table.string('challenge').notNullable()
-      table.string('createdAt').notNullable()
-      table.string('expiresAt').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('expiresAt', { useTz: true }).notNullable()
     })
     .createTable('invitation', (table) => {
       table.string('id').primary().notNullable()
@@ -80,17 +80,17 @@ export async function up(knex: Knex): Promise<void> {
       table.string('challenge').notNullable()
       table.string('createdBy').notNullable().references('id').inTable('user')
       table.string('updatedBy').notNullable().references('id').inTable('user')
-      table.string('createdAt').notNullable()
-      table.string('updatedAt').notNullable()
-      table.string('expiresAt').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('updatedAt', { useTz: true }).notNullable()
+      table.timestamp('expiresAt', { useTz: true }).notNullable()
     })
     .createTable('invitation_group', (table) => {
       table.string('invitationId').notNullable().references('id').inTable('invitation').onDelete('CASCADE')
       table.string('groupId').notNullable().references('id').inTable('group').onDelete('CASCADE')
       table.string('createdBy').notNullable().references('id').inTable('user')
       table.string('updatedBy').notNullable().references('id').inTable('user')
-      table.string('createdAt').notNullable()
-      table.string('updatedAt').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('updatedAt', { useTz: true }).notNullable()
 
       table.unique(['invitationId', 'groupId'])
     })

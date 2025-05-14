@@ -37,10 +37,6 @@ export class ConsentComponent implements OnInit {
     })
   }
 
-  scopes() {
-    return this.details?.scopes.filter(s => s !== 'openid').join(', ')
-  }
-
   async submit() {
     try {
       if (!this.uid) {

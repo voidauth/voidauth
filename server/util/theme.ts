@@ -4,6 +4,9 @@ import * as path from 'path'
 import appConfig from './config.ts'
 import * as sass from 'sass'
 
+export let PRIMARY_COLOR = '#000'
+export let PRIMARY_CONTRAST_COLOR = '#FFF'
+
 export async function generateTheme() {
   const schematicRunner = new SchematicTestRunner(
     'schematics',
@@ -11,7 +14,7 @@ export async function generateTheme() {
   )
 
   const options = {
-    primaryColor: appConfig.PRIMARY_COLOR,
+    primaryColor: appConfig.APP_COLOR,
     directory: './',
   }
 
@@ -36,7 +39,14 @@ export async function generateTheme() {
       ],
     })
 
-    // TODO: get primary contrast color for use in config
+    // TODO: get primary and contrast color for use in config
+    const primary = /--mat-sys-primary: light-dark\((#\w+), (#\w+)\);/.exec(compiled.css)?.[1]
+    const contrast = /--mat-sys-on-primary: light-dark\((#\w+), (#\w+)\);/.exec(compiled.css)?.[1]
+    if (!primary || !contrast) {
+      throw new Error('PRIMARY or CONTRAST color could not be found in theme.')
+    }
+    PRIMARY_COLOR = primary
+    PRIMARY_CONTRAST_COLOR = contrast
 
     fs.writeFileSync(path.join('./theme', 'generated-mat-theme.css'), compiled.css)
   } catch (error) {

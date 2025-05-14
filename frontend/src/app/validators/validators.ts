@@ -13,7 +13,7 @@ export function emptyOrMinLength(length: number) {
 
 export function isValidURL(control: AbstractControl) {
   try {
-    if (typeof control.value === 'string') {
+    if (typeof control.value === 'string' && control.value) {
       const value = control.value
       if (!/^https?/.exec(control.value)) {
         return {

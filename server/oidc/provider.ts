@@ -95,6 +95,16 @@ const configuration: Configuration = {
       scope: 'openid',
     },
   ],
+  clientDefaults: {
+    scope: 'openid offline_access profile email groups',
+    grant_types: ['authorization_code', 'refresh_token', 'implicit'],
+    response_types: [
+      'code id_token',
+      'code',
+      'id_token',
+      'none',
+    ],
+  },
   claims: {
     // OIDC 1.0 Standard
     // address: ['address'],
