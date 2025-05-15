@@ -1,23 +1,11 @@
 /* eslint-disable */
 import type { Adapter } from 'oidc-provider'
 import { db } from '../db/db'
+import { decryptClient } from '../db/client'
+import { encryptString } from '../db/key'
+import type { OIDCPayload } from '@shared/db/OIDCPayload'
 
 const tableName = 'oidc_payloads'
-
-export type PayloadTypes = 'Session' |
-  'AccessToken' |
-  'AuthorizationCode' |
-  'RefreshToken' |
-  'DeviceCode' |
-  'ClientCredentials' |
-  'Client' |
-  'InitialAccessToken' |
-  'RegistrationAccessToken' |
-  'Interaction' |
-  'ReplayDetection' |
-  'PushedAuthorizationRequest' |
-  'Grant' |
-  'BackchannelAuthenticationRequest'
 
 function getExpireAt(expiresIn: number) {
   return expiresIn
@@ -25,16 +13,30 @@ function getExpireAt(expiresIn: number) {
     : undefined
 }
 
+function parsePayload(payload: string, pt: string) {
+  if (pt === 'Client') {
+    return decryptClient(payload)
+  }
+  return JSON.parse(payload)
+}
+
+function stringifyPayload(payload: any, pt: string) {
+  if (pt === 'Client') {
+    const enc_client_secret = encryptString(payload.client_secret)
+    return JSON.stringify({ ...payload, client_secret: enc_client_secret })
+  }
+  return JSON.stringify(payload)
+}
+
 export class KnexAdapter implements Adapter {
   payloadType: string
   constructor(pt: string) {
-    // this.name = name;
     this.payloadType = pt
   }
 
   get _table() {
     return db()
-      .table(tableName)
+      .table<OIDCPayload>(tableName)
       .where('type', this.payloadType)
   }
 
@@ -42,17 +44,15 @@ export class KnexAdapter implements Adapter {
     return this._table.where(obj)
   }
 
-  _result(r: any) {
-    return r.length > 0
-      ? {
-          ...JSON.parse(r[0].payload),
+  _findBy(obj: any) {
+    return this._rows(obj).then((r: any) => {
+      return r.length > 0
+        ? {
+          ...parsePayload(r[0].payload, this.payloadType),
           ...(r[0].consumedAt ? { consumed: true } : undefined),
         }
-      : undefined
-  }
-
-  _findBy(obj: any) {
-    return this._rows(obj).then(this._result)
+        : undefined
+    })
   }
 
   async upsert(id: string, payload: any, expiresIn: number) {
@@ -62,7 +62,7 @@ export class KnexAdapter implements Adapter {
       .insert({
         id,
         type: this.payloadType,
-        payload: JSON.stringify(payload),
+        payload: stringifyPayload(payload, this.payloadType),
         grantId: payload.grantId,
         userCode: payload.userCode,
         uid: payload.uid,
@@ -95,7 +95,7 @@ export class KnexAdapter implements Adapter {
   }
 
   async consume(id: string) {
-    await this._rows({ id }).update({ consumedAt: new Date() })
+    await this._rows({ id }).update({ consumedAt: Date() })
     return
   }
 };

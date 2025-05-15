@@ -15,7 +15,9 @@ export type EncryptionMetadata = {
   [k: string]: string
 }
 
-export function parseEncryptionMetadata(metadata: string): EncryptionMetadata {
+export type EncryptedData = { value: string, metadata: EncryptionMetadata }
+
+export function parseEncMetadata(metadata: string): EncryptionMetadata {
   const parsed: unknown = JSON.parse(metadata)
   if (isEncryptionMetadata(parsed)) {
     return parsed
@@ -26,7 +28,15 @@ export function parseEncryptionMetadata(metadata: string): EncryptionMetadata {
 function isEncryptionMetadata(metadata: unknown): metadata is EncryptionMetadata {
   return typeof metadata === 'object'
     && metadata !== null
-    && Object.prototype.hasOwnProperty.call(metadata, 'alg')
+    && 'alg' in metadata
+}
+
+export function isEncryptedData(data: unknown): data is EncryptedData {
+  return typeof data === 'object'
+    && data !== null
+    && 'value' in data
+    && 'metadata' in data
+    && isEncryptionMetadata(data.metadata)
 }
 
 export function isJWK(jwk: unknown): jwk is JWK {

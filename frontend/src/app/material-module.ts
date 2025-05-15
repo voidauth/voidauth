@@ -44,4 +44,5 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
     MatProgressBarModule,
   ],
 })
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class MaterialModule {}

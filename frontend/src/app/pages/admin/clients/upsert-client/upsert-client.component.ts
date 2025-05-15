@@ -28,11 +28,9 @@ export type TypedFormGroup<T> = {
 export class UpsertClientComponent implements OnInit {
   public authMethods = [
     'client_secret_basic',
-    'client_secret_post',
     'client_secret_jwt',
+    'client_secret_post',
     'private_key_jwt',
-    'tls_client_auth',
-    'self_signed_tls_client_auth',
     'none',
   ]
 
@@ -162,6 +160,7 @@ export class UpsertClientComponent implements OnInit {
       numbers: true,
       strict: true,
     }))
+    this.form.controls.client_secret.markAsDirty()
   }
 
   addRedirectUrl(value: string) {

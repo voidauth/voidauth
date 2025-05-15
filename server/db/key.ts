@@ -1,4 +1,4 @@
-import { parseEncryptionMetadata, type Key } from '@shared/db/Key'
+import { parseEncMetadata, type EncryptedData, type EncryptionMetadata, type Key } from '@shared/db/Key'
 import appConfig from '../util/config'
 import { commit, createTransaction, db, rollback } from './db'
 import { KEY_TYPES, TTLs } from '@shared/constants'
@@ -42,7 +42,9 @@ export async function getCookieKeys() {
       return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
     })
     .reduce<Key[]>((ks, k) => {
-      const value = decryptKeyString(k, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
+      const value = decryptKeyString(k.value,
+        parseEncMetadata(k.metadata),
+        [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
       if (value) {
         ks.push({ ...k, value })
       }
@@ -84,7 +86,9 @@ export async function getJWKs() {
       return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
     })
     .reduce<Key[]>((ks, k) => {
-      const value = decryptKeyString(k, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
+      const value = decryptKeyString(k.value,
+        parseEncMetadata(k.metadata),
+        [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
       if (value) {
         ks.push({ ...k, value })
       }
@@ -143,11 +147,12 @@ async function updateStorageKey() {
   const stale = (await db()
     .select()
     .table<Key>('key'))
-    .filter(k => !isExpired(k.expiresAt) && decryptKeyString(k, [appConfig.STORAGE_KEY]) === null)
+    .filter(k => !isExpired(k.expiresAt)
+      && decryptKeyString(k.value, parseEncMetadata(k.metadata), [appConfig.STORAGE_KEY]) === null)
 
   // find those that CAN be decrypted with STORAGE_KEY_SECONDARY
   const refreshed = stale.reduce<Key[]>((ks, k) => {
-    const value = decryptKeyString(k, [appConfig.STORAGE_KEY_SECONDARY])
+    const value = decryptKeyString(k.value, parseEncMetadata(k.metadata), [appConfig.STORAGE_KEY_SECONDARY])
     if (value) {
       ks.push({ ...k, value })
     }
@@ -179,7 +184,7 @@ async function updateStorageKey() {
 /**
  * Encrypt a string
  */
-function encryptString(v: string): { value: string, metadata: { alg: string, iv: string, tag: string } } {
+export function encryptString(v: string): EncryptedData {
   const iv = crypto.randomBytes(12).toString('base64url')
   const alg = 'aes-256-gcm'
   const cipher = crypto.createCipheriv(alg,
@@ -203,8 +208,9 @@ function encryptString(v: string): { value: string, metadata: { alg: string, iv:
  * Decrypt a key
  * If key cannot be decrypted for any reason, returns null
  */
-function decryptKeyString(k: Key, storageKeys: (string | undefined)[]): string | null {
-  const metadata = parseEncryptionMetadata(k.metadata)
+export function decryptKeyString(input: string,
+  metadata: EncryptionMetadata,
+  storageKeys: (string | undefined)[]): string | null {
   let value: string | null = null
 
   if (metadata.alg === 'aes-256-gcm') {
@@ -220,7 +226,7 @@ function decryptKeyString(k: Key, storageKeys: (string | undefined)[]): string |
             crypto.createHash('sha256').update(encKey).digest(),
             Buffer.from(metadata.iv, 'base64url'))
           decipher.setAuthTag(Buffer.from(metadata.tag, 'base64url'))
-          let decrypted = decipher.update(k.value, 'base64url', 'utf8')
+          let decrypted = decipher.update(input, 'base64url', 'utf8')
           decrypted += decipher.final('utf-8')
           value = decrypted
         }

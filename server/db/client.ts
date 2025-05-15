@@ -1,28 +1,46 @@
 import type { Client, ClientMetadata, Provider } from 'oidc-provider'
 import { db } from './db'
-import type { PayloadTypes } from '../oidc/adapter'
 import { provider } from '../oidc/provider'
 import add from 'oidc-provider/lib/helpers/add_client'
+import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
+import { decryptKeyString } from './key'
+import { isEncryptedData } from '@shared/db/Key'
+import appConfig from '../util/config'
 
-const clientType: PayloadTypes = 'Client'
+const clientType: PayloadType = 'Client'
+
+export function decryptClient(client_stringified: string) {
+  const client: unknown = JSON.parse(client_stringified)
+  if (typeof client === 'object'
+    && client != null
+    && 'client_secret' in client
+    && isEncryptedData(client.client_secret)) {
+    client.client_secret = decryptKeyString(client.client_secret.value,
+      client.client_secret.metadata,
+      [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
+    ?? undefined
+  }
+
+  return client
+}
 
 export async function getClients() {
-  const clients: ClientMetadata[] = (await db()
+  const clients = (await db()
     .select()
-    .table<{ payload: string, type: typeof clientType, id: string }>('oidc_payloads')
+    .table<OIDCPayload>('oidc_payloads')
     .where({ type: clientType }))
     .map((r) => {
-      return JSON.parse(r.payload) as ClientMetadata
+      return decryptClient(r.payload)
     })
   return clients
 }
 
 export async function getClient(client_id: string) {
-  const client: ClientMetadata | null = JSON.parse((await db()
+  const client = decryptClient((await db()
     .select()
-    .table<{ payload: string, type: typeof clientType, id: string }>('oidc_payloads')
+    .table<OIDCPayload>('oidc_payloads')
     .where({ type: clientType, id: client_id })
-    .first())?.payload ?? 'null') as ClientMetadata | null
+    .first())?.payload ?? 'null')
   return client
 }
 
