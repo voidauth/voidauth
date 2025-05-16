@@ -55,6 +55,7 @@ export class InvitationComponent {
       value: null,
       disabled: false,
     }, [emptyOrMinLength(4)]),
+    emailVerified: new FormControl<boolean>(true),
     groups: new FormControl<string[]>({
       value: [],
       disabled: false,
@@ -91,6 +92,10 @@ export class InvitationComponent {
         this.groups = (await this.adminService.groups()).map(g => g.name)
         this.groupAutoFilter()
 
+        this.form.controls.email.valueChanges.subscribe(() => {
+          this.setEmailVerifiedState()
+        })
+
         this.enablePage()
         this.hasLoaded = true
       } catch (e) {
@@ -106,6 +111,7 @@ export class InvitationComponent {
       name: invitation.name ?? null,
       email: invitation.email ?? null,
       groups: invitation.groups,
+      emailVerified: true,
     })
     this.inviteEmail = invitation.email
     this.inviteLink = this.adminService.getInviteLink(invitation.id, invitation.challenge)
@@ -123,6 +129,7 @@ export class InvitationComponent {
     } else {
       this.groupSelect.disable()
     }
+    this.setEmailVerifiedState()
   }
 
   groupAutoFilter(value: string = '') {
@@ -156,6 +163,14 @@ export class InvitationComponent {
     this.groupAutoFilter()
   }
 
+  setEmailVerifiedState() {
+    if (this.form.controls.email.value) {
+      this.form.controls.emailVerified.enable()
+    } else {
+      this.form.controls.emailVerified.disable()
+    }
+  }
+
   async sendEmail() {
     try {
       if (!this.id) {
@@ -174,7 +189,11 @@ export class InvitationComponent {
     try {
       this.disablePage()
 
-      const invitation = await this.adminService.upsertInvitation({ ...this.form.getRawValue(), id: this.id })
+      const invitation = await this.adminService.upsertInvitation({
+        ...this.form.getRawValue(),
+        id: this.id,
+        emailVerified: this.form.controls.emailVerified.enabled && this.form.controls.emailVerified.value,
+      })
 
       this.snackbarService.show(`Invitation ${this.id ? 'updated' : 'created'}.`)
 

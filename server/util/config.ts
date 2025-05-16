@@ -1,3 +1,4 @@
+import { generate } from 'generate-password'
 import { exit } from 'node:process'
 
 // NODE_ENV defaults to 'production' if not set
@@ -115,6 +116,11 @@ if (!appConfig.APP_DOMAIN || !URL.parse(appConfig.APP_DOMAIN)) {
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {
   console.error('STORAGE_KEY must be set and be at least 32 characters long.')
+  console.error('Use something long and random like:')
+  console.error(generate({
+    length: 32,
+    numbers: true,
+  }))
   exit(1)
 }
 

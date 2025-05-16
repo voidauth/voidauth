@@ -68,6 +68,15 @@
           }
         </mat-form-field>
 
+        <!-- Tricky set false while disabled, while keeping previous value -->
+        @if (form.controls.emailVerified.enabled) {
+          <mat-checkbox formControlName="emailVerified">Email Verified</mat-checkbox>
+        } @else {
+          <mat-checkbox disabled>Email Verified</mat-checkbox>
+        }
+        
+
+
         <mat-list [ngClass]="{invalid: form.controls.groups.errors}">
           <mat-form-field>
             <mat-label>Add Group</mat-label>

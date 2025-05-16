@@ -1,9 +1,9 @@
 /* eslint-disable */
-import type { Adapter } from 'oidc-provider'
+import type { Adapter, ClientMetadata } from 'oidc-provider'
 import { db } from '../db/db'
-import { decryptClient } from '../db/client'
-import { encryptString } from '../db/key'
+import { decryptString, encryptString } from '../db/key'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
+import appConfig from '../util/config'
 
 const tableName = 'oidc_payloads'
 
@@ -14,16 +14,21 @@ function getExpireAt(expiresIn: number) {
 }
 
 function parsePayload(payload: string, pt: string) {
+  let parsed = JSON.parse(payload)
   if (pt === 'Client') {
-    return decryptClient(payload)
+    const client_secret = decryptString(parsed.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
+    if (client_secret == null) {
+      throw new Error("Cannot decrypt client_secret")
+    }
+    (parsed as ClientMetadata).client_secret = client_secret
   }
-  return JSON.parse(payload)
+  return parsed
 }
 
 function stringifyPayload(payload: any, pt: string) {
   if (pt === 'Client') {
-    const enc_client_secret = encryptString(payload.client_secret)
-    return JSON.stringify({ ...payload, client_secret: enc_client_secret })
+    const client_secret = encryptString(payload.client_secret)
+    return JSON.stringify({ ...payload, client_secret })
   }
   return JSON.stringify(payload)
 }

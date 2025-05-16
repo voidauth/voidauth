@@ -5,8 +5,7 @@ import type { JWK } from 'oidc-provider'
 export type Key = {
   id: string
   type: valueof<typeof KEY_TYPES>
-  value: string
-  metadata: string
+  value: string // Should be stringified EncryptedData
   expiresAt: string
 }
 
@@ -17,12 +16,12 @@ export type EncryptionMetadata = {
 
 export type EncryptedData = { value: string, metadata: EncryptionMetadata }
 
-export function parseEncMetadata(metadata: string): EncryptionMetadata {
-  const parsed: unknown = JSON.parse(metadata)
-  if (isEncryptionMetadata(parsed)) {
+export function parseEncrypedData(data: string): EncryptedData | null {
+  const parsed: unknown = JSON.parse(data)
+  if (isEncryptedData(parsed)) {
     return parsed
   }
-  throw new Error('Invalid metadata for decryption.')
+  return null
 }
 
 function isEncryptionMetadata(metadata: unknown): metadata is EncryptionMetadata {

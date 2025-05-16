@@ -15,9 +15,9 @@ export function isValidURL(control: AbstractControl) {
   try {
     if (typeof control.value === 'string' && control.value) {
       const value = control.value
-      if (!/^https?/.exec(control.value)) {
+      if (!/^https?:\/\//.exec(control.value)) {
         return {
-          isValidUrl: 'Must start with http(s)',
+          isValidUrl: 'Must start with http(s)://',
         }
       }
       const { protocol } = new URL(value)

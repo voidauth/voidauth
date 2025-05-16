@@ -4,9 +4,9 @@ import type { ValidationErrors } from '@angular/forms'
   name: 'validationError',
 })
 export class ValidationErrorPipe implements PipeTransform {
-  transform(errors: ValidationErrors | null | undefined, defaultMessage: string = 'Invalid value.'): string[] {
+  transform(errors: ValidationErrors | null | undefined, defaultMessage: string = 'Invalid value.'): string {
     if (!errors) {
-      return []
+      return ''
     }
     return Object.keys(errors).map((k) => {
       if (typeof errors[k] === 'string') {
@@ -26,6 +26,6 @@ export class ValidationErrorPipe implements PipeTransform {
         default:
           return defaultMessage
       }
-    })
+    })[0] ?? ''
   }
 }

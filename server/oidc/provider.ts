@@ -97,11 +97,9 @@ const configuration: Configuration = {
   ],
   clientDefaults: {
     scope: 'openid offline_access profile email groups',
-    grant_types: ['authorization_code', 'refresh_token', 'implicit'],
+    grant_types: ['authorization_code', 'refresh_token'],
     response_types: [
-      'code id_token',
       'code',
-      'id_token',
       'none',
     ],
   },

@@ -33,8 +33,6 @@
     "jose": "^6.0.10",
     "keygrip": "^1.1.0",
     "knex": "^3.1.0",
-    "matcher": "^5.0.0",
-    "nanoid": "^5.1.5",
     "nodemailer": "^6.10.1",
     "oidc-provider": "^9.1.1",
     "psl": "^1.15.0",
@@ -42,8 +40,7 @@
     "sass": "^1.86.0",
     "sqlite3": "^5.1.7",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.3",
-    "wildcard": "^2.0.1"
+    "typescript": "^5.8.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",

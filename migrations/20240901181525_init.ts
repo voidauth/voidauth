@@ -7,7 +7,6 @@ export async function up(knex: Knex): Promise<void> {
       table.string('type').notNullable()
       // The key will be encrypted
       table.string('value').notNullable()
-      table.string('metadata').notNullable()
       table.timestamp('expiresAt', { useTz: true }).notNullable()
 
       table.check(`type in ('oidc_jwk', 'cookie_key')`)
@@ -78,6 +77,7 @@ export async function up(knex: Knex): Promise<void> {
       table.string('username')
       table.string('name')
       table.string('challenge').notNullable()
+      table.boolean('emailVerified').notNullable().defaultTo(false)
       table.string('createdBy').notNullable().references('id').inTable('user')
       table.string('updatedBy').notNullable().references('id').inTable('user')
       table.timestamp('createdAt', { useTz: true }).notNullable()

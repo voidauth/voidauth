@@ -286,7 +286,7 @@ router.post('/register',
         email: invitation?.email || registration.email,
         passwordHash,
         approved: !!invitationValid, // invited users are approved by default
-        emailVerified: false,
+        emailVerified: !!(invitation?.email || registration.email) && invitation?.emailVerified,
         createdAt: Date(),
         updatedAt: Date(),
       }

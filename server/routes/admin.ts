@@ -21,8 +21,8 @@ import type { UserDetails, UserWithoutPassword } from '@shared/api-response/User
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import { nanoid } from 'nanoid'
 import { sendInvitation } from '../util/email'
+import { generate } from 'generate-password'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -441,7 +441,10 @@ adminRouter.post('/invitation',
         await db().table<Invitation>('invitation').insert({
           ...invitationData,
           id,
-          challenge: nanoid(),
+          challenge: generate({
+            length: 32,
+            numbers: true,
+          }),
           createdBy: req.user.id,
           updatedBy: req.user.id,
           createdAt: Date(),

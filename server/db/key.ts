@@ -1,4 +1,4 @@
-import { parseEncMetadata, type EncryptedData, type EncryptionMetadata, type Key } from '@shared/db/Key'
+import { parseEncrypedData, type Key } from '@shared/db/Key'
 import appConfig from '../util/config'
 import { commit, createTransaction, db, rollback } from './db'
 import { KEY_TYPES, TTLs } from '@shared/constants'
@@ -42,9 +42,7 @@ export async function getCookieKeys() {
       return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
     })
     .reduce<Key[]>((ks, k) => {
-      const value = decryptKeyString(k.value,
-        parseEncMetadata(k.metadata),
-        [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
+      const value = decryptString(k.value, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
       if (value) {
         ks.push({ ...k, value })
       }
@@ -60,13 +58,12 @@ export async function getCookieKeys() {
 async function createCookieKey() {
   const keyValue = crypto.randomBytes(32).toString('base64url')
 
-  const encrypted = encryptString(keyValue)
+  const value = encryptString(keyValue)
 
   const key: Key = {
     id: crypto.randomUUID(),
     type: KEY_TYPES.COOKIE_KEY,
-    value: encrypted.value,
-    metadata: JSON.stringify(encrypted.metadata),
+    value,
     expiresAt: createExpiration(TTLs.COOKIE_KEY),
   }
 
@@ -86,9 +83,7 @@ export async function getJWKs() {
       return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
     })
     .reduce<Key[]>((ks, k) => {
-      const value = decryptKeyString(k.value,
-        parseEncMetadata(k.metadata),
-        [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
+      const value = decryptString(k.value, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
       if (value) {
         ks.push({ ...k, value })
       }
@@ -116,13 +111,12 @@ async function createJWK() {
   jwk.use = 'sig'
   jwk.alg = 'RS256'
 
-  const encrypted = encryptString(JSON.stringify(jwk))
+  const value = encryptString(JSON.stringify(jwk))
 
   const key: Key = {
     id: crypto.randomUUID(),
     type: KEY_TYPES.OIDC_JWK,
-    value: encrypted.value,
-    metadata: JSON.stringify(encrypted.metadata),
+    value,
     expiresAt: createExpiration(TTLs.OIDC_JWK),
   }
 
@@ -148,11 +142,11 @@ async function updateStorageKey() {
     .select()
     .table<Key>('key'))
     .filter(k => !isExpired(k.expiresAt)
-      && decryptKeyString(k.value, parseEncMetadata(k.metadata), [appConfig.STORAGE_KEY]) === null)
+      && decryptString(k.value, [appConfig.STORAGE_KEY]) === null)
 
   // find those that CAN be decrypted with STORAGE_KEY_SECONDARY
   const refreshed = stale.reduce<Key[]>((ks, k) => {
-    const value = decryptKeyString(k.value, parseEncMetadata(k.metadata), [appConfig.STORAGE_KEY_SECONDARY])
+    const value = decryptString(k.value, [appConfig.STORAGE_KEY_SECONDARY])
     if (value) {
       ks.push({ ...k, value })
     }
@@ -161,30 +155,29 @@ async function updateStorageKey() {
 
   // for those, re-encrypt with STORAGE_KEY
   for (const k of refreshed) {
-    const { value, metadata } = encryptString(k.value)
+    const value = encryptString(k.value)
     await db().table<Key>('key').update({
       value,
-      metadata: JSON.stringify(metadata),
     }).where({ id: k.id })
   }
 
-  // find keys that could not be decrypted and delete them
+  // find keys that could not be decrypted
   const locked = stale.filter(k => !refreshed.some(r => r.id === k.id))
 
   // warn if there were any that could not be decrypted
   if (locked.length) {
-    await db().table<Key>('key').delete().whereIn('id', locked.map(k => k.id))
+    // await db().table<Key>('key').delete().whereIn('id', locked.map(k => k.id))
     console.error('WARNING!')
     console.error('You had key(s) that could not be decrypted with the provided STORAGE_KEY.')
     console.error('This could be due to a mistake while rotating the STORAGE_KEY to the STORAGE_KEY_SECONDARY.')
-    console.error('New Keys were generated to replace them, but this invalidated all sessions and tokens.')
+    // console.error('New Keys were generated to replace them, this invalidated all sessions and tokens.')
   }
 }
 
 /**
  * Encrypt a string
  */
-export function encryptString(v: string): EncryptedData {
+export function encryptString(v: string) {
   const iv = crypto.randomBytes(12).toString('base64url')
   const alg = 'aes-256-gcm'
   const cipher = crypto.createCipheriv(alg,
@@ -196,40 +189,44 @@ export function encryptString(v: string): EncryptedData {
 
   const tag = cipher.getAuthTag().toString('base64url')
 
-  return {
+  return JSON.stringify({
     value,
     metadata: {
       alg, iv, tag,
     },
-  }
+  })
 }
 
 /**
  * Decrypt a key
  * If key cannot be decrypted for any reason, returns null
  */
-export function decryptKeyString(input: string,
-  metadata: EncryptionMetadata,
-  storageKeys: (string | undefined)[]): string | null {
+export function decryptString(input: string, storageKeys: (string | undefined)[]): string | null {
   let value: string | null = null
+  const encrypted = parseEncrypedData(input)
+  if (!encrypted) {
+    return null
+  }
 
-  if (metadata.alg === 'aes-256-gcm') {
-    if (!metadata.iv || !metadata.tag) {
+  if (encrypted.metadata.alg === 'aes-256-gcm') {
+    if (!encrypted.metadata.iv || !encrypted.metadata.tag) {
       console.error('Key metadata is missing required properties.')
       return null
     }
 
     for (const encKey of storageKeys) {
       try {
-        if (encKey) {
-          const decipher = crypto.createDecipheriv(metadata.alg,
-            crypto.createHash('sha256').update(encKey).digest(),
-            Buffer.from(metadata.iv, 'base64url'))
-          decipher.setAuthTag(Buffer.from(metadata.tag, 'base64url'))
-          let decrypted = decipher.update(input, 'base64url', 'utf8')
-          decrypted += decipher.final('utf-8')
-          value = decrypted
+        if (!encKey) {
+          continue
         }
+        const decipher = crypto.createDecipheriv(encrypted.metadata.alg,
+          crypto.createHash('sha256').update(encKey).digest(),
+          Buffer.from(encrypted.metadata.iv, 'base64url'))
+        decipher.setAuthTag(Buffer.from(encrypted.metadata.tag, 'base64url'))
+        let decrypted = decipher.update(encrypted.value, 'base64url', 'utf8')
+        decrypted += decipher.final('utf-8')
+        value = decrypted
+        break
       } catch (_e) {
         // Try the other storage key
       }

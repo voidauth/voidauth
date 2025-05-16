@@ -7,7 +7,6 @@ import { validate } from '../util/validate'
 import { newPasswordValidation, stringValidation, uuidValidation } from '../util/validators'
 import { matchedData } from 'express-validator'
 import { getUserById, getUserByInput } from '../db/user'
-import { nanoid } from 'nanoid'
 import { commit, createTransaction, db, rollback } from '../db/db'
 import { createExpiration, isExpired } from '../db/util'
 import { TTLs } from '@shared/constants'
@@ -16,6 +15,7 @@ import { randomUUID } from 'crypto'
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import type { User } from '@shared/db/User'
 import * as argon2 from 'argon2'
+import { generate } from 'generate-password'
 
 /**
  * routes that do not require any auth
@@ -50,7 +50,10 @@ publicRouter.post('/send_password_reset',
     const passwordReset: PasswordReset = {
       id: randomUUID(),
       userId: user.id,
-      challenge: nanoid(),
+      challenge: generate({
+        length: 32,
+        numbers: true,
+      }),
       createdAt: Date(),
       expiresAt: createExpiration(TTLs.PASSWORD_RESET),
     }
