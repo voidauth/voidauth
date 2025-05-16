@@ -58,6 +58,12 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     optional: true,
     ...stringValidation,
   },
+  skip_consent: {
+    default: {
+      options: false,
+    },
+    isBoolean: true,
+  },
   logo_uri: {
     default: {
       options: undefined,

@@ -29,6 +29,7 @@ import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
 import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
+import { getClient } from '../db/client'
 
 export const router = Router()
 
@@ -74,10 +75,11 @@ router.get('/', async (req, res) => {
     }
   } else if (prompt.name === 'consent') {
     // Check conditions to skip consent
-    if (typeof params.redirect_uri === 'string' && typeof params.scope === 'string') {
+    const { redirect_uri, client_id, scope } = params
+    if (typeof redirect_uri === 'string' && typeof client_id === 'string' && typeof scope === 'string') {
       // Check if the redirect is to to APP_DOMAIN
       const appUrl = URL.parse(appConfig.APP_DOMAIN)
-      const redirectUrl = URL.parse(params.redirect_uri)
+      const redirectUrl = URL.parse(redirect_uri)
       if (appUrl && redirectUrl
         && appUrl.protocol === redirectUrl.protocol
         && appUrl.host === redirectUrl.host
@@ -89,9 +91,19 @@ router.get('/', async (req, res) => {
         return
       }
 
+      // Check if client.skip_consent
+      const client = await getClient(client_id)
+      if (client?.skip_consent) {
+        const grantId = await applyConsent(interaction)
+        await provider.interactionFinished(req, res, { consent: { grantId } }, {
+          mergeWithLastSubmission: true,
+        })
+        return
+      }
+
       // Check if the user has already consented to this client/redirect
-      const consent = accountId && await getExistingConsent(accountId, params.redirect_uri)
-      if (consent && !consentMissingScopes(consent, params.scope).length) {
+      const consent = accountId && await getExistingConsent(accountId, redirect_uri)
+      if (consent && !consentMissingScopes(consent, scope).length) {
         const grantId = await applyConsent(interaction)
         await provider.interactionFinished(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,

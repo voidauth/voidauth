@@ -47,24 +47,12 @@ export class UpsertClientComponent implements OnInit {
   groups = new FormControl<boolean>(true)
 
   form = new FormGroup<TypedFormGroup<ClientUpsert>>({
-    client_id: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required]),
-    redirect_uris: new FormControl<string[]>({
-      value: [],
-      disabled: false,
-    }, [Validators.required, Validators.minLength(1)]),
-    client_secret: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required, Validators.minLength(4)]),
-    token_endpoint_auth_method:
-      new FormControl<Required<ClientUpsert>['token_endpoint_auth_method']>('client_secret_basic'),
-    logo_uri: new FormControl<string | null>({
-      value: null,
-      disabled: true,
-    }, [isValidURL]),
+    client_id: new FormControl<string | null>(null, [Validators.required]),
+    redirect_uris: new FormControl<string[]>([], [Validators.required, Validators.minLength(1)]),
+    client_secret: new FormControl<string>('', [Validators.required, Validators.minLength(4)]),
+    token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_basic'),
+    skip_consent: new FormControl<boolean>(false),
+    logo_uri: new FormControl<string | null>(null, [isValidURL]),
   })
 
   private adminService = inject(AdminService)
@@ -86,6 +74,7 @@ export class UpsertClientComponent implements OnInit {
             client_secret: client.client_secret ?? '',
             redirect_uris: client.redirect_uris ?? [],
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_basic',
+            skip_consent: client['skip_consent'] ?? false,
             logo_uri: client.logo_uri,
           })
           this.profile.setValue(!!(client.scope?.includes('profile')))

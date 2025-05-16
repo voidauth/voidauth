@@ -7,4 +7,5 @@ export type ClientUpsert = Required<Pick<ClientMetadata,
   // Optional
   & Partial<Pick<ClientMetadata,
   'token_endpoint_auth_method'
-  | 'logo_uri'>>
+  | 'logo_uri'
+  | 'skip_consent'>>

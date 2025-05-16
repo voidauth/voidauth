@@ -128,6 +128,7 @@ const configuration: Configuration = {
     // Additional
     groups: ['groups'],
   },
+  extraClientMetadata: { properties: ['skip_consent'] },
   renderError: (ctx, out, error) => {
     console.error(error)
     ctx.status = 500
