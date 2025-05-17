@@ -9,17 +9,17 @@ export function mergeKeys<T extends object>(inserted: T): (keyof T)[] {
 }
 
 export function createExpiration(ttl: number) {
-  return (new Date(Date.now() + (ttl * 1000))).toString()
+  return new Date(Date.now() + (ttl * 1000))
 }
 
-export function isExpired(expires: string) {
+export function isExpired(expires: Date) {
   return timeToExpiration(expires) < 0
 }
 
-export function timeToExpiration(expires: string) {
+export function timeToExpiration(expires: Date) {
   return ((new Date(expires)).getTime() - Date.now())
 }
 
-export function pastHalfExpired(ttl: number, expires: string) {
+export function pastHalfExpired(ttl: number, expires: Date) {
   return timeToExpiration(expires) < (ttl * 1000 / 2)
 }

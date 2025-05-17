@@ -19,8 +19,8 @@ const initialAdminUser: User = {
   passwordHash: await argon2.hash(password),
   emailVerified: true,
   approved: true,
-  createdAt: Date(),
-  updatedAt: Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 const initialAdminGroup: Group = {
@@ -28,8 +28,8 @@ const initialAdminGroup: Group = {
   name: ADMIN_GROUP,
   createdBy: initialAdminUser.id,
   updatedBy: initialAdminUser.id,
-  createdAt: Date(),
-  updatedAt: Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 export async function up(knex: Knex): Promise<void> {
@@ -42,8 +42,8 @@ export async function up(knex: Knex): Promise<void> {
     groupId: initialAdminGroup.id,
     createdBy: initialAdminUser.id,
     updatedBy: initialAdminUser.id,
-    createdAt: Date(),
-    updatedAt: Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
   })
 
   console.log('')

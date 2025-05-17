@@ -6,5 +6,5 @@ export type EmailVerification = Pick<Audit, 'createdAt'> & {
   userId: User['id']
   email: string
   challenge: string
-  expiresAt: string
+  expiresAt: Date
 }

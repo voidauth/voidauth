@@ -232,8 +232,8 @@ adminRouter.patch('/user',
           userId: userUpdate.id,
           createdBy: req.user.id,
           updatedBy: req.user.id,
-          createdAt: Date(),
-          updatedAt: Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
       })
 
@@ -339,8 +339,8 @@ adminRouter.post('/group',
       name,
       createdBy: req.user.id,
       updatedBy: req.user.id,
-      createdAt: Date(),
-      updatedAt: Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }
 
     await db().table<Group>('group').insert(group).onConflict(['id']).merge(mergeKeys(group))
@@ -439,8 +439,8 @@ adminRouter.post('/invitation',
           ...invitationData,
           createdBy: req.user.id,
           updatedBy: req.user.id,
-          createdAt: Date(),
-          updatedAt: Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }).where({ id: invitationData.id })
       } else {
         // insert
@@ -453,8 +453,8 @@ adminRouter.post('/invitation',
           }),
           createdBy: req.user.id,
           updatedBy: req.user.id,
-          createdAt: Date(),
-          updatedAt: Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
           expiresAt: createExpiration(TTLs.INVITATION),
         })
       }
@@ -466,8 +466,8 @@ adminRouter.post('/invitation',
           invitationId: id,
           createdBy: req.user.id,
           updatedBy: req.user.id,
-          createdAt: Date(),
-          updatedAt: Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
       })
 

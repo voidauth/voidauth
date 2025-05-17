@@ -5,8 +5,8 @@ export type OIDCPayload = {
   grantId?: string | null
   userCode?: string | null
   uid?: string | null
-  expiresAt?: string | null
-  consumedAt?: string | null
+  expiresAt?: Date | null
+  consumedAt?: Date | null
 }
 
 export type PayloadType = 'Session' |

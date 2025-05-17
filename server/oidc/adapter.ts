@@ -100,7 +100,7 @@ export class KnexAdapter implements Adapter {
   }
 
   async consume(id: string) {
-    await this._rows({ id }).update({ consumedAt: Date() })
+    await this._rows({ id }).update({ consumedAt: new Date() })
     return
   }
 };

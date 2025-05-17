@@ -5,5 +5,5 @@ export type PasswordReset = Pick<Audit, 'createdAt'> & {
   id: string
   userId: User['id']
   challenge: string
-  expiresAt: string
+  expiresAt: Date
 }

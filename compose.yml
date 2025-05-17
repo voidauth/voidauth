@@ -3,9 +3,20 @@ services:
     build:
       context: .
     ports:
-      - 80:80
+      - "3000:3000"
     volumes:
-      - "./db:/app/db"
       - "./config:/app/config"
     environment:
-      - APP_TITLE="void-auth"
+      APP_TITLE: void-auth
+
+  void-auth-db:
+    image: postgres:17
+    environment:
+      # POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 0cDBZJktmwpe4fIi6534rt4R7vh9TUOL
+      # POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    restart: unless-stopped

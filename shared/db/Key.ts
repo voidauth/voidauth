@@ -6,7 +6,7 @@ export type Key = {
   id: string
   type: valueof<typeof KEY_TYPES>
   value: string // Should be stringified EncryptedData
-  expiresAt: string
+  expiresAt: Date
 }
 
 export type EncryptionMetadata = {

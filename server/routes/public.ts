@@ -54,7 +54,7 @@ publicRouter.post('/send_password_reset',
         length: 32,
         numbers: true,
       }),
-      createdAt: Date(),
+      createdAt: new Date(),
       expiresAt: createExpiration(TTLs.PASSWORD_RESET),
     }
     await db().table<PasswordReset>('password_reset').insert(passwordReset)

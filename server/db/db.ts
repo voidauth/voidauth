@@ -1,37 +1,36 @@
 import knex from 'knex'
-import path from 'path'
 import appConfig from '../util/config'
-import fs from 'node:fs'
 import { getAsyncStore } from '../util/als'
+import { generate } from 'generate-password'
+import { exit } from 'process'
 
-const SQLITE_DIR = appConfig.SQLITE_DIR
+// check that DB_PASSWORD is set
+if (!appConfig.DB_PASSWORD?.length) {
+  console.error(`DB_PASSWORD must be set. If you don't already have one, use something long and random like:`)
+  console.error(generate({
+    length: 32,
+    numbers: true,
+  }))
+  exit(1)
+}
 
-if (!fs.existsSync(SQLITE_DIR)) {
-  fs.mkdirSync(SQLITE_DIR, {
-    recursive: true,
-  })
+// check that DB_HOST is set
+if (!appConfig.DB_HOST?.length) {
+  console.error('DB_HOST must be set.')
+  exit(1)
 }
 
 const _db = knex({
-  client: 'sqlite3', // or 'better-sqlite3'
+  client: 'pg',
   connection: {
-    filename: path.join(SQLITE_DIR, 'db.sqlite'),
-    // host: '127.0.0.1',
-    // port: 3306,
-    // user: 'your_database_user',
-    // password: 'your_database_password',
-    // database: 'myapp_test',
+    host: appConfig.DB_HOST,
+    port: appConfig.DB_PORT,
+    user: appConfig.DB_USER,
+    database: appConfig.DB_NAME,
+    password: appConfig.DB_PASSWORD,
   },
-  pool: {
-    // eslint-disable-next-line @stylistic/max-len
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    afterCreate: (conn: any, done: any) => conn.run('PRAGMA foreign_keys = ON', done),
-  },
-  useNullAsDefault: true,
 })
-/**
- * @type {[count: number, ran: string[]]}
- */
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const [,migrations]: [number, string[]] = await _db.migrate.latest({
   loadExtensions: ['.ts'],

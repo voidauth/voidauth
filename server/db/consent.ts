@@ -13,7 +13,7 @@ export async function addConsent(redirectUri: string, userId: string, scope: str
     redirectUri,
     scope,
     expiresAt: createExpiration(TTLs.CONSENT),
-    createdAt: Date(),
+    createdAt: new Date(),
   }
   await db()
     .table<Consent>('consent')

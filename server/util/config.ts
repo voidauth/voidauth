@@ -9,13 +9,26 @@ class Config {
   APP_TITLE = 'void-auth'
   APP_DOMAIN = ''
 
-  SQLITE_DIR = './db'
-
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
   EMAIL_VERIFICATION = false
 
   APP_COLOR = '#8864c4'
+
+  // Database config
+  DB_PASSWORD?: string // checked for validity
+  DB_HOST?: string
+  DB_PORT: number = 5432
+  DB_USER: string = 'postgres'
+  DB_NAME: string = 'postgres'
+
+  // connectionString: config.DATABASE_URL,
+  //   host: config['DB_HOST'],
+  //   port: config['DB_PORT'],
+  //   user: config['DB_USER'],
+  //   database: config['DB_NAME'],
+  //   password: config['DB_PASSWORD'],
+  //   ssl: config['DB_SSL'] ? { rejectUnauthorized: false } : false,
 
   // required and checked for validity
   STORAGE_KEY: string = ''
@@ -23,6 +36,8 @@ class Config {
   // Optional
   STORAGE_KEY_SECONDARY?: string
   ZXCVBN_MIN = 2
+
+  // SMTP
   SMTP_HOST?: string
   SMTP_FROM?: string
   SMTP_PORT = 587
@@ -36,6 +51,7 @@ function assignConfigValue(key: keyof Config, value: unknown) {
   switch (key) {
     // positive ints
     case 'SMTP_PORT':
+    case 'DB_PORT':
     case 'ZXCVBN_MIN':
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
@@ -48,13 +64,10 @@ function assignConfigValue(key: keyof Config, value: unknown) {
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 
-    // required variables
-    case 'STORAGE_KEY':
-      appConfig[key] = stringOnly(value) ?? appConfig[key]
-      break
-
-    // default null variables
+    // non default variables
     case 'STORAGE_KEY_SECONDARY':
+    case 'DB_HOST':
+    case 'DB_PASSWORD':
     case 'SMTP_HOST':
     case 'SMTP_FROM':
     case 'SMTP_USER':
@@ -115,8 +128,7 @@ if (!appConfig.APP_DOMAIN || !URL.parse(appConfig.APP_DOMAIN)) {
 
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {
-  console.error('STORAGE_KEY must be set and be at least 32 characters long.')
-  console.error('Use something long and random like:')
+  console.error(`STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: `)
   console.error(generate({
     length: 32,
     numbers: true,

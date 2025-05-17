@@ -2,12 +2,12 @@ import type { Knex } from 'knex'
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('oidc_payloads', (table) => {
-    table.string('id')
-    table.integer('type')
+    table.text('id')
+    table.text('type')
     table.text('payload')
-    table.string('grantId')
-    table.string('userCode')
-    table.string('uid')
+    table.text('grantId')
+    table.text('userCode')
+    table.text('uid')
     table.dateTime('expiresAt')
     table.dateTime('consumedAt')
     table.primary(['id', 'type'])

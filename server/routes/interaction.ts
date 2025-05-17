@@ -299,8 +299,8 @@ router.post('/register',
         passwordHash,
         approved: !!invitationValid, // invited users are approved by default
         emailVerified: !!(invitation?.email || registration.email) && invitation?.emailVerified,
-        createdAt: Date(),
-        updatedAt: Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
 
       // check username and email not taken
@@ -508,7 +508,7 @@ export async function createEmailVerification(
     email: sentEmail,
     challenge: challenge,
     expiresAt: createExpiration(TTLs.VERIFICATION_EMAIL),
-    createdAt: Date(),
+    createdAt: new Date(),
   }
   // insert new email verification challenge
   await db().table<EmailVerification>('email_verification').insert(email_verification)
