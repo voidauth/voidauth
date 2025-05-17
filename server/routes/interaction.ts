@@ -23,7 +23,7 @@ import { emailValidation, nameValidation,
   optionalNull,
   stringValidation, usernameValidation, uuidValidation } from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
-import { isExpired, createExpiration } from '../db/util'
+import { createExpiration } from '../db/util'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
@@ -279,9 +279,7 @@ router.post('/register',
       }
 
       const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
-      const invitationValid = invitation
-        && !isExpired(invitation.expiresAt)
-        && invitation.challenge === registration.challenge
+      const invitationValid = invitation && invitation.challenge === registration.challenge
 
       if (!invitationValid && !appConfig.SIGNUP) {
         res.sendStatus(400)
@@ -519,9 +517,9 @@ export async function createEmailVerification(
 export async function getEmailVerification(userId: string) {
   const emailVerification = await db().select()
     .table<EmailVerification>('email_verification')
-    .where({ userId }).first()
+    .where({ userId }).andWhere('expiresAt', '>=', new Date()).first()
 
-  if (emailVerification && !isExpired(emailVerification.expiresAt)) {
+  if (emailVerification) {
     return emailVerification
   }
 }

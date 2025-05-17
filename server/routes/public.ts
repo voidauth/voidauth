@@ -8,7 +8,7 @@ import { newPasswordValidation, stringValidation, uuidValidation } from '../util
 import { matchedData } from 'express-validator'
 import { getUserById, getUserByInput } from '../db/user'
 import { commit, createTransaction, db, rollback } from '../db/db'
-import { createExpiration, isExpired } from '../db/util'
+import { createExpiration } from '../db/util'
 import { TTLs } from '@shared/constants'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
 import { randomUUID } from 'crypto'
@@ -81,10 +81,10 @@ publicRouter.post('/reset_password',
   async (req: Request, res: Response) => {
     const { userId, challenge, newPassword } = matchedData<ResetPassword>(req)
     const user = await getUserById(userId)
-    const passwordReset = await db()
-      .select().table<PasswordReset>('password_reset').where({ userId, challenge }).first()
+    const passwordReset = await db().select().table<PasswordReset>('password_reset')
+      .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()
 
-    if (!user || !passwordReset || isExpired(passwordReset.expiresAt)) {
+    if (!user || !passwordReset) {
       res.sendStatus(400)
       return
     }

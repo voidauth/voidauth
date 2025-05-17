@@ -12,10 +12,6 @@ export function createExpiration(ttl: number) {
   return new Date(Date.now() + (ttl * 1000))
 }
 
-export function isExpired(expires: Date) {
-  return timeToExpiration(expires) < 0
-}
-
 export function timeToExpiration(expires: Date) {
   return ((new Date(expires)).getTime() - Date.now())
 }

@@ -2,7 +2,7 @@ import { parseEncrypedData, type Key } from '@shared/db/Key'
 import appConfig from '../util/config'
 import { commit, createTransaction, db, rollback } from './db'
 import { KEY_TYPES, TTLs } from '@shared/constants'
-import { createExpiration, pastHalfExpired, isExpired } from './util'
+import { createExpiration, pastHalfExpired } from './util'
 import { als } from '../util/als'
 import crypto from 'node:crypto'
 import * as jose from 'jose'
@@ -14,14 +14,14 @@ export async function makeKeysValid() {
   // update encrypted keys to use the latest storage encryption key
   await updateStorageKey()
 
-  // check valid cookie key exist, and if not create one
+  // check cookie key exist with more than half its ttl left, and if not create one
   const cookieKeys = await getCookieKeys()
   if (!cookieKeys.some(k => !pastHalfExpired(TTLs.COOKIE_KEY, k.expiresAt))) {
     // there is no cookie key with greater than half its life left, create a new one
     await createCookieKey()
   }
 
-  // check valid JWK exist, and if not create one
+  // check JWK exist with more than half its ttl left, and if not create one
   const jwks = await getJWKs()
   if (!jwks.some(k => !pastHalfExpired(TTLs.OIDC_JWK, k.expiresAt))) {
     // there are no jwk with greater than half its life left, create a new one
@@ -36,8 +36,7 @@ export async function getCookieKeys() {
   const keys = (await db()
     .select()
     .table<Key>('key')
-    .where({ type: KEY_TYPES.COOKIE_KEY }))
-    .filter(k => !isExpired(k.expiresAt))
+    .where({ type: KEY_TYPES.COOKIE_KEY }).andWhere('expiresAt', '>=', new Date()))
     .sort((a, b) => {
       return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
     })
@@ -77,8 +76,7 @@ export async function getJWKs() {
   const keys = (await db()
     .select()
     .table<Key>('key')
-    .where({ type: KEY_TYPES.OIDC_JWK }))
-    .filter(k => !isExpired(k.expiresAt))
+    .where({ type: KEY_TYPES.OIDC_JWK }).andWhere('expiresAt', '>=', new Date()))
     .sort((a, b) => {
       return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
     })
@@ -130,8 +128,7 @@ async function clearExpiredKeys() {
   const expiredKeys = (await db()
     .select()
     .table<Key>('key')
-    .where({ type: KEY_TYPES.COOKIE_KEY }))
-    .filter(k => isExpired(k.expiresAt))
+    .where('expiresAt', '<', new Date()))
 
   await db().delete().table<Key>('key').whereIn('id', expiredKeys.map(k => k.id))
 }
@@ -140,9 +137,9 @@ async function updateStorageKey() {
   // find any that cannot be decrypted with STORAGE_KEY
   const stale = (await db()
     .select()
-    .table<Key>('key'))
-    .filter(k => !isExpired(k.expiresAt)
-      && decryptString(k.value, [appConfig.STORAGE_KEY]) === null)
+    .table<Key>('key')
+    .where('expiresAt', '>=', new Date()))
+    .filter(k => decryptString(k.value, [appConfig.STORAGE_KEY]) === null)
 
   // find those that CAN be decrypted with STORAGE_KEY_SECONDARY
   const refreshed = stale.reduce<Key[]>((ks, k) => {
