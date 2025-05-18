@@ -43,6 +43,10 @@ export class KnexAdapter implements Adapter {
     return db()
       .table<OIDCPayload>(tableName)
       .where('type', this.payloadType)
+      .andWhere((w) => {
+        w.where({ expiresAt: null })
+        .orWhere('expiresAt', '>=', new Date())
+      })
   }
 
   _rows(obj: any) {
@@ -51,12 +55,17 @@ export class KnexAdapter implements Adapter {
 
   _findBy(obj: any) {
     return this._rows(obj).then((r: any) => {
-      return r.length > 0
-        ? {
-          ...parsePayload(r[0].payload, this.payloadType),
-          ...(r[0].consumedAt ? { consumed: true } : undefined),
-        }
-        : undefined
+      try {
+        return r.length > 0
+          ? {
+            ...parsePayload(r[0].payload, this.payloadType),
+            ...(r[0].consumedAt ? { consumed: true } : undefined),
+          }
+          : undefined
+      } catch (e) {
+        console.error(typeof e === 'object' && e !== null && 'message' in e ? e.message : e)
+        return undefined
+      }
     })
   }
 

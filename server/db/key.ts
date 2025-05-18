@@ -2,18 +2,12 @@ import { parseEncrypedData, type Key } from '@shared/db/Key'
 import appConfig from '../util/config'
 import { commit, createTransaction, db, rollback } from './db'
 import { KEY_TYPES, TTLs } from '@shared/constants'
-import { createExpiration, pastHalfExpired } from './util'
+import { createExpiration, pastHalfExpired, updateEncryptedTables } from './util'
 import { als } from '../util/als'
 import crypto from 'node:crypto'
 import * as jose from 'jose'
 
 export async function makeKeysValid() {
-  // clear out all expired keys
-  await clearExpiredKeys()
-
-  // update encrypted keys to use the latest storage encryption key
-  await updateStorageKey()
-
   // check cookie key exist with more than half its ttl left, and if not create one
   const cookieKeys = await getCookieKeys()
   if (!cookieKeys.some(k => !pastHalfExpired(TTLs.COOKIE_KEY, k.expiresAt))) {
@@ -122,56 +116,6 @@ async function createJWK() {
 }
 
 /**
- * Remove all expired keys from the DB
- */
-async function clearExpiredKeys() {
-  const expiredKeys = (await db()
-    .select()
-    .table<Key>('key')
-    .where('expiresAt', '<', new Date()))
-
-  await db().delete().table<Key>('key').whereIn('id', expiredKeys.map(k => k.id))
-}
-
-async function updateStorageKey() {
-  // find any that cannot be decrypted with STORAGE_KEY
-  const stale = (await db()
-    .select()
-    .table<Key>('key')
-    .where('expiresAt', '>=', new Date()))
-    .filter(k => decryptString(k.value, [appConfig.STORAGE_KEY]) === null)
-
-  // find those that CAN be decrypted with STORAGE_KEY_SECONDARY
-  const refreshed = stale.reduce<Key[]>((ks, k) => {
-    const value = decryptString(k.value, [appConfig.STORAGE_KEY_SECONDARY])
-    if (value) {
-      ks.push({ ...k, value })
-    }
-    return ks
-  }, [])
-
-  // for those, re-encrypt with STORAGE_KEY
-  for (const k of refreshed) {
-    const value = encryptString(k.value)
-    await db().table<Key>('key').update({
-      value,
-    }).where({ id: k.id })
-  }
-
-  // find keys that could not be decrypted
-  const locked = stale.filter(k => !refreshed.some(r => r.id === k.id))
-
-  // warn if there were any that could not be decrypted
-  if (locked.length) {
-    // await db().table<Key>('key').delete().whereIn('id', locked.map(k => k.id))
-    console.error('WARNING!')
-    console.error('You had key(s) that could not be decrypted with the provided STORAGE_KEY.')
-    console.error('This could be due to a mistake while rotating the STORAGE_KEY to the STORAGE_KEY_SECONDARY.')
-    // console.error('New Keys were generated to replace them, this invalidated all sessions and tokens.')
-  }
-}
-
-/**
  * Encrypt a string
  */
 export function encryptString(v: string) {
@@ -240,6 +184,7 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
 await als.run({}, async () => {
   await createTransaction()
   try {
+    await updateEncryptedTables(true)
     await makeKeysValid()
     await commit()
   } catch (e) {

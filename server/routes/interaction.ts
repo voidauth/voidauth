@@ -154,7 +154,7 @@ router.post('/login',
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.status(400).send({
-        message: 'Login session is invalid, refresh the page.',
+        message: 'Login page too old, refresh the page.',
       })
       return
     }
@@ -273,7 +273,7 @@ router.post('/register',
       if (!await getInteractionDetails(req, res)) {
         const action = registration.inviteId ? 'Invite' : 'Registration'
         res.status(400).send({
-          message: `${action} session is invalid, refresh the page.`,
+          message: `${action} page too old, refresh the page.`,
         })
         return
       }

@@ -8,22 +8,28 @@ import appConfig from '../util/config'
 
 const clientType: PayloadType = 'Client'
 
-// When getting list of clients, do not error on un-decryptable client_secret
+// When getting list of clients, do not error on un-decryptable client_secret, just don't include it
 export async function getClients() {
   const clients = (await db()
     .select()
     .table<OIDCPayload>('oidc_payloads')
     .where({ type: clientType }))
-    .map((r) => {
+    .reduce<ClientMetadata[]>((p, r) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const c: ClientMetadata = JSON.parse(r.payload)
       if (c.client_secret) {
         const client_secret = decryptString(c.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
-        c.client_secret = client_secret ?? undefined
+        if (client_secret) {
+          c.client_secret = client_secret
+          p.push(c)
+        }
+      } else {
+        // If a client is missing a client_secret entirely, include it
+        p.push(c)
       }
 
-      return c
-    })
+      return p
+    }, [])
   return clients
 }
 

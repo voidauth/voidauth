@@ -10,6 +10,9 @@ import helmet from 'helmet'
 import { getCookieKeys, getJWKs, makeKeysValid } from './db/key'
 import { randomInt } from 'node:crypto'
 import initialize from 'oidc-provider/lib/helpers/initialize_keystore'
+import { clearAllExpiredEntries, updateEncryptedTables } from './db/util'
+import { createTransaction, commit, rollback } from './db/db'
+import { als } from './util/als'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -101,31 +104,48 @@ app.listen(PORT, () => {
   console.log(`Listening on port: ${PORT}`)
 })
 
-// interval to keep keys up to date every 10 minutes +- 1 minute
+// interval to delete expired db entries and keep keys up to date
 let previousJwks = initialJwks
 setInterval(async () => {
-  // make DB keys all valid
-  await makeKeysValid()
+  // Do initial key setup and cleanup
+  await als.run({}, async () => {
+    await createTransaction()
+    try {
+      // Remove all expired data from db
+      await clearAllExpiredEntries()
 
-  // update provider cookie keys
-  const cookieKeys = (await getCookieKeys()).map(k => k.value)
-  if (!cookieKeys.length) {
-    throw new Error('No Cookie Signing Keys found.')
-  }
-  if (new Set(providerCookieKeys).symmetricDifference(new Set(cookieKeys)).size) {
-    // cookieKeys are not the same as providerCookieKeys
-    providerCookieKeys.length = 0 // magic, deletes all entries
-    providerCookieKeys.unshift(...cookieKeys) // adds all db cookie keys
-  }
+      // Update encrypted table values to the current STORAGE_KEY
+      await updateEncryptedTables()
 
-  // update provider jwks
-  const jwks = { keys: (await getJWKs()).map(k => k.jwk) }
-  if (!jwks.keys.length) {
-    throw new Error('No OIDC JWKs found.')
-  }
-  if (new Set(previousJwks.keys.map(j => j.kid)).symmetricDifference(new Set(jwks.keys.map(j => j.kid))).size) {
-    // db jwks have changed
-    initialize.call(provider, jwks)
-    previousJwks = jwks
-  }
+      // make DB keys all valid
+      await makeKeysValid()
+
+      // update provider cookie keys
+      const cookieKeys = (await getCookieKeys()).map(k => k.value)
+      if (!cookieKeys.length) {
+        throw new Error('No Cookie Signing Keys found.')
+      }
+      if (new Set(providerCookieKeys).symmetricDifference(new Set(cookieKeys)).size) {
+        // cookieKeys are not the same as providerCookieKeys
+        providerCookieKeys.length = 0 // magic, deletes all entries???
+        providerCookieKeys.unshift(...cookieKeys) // adds all db cookie keys
+      }
+
+      // update provider jwks
+      const jwks = { keys: (await getJWKs()).map(k => k.jwk) }
+      if (!jwks.keys.length) {
+        throw new Error('No OIDC JWKs found.')
+      }
+      if (new Set(previousJwks.keys.map(j => j.kid)).symmetricDifference(new Set(jwks.keys.map(j => j.kid))).size) {
+        // db jwks have changed
+        initialize.call(provider, jwks)
+        previousJwks = jwks
+      }
+
+      await commit()
+    } catch (e) {
+      await rollback()
+      throw e
+    }
+  })
 }, ((9 * 60) + randomInt(2 * 60)) * 1000)
