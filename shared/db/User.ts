@@ -1,6 +1,6 @@
-import type { Audit } from './Audit'
+import type { Audit } from "./Audit"
 
-export type User = Pick<Audit, 'createdAt' | 'updatedAt'> & {
+export type User = Pick<Audit, "createdAt" | "updatedAt"> & {
   id: string
   username: string
   passwordHash: string

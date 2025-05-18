@@ -1,24 +1,24 @@
-import { Component, inject, output, type OnInit } from '@angular/core'
-import { Router, RouterLink } from '@angular/router'
-import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component'
-import { MaterialModule } from '../../material-module'
-import { CommonModule } from '@angular/common'
-import { UserService } from '../../services/user.service'
-import { ADMIN_GROUP } from '@shared/constants'
-import type { UserDetails } from '@shared/api-response/UserDetails'
-import { ConfigService } from '../../services/config.service'
-import { oidcLoginPath } from '@shared/oidc'
+import { Component, inject, output, type OnInit } from "@angular/core"
+import { Router, RouterLink } from "@angular/router"
+import { ThemeToggleComponent } from "../theme-toggle/theme-toggle.component"
+import { MaterialModule } from "../../material-module"
+import { CommonModule } from "@angular/common"
+import { UserService } from "../../services/user.service"
+import { ADMIN_GROUP } from "@shared/constants"
+import type { UserDetails } from "@shared/api-response/UserDetails"
+import { ConfigService } from "../../services/config.service"
+import { oidcLoginPath } from "@shared/oidc"
 
 @Component({
-  selector: 'app-header',
+  selector: "app-header",
   imports: [
     CommonModule,
     MaterialModule,
     ThemeToggleComponent,
     RouterLink,
   ],
-  templateUrl: './header.component.html',
-  styleUrl: './header.component.scss',
+  templateUrl: "./header.component.html",
+  styleUrl: "./header.component.scss",
 })
 export class HeaderComponent implements OnInit {
   public userLoading: boolean = false

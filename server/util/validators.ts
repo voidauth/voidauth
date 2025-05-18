@@ -1,10 +1,10 @@
-import { ADMIN_GROUP, USERNAME_REGEX } from '@shared/constants'
-import type { ValidParamSchema } from './validate'
-import type { NextFunction, Request, Response } from 'express'
-import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
-import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
-import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
-import appConfig from './config'
+import { ADMIN_GROUP, USERNAME_REGEX } from "@shared/constants"
+import type { ValidParamSchema } from "./validate"
+import type { NextFunction, Request, Response } from "express"
+import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core"
+import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common"
+import * as zxcvbnEnPackage from "@zxcvbn-ts/language-en"
+import appConfig from "./config"
 
 const options = {
   // recommended
@@ -40,7 +40,7 @@ export function checkAdmin(req: Request, res: Response, next: NextFunction) {
 export const optionalNull: ValidParamSchema = {
   optional: {
     options: {
-      values: 'null',
+      values: "null",
     },
   },
 } as const
@@ -66,7 +66,7 @@ export const nameValidation: ValidParamSchema = {
   },
   optional: {
     options: {
-      values: 'null',
+      values: "null",
     },
   },
   ...stringValidation,
@@ -77,7 +77,7 @@ export const newPasswordValidation: ValidParamSchema = {
   ...stringValidation,
   zxcvbn: {
     custom: (value: unknown) => {
-      return typeof value === 'string' && zxcvbn(value).score >= appConfig.ZXCVBN_MIN
+      return typeof value === "string" && zxcvbn(value).score >= appConfig.ZXCVBN_MIN
     },
   },
 } as const

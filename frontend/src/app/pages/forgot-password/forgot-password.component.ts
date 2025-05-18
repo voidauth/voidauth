@@ -1,23 +1,23 @@
-import { Component, inject, type OnInit } from '@angular/core'
-import { ConfigService } from '../../services/config.service'
-import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms'
-import { CommonModule } from '@angular/common'
-import { MaterialModule } from '../../material-module'
-import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
-import { AuthService } from '../../services/auth.service'
-import { SnackbarService } from '../../services/snackbar.service'
-import { HttpErrorResponse } from '@angular/common/http'
+import { Component, inject, type OnInit } from "@angular/core"
+import { ConfigService } from "../../services/config.service"
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from "@angular/forms"
+import { CommonModule } from "@angular/common"
+import { MaterialModule } from "../../material-module"
+import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
+import { AuthService } from "../../services/auth.service"
+import { SnackbarService } from "../../services/snackbar.service"
+import { HttpErrorResponse } from "@angular/common/http"
 
 @Component({
-  selector: 'app-forgot-password',
+  selector: "app-forgot-password",
   imports: [
     ReactiveFormsModule,
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
   ],
-  templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.scss',
+  templateUrl: "./forgot-password.component.html",
+  styleUrl: "./forgot-password.component.scss",
 })
 export class ForgotPasswordComponent implements OnInit {
   emailActive: boolean = false
@@ -25,7 +25,7 @@ export class ForgotPasswordComponent implements OnInit {
 
   public form = new FormGroup({
     input: new FormControl<string>({
-      value: '',
+      value: "",
       disabled: false,
     }, [Validators.required]),
   })
@@ -42,13 +42,13 @@ export class ForgotPasswordComponent implements OnInit {
     try {
       const input = this.form.controls.input.value
       if (!input) {
-        throw new Error('Invalid email or username.')
+        throw new Error("Invalid email or username.")
       }
 
       const result = await this.authService.sendPasswordReset(input)
       this.emailSent = result.emailSent
 
-      this.snackbarService.show(this.emailSent ? 'Password reset link sent.' : 'Password reset link created.')
+      this.snackbarService.show(this.emailSent ? "Password reset link sent." : "Password reset link created.")
     } catch (e) {
       let shownError: string | null = null
 
@@ -56,7 +56,7 @@ export class ForgotPasswordComponent implements OnInit {
         const status = e.status
 
         if (status === 404) {
-          shownError = 'User not found.'
+          shownError = "User not found."
         }
 
         shownError ??= e.error?.message
@@ -65,7 +65,7 @@ export class ForgotPasswordComponent implements OnInit {
       }
 
       console.error(e)
-      shownError ??= 'Something went wrong.'
+      shownError ??= "Something went wrong."
       this.snackbarService.error(shownError)
     }
   }

@@ -1,17 +1,17 @@
-import * as fs from 'node:fs'
-import * as path from 'node:path'
-import nodemailer from 'nodemailer'
-import pug from 'pug'
-import appConfig from './config'
-import type SMTPTransport from 'nodemailer/lib/smtp-transport'
-import { REDIRECT_PATHS } from '@shared/constants'
-import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
-import type { Invitation } from '@shared/db/Invitation'
-import type { PasswordReset } from '@shared/db/PasswordReset'
-import { PRIMARY_CONTRAST_COLOR, PRIMARY_COLOR } from './theme'
+import * as fs from "node:fs"
+import * as path from "node:path"
+import nodemailer from "nodemailer"
+import pug from "pug"
+import appConfig from "./config"
+import type SMTPTransport from "nodemailer/lib/smtp-transport"
+import { REDIRECT_PATHS } from "@shared/constants"
+import type { UserWithoutPassword } from "@shared/api-response/UserDetails"
+import type { Invitation } from "@shared/db/Invitation"
+import type { PasswordReset } from "@shared/db/PasswordReset"
+import { PRIMARY_CONTRAST_COLOR, PRIMARY_COLOR } from "./theme"
 
 export let SMTP_VERIFIED = false
-const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
+const DEFAULT_EMAIL_TEMPLATE_DIR = "./default_email_templates"
 
 const transportOptions: SMTPTransport.Options = {
   host: appConfig.SMTP_HOST,
@@ -27,15 +27,15 @@ const transporter = nodemailer.createTransport(transportOptions)
 if (appConfig.SMTP_HOST) {
   transporter.verify().then(() => {
     SMTP_VERIFIED = true
-    console.log('Email Connection Verified.')
+    console.log("Email Connection Verified.")
   }).catch((e: unknown) => {
-    console.error('Email Connection NOT Verified:')
+    console.error("Email Connection NOT Verified:")
     console.error(e)
   })
 }
 
 // move default email templates to email templates dir
-fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, path.join('./config', 'email_templates'), {
+fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, path.join("./config", "email_templates"), {
   recursive: true,
   force: false,
 })
@@ -43,15 +43,15 @@ fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, path.join('./config', 'email_templates'), 
 // compile email pug templates
 function compileTemplates(name: string) {
   const templates: { subject?: pug.compileTemplate, html?: pug.compileTemplate, text?: pug.compileTemplate } = {}
-  const template_dir = path.join('./config', 'email_templates', name)
-  if (fs.existsSync(path.join(template_dir, 'subject.pug'))) {
-    templates.subject = pug.compileFile(path.join(template_dir, 'subject.pug'))
+  const template_dir = path.join("./config", "email_templates", name)
+  if (fs.existsSync(path.join(template_dir, "subject.pug"))) {
+    templates.subject = pug.compileFile(path.join(template_dir, "subject.pug"))
   }
-  if (fs.existsSync(path.join(template_dir, 'html.pug'))) {
-    templates.html = pug.compileFile(path.join(template_dir, 'html.pug'))
+  if (fs.existsSync(path.join(template_dir, "html.pug"))) {
+    templates.html = pug.compileFile(path.join(template_dir, "html.pug"))
   }
-  if (fs.existsSync(path.join(template_dir, 'text.pug'))) {
-    templates.text = pug.compileFile(path.join(template_dir, 'text.pug'))
+  if (fs.existsSync(path.join(template_dir, "text.pug"))) {
+    templates.text = pug.compileFile(path.join(template_dir, "text.pug"))
   }
   return (locals: pug.LocalsObject) => {
     return {
@@ -61,16 +61,16 @@ function compileTemplates(name: string) {
     }
   }
 }
-const emailVerificationTemplates = compileTemplates('email_verification')
-const passwordResetTemplates = compileTemplates('reset_password')
-const invitationTemplate = compileTemplates('invitation')
+const emailVerificationTemplates = compileTemplates("email_verification")
+const passwordResetTemplates = compileTemplates("reset_password")
+const invitationTemplate = compileTemplates("invitation")
 
 export async function sendEmailVerification(user: UserWithoutPassword, challenge: string, email: string) {
   if (!appConfig.SMTP_FROM) {
-    throw new Error('Email cannot be sent without valid SMTP_FROM config value.')
+    throw new Error("Email cannot be sent without valid SMTP_FROM config value.")
   }
   if (!SMTP_VERIFIED) {
-    throw new Error('SMTP transport could not be validated.')
+    throw new Error("SMTP transport could not be validated.")
   }
 
   const { subject, html, text } = emailVerificationTemplates({
@@ -82,7 +82,7 @@ export async function sendEmailVerification(user: UserWithoutPassword, challenge
   })
 
   if (!subject || (!html && !text)) {
-    throw new Error('Missing email template.')
+    throw new Error("Missing email template.")
   }
 
   await transporter.sendMail({
@@ -99,10 +99,10 @@ export async function sendEmailVerification(user: UserWithoutPassword, challenge
 
 export async function sendPasswordReset(passwordReset: PasswordReset, user: UserWithoutPassword, email: string) {
   if (!appConfig.SMTP_FROM) {
-    throw new Error('Email cannot be sent without valid SMTP_FROM config value.')
+    throw new Error("Email cannot be sent without valid SMTP_FROM config value.")
   }
   if (!SMTP_VERIFIED) {
-    throw new Error('SMTP transport could not be validated.')
+    throw new Error("SMTP transport could not be validated.")
   }
 
   const query = `id=${passwordReset.userId}&challenge=${passwordReset.challenge}`
@@ -116,7 +116,7 @@ export async function sendPasswordReset(passwordReset: PasswordReset, user: User
   })
 
   if (!subject || (!html && !text)) {
-    throw new Error('Missing email template.')
+    throw new Error("Missing email template.")
   }
 
   await transporter.sendMail({
@@ -133,10 +133,10 @@ export async function sendPasswordReset(passwordReset: PasswordReset, user: User
 
 export async function sendInvitation(invitation: Invitation, email: string) {
   if (!appConfig.SMTP_FROM) {
-    throw new Error('Email cannot be sent without valid SMTP_FROM config value.')
+    throw new Error("Email cannot be sent without valid SMTP_FROM config value.")
   }
   if (!SMTP_VERIFIED) {
-    throw new Error('SMTP transport could not be validated.')
+    throw new Error("SMTP transport could not be validated.")
   }
 
   const query = `invite=${invitation.id}&challenge=${invitation.challenge}`
@@ -150,7 +150,7 @@ export async function sendInvitation(invitation: Invitation, email: string) {
   })
 
   if (!subject || (!html && !text)) {
-    throw new Error('Missing email template.')
+    throw new Error("Missing email template.")
   }
 
   await transporter.sendMail({

@@ -9,17 +9,17 @@ export type OIDCPayload = {
   consumedAt?: Date | null
 }
 
-export type PayloadType = 'Session' |
-  'AccessToken' |
-  'AuthorizationCode' |
-  'RefreshToken' |
-  'DeviceCode' |
-  'ClientCredentials' |
-  'Client' |
-  'InitialAccessToken' |
-  'RegistrationAccessToken' |
-  'Interaction' |
-  'ReplayDetection' |
-  'PushedAuthorizationRequest' |
-  'Grant' |
-  'BackchannelAuthenticationRequest'
+export type PayloadType = "Session" |
+  "AccessToken" |
+  "AuthorizationCode" |
+  "RefreshToken" |
+  "DeviceCode" |
+  "ClientCredentials" |
+  "Client" |
+  "InitialAccessToken" |
+  "RegistrationAccessToken" |
+  "Interaction" |
+  "ReplayDetection" |
+  "PushedAuthorizationRequest" |
+  "Grant" |
+  "BackchannelAuthenticationRequest"

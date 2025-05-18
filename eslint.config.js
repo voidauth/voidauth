@@ -14,6 +14,7 @@ export default tseslint.config(
       "@stylistic/max-len": ["error", 120, 2, {
         "ignoreTemplateLiterals": true,
       }],
+      "@stylistic/quotes": ["error", "double"],
       "@stylistic/quote-props": ["error", "as-needed"],
       "@stylistic/brace-style": ["error", "1tbs"],
       "@typescript-eslint/no-unsafe-member-access": ["warn"],

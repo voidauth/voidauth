@@ -1,44 +1,44 @@
-import { Component, inject, type OnInit } from '@angular/core'
-import { AdminService } from '../../../../services/admin.service'
-import { CommonModule } from '@angular/common'
-import { MaterialModule } from '../../../../material-module'
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
-import { ActivatedRoute, Router } from '@angular/router'
-import { SnackbarService } from '../../../../services/snackbar.service'
-import { isValidURL } from '../../../../validators/validators'
-import { generate } from 'generate-password-browser'
-import type { ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
+import { Component, inject, type OnInit } from "@angular/core"
+import { AdminService } from "../../../../services/admin.service"
+import { CommonModule } from "@angular/common"
+import { MaterialModule } from "../../../../material-module"
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
+import { ValidationErrorPipe } from "../../../../pipes/ValidationErrorPipe"
+import { ActivatedRoute, Router } from "@angular/router"
+import { SnackbarService } from "../../../../services/snackbar.service"
+import { isValidURL } from "../../../../validators/validators"
+import { generate } from "generate-password-browser"
+import type { ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
 
 export type TypedFormGroup<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
 }
 
 @Component({
-  selector: 'app-upsert-client',
+  selector: "app-upsert-client",
   imports: [
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
   ],
-  templateUrl: './upsert-client.component.html',
-  styleUrl: './upsert-client.component.scss',
+  templateUrl: "./upsert-client.component.html",
+  styleUrl: "./upsert-client.component.scss",
 })
 export class UpsertClientComponent implements OnInit {
   public authMethods = [
-    'client_secret_basic',
-    'client_secret_jwt',
-    'client_secret_post',
-    'private_key_jwt',
-    'none',
+    "client_secret_basic",
+    "client_secret_jwt",
+    "client_secret_post",
+    "private_key_jwt",
+    "none",
   ]
 
   public client_id: string | null = null
   public hasLoaded = false
 
   redirectUrlControl = new FormControl<string>({
-    value: '',
+    value: "",
     disabled: false,
   }, [isValidURL])
 
@@ -49,8 +49,8 @@ export class UpsertClientComponent implements OnInit {
   form = new FormGroup<TypedFormGroup<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
     redirect_uris: new FormControl<string[]>([], [Validators.required, Validators.minLength(1)]),
-    client_secret: new FormControl<string>('', [Validators.required, Validators.minLength(4)]),
-    token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_basic'),
+    client_secret: new FormControl<string>("", [Validators.required, Validators.minLength(4)]),
+    token_endpoint_auth_method: new FormControl<ClientUpsert["token_endpoint_auth_method"]>("client_secret_basic"),
     skip_consent: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidURL]),
   })
@@ -63,7 +63,7 @@ export class UpsertClientComponent implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
       try {
-        this.client_id = params.get('client_id')
+        this.client_id = params.get("client_id")
 
         this.disablePage()
 
@@ -71,22 +71,22 @@ export class UpsertClientComponent implements OnInit {
           const client = await this.adminService.client(this.client_id)
           this.form.reset({
             client_id: client.client_id,
-            client_secret: client.client_secret ?? '',
+            client_secret: client.client_secret ?? "",
             redirect_uris: client.redirect_uris ?? [],
-            token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_basic',
-            skip_consent: client['skip_consent'] ?? false,
+            token_endpoint_auth_method: client.token_endpoint_auth_method ?? "client_secret_basic",
+            skip_consent: client["skip_consent"] ?? false,
             logo_uri: client.logo_uri,
           })
-          this.profile.setValue(!!(client.scope?.includes('profile')))
-          this.email.setValue(!!(client.scope?.includes('email')))
-          this.groups.setValue(!!(client.scope?.includes('groups')))
+          this.profile.setValue(!!(client.scope?.includes("profile")))
+          this.email.setValue(!!(client.scope?.includes("email")))
+          this.groups.setValue(!!(client.scope?.includes("groups")))
         }
 
         this.enablePage()
         this.hasLoaded = true
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading Client.')
+        this.snackbarService.error("Error loading Client.")
       }
     })
   }
@@ -114,13 +114,13 @@ export class UpsertClientComponent implements OnInit {
         await this.adminService.addClient(this.form.getRawValue())
       }
 
-      this.snackbarService.show(`Client ${this.client_id ? 'updated' : 'created'}.`)
+      this.snackbarService.show(`Client ${this.client_id ? "updated" : "created"}.`)
       this.client_id = this.form.value.client_id ?? null
-      await this.router.navigate(['/admin/client', this.client_id], {
+      await this.router.navigate(["/admin/client", this.client_id], {
         replaceUrl: true,
       })
     } catch (_e) {
-      this.snackbarService.error(`Could not ${this.client_id ? 'update' : 'create'} client.`)
+      this.snackbarService.error(`Could not ${this.client_id ? "update" : "create"} client.`)
     } finally {
       this.enablePage()
     }
@@ -134,10 +134,10 @@ export class UpsertClientComponent implements OnInit {
         await this.adminService.deleteClient(this.client_id)
       }
 
-      this.snackbarService.show(`Client deleted.`)
-      await this.router.navigate(['/admin/clients'])
+      this.snackbarService.show("Client deleted.")
+      await this.router.navigate(["/admin/clients"])
     } catch (_e) {
-      this.snackbarService.error(`Could not delete client.`)
+      this.snackbarService.error("Could not delete client.")
     } finally {
       this.enablePage()
     }

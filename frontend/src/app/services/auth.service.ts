@@ -1,19 +1,19 @@
-import { inject, Injectable } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
-import environment from '../../environment/environment'
-import { firstValueFrom } from 'rxjs'
-import type { RegisterUser } from '@shared/api-request/RegisterUser'
-import type { LoginUser } from '@shared/api-request/LoginUser'
-import type { VerifyUserEmail } from '@shared/api-request/VerifyUserEmail'
-import type { Redirect } from '@shared/api-response/Redirect'
-import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
-import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
-import { type Nullable } from '@shared/utils'
-import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
-import type { ResetPassword } from '@shared/api-request/ResetPassword'
+import { inject, Injectable } from "@angular/core"
+import { HttpClient } from "@angular/common/http"
+import environment from "../../environment/environment"
+import { firstValueFrom } from "rxjs"
+import type { RegisterUser } from "@shared/api-request/RegisterUser"
+import type { LoginUser } from "@shared/api-request/LoginUser"
+import type { VerifyUserEmail } from "@shared/api-request/VerifyUserEmail"
+import type { Redirect } from "@shared/api-response/Redirect"
+import type { ConsentDetails } from "@shared/api-response/ConsentDetails"
+import type { InvitationDetails } from "@shared/api-response/InvitationDetails"
+import { type Nullable } from "@shared/utils"
+import type { SendPasswordResetResponse } from "@shared/api-response/SendPasswordResetResponse"
+import type { ResetPassword } from "@shared/api-request/ResetPassword"
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class AuthService {
   private http = inject(HttpClient)

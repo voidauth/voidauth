@@ -1,22 +1,22 @@
-import { Component, inject, type OnInit } from '@angular/core'
-import { AuthService } from '../../services/auth.service'
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import { CommonModule } from '@angular/common'
-import { MaterialModule } from '../../material-module'
-import { ActivatedRoute, RouterLink } from '@angular/router'
-import { HttpErrorResponse } from '@angular/common/http'
-import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
-import { SnackbarService } from '../../services/snackbar.service'
-import { emptyOrMinLength } from '../../validators/validators'
-import { USERNAME_REGEX } from '@shared/constants'
-import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
-import { ConfigService } from '../../services/config.service'
-import { oidcLoginPath } from '@shared/oidc'
-import { NewPasswordInputComponent } from '../../components/new-password-input/new-password-input.component'
+import { Component, inject, type OnInit } from "@angular/core"
+import { AuthService } from "../../services/auth.service"
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
+import { CommonModule } from "@angular/common"
+import { MaterialModule } from "../../material-module"
+import { ActivatedRoute, RouterLink } from "@angular/router"
+import { HttpErrorResponse } from "@angular/common/http"
+import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
+import { SnackbarService } from "../../services/snackbar.service"
+import { emptyOrMinLength } from "../../validators/validators"
+import { USERNAME_REGEX } from "@shared/constants"
+import type { InvitationDetails } from "@shared/api-response/InvitationDetails"
+import { ConfigService } from "../../services/config.service"
+import { oidcLoginPath } from "@shared/oidc"
+import { NewPasswordInputComponent } from "../../components/new-password-input/new-password-input.component"
 @Component({
-  selector: 'app-registration',
-  templateUrl: './registration.component.html',
-  styleUrls: ['./registration.component.scss'],
+  selector: "app-registration",
+  templateUrl: "./registration.component.html",
+  styleUrls: ["./registration.component.scss"],
   imports: [
     ReactiveFormsModule,
     MaterialModule,
@@ -29,12 +29,12 @@ import { NewPasswordInputComponent } from '../../components/new-password-input/n
 export class RegistrationComponent implements OnInit {
   public form = new FormGroup({
     username: new FormControl<string>({
-      value: '',
+      value: "",
       disabled: false,
     }, [Validators.required, Validators.minLength(4), Validators.pattern(USERNAME_REGEX)]),
 
     email: new FormControl<string>({
-      value: '',
+      value: "",
       disabled: false,
     }, [Validators.required, Validators.email]),
 
@@ -44,7 +44,7 @@ export class RegistrationComponent implements OnInit {
     }, [emptyOrMinLength(4)]),
 
     password: new FormControl<string>({
-      value: '',
+      value: "",
       disabled: false,
     }, [Validators.required, Validators.minLength(8)]),
   })
@@ -60,8 +60,8 @@ export class RegistrationComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(async (queryParams) => {
-      const inviteId = queryParams.get('invite')
-      const challenge = queryParams.get('challenge')
+      const inviteId = queryParams.get("invite")
+      const challenge = queryParams.get("challenge")
 
       if (inviteId && challenge) {
         this.invitation = await this.authService.getInviteDetails(inviteId, challenge)
@@ -86,7 +86,7 @@ export class RegistrationComponent implements OnInit {
         await this.authService.interactionExists()
       } catch (_e) {
         // interaction session is missing, could not log in without it
-        window.location.assign(oidcLoginPath(this.configService.getCurrentHost(), 'register', inviteId, challenge))
+        window.location.assign(oidcLoginPath(this.configService.getCurrentHost(), "register", inviteId, challenge))
       }
     })
   }
@@ -109,7 +109,7 @@ export class RegistrationComponent implements OnInit {
         shownError ??= (e as Error).message
       }
 
-      shownError ??= 'Something went wrong.'
+      shownError ??= "Something went wrong."
       this.snackbarService.error(shownError)
     }
   }

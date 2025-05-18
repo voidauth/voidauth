@@ -1,12 +1,12 @@
-import knex from 'knex'
-import appConfig from '../util/config'
-import { getAsyncStore } from '../util/als'
-import { generate } from 'generate-password'
-import { exit } from 'process'
+import knex from "knex"
+import appConfig from "../util/config"
+import { getAsyncStore } from "../util/als"
+import { generate } from "generate-password"
+import { exit } from "process"
 
 // check that DB_PASSWORD is set
 if (!appConfig.DB_PASSWORD?.length) {
-  console.error(`DB_PASSWORD must be set. If you don't already have one, use something long and random like:`)
+  console.error("DB_PASSWORD must be set. If you don't already have one, use something long and random like:")
   console.error(generate({
     length: 32,
     numbers: true,
@@ -16,12 +16,12 @@ if (!appConfig.DB_PASSWORD?.length) {
 
 // check that DB_HOST is set
 if (!appConfig.DB_HOST?.length) {
-  console.error('DB_HOST must be set.')
+  console.error("DB_HOST must be set.")
   exit(1)
 }
 
 const _db = knex({
-  client: 'pg',
+  client: "pg",
   connection: {
     host: appConfig.DB_HOST,
     port: appConfig.DB_PORT,
@@ -33,17 +33,17 @@ const _db = knex({
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const [,migrations]: [number, string[]] = await _db.migrate.latest({
-  loadExtensions: ['.ts'],
+  loadExtensions: [".ts"],
 })
 
 if (migrations.length) {
-  console.log(`Ran Migrations: ${migrations.join(', ')}`)
+  console.log(`Ran Migrations: ${migrations.join(", ")}`)
 }
 
 export async function createTransaction() {
   const store = getAsyncStore()
   if (!store) {
-    throw new Error('Cannot create transaction outside of async context.')
+    throw new Error("Cannot create transaction outside of async context.")
   }
   store.transaction = await _db.transaction()
 }

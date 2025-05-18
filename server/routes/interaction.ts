@@ -1,39 +1,39 @@
-import { Router, type Request, type Response } from 'express'
-import { provider } from '../oidc/provider'
-import { getUserByInput } from '../db/user'
-import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
-import { matchedData } from 'express-validator'
-import { validate } from '../util/validate'
-import type { Redirect } from '@shared/api-response/Redirect'
-import type { LoginUser } from '@shared/api-request/LoginUser'
-import appConfig from '../util/config'
-import type { VerifyUserEmail } from '@shared/api-request/VerifyUserEmail'
-import { sendEmailVerification } from '../util/email'
-import { generate } from 'generate-password'
-import type { EmailVerification } from '@shared/db/EmailVerification'
-import type { User } from '@shared/db/User'
-import { commit, createTransaction, db, rollback } from '../db/db'
-import type { RegisterUser } from '@shared/api-request/RegisterUser'
-import * as argon2 from 'argon2'
-import { randomUUID } from 'crypto'
-import { REDIRECT_PATHS, TTLs } from '@shared/constants'
-import type { Interaction } from 'oidc-provider'
+import { Router, type Request, type Response } from "express"
+import { provider } from "../oidc/provider"
+import { getUserByInput } from "../db/user"
+import { addConsent, getConsentScopes, getExistingConsent } from "../db/consent"
+import { matchedData } from "express-validator"
+import { validate } from "../util/validate"
+import type { Redirect } from "@shared/api-response/Redirect"
+import type { LoginUser } from "@shared/api-request/LoginUser"
+import appConfig from "../util/config"
+import type { VerifyUserEmail } from "@shared/api-request/VerifyUserEmail"
+import { sendEmailVerification } from "../util/email"
+import { generate } from "generate-password"
+import type { EmailVerification } from "@shared/db/EmailVerification"
+import type { User } from "@shared/db/User"
+import { commit, createTransaction, db, rollback } from "../db/db"
+import type { RegisterUser } from "@shared/api-request/RegisterUser"
+import * as argon2 from "argon2"
+import { randomUUID } from "crypto"
+import { REDIRECT_PATHS, TTLs } from "@shared/constants"
+import type { Interaction } from "oidc-provider"
 import { emailValidation, nameValidation,
   newPasswordValidation,
   optionalNull,
-  stringValidation, usernameValidation, uuidValidation } from '../util/validators'
-import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
-import { createExpiration } from '../db/util'
-import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
-import { getInvitation } from '../db/invitations'
-import type { Invitation } from '@shared/db/Invitation'
-import type { Consent } from '@shared/db/Consent'
-import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
-import { getClient } from '../db/client'
+  stringValidation, usernameValidation, uuidValidation } from "../util/validators"
+import type { ConsentDetails } from "@shared/api-response/ConsentDetails"
+import { createExpiration } from "../db/util"
+import type { UserWithoutPassword } from "@shared/api-response/UserDetails"
+import { getInvitation } from "../db/invitations"
+import type { Invitation } from "@shared/db/Invitation"
+import type { Consent } from "@shared/db/Consent"
+import { type OIDCExtraParams, oidcLoginPath } from "@shared/oidc"
+import { getClient } from "../db/client"
 
 export const router = Router()
 
-router.get('/exists', async (req, res) => {
+router.get("/exists", async (req, res) => {
   if (await getInteractionDetails(req, res)) {
     res.send()
     return
@@ -42,21 +42,21 @@ router.get('/exists', async (req, res) => {
   res.sendStatus(404)
 })
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   const interaction = await getInteractionDetails(req, res)
   if (!interaction) {
-    res.redirect(`/`)
+    res.redirect("/")
     return
   }
   const { uid, prompt, params, session } = interaction
 
   const accountId = session?.accountId
 
-  if (prompt.name === 'login') {
+  if (prompt.name === "login") {
     // Determine which 'login' type page to redirect to
     const extraParams: OIDCExtraParams = params as OIDCExtraParams
     switch (extraParams.login_type) {
-      case 'register':
+      case "register":
         if (params.login_id) {
           res.redirect(`/${REDIRECT_PATHS.INVITE}?invite=${extraParams.login_id}&challenge=${extraParams.login_challenge}`)
         } else {
@@ -64,19 +64,19 @@ router.get('/', async (req, res) => {
         }
         return
 
-      case 'verify_email':
+      case "verify_email":
         res.redirect(`/${REDIRECT_PATHS.VERIFY_EMAIL}/${extraParams.login_id}/${extraParams.login_challenge}`)
         return
 
-      case 'login':
+      case "login":
       default:
         res.redirect(`/${REDIRECT_PATHS.LOGIN}`)
         return
     }
-  } else if (prompt.name === 'consent') {
+  } else if (prompt.name === "consent") {
     // Check conditions to skip consent
     const { redirect_uri, client_id, scope } = params
-    if (typeof redirect_uri === 'string' && typeof client_id === 'string' && typeof scope === 'string') {
+    if (typeof redirect_uri === "string" && typeof client_id === "string" && typeof scope === "string") {
       // Check if the redirect is to to APP_DOMAIN
       const appUrl = URL.parse(appConfig.APP_DOMAIN)
       const redirectUrl = URL.parse(redirect_uri)
@@ -118,7 +118,7 @@ router.get('/', async (req, res) => {
   }
 })
 
-router.get('/:uid/detail',
+router.get("/:uid/detail",
   async (req: Request, res: Response) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
@@ -126,21 +126,21 @@ router.get('/:uid/detail',
       return
     }
     const { uid, params } = interaction
-    const scope = typeof params.scope === 'string' ? params.scope : ''
+    const scope = typeof params.scope === "string" ? params.scope : ""
     const client = await provider.Client.find(params.client_id as string)
     const details: ConsentDetails = {
       uid: uid,
       clientId: params.client_id as string,
       logoUri: client?.logoUri,
       redirectUri: params.redirect_uri as string,
-      scopes: scope.split(' '),
+      scopes: scope.split(" "),
     }
 
     res.send(details)
   },
 )
 
-router.post('/login',
+router.post("/login",
   ...validate<LoginUser>({
     input: {
       ...stringValidation,
@@ -154,7 +154,7 @@ router.post('/login',
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.status(400).send({
-        message: 'Login page too old, refresh the page.',
+        message: "Login page too old, refresh the page.",
       })
       return
     }
@@ -162,7 +162,7 @@ router.post('/login',
 
     const { input, password, remember } = matchedData<LoginUser>(req)
 
-    if (name !== 'login') {
+    if (name !== "login") {
       res.sendStatus(400)
       return
     }
@@ -183,7 +183,7 @@ router.post('/login',
         login: {
           accountId: user.id,
           remember: remember,
-          amr: ['pwd'],
+          amr: ["pwd"],
         },
       },
       { mergeWithLastSubmission: true }),
@@ -193,7 +193,7 @@ router.post('/login',
   },
 )
 
-router.post('/:uid/confirm/',
+router.post("/:uid/confirm/",
   ...validate<{ uid: string }>({
     uid: stringValidation,
   }),
@@ -207,17 +207,17 @@ router.post('/:uid/confirm/',
     const { uid: uidParam } = matchedData<{ uid: string }>(req)
 
     if (uid !== uidParam) {
-      res.status(400).send({ message: 'Consent form is no longer valid.' })
+      res.status(400).send({ message: "Consent form is no longer valid." })
       return
     }
 
-    if (prompt.name !== 'consent') {
+    if (prompt.name !== "consent") {
       res.sendStatus(400)
       return
     }
 
     const grantId = await applyConsent(await provider.interactionDetails(req, res))
-    if (typeof params.redirect_uri === 'string' && typeof params.scope === 'string' && session?.accountId) {
+    if (typeof params.redirect_uri === "string" && typeof params.scope === "string" && session?.accountId) {
       await addConsent(params.redirect_uri, session.accountId, params.scope)
     }
     await provider.interactionFinished(req, res, { consent: { grantId } }, {
@@ -226,7 +226,7 @@ router.post('/:uid/confirm/',
   },
 )
 
-router.post('/register',
+router.post("/register",
   ...validate<RegisterUser>({
     username: {
       default: {
@@ -242,7 +242,7 @@ router.post('/register',
       },
       optional: {
         options: {
-          values: 'null',
+          values: "null",
         },
       },
       ...emailValidation,
@@ -251,7 +251,7 @@ router.post('/register',
     inviteId: {
       optional: {
         options: {
-          values: 'null',
+          values: "null",
         },
       },
       ...stringValidation,
@@ -259,7 +259,7 @@ router.post('/register',
     challenge: {
       optional: {
         options: {
-          values: 'null',
+          values: "null",
         },
       },
       ...stringValidation,
@@ -271,7 +271,7 @@ router.post('/register',
       const registration = matchedData<RegisterUser>(req)
 
       if (!await getInteractionDetails(req, res)) {
-        const action = registration.inviteId ? 'Invite' : 'Registration'
+        const action = registration.inviteId ? "Invite" : "Registration"
         res.status(400).send({
           message: `${action} page too old, refresh the page.`,
         })
@@ -308,17 +308,17 @@ router.post('/register',
       if (conflictingUser) {
         const message = conflictingUser.username === user.username
           || conflictingUser.email === user.username
-          ? 'Username taken.'
-          : 'Email taken.'
+          ? "Username taken."
+          : "Email taken."
         res.status(409).send({ message: message })
         return
       }
 
       // insert user into table
-      await db().table<User>('user').insert(user)
+      await db().table<User>("user").insert(user)
 
       if (invitationValid) {
-        await db().table<Invitation>('invitation').delete().where({ id: invitation.id })
+        await db().table<Invitation>("invitation").delete().where({ id: invitation.id })
       }
 
       const { passwordHash: _passwordHash, ...userWithoutPassword } = user
@@ -344,7 +344,7 @@ router.post('/register',
   },
 )
 
-router.post('/verify_email',
+router.post("/verify_email",
   ...validate<VerifyUserEmail>({
     userId: uuidValidation,
     challenge: stringValidation,
@@ -354,13 +354,13 @@ router.post('/verify_email',
 
     if (!await getInteractionDetails(req, res)) {
       const redir: Redirect = {
-        location: oidcLoginPath(appConfig.APP_DOMAIN, 'verify_email', userId, challenge),
+        location: oidcLoginPath(appConfig.APP_DOMAIN, "verify_email", userId, challenge),
       }
       res.send(redir)
       return
     }
 
-    const user = await db().select().table<User>('user').where({ id: userId }).first()
+    const user = await db().select().table<User>("user").where({ id: userId }).first()
     if (!user) {
       res.sendStatus(404)
       return
@@ -378,11 +378,11 @@ router.post('/verify_email',
     }
 
     // TODO: if user email does not match verification email, send an update to the old email
-    await db().table<User>('user').where('id', user.id).update({
+    await db().table<User>("user").where("id", user.id).update({
       emailVerified: true,
       email: emailVerification.email,
     })
-    await db().delete().table<EmailVerification>('email_verification').where(emailVerification)
+    await db().delete().table<EmailVerification>("email_verification").where(emailVerification)
 
     // finish login step, get redirect url to resume interaction
     // If a uid was found, finish the interaction.
@@ -392,7 +392,7 @@ router.post('/verify_email',
         login: {
           accountId: user.id,
           remember: false, // non-password logins are never remembered
-          amr: ['email'],
+          amr: ["email"],
         },
       },
       { mergeWithLastSubmission: false }),
@@ -412,7 +412,7 @@ async function getInteractionDetails(req: Request, res: Response) {
 }
 
 function consentMissingScopes(consent: Consent, scope: string) {
-  const scopes = scope.split(',').map(s => s.trim())
+  const scopes = scope.split(",").map(s => s.trim())
   const consentScopes = getConsentScopes(consent)
   return scopes.filter((s) => {
     return !consentScopes.includes(s)
@@ -439,7 +439,7 @@ async function applyConsent(interactionDetails: Interaction) {
   }
 
   if (details.missingOIDCScope instanceof Array) {
-    grant.addOIDCScope(details.missingOIDCScope.join(' '))
+    grant.addOIDCScope(details.missingOIDCScope.join(" "))
   }
   if (details.missingOIDCClaims instanceof Array) {
     grant.addOIDCClaims(details.missingOIDCClaims as string[])
@@ -448,7 +448,7 @@ async function applyConsent(interactionDetails: Interaction) {
     for (const [indicator, scopes] of Object.entries(
       details.missingResourceScopes,
     )) {
-      grant.addResourceScope(indicator, (scopes as string[]).join(' '))
+      grant.addResourceScope(indicator, (scopes as string[]).join(" "))
     }
   }
 
@@ -509,15 +509,15 @@ export async function createEmailVerification(
     createdAt: new Date(),
   }
   // insert new email verification challenge
-  await db().table<EmailVerification>('email_verification').insert(email_verification)
+  await db().table<EmailVerification>("email_verification").insert(email_verification)
   await sendEmailVerification(user, challenge, sentEmail)
   return true
 }
 
 export async function getEmailVerification(userId: string) {
   const emailVerification = await db().select()
-    .table<EmailVerification>('email_verification')
-    .where({ userId }).andWhere('expiresAt', '>=', new Date()).first()
+    .table<EmailVerification>("email_verification")
+    .where({ userId }).andWhere("expiresAt", ">=", new Date()).first()
 
   if (emailVerification) {
     return emailVerification

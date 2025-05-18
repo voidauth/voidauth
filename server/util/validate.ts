@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextFunction, Request, Response } from 'express'
-import { checkSchema, validationResult, type ParamSchema, type Schema } from 'express-validator'
-import type { RemoveKeys, RequireKeys } from '@shared/utils'
+import type { NextFunction, Request, Response } from "express"
+import { checkSchema, validationResult, type ParamSchema, type Schema } from "express-validator"
+import type { RemoveKeys, RequireKeys } from "@shared/utils"
 
 type IsGenericKey<T> = string extends T ? true : number extends T ? true : false
 
@@ -31,7 +31,7 @@ type DotNotation<T> = any extends T
   : T extends (infer U)[]
     ? U extends object
       ? `*.${DotNotation<U>}`
-      : '*'
+      : "*"
     : T extends object
       ? { [K in keyof ExcludeGenericKeys<T>]-?: (
           Required<T>[K] extends object
@@ -54,11 +54,11 @@ type WasOptionalKey<T extends string> = T extends `${infer _A}?${infer _B}`
 
 type FixOptionalKey<T extends string> = T extends `${infer A}?${infer B}` ? FixOptionalKey<`${A}${B}`> : T
 
-type UncheckedParamSchema = RemoveKeys<ParamSchema<any>, 'isString' | 'isEmail' | 'isURL'>
-type StringParamSchema = RequireKeys<ParamSchema<any>, 'isString' | 'stripLow' | 'trim'>
-  | RequireKeys<ParamSchema<any>, 'isString' | 'matches'>
-type EmailParamSchema = RequireKeys<ParamSchema<any>, 'isEmail' | 'normalizeEmail' | 'trim'>
-type URLParamSchema = RequireKeys<ParamSchema<any>, 'isURL' | 'trim'>
+type UncheckedParamSchema = RemoveKeys<ParamSchema<any>, "isString" | "isEmail" | "isURL">
+type StringParamSchema = RequireKeys<ParamSchema<any>, "isString" | "stripLow" | "trim">
+  | RequireKeys<ParamSchema<any>, "isString" | "matches">
+type EmailParamSchema = RequireKeys<ParamSchema<any>, "isEmail" | "normalizeEmail" | "trim">
+type URLParamSchema = RequireKeys<ParamSchema<any>, "isURL" | "trim">
 
 export type ValidParamSchema = UncheckedParamSchema | StringParamSchema | EmailParamSchema | URLParamSchema
 

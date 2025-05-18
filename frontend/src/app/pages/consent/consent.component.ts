@@ -1,18 +1,18 @@
-import { Component, inject, type OnInit } from '@angular/core'
-import { AuthService } from '../../services/auth.service'
-import { ActivatedRoute } from '@angular/router'
-import { HttpErrorResponse } from '@angular/common/http'
-import { SnackbarService } from '../../services/snackbar.service'
-import { MaterialModule } from '../../material-module'
-import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
+import { Component, inject, type OnInit } from "@angular/core"
+import { AuthService } from "../../services/auth.service"
+import { ActivatedRoute } from "@angular/router"
+import { HttpErrorResponse } from "@angular/common/http"
+import { SnackbarService } from "../../services/snackbar.service"
+import { MaterialModule } from "../../material-module"
+import type { ConsentDetails } from "@shared/api-response/ConsentDetails"
 
 @Component({
-  selector: 'app-consent',
+  selector: "app-consent",
   imports: [
     MaterialModule,
   ],
-  templateUrl: './consent.component.html',
-  styleUrl: './consent.component.scss',
+  templateUrl: "./consent.component.html",
+  styleUrl: "./consent.component.scss",
 })
 export class ConsentComponent implements OnInit {
   public uid: string | null = null
@@ -25,14 +25,14 @@ export class ConsentComponent implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(async (paramMap) => {
       try {
-        this.uid = paramMap.get('uid')
+        this.uid = paramMap.get("uid")
         if (!this.uid) {
-          throw new Error('UID param missing from page.')
+          throw new Error("UID param missing from page.")
         }
         this.details = await this.authService.getInteractionDetails(this.uid)
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Confirmation details not valid.')
+        this.snackbarService.error("Confirmation details not valid.")
       }
     })
   }
@@ -40,7 +40,7 @@ export class ConsentComponent implements OnInit {
   async submit() {
     try {
       if (!this.uid) {
-        throw Error('Interaction ID missing from login')
+        throw Error("Interaction ID missing from login")
       }
 
       await this.authService.consent(this.uid)
@@ -54,7 +54,7 @@ export class ConsentComponent implements OnInit {
         shownError ??= (e as Error).message
       }
 
-      shownError ??= 'Something went wrong.'
+      shownError ??= "Something went wrong."
       this.snackbarService.error(shownError)
     }
   }

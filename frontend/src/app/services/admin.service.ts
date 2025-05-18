@@ -1,22 +1,22 @@
-import { HttpClient } from '@angular/common/http'
-import { inject, Injectable } from '@angular/core'
-import { firstValueFrom } from 'rxjs'
-import environment from '../../environment/environment'
-import type { ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
-import type { ClientMetadata } from 'oidc-provider'
-import type { Nullable } from '@shared/utils'
-import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
-import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
-import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
-import { type InvitationDetails } from '@shared/api-response/InvitationDetails'
-import type { Group } from '@shared/db/Group'
-import type { Invitation } from '@shared/db/Invitation'
-import { ConfigService } from './config.service'
-import { REDIRECT_PATHS } from '@shared/constants'
+import { HttpClient } from "@angular/common/http"
+import { inject, Injectable } from "@angular/core"
+import { firstValueFrom } from "rxjs"
+import environment from "../../environment/environment"
+import type { ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
+import type { ClientMetadata } from "oidc-provider"
+import type { Nullable } from "@shared/utils"
+import type { UserUpdate } from "@shared/api-request/admin/UserUpdate"
+import type { GroupUpsert } from "@shared/api-request/admin/GroupUpsert"
+import type { InvitationUpsert } from "@shared/api-request/admin/InvitationUpsert"
+import type { UserDetails, UserWithoutPassword } from "@shared/api-response/UserDetails"
+import { type InvitationDetails } from "@shared/api-response/InvitationDetails"
+import type { Group } from "@shared/db/Group"
+import type { Invitation } from "@shared/db/Invitation"
+import { ConfigService } from "./config.service"
+import { REDIRECT_PATHS } from "@shared/constants"
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class AdminService {
   private configService = inject(ConfigService)
