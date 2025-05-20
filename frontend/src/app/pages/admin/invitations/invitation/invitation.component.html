@@ -4,7 +4,7 @@
     <mat-card class="form-card">
       <mat-card-content>
         <form>
-          <mat-form-field appearance="outline">
+          <mat-form-field>
             <mat-label>Invite Link</mat-label>
             <input matInput [value]="inviteLink" type="text" disabled>
             <button 
@@ -44,7 +44,7 @@
   <mat-card class="form-card">
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()">
-        <mat-form-field appearance="outline">
+        <mat-form-field>
           <mat-label>Username</mat-label>
           <input matInput type="text" formControlName="username">
           @if (form.controls.username.errors) {
@@ -52,7 +52,7 @@
           }
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field>
           <mat-label>Email</mat-label>
           <input matInput type="text" formControlName="email">
           @if (form.controls.email.errors) {
@@ -60,7 +60,7 @@
           }
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field>
           <mat-label>Name</mat-label>
           <input matInput type="text" formControlName="name">
           @if (form.controls.name.errors) {

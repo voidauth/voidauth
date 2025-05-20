@@ -3,7 +3,7 @@
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline">
+      <mat-form-field>
         <mat-label>Client ID</mat-label>
         <input matInput type="text" formControlName="client_id">
         @if (form.controls.client_id.errors) {
@@ -11,7 +11,7 @@
         }
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field>
         <mat-label>Client Secret</mat-label>
         <input matInput type="text" formControlName="client_secret">
         <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="generateSecret()">
@@ -23,7 +23,7 @@
       </mat-form-field>
 
       <mat-list [ngClass]="{invalid: form.controls.redirect_uris.errors}">
-        <mat-form-field appearance="outline">
+        <mat-form-field>
           <mat-label>New Redirect URL</mat-label>
           <input #redirect matInput type="text" [formControl]="redirectUrlControl">
           <button class="field-suffix" type="button" mat-icon-button matSuffix
@@ -68,7 +68,7 @@
         }
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field>
         <mat-label>Logo Url</mat-label>
         <input matInput type="text" formControlName="logo_uri">
         <mat-hint>Logo shown on client consent page, can be a remote url</mat-hint>

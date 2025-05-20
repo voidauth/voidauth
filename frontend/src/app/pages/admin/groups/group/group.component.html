@@ -3,7 +3,7 @@
   <mat-card class="form-card">
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()">
-        <mat-form-field appearance="outline">
+        <mat-form-field>
           <mat-label>Name</mat-label>
           <input matInput type="text" formControlName="name">
           @if (form.controls.name.errors) {
