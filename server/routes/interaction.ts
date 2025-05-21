@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express"
 import { provider } from "../oidc/provider"
-import { getUserByInput } from "../db/user"
+import { getUserById, getUserByInput } from "../db/user"
 import { addConsent, getConsentScopes, getExistingConsent } from "../db/consent"
 import { matchedData } from "express-validator"
 import { validate } from "../util/validate"
@@ -360,7 +360,7 @@ router.post("/verify_email",
       return
     }
 
-    const user = await db().select().table<User>("user").where({ id: userId }).first()
+    const user = await getUserById(userId)
     if (!user) {
       res.sendStatus(404)
       return

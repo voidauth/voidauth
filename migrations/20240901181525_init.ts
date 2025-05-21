@@ -30,16 +30,16 @@ export async function up(knex: Knex): Promise<void> {
     .createTable("group", (table) => {
       table.uuid("id").primary().notNullable()
       table.text("name").notNullable().unique()
-      table.uuid("createdBy").notNullable().references("id").inTable("user")
-      table.uuid("updatedBy").notNullable().references("id").inTable("user")
+      table.uuid("createdBy").notNullable()
+      table.uuid("updatedBy").notNullable()
       table.timestamp("createdAt", { useTz: true }).notNullable()
       table.timestamp("updatedAt", { useTz: true }).notNullable()
     })
     .createTable("user_group", (table) => {
       table.uuid("userId").notNullable().references("id").inTable("user").onDelete("CASCADE")
       table.uuid("groupId").notNullable().references("id").inTable("group").onDelete("CASCADE")
-      table.uuid("createdBy").notNullable().references("id").inTable("user")
-      table.uuid("updatedBy").notNullable().references("id").inTable("user")
+      table.uuid("createdBy").notNullable()
+      table.uuid("updatedBy").notNullable()
       table.timestamp("createdAt", { useTz: true }).notNullable()
       table.timestamp("updatedAt", { useTz: true }).notNullable()
 
@@ -77,8 +77,8 @@ export async function up(knex: Knex): Promise<void> {
       table.text("name")
       table.text("challenge").notNullable()
       table.boolean("emailVerified").notNullable().defaultTo(false)
-      table.uuid("createdBy").notNullable().references("id").inTable("user")
-      table.uuid("updatedBy").notNullable().references("id").inTable("user")
+      table.uuid("createdBy").notNullable()
+      table.uuid("updatedBy").notNullable()
       table.timestamp("createdAt", { useTz: true }).notNullable()
       table.timestamp("updatedAt", { useTz: true }).notNullable()
       table.timestamp("expiresAt", { useTz: true }).notNullable()
@@ -86,12 +86,28 @@ export async function up(knex: Knex): Promise<void> {
     .createTable("invitation_group", (table) => {
       table.uuid("invitationId").notNullable().references("id").inTable("invitation").onDelete("CASCADE")
       table.uuid("groupId").notNullable().references("id").inTable("group").onDelete("CASCADE")
-      table.uuid("createdBy").notNullable().references("id").inTable("user")
-      table.uuid("updatedBy").notNullable().references("id").inTable("user")
+      table.uuid("createdBy").notNullable()
+      table.uuid("updatedBy").notNullable()
       table.timestamp("createdAt", { useTz: true }).notNullable()
       table.timestamp("updatedAt", { useTz: true }).notNullable()
 
       table.unique(["invitationId", "groupId"])
+    })
+    .createTable("forward_auth", (table) => {
+      table.uuid("id").primary().notNullable()
+      table.text("domain").notNullable()
+      table.uuid("createdBy").notNullable()
+      table.uuid("updatedBy").notNullable()
+      table.timestamp("createdAt", { useTz: true }).notNullable()
+      table.timestamp("updatedAt", { useTz: true }).notNullable()
+
+      table.unique(["domain"])
+    })
+    .createTable("forward_auth_group", (table) => {
+      table.uuid("forwardId").notNullable().references("id").inTable("forward_auth").onDelete("CASCADE")
+      table.uuid("groupId").notNullable().references("id").inTable("group").onDelete("CASCADE")
+
+      table.unique(["forwardId", "groupId"])
     })
 };
 
