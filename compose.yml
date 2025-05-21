@@ -7,7 +7,7 @@ services:
     volumes:
       - "./config:/app/config"
     environment:
-      APP_TITLE: void-auth
+      APP_TITLE: VoID Auth
 
   void-auth-db:
     image: postgres:17
