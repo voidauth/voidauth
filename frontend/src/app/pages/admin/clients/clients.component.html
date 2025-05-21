@@ -1,5 +1,5 @@
 <div class="container">
-  <a mat-flat-button style="align-self: end;" routerLink="/admin/client">Create Client</a>
+  <a mat-flat-button style="align-self: end;" routerLink="/admin/client">Create OIDC Client</a>
 
   <table mat-table [dataSource]="dataSource" matSort>
     @for (column of columns; track column) {
@@ -30,7 +30,7 @@
 
     <!-- Row shown when there is no matching data. -->
     <tr *matNoDataRow>
-      <td style="height: 40px; text-align: center; font-weight: bold;" [attr.colspan]="columns.length+1"><h1>No clients.</h1></td>
+      <td style="height: 40px; text-align: center; font-weight: bold;" [attr.colspan]="columns.length+1"><h1>No OIDC Clients.</h1></td>
     </tr>
   </table>
 
