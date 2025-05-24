@@ -356,6 +356,7 @@ adminRouter.delete("/group/:id",
     const { id } = matchedData<{ id: string }>(req)
 
     const group = await db().select().table<Group>("group").where({ id }).first()
+    // Do not delete the admin group
     if (group?.name.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
       res.sendStatus(400)
       return

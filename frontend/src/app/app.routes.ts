@@ -18,9 +18,11 @@ import { InvitationComponent } from "./pages/admin/invitations/invitation/invita
 import { ApprovalRequiredComponent } from "./pages/approval-required/approval-required.component"
 import { ForgotPasswordComponent } from "./pages/forgot-password/forgot-password.component"
 import { ResetPasswordComponent } from "./pages/reset-password/reset-password.component"
+import { loggedInGuard } from "./guards/logged-in.guard"
+import { isAdminGuard } from "./guards/is-admin.guard"
 
 export const routes: Routes = [
-  { path: "", component: HomeComponent },
+  { path: "", component: HomeComponent, canActivate: [loggedInGuard] },
 
   { path: REDIRECT_PATHS.LOGIN, component: LoginComponent },
 
@@ -28,7 +30,7 @@ export const routes: Routes = [
 
   { path: REDIRECT_PATHS.RESET_PASSWORD, component: ResetPasswordComponent },
 
-  { path: `${REDIRECT_PATHS.LOGOUT}/:secret`, component: LogoutComponent },
+  { path: `${REDIRECT_PATHS.LOGOUT}/:secret`, component: LogoutComponent, canActivate: [loggedInGuard] },
 
   { path: `${REDIRECT_PATHS.VERIFY_EMAIL}/:id/:challenge`, component: VerifyComponent },
 
@@ -36,24 +38,24 @@ export const routes: Routes = [
 
   { path: REDIRECT_PATHS.APPROVAL_REQUIRED, component: ApprovalRequiredComponent },
 
-  { path: "consent/:uid", component: ConsentComponent },
+  { path: "consent/:uid", component: ConsentComponent, canActivate: [loggedInGuard] },
 
   { path: REDIRECT_PATHS.REGISTER, component: RegistrationComponent },
   { path: REDIRECT_PATHS.INVITE, component: RegistrationComponent },
 
-  { path: "admin/clients", component: ClientsComponent },
-  { path: "admin/client/:client_id", component: UpsertClientComponent },
+  { path: "admin/clients", component: ClientsComponent, canActivate: [isAdminGuard] },
+  { path: "admin/client/:client_id", component: UpsertClientComponent, canActivate: [isAdminGuard] },
   { path: "admin/client", redirectTo: "admin/client/", pathMatch: "full" },
 
-  { path: "admin/groups", component: GroupsComponent },
-  { path: "admin/group/:id", component: GroupComponent },
+  { path: "admin/groups", component: GroupsComponent, canActivate: [isAdminGuard] },
+  { path: "admin/group/:id", component: GroupComponent, canActivate: [isAdminGuard] },
   { path: "admin/group", redirectTo: "admin/group/", pathMatch: "full" },
 
-  { path: "admin/users", component: UsersComponent },
-  { path: "admin/user/:id", component: UserComponent },
+  { path: "admin/users", component: UsersComponent, canActivate: [isAdminGuard] },
+  { path: "admin/user/:id", component: UserComponent, canActivate: [isAdminGuard] },
 
-  { path: "admin/invitations", component: InvitationsComponent },
-  { path: "admin/invitation/:id", component: InvitationComponent },
+  { path: "admin/invitations", component: InvitationsComponent, canActivate: [isAdminGuard] },
+  { path: "admin/invitation/:id", component: InvitationComponent, canActivate: [isAdminGuard] },
   { path: "admin/invitation", redirectTo: "admin/invitation/", pathMatch: "full" },
 
   { path: "**", redirectTo: "", pathMatch: "full" },

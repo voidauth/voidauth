@@ -4,7 +4,6 @@ import { ThemeToggleComponent } from "../theme-toggle/theme-toggle.component"
 import { MaterialModule } from "../../material-module"
 import { CommonModule } from "@angular/common"
 import { UserService } from "../../services/user.service"
-import { ADMIN_GROUP } from "@shared/constants"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 import { ConfigService } from "../../services/config.service"
 import { oidcLoginPath } from "@shared/oidc"
@@ -38,7 +37,7 @@ export class HeaderComponent implements OnInit {
     try {
       this.userLoading = true
       this.user = await this.userService.getMyUser()
-      this.isAdmin = this.user.groups.some(g => g === ADMIN_GROUP)
+      this.isAdmin = this.userService.userIsAdmin(this.user)
     } catch (_e) {
       // user just isn't logged in
     } finally {

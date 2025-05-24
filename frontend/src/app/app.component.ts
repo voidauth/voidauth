@@ -3,7 +3,6 @@ import { RouterLink, RouterOutlet } from "@angular/router"
 import { HeaderComponent } from "./components/header/header.component"
 import { MaterialModule } from "./material-module"
 import { UserService } from "./services/user.service"
-import { ADMIN_GROUP } from "@shared/constants"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 
 @Component({
@@ -26,7 +25,7 @@ export class AppComponent implements OnInit {
   async ngOnInit() {
     try {
       this.user = await this.userService.getMyUser()
-      this.isAdmin = this.user.groups.some(g => g === ADMIN_GROUP)
+      this.isAdmin = this.userService.userIsAdmin(this.user)
     } catch (_e) {
       // user just isn't logged in
     }

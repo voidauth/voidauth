@@ -6,6 +6,7 @@ import type { UpdatePassword } from "@shared/api-request/UpdatePassword"
 import { firstValueFrom } from "rxjs"
 import environment from "../../environment/environment"
 import type { UserDetails } from "@shared/api-response/UserDetails"
+import { ADMIN_GROUP } from "@shared/constants"
 
 @Injectable({
   providedIn: "root",
@@ -15,6 +16,10 @@ export class UserService {
 
   async getMyUser() {
     return firstValueFrom(this.http.get<UserDetails>(`${environment.apiUrl}/user/me`))
+  }
+
+  userIsAdmin(user: UserDetails) {
+    return user.groups.some(g => g === ADMIN_GROUP)
   }
 
   async updateProfile(profile: UpdateProfile) {

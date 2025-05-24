@@ -12,9 +12,7 @@ services:
   void-auth-db:
     image: postgres:17
     environment:
-      # POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 0cDBZJktmwpe4fIi6534rt4R7vh9TUOL
-      # POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?err}
     ports:
       - "5432:5432"
     volumes:
