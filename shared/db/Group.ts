@@ -1,7 +1,7 @@
 import type { Audit } from "./Audit"
 import type { Invitation } from "./Invitation"
 import type { User } from "./User"
-import type { ForwardAuthDomain } from "./ForwardAuthDomain"
+import type { ProxyAuth } from "./ProxyAuth"
 
 export type Group = Audit & {
   id: string
@@ -18,7 +18,7 @@ export type InvitationGroup = Audit & {
   groupId: Group["id"]
 }
 
-export type ForwardAuthDomainGroup = Audit & {
-  forwardAuthId: ForwardAuthDomain["id"]
+export type ProxyAuthGroup = Audit & {
+  proxyAuthId: ProxyAuth["id"]
   groupId: Group["id"]
 }

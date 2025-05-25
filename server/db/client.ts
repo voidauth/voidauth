@@ -13,7 +13,8 @@ export async function getClients() {
   const clients = (await db()
     .select()
     .table<OIDCPayload>("oidc_payloads")
-    .where({ type: clientType }))
+    .where({ type: clientType })
+    .orderBy("id", "asc"))
     .reduce<ClientMetadata[]>((p, r) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const c: ClientMetadata = JSON.parse(r.payload)

@@ -8,6 +8,7 @@ services:
       - "./config:/app/config"
     environment:
       APP_TITLE: VoID Auth
+      DB_PASSWORD: ${DB_PASSWORD:?err}
 
   void-auth-db:
     image: postgres:17

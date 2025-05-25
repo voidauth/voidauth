@@ -25,6 +25,7 @@ const app = express()
 
 // MUST be hosted behind ssl terminating proxy
 app.enable("trust proxy")
+provider.proxy = true
 
 app.use(helmet({
   contentSecurityPolicy: {

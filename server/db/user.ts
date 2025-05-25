@@ -5,15 +5,14 @@ import type { UserDetails, UserWithoutPassword } from "@shared/api-response/User
 import type { User } from "@shared/db/User"
 
 export async function getUsers(): Promise<UserWithoutPassword[]> {
-  return (await db().table<User>("user").select()).map((user) => {
+  return (await db().table<User>("user").select().orderBy("id", "asc")).map((user) => {
     const { passwordHash, ...u } = user
     return u
   })
 }
 
 export async function getUserById(id: string): Promise<UserWithoutPassword | undefined> {
-  const user = (await db().table<User>("user")
-    .select().where({ id }).first())
+  const user = await db().table<User>("user").select().where({ id }).first()
 
   if (!user) {
     return undefined

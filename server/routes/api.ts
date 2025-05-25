@@ -30,7 +30,7 @@ router.use((_req, _res, next) => {
 })
 
 // proxy cookie auth endpoint
-router.get("/verify", async (req: Request, res) => {
+router.get("/authz/forward-auth", async (req: Request, res) => {
   const ctx = provider.createContext(req, res)
   const sessionId = ctx.cookies.get("x-void-auth-session-uid")
   if (!sessionId) {
@@ -54,6 +54,16 @@ router.get("/verify", async (req: Request, res) => {
   const groups = await db().select("name")
     .table<Group>("group")
     .innerJoin<UserGroup>("user_group", "user_group.groupId", "group.id").where({ userId: user.id })
+    .orderBy("name", "asc")
+
+  // check if user may access url
+  const uri = req.headersDistinct["X-Forwarded-Uri"]?.[0]
+  if (!uri) {
+    res.sendStatus(403)
+    return
+  }
+
+  // TODO: check if there is a proxy-auth domain
 
   res.setHeader("Remote-User", user.username)
   if (user.email) {
@@ -86,7 +96,7 @@ router.use(async (req: Request, res, next) => {
         groups: (await db().select()
           .table<UserGroup>("user_group")
           .innerJoin<Group>("group", "user_group.groupId", "group.id")
-          .where({ userId: user.id }))
+          .where({ userId: user.id }).orderBy("name", "asc"))
           .map((g) => {
             return g.name
           }),

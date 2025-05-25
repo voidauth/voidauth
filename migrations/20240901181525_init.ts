@@ -93,7 +93,7 @@ export async function up(knex: Knex): Promise<void> {
 
       table.unique(["invitationId", "groupId"])
     })
-    .createTable("forward_auth", (table) => {
+    .createTable("proxy_auth", (table) => {
       table.uuid("id").primary().notNullable()
       table.text("domain").notNullable()
       table.uuid("createdBy").notNullable()
@@ -103,22 +103,22 @@ export async function up(knex: Knex): Promise<void> {
 
       table.unique(["domain"])
     })
-    .createTable("forward_auth_group", (table) => {
-      table.uuid("forwardAuthId").notNullable().references("id").inTable("forward_auth").onDelete("CASCADE")
+    .createTable("proxy_auth_group", (table) => {
+      table.uuid("proxyAuthId").notNullable().references("id").inTable("proxy_auth").onDelete("CASCADE")
       table.uuid("groupId").notNullable().references("id").inTable("group").onDelete("CASCADE")
       table.uuid("createdBy").notNullable()
       table.uuid("updatedBy").notNullable()
       table.timestamp("createdAt", { useTz: true }).notNullable()
       table.timestamp("updatedAt", { useTz: true }).notNullable()
 
-      table.unique(["forwardId", "groupId"])
+      table.unique(["proxyAuthId", "groupId"])
     })
 };
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema
-    .dropTable("forward_auth_group")
-    .dropTable("forward_auth")
+    .dropTable("proxy_auth_group")
+    .dropTable("proxy_auth")
     .dropTable("invitation_group")
     .dropTable("invitation")
     .dropTable("password_reset")

@@ -184,6 +184,7 @@ adminRouter.get("/user/:id",
     const groups = await db().select("name")
       .table<Group>("group")
       .innerJoin<UserGroup>("user_group", "user_group.groupId", "group.id").where({ userId: id })
+      .orderBy("name", "asc")
     const { passwordHash, ...userWithoutPassword } = user
     const userResponse: UserDetails = { ...userWithoutPassword, groups: groups.map(g => g.name) }
 
@@ -284,7 +285,7 @@ adminRouter.delete("/user/:id",
 )
 
 adminRouter.get("/groups", async (_req, res) => {
-  const groups = await db().select().table<Group>("group")
+  const groups = await db().select().table<Group>("group").orderBy("id", "asc")
   res.send(groups)
 })
 

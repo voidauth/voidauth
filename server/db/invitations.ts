@@ -4,7 +4,7 @@ import type { InvitationDetails } from "@shared/api-response/InvitationDetails"
 import type { Group, InvitationGroup } from "@shared/db/Group"
 
 export async function getInvitations() {
-  return await db().select().table<Invitation>("invitation").where("expiresAt", ">=", new Date())
+  return await db().select().table<Invitation>("invitation").where("expiresAt", ">=", new Date()).orderBy("id", "asc")
 }
 
 export async function getInvitation(id: string) {
@@ -16,7 +16,7 @@ export async function getInvitation(id: string) {
   const groups = await db().select("name")
     .table<Group>("group")
     .innerJoin<InvitationGroup>("invitation_group", "invitation_group.groupId", "group.id")
-    .where({ invitationId: id })
+    .where({ invitationId: id }).orderBy("name", "asc")
   const invitationDetails: InvitationDetails = { ...invitation, groups: groups.map(g => g.name) }
   return invitationDetails
 }
