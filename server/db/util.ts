@@ -7,7 +7,7 @@ import type { PasswordReset } from "@shared/db/PasswordReset"
 import type { Invitation } from "@shared/db/Invitation"
 import type { OIDCPayload } from "@shared/db/OIDCPayload"
 import appConfig from "../util/config"
-import { decryptString, encryptString } from "./key"
+import { decryptString, encryptString, getCookieKeys, getJWKs } from "./key"
 import type { ClientMetadata } from "oidc-provider"
 
 /**
@@ -57,18 +57,14 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
       value,
     }).where({ id: k.id })
   }
-  if (enableWarnings && lockedKeys.length > 0) {
-    const longestExp = lockedKeys.sort((a, b) => {
-      return new Date(b.expiresAt).getTime() - new Date(a.expiresAt).getTime()
-    })[0]?.expiresAt
+  const cookieKeys = await getCookieKeys()
+  const jwks = await getJWKs()
+  if (enableWarnings && lockedKeys.length > 0 && (cookieKeys.length === 0 || jwks.length === 0)) {
     console.error(`WARNING!!!
       You have key(s) that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
       This could be due to a mistake while rotating the storage key.
       New keys were generated to replace them, this invalidated all sessions and tokens.
-      If you stil have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY and get your keys back.
-      ${longestExp
-        ? `This warning will clear when the key(s) expire on ${String(longestExp)}`
-        : "You can clear this warning by manually deleting your keys and restarting the app."}`)
+      If you stil have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY and get your keys back.`)
   }
 
   // Do the same for clients
