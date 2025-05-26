@@ -16,8 +16,6 @@ import { als } from "./util/als"
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? ".")
 const FE_ROOT = path.join(PROCESS_ROOT, "../frontend/dist/browser")
-const APP_URL = URL.parse(appConfig.APP_DOMAIN)
-const PORT = APP_URL?.port || (APP_URL?.protocol === "https" ? "443" : "80")
 
 void generateTheme()
 
@@ -100,8 +98,8 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.sendStatus(500)
 })
 
-app.listen(PORT, () => {
-  console.log(`Listening on port: ${PORT}`)
+app.listen(appConfig.APP_PORT, () => {
+  console.log(`Listening on port: ${String(appConfig.APP_PORT)}`)
 })
 
 // interval to delete expired db entries and keep keys up to date

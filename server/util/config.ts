@@ -8,6 +8,7 @@ process.env.NODE_ENV ??= "production"
 class Config {
   APP_TITLE = "VoidAuth"
   APP_DOMAIN = ""
+  APP_PORT = 3000
 
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
@@ -42,6 +43,7 @@ const appConfig = new Config()
 function assignConfigValue(key: keyof Config, value: unknown) {
   switch (key) {
     // positive ints
+    case "APP_PORT":
     case "SMTP_PORT":
     case "DB_PORT":
     case "ZXCVBN_MIN":
