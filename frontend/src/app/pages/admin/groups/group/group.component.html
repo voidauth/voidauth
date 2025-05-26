@@ -11,6 +11,45 @@
           }
         </mat-form-field>
 
+        <mat-list [ngClass]="{invalid: form.controls.users.errors}">
+          <mat-form-field>
+            <mat-label>Add User</mat-label>
+            <input #input
+                   type="text"
+                   placeholder="Pick one"
+                   matInput
+                   [formControl]="userSelect"
+                   [matAutocomplete]="auto"
+                   (input)="userAutoFilter(input.value)"
+                   (focus)="userAutoFilter(input.value)">
+            <mat-autocomplete (optionSelected)="addUser($event);input.value=''" requireSelection #auto="matAutocomplete">
+              @for (option of selectableUsers; track option) {
+                <mat-option [value]="option">{{option.username}}</mat-option>
+              }
+            </mat-autocomplete>
+            @if (userSelect.errors) {
+              <mat-error>{{userSelect.errors | validationError}}</mat-error>
+            }
+          </mat-form-field>
+
+          <div mat-subheader>Users:</div>
+          @for (u of form.value.users; track u) {
+            <mat-list-item>
+              <mat-icon matListItemIcon class="clickable" (click)="removeUser(u.id)">cancel</mat-icon>
+              <div matListItemTitle>{{u.username}}</div>
+            </mat-list-item>
+          }
+          @if (!form.value.users?.length) {
+            <mat-list-item>
+            </mat-list-item>
+          }
+        </mat-list>
+        @if (form.controls.users.errors) {
+          <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px;">
+            {{form.controls.users.errors | validationError}}
+          </mat-error>
+        }
+
         <mat-card-actions>
           <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{this.id ? "Update" : "Create"}}</button>
           @if (id) {

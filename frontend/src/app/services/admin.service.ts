@@ -14,6 +14,7 @@ import type { Group } from "@shared/db/Group"
 import type { Invitation } from "@shared/db/Invitation"
 import { ConfigService } from "./config.service"
 import { REDIRECT_PATHS } from "@shared/constants"
+import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
 
 @Injectable({
   providedIn: "root",
@@ -52,7 +53,7 @@ export class AdminService {
   }
 
   async group(id: string) {
-    return firstValueFrom(this.http.get<Group>(`${environment.apiUrl}/admin/group/${id}`))
+    return firstValueFrom(this.http.get<GroupUsers>(`${environment.apiUrl}/admin/group/${id}`))
   }
 
   async upsertGroup(group: Nullable<GroupUpsert>) {

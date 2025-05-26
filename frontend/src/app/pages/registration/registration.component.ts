@@ -36,7 +36,7 @@ export class RegistrationComponent implements OnInit {
     email: new FormControl<string>({
       value: "",
       disabled: false,
-    }, [Validators.required, Validators.email]),
+    }, [Validators.email]),
 
     name: new FormControl<string | null>({
       value: null,
@@ -64,7 +64,13 @@ export class RegistrationComponent implements OnInit {
       const challenge = queryParams.get("challenge")
 
       if (inviteId && challenge) {
-        this.invitation = await this.authService.getInviteDetails(inviteId, challenge)
+        try {
+          this.invitation = await this.authService.getInviteDetails(inviteId, challenge)
+        } catch (e) {
+          this.snackbarService.error("Invalid invite link.")
+          console.error(e)
+          return
+        }
 
         if (this.invitation.username) {
           this.form.controls.username.reset(this.invitation.username)
@@ -79,6 +85,10 @@ export class RegistrationComponent implements OnInit {
         if (this.invitation.name) {
           this.form.controls.name.reset(this.invitation.name)
           this.form.controls.name.disable()
+        }
+
+        if ((await this.configService.getConfig()).emailVerification) {
+          this.form.controls.email.addValidators(Validators.required)
         }
       }
 

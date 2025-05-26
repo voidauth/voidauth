@@ -330,9 +330,11 @@ router.post("/register",
       // See where we need to redirect the user to, depending on config
       const redirect: Redirect = loginRedirect || {
         location: await provider.interactionResult(req, res, {
-          accountId: user.id,
-          remember: false, // non-password logins are never remembered
-          amr: [],
+          login: {
+            accountId: user.id,
+            remember: false, // non-password logins are never remembered
+            amr: [],
+          },
         }, { mergeWithLastSubmission: true }),
       }
 
@@ -395,7 +397,7 @@ router.post("/verify_email",
           amr: ["email"],
         },
       },
-      { mergeWithLastSubmission: false }),
+      { mergeWithLastSubmission: true }),
     }
 
     res.send(redir)
@@ -470,7 +472,7 @@ function isUserUnapproved(user: UserWithoutPassword) {
 }
 
 async function isUserEmailUnverified(user: UserWithoutPassword) {
-  if (appConfig.EMAIL_VERIFICATION && !user.emailVerified) {
+  if (appConfig.EMAIL_VERIFICATION && !user.emailVerified && user.email) {
     if (!await getEmailVerification(user.id)) {
       await createEmailVerification(user, null)
     }

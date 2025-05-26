@@ -23,6 +23,7 @@ import type { Invitation } from "@shared/db/Invitation"
 import type { InvitationUpsert } from "@shared/api-request/admin/InvitationUpsert"
 import { sendInvitation } from "../util/email"
 import { generate } from "generate-password"
+import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -296,11 +297,21 @@ adminRouter.get("/group/:id",
   async (req: Request, res: Response) => {
     const { id } = matchedData<{ id: string }>(req)
     const group = await db().select().table<Group>("group").where({ id }).first()
-    if (group) {
-      res.send(group)
-    } else {
+
+    if (!group) {
       res.sendStatus(404)
+      return
     }
+
+    const groupWithUsers: GroupUsers = {
+      ...group,
+      users: await db().select("id", "username")
+        .table<User>("user")
+        .innerJoin<UserGroup>("user_group", "user_group.userId", "user.id")
+        .where({ groupId: group.id }).orderBy("id", "asc"),
+    }
+
+    res.send(groupWithUsers)
   },
 )
 
@@ -315,9 +326,20 @@ adminRouter.post("/group",
       ...uuidValidation,
     },
     name: stringValidation,
+    users: {
+      isArray: true,
+    },
+    "users.*.id": uuidValidation,
+    "users.*.username": { // we aren't going to use this
+      optional: {
+        options: {
+          values: "falsy",
+        },
+      },
+    },
   }),
   async (req: Request, res: Response) => {
-    const { id, name } = matchedData<GroupUpsert>(req)
+    const { id, name, users } = matchedData<GroupUpsert>(req)
 
     // Do not update the ADMIN_GROUP
     if (name.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
@@ -345,6 +367,27 @@ adminRouter.post("/group",
     }
 
     await db().table<Group>("group").insert(group).onConflict(["id"]).merge(mergeKeys(group))
+
+    const userGroups: UserGroup[] = users.map((u) => {
+      return {
+        userId: u.id,
+        groupId: group.id,
+        createdBy: req.user.id,
+        updatedBy: req.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+
+    if (userGroups[0]) {
+      await db().table<UserGroup>("user_group").insert(userGroups)
+        .onConflict(["groupId", "userId"]).merge(mergeKeys(userGroups[0]))
+    }
+
+    await db().table<UserGroup>("user_group").delete()
+      .where({ groupId: group.id }).and
+      .whereNotIn("userId", userGroups.map(g => g.userId))
+
     res.send(group)
   },
 )

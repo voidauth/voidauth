@@ -28,19 +28,6 @@
         </mat-form-field>
 
         <mat-list [ngClass]="{invalid: form.controls.groups.errors}">
-
-          <!-- <mat-form-field>
-            <mat-label>Add Group</mat-label>
-            <mat-select [formControl]="groupSelect" (selectionChange)="addGroup()">
-              @for (g of selectableGroups; track g) {
-                <mat-option [value]="g">{{g}}</mat-option>
-              }
-            </mat-select>
-            @if (groupSelect.errors) {
-              <mat-error>{{groupSelect.errors | validationError}}</mat-error>
-            }
-          </mat-form-field> -->
-
           <mat-form-field>
             <mat-label>Add Group</mat-label>
             <input #input
