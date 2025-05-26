@@ -11,6 +11,7 @@ import type { GroupUpsert } from "@shared/api-request/admin/GroupUpsert"
 import type { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
 import type { UserWithoutPassword } from "@shared/api-response/UserDetails"
 import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
+import { ADMIN_GROUP } from "@shared/constants"
 
 @Component({
   selector: "app-group",
@@ -24,8 +25,9 @@ import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
   styleUrl: "./group.component.scss",
 })
 export class GroupComponent {
+  ADMIN_GROUP = ADMIN_GROUP
+
   public id: string | null = null
-  public hasLoaded = false
 
   public users: UserWithoutPassword[] = []
   public unselectedUsers: UserWithoutPassword[] = []
@@ -37,7 +39,7 @@ export class GroupComponent {
       value: "",
       disabled: false,
     }, [Validators.required]),
-    users: new FormControl<GroupUsers["users"]>([], [Validators.required]),
+    users: new FormControl<GroupUsers["users"]>([], []),
   })
 
   private adminService = inject(AdminService)
@@ -46,11 +48,10 @@ export class GroupComponent {
   private snackbarService = inject(SnackbarService)
 
   ngOnInit() {
+    this.disablePage()
     this.route.paramMap.subscribe(async (params) => {
       try {
         const id = params.get("id")
-
-        this.disablePage()
 
         if (id) {
           this.id = id
@@ -67,7 +68,6 @@ export class GroupComponent {
         this.userAutoFilter()
 
         this.enablePage()
-        this.hasLoaded = true
       } catch (e) {
         console.error(e)
         this.snackbarService.error("Error loading group.")
@@ -75,12 +75,18 @@ export class GroupComponent {
     })
   }
 
-  disablePage() {
-    this.form.disable()
-  }
-
   enablePage() {
     this.form.enable()
+    this.userSelect.enable()
+    // If admin group, disable name edit
+    if (this.form.controls.name.value?.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
+      this.form.controls.name.disable()
+    }
+  }
+
+  disablePage() {
+    this.form.disable()
+    this.userSelect.disable()
   }
 
   userAutoFilter(value: string = "") {
@@ -105,7 +111,9 @@ export class GroupComponent {
       return
     }
     this.form.controls.users.setValue([{ id: value.id, username: value.username }]
-      .concat(this.form.controls.users.value ?? []))
+      .concat(this.form.controls.users.value ?? []).sort((a, b) => {
+        return a.id > b.id ? 1 : -1
+      }))
     this.form.controls.users.markAsDirty()
     this.userSelect.setValue(null)
     this.userAutoFilter()
@@ -120,7 +128,6 @@ export class GroupComponent {
   async submit() {
     try {
       this.disablePage()
-
       const group = await this.adminService.upsertGroup({ ...this.form.getRawValue(), id: this.id })
       this.snackbarService.show(`Group ${this.id ? "updated" : "created"}.`)
 

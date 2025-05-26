@@ -341,12 +341,6 @@ adminRouter.post("/group",
   async (req: Request, res: Response) => {
     const { id, name, users } = matchedData<GroupUpsert>(req)
 
-    // Do not update the ADMIN_GROUP
-    if (name.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
-      res.sendStatus(400)
-      return
-    }
-
     // Check for name conflict
     const conflictingGroup = await db().select()
       .table<Group>("group")
@@ -357,21 +351,32 @@ adminRouter.post("/group",
       return
     }
 
-    const group: Group = {
-      id: id ?? randomUUID(),
-      name,
-      createdBy: req.user.id,
-      updatedBy: req.user.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
+    const groupId = id ?? randomUUID()
 
-    await db().table<Group>("group").insert(group).onConflict(["id"]).merge(mergeKeys(group))
+    // Do not update the ADMIN_GROUP
+    if (name.toLowerCase() !== ADMIN_GROUP.toLowerCase()) {
+      const group: Group = {
+        id: groupId,
+        name,
+        createdBy: req.user.id,
+        updatedBy: req.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      await db().table<Group>("group").insert(group).onConflict(["id"]).merge(mergeKeys(group))
+    } else {
+      // If this IS the ADMIN_GROUP, there should always be at least one user
+      if (!users.length) {
+        res.sendStatus(400)
+        return
+      }
+    }
 
     const userGroups: UserGroup[] = users.map((u) => {
       return {
         userId: u.id,
-        groupId: group.id,
+        groupId: groupId,
         createdBy: req.user.id,
         updatedBy: req.user.id,
         createdAt: new Date(),
@@ -385,10 +390,10 @@ adminRouter.post("/group",
     }
 
     await db().table<UserGroup>("user_group").delete()
-      .where({ groupId: group.id }).and
+      .where({ groupId: groupId }).and
       .whereNotIn("userId", userGroups.map(g => g.userId))
 
-    res.send(group)
+    res.send({ id: groupId })
   },
 )
 

@@ -10,6 +10,8 @@ import type { TypedFormGroup } from "../../clients/upsert-client/upsert-client.c
 import type { UserUpdate } from "@shared/api-request/admin/UserUpdate"
 import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
 import { USERNAME_REGEX } from "@shared/constants"
+import type { UserDetails } from "@shared/api-response/UserDetails"
+import { UserService } from "../../../../services/user.service"
 
 @Component({
   selector: "app-user",
@@ -23,6 +25,7 @@ import { USERNAME_REGEX } from "@shared/constants"
   styleUrl: "./user.component.scss",
 })
 export class UserComponent {
+  public me?: UserDetails
   public id: string | null = null
   public hasLoaded = false
 
@@ -42,11 +45,11 @@ export class UserComponent {
     email: new FormControl<string>({
       value: "",
       disabled: false,
-    }, [Validators.required, Validators.email]),
+    }, [Validators.email]),
     name: new FormControl<string | null>({
       value: null,
       disabled: false,
-    }, [Validators.required]),
+    }, [Validators.minLength(4)]),
     emailVerified: new FormControl<boolean>({
       value: false,
       disabled: false,
@@ -62,6 +65,7 @@ export class UserComponent {
   })
 
   private adminService = inject(AdminService)
+  private userService = inject(UserService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
@@ -69,6 +73,8 @@ export class UserComponent {
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
       try {
+        this.me = await this.userService.getMyUser()
+
         this.id = params.get("id")
 
         this.disablePage()

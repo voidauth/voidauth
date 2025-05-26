@@ -5,7 +5,6 @@ import { CommonModule } from "@angular/common"
 import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
 import { SnackbarService } from "../../services/snackbar.service"
 import { UserService } from "../../services/user.service"
-import { emptyOrMinLength } from "../../validators/validators"
 import { USERNAME_REGEX } from "@shared/constants"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 import { ConfigService } from "../../services/config.service"
@@ -38,7 +37,7 @@ export class HomeComponent implements OnInit {
     name: new FormControl<string>({
       value: "",
       disabled: false,
-    }, [emptyOrMinLength(4)]),
+    }, [Validators.minLength(4)]),
   })
 
   public emailForm = new FormGroup({

@@ -57,7 +57,7 @@ export class AdminService {
   }
 
   async upsertGroup(group: Nullable<GroupUpsert>) {
-    return firstValueFrom(this.http.post<Group>(`${environment.apiUrl}/admin/group`, group))
+    return firstValueFrom(this.http.post<{ id: string }>(`${environment.apiUrl}/admin/group`, group))
   }
 
   async deleteGroup(id: string) {

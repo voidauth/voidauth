@@ -44,7 +44,6 @@ app.use(helmet({
 app.use("/oidc", provider.callback())
 
 app.use(express.json({ limit: "1Mb" }))
-app.use(express.urlencoded({ limit: "1Mb", extended: true }))
 
 app.use("/api", router)
 

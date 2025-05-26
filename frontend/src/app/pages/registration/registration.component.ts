@@ -7,7 +7,6 @@ import { ActivatedRoute, RouterLink } from "@angular/router"
 import { HttpErrorResponse } from "@angular/common/http"
 import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
 import { SnackbarService } from "../../services/snackbar.service"
-import { emptyOrMinLength } from "../../validators/validators"
 import { USERNAME_REGEX } from "@shared/constants"
 import type { InvitationDetails } from "@shared/api-response/InvitationDetails"
 import { ConfigService } from "../../services/config.service"
@@ -41,7 +40,7 @@ export class RegistrationComponent implements OnInit {
     name: new FormControl<string | null>({
       value: null,
       disabled: false,
-    }, [emptyOrMinLength(4)]),
+    }, [Validators.minLength(4)]),
 
     password: new FormControl<string>({
       value: "",

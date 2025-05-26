@@ -1,16 +1,5 @@
 import type { AbstractControl } from "@angular/forms"
 
-export function emptyOrMinLength(length: number) {
-  return (control: AbstractControl) => {
-    const valid = !control.value || (typeof control.value === "string" && control.value.length >= length)
-    return valid
-      ? null
-      : {
-          emptyOrLength: `Must be either blank or at least ${String(length)} characters long.`,
-        }
-  }
-}
-
 export function isValidURL(control: AbstractControl) {
   try {
     if (typeof control.value === "string" && control.value) {

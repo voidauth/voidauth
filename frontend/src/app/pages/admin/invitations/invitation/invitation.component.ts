@@ -13,7 +13,6 @@ import type { InvitationUpsert } from "@shared/api-request/admin/InvitationUpser
 import type { InvitationDetails } from "@shared/api-response/InvitationDetails"
 import { ConfigService } from "../../../../services/config.service"
 import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
-import { emptyOrMinLength } from "../../../../validators/validators"
 
 @Component({
   selector: "app-invitation",
@@ -54,7 +53,7 @@ export class InvitationComponent {
     name: new FormControl<string | null>({
       value: null,
       disabled: false,
-    }, [emptyOrMinLength(4)]),
+    }, [Validators.minLength(4)]),
     emailVerified: new FormControl<boolean>(true),
     groups: new FormControl<string[]>({
       value: [],
