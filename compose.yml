@@ -1,5 +1,5 @@
 services:
-  void-auth: 
+  voidauth: 
     build:
       context: .
     ports:
@@ -31,7 +31,7 @@ services:
       # SMTP_USER: 
       # SMTP_PASS: 
 
-  void-auth-db:
+  voidauth-db:
     image: postgres:17
     environment:
       POSTGRES_PASSWORD: # required

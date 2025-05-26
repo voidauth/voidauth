@@ -1,7 +1,5 @@
 {
-  "name": "void-auth",
-  "version": "0.0.1",
-  "description": "",
+  "name": "voidauth",
   "main": "server/index.ts",
   "type": "module",
   "engines": {

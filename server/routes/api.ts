@@ -32,7 +32,7 @@ router.use((_req, _res, next) => {
 // proxy cookie auth endpoint
 router.get("/authz/forward-auth", async (req: Request, res) => {
   const ctx = provider.createContext(req, res)
-  const sessionId = ctx.cookies.get("x-void-auth-session-uid")
+  const sessionId = ctx.cookies.get("x-voidauth-session-uid")
   if (!sessionId) {
     res.redirect(appConfig.APP_DOMAIN)
     return

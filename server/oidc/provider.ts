@@ -67,9 +67,9 @@ const configuration: Configuration = {
     // keygrip for rotating cookie signing keys
     keys: Keygrip(providerCookieKeys),
     names: {
-      interaction: "x-void-auth-interaction",
-      resume: "x-void-auth-resume",
-      session: "x-void-auth-session",
+      interaction: "x-voidauth-interaction",
+      resume: "x-voidauth-resume",
+      session: "x-voidauth-session",
     },
     long: {
       httpOnly: true,
@@ -156,7 +156,7 @@ provider.on("session.saved", (session) => {
   // domain should be sld
   const domain = psl.get(ctx.request.hostname)
   const expires = new Date((ctx.oidc.session?.exp ?? 0) * 1000 || createExpiration(TTLs.SESSION))
-  ctx.cookies.set("x-void-auth-session-uid", sessionCookie, {
+  ctx.cookies.set("x-voidauth-session-uid", sessionCookie, {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
@@ -173,7 +173,7 @@ provider.on("session.destroyed", (_session) => {
   }
   // domain should be sld
   const domain = psl.get(ctx.request.hostname)
-  ctx.cookies.set("x-void-auth-session-uid", "", {
+  ctx.cookies.set("x-voidauth-session-uid", "", {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
