@@ -6,7 +6,7 @@ process.env.NODE_ENV ??= "production"
 
 // basic config for app
 class Config {
-  APP_TITLE = "VoID Auth"
+  APP_TITLE = "void-auth"
   APP_DOMAIN = ""
 
   SIGNUP = false
@@ -21,14 +21,6 @@ class Config {
   DB_PORT: number = 5432
   DB_USER: string = "postgres"
   DB_NAME: string = "postgres"
-
-  // connectionString: config.DATABASE_URL,
-  //   host: config['DB_HOST'],
-  //   port: config['DB_PORT'],
-  //   user: config['DB_USER'],
-  //   database: config['DB_NAME'],
-  //   password: config['DB_PASSWORD'],
-  //   ssl: config['DB_SSL'] ? { rejectUnauthorized: false } : false,
 
   // required and checked for validity
   STORAGE_KEY: string = ""

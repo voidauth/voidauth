@@ -30,6 +30,7 @@
     "express-validator": "^7.2.1",
     "generate-password": "^1.7.1",
     "helmet": "^8.1.0",
+    "husky": "^9.1.7",
     "jose": "^6.0.10",
     "keygrip": "^1.1.0",
     "knex": "^3.1.0",
@@ -53,7 +54,6 @@
     "@types/pug": "^2.0.10",
     "concurrently": "^9.1.2",
     "eslint": "^9.25.1",
-    "husky": "^9.1.7",
     "lint-staged": "^15.5.1",
     "nodemon": "^3.1.10",
     "typescript-eslint": "^8.31.1"

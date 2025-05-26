@@ -7,13 +7,34 @@ services:
     volumes:
       - "./config:/app/config"
     environment:
-      APP_TITLE: VoID Auth
-      DB_PASSWORD: ${DB_PASSWORD:?err}
+      # Required environment variables
+      APP_DOMAIN: # required
+      DB_PASSWORD: # required
+      DB_HOST: # required
+      STORAGE_KEY: # required
+
+      # Not required or has default
+      # APP_TITLE: "void-auth"
+      # APP_COLOR: "#8864c4"
+      # SIGNUP: "false"
+      # SIGNUP_REQUIRES_APPROVAL: "true"
+      # EMAIL_VERIFICATION: "false"
+      # DB_PORT: "5432"
+      # DB_USER: "postgres"
+      # DB_NAME: "postgres"
+      # STORAGE_KEY_SECONDARY: 
+      # ZXCVBN_MIN: 
+      # SMTP_HOST: 
+      # SMTP_FROM: 
+      # SMTP_PORT: "587"
+      # SMTP_SECURE: "false"
+      # SMTP_USER: 
+      # SMTP_PASS: 
 
   void-auth-db:
     image: postgres:17
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?err}
+      POSTGRES_PASSWORD: # required
     ports:
       - "5432:5432"
     volumes:

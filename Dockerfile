@@ -34,14 +34,12 @@ RUN npm ci --omit=dev
 # Copy server files
 COPY ./theme ./theme
 COPY ./default_email_templates ./default_email_templates
-
+COPY ./custom_typings ./custom_typings
 COPY ./tsconfig.json ./
-
+COPY ./migrations ./migrations
 COPY ./server ./server
 COPY ./shared ./shared
-COPY ./migrations ./migrations
-COPY ./custom_typings ./custom_typings
 
-VOLUME ["/app/db", "/app/config"]
-EXPOSE 80
+VOLUME ["/app/config"]
+EXPOSE 3000
 CMD [ "npm", "run", "start:server" ]

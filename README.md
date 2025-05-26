@@ -1,2 +1,2 @@
-# VoID Auth
+# void-auth
 
