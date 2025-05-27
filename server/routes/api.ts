@@ -57,11 +57,13 @@ router.get("/authz/forward-auth", async (req: Request, res) => {
     .orderBy("name", "asc")
 
   // check if user may access url
-  const uri = req.headersDistinct["X-Forwarded-Uri"]?.[0]
-  if (!uri) {
-    res.sendStatus(403)
-    return
-  }
+  // const proto = req.headersDistinct["x-forwarded-proto"]?.[0]
+  // const host = req.host
+  // const uri = req.headersDistinct["x-forwarded-uri"]?.[0]
+  // if (!URL.parse(`${proto}://${host}/${uri}`)) {
+  //   res.sendStatus(403)
+  //   return
+  // }
 
   // TODO: check if there is a proxy-auth domain
 
