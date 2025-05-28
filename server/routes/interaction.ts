@@ -77,17 +77,14 @@ router.get("/", async (req, res) => {
     // Check conditions to skip consent
     const { redirect_uri, client_id, scope } = params
     if (typeof redirect_uri === "string" && typeof client_id === "string" && typeof scope === "string") {
-      // Check if the redirect is to to APP_DOMAIN
-      const appUrl = URL.parse(appConfig.APP_DOMAIN)
-      const redirectUrl = URL.parse(redirect_uri)
-      if (appUrl && redirectUrl
-        && appUrl.protocol === redirectUrl.protocol
-        && appUrl.host === redirectUrl.host
-        && appUrl.port === redirectUrl.port) {
+      // Check if the client_id is auth_internal_client
+      if (client_id === "auth_internal_client") {
         const grantId = await applyConsent(interaction)
-        await provider.interactionFinished(req, res, { consent: { grantId } }, {
+        await provider.interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
+        // manually set redirect location for auth_internal_client
+        res.redirect(redirect_uri)
         return
       }
 
