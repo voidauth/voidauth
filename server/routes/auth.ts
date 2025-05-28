@@ -18,7 +18,7 @@ authRouter.post("/send_verify_email",
       res.sendStatus(400)
       return
     }
-    const { id } = matchedData<{ id: string }>(req)
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
 
     const user = await getUserById(id)
 
@@ -44,7 +44,7 @@ authRouter.get("/invitation/:id/:challenge",
     challenge: stringValidation,
   }),
   async (req: Request, res: Response) => {
-    const { id, challenge } = matchedData<{ id: string, challenge: string }>(req)
+    const { id, challenge } = matchedData<{ id: string, challenge: string }>(req, { includeOptionals: true })
     const invite = await getInvitation(id)
     if (!invite || invite.challenge != challenge) {
       res.sendStatus(404)

@@ -94,7 +94,7 @@ adminRouter.get("/client/:client_id",
   ...validate<{ client_id: string }>({
     client_id: stringValidation,
   }), async (req: Request, res: Response) => {
-    const { client_id } = matchedData<{ client_id: string }>(req)
+    const { client_id } = matchedData<{ client_id: string }>(req, { includeOptionals: true })
     const client = await getClient(client_id)
     if (client) {
       res.send(client)
@@ -112,7 +112,7 @@ adminRouter.get("/client/:client_id",
 adminRouter.post("/client",
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req: Request, res: Response) => {
-    const clientMetadata = matchedData<ClientUpsert>(req)
+    const clientMetadata = matchedData<ClientUpsert>(req, { includeOptionals: true })
     try {
       // check that existing client does not exist with client_id
       const existingClient = await getClient(clientMetadata.client_id)
@@ -133,7 +133,7 @@ adminRouter.post("/client",
 adminRouter.patch("/client",
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req: Request, res: Response) => {
-    const clientMetadata = matchedData<ClientUpsert>(req)
+    const clientMetadata = matchedData<ClientUpsert>(req, { includeOptionals: true })
     try {
       // check that existing client exists with client_id
       const existingClient = await getClient(clientMetadata.client_id)
@@ -154,7 +154,7 @@ adminRouter.delete("/client/:client_id",
   ...validate<{ client_id: string }>({
     client_id: stringValidation,
   }), async (req: Request, res: Response) => {
-    const { client_id } = matchedData<{ client_id: string }>(req)
+    const { client_id } = matchedData<{ client_id: string }>(req, { includeOptionals: true })
     const client = await getClient(client_id)
     if (!client) {
       res.sendStatus(404)
@@ -175,7 +175,7 @@ adminRouter.get("/user/:id",
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req)
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
     const user = await getUserById(id)
     if (!user) {
       res.sendStatus(404)
@@ -223,7 +223,7 @@ adminRouter.patch("/user",
   async (req: Request, res: Response) => {
     await createTransaction()
     try {
-      const userUpdate = matchedData<UserUpdate>(req)
+      const userUpdate = matchedData<UserUpdate>(req, { includeOptionals: true })
 
       const { groups: _, ...user } = userUpdate
       const ucount = await db().table<User>("user").update(user).where({ id: userUpdate.id })
@@ -267,7 +267,7 @@ adminRouter.delete("/user/:id",
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req)
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
 
     if (req.user.id === id) {
       res.sendStatus(400)
@@ -295,7 +295,7 @@ adminRouter.get("/group/:id",
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req)
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
     const group = await db().select().table<Group>("group").where({ id }).first()
 
     if (!group) {
@@ -339,7 +339,7 @@ adminRouter.post("/group",
     },
   }),
   async (req: Request, res: Response) => {
-    const { id, name, users } = matchedData<GroupUpsert>(req)
+    const { id, name, users } = matchedData<GroupUpsert>(req, { includeOptionals: true })
 
     // Check for name conflict
     const conflictingGroup = await db().select()
@@ -402,7 +402,7 @@ adminRouter.delete("/group/:id",
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req)
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
 
     const group = await db().select().table<Group>("group").where({ id }).first()
     // Do not delete the admin group
@@ -427,7 +427,7 @@ adminRouter.get("/invitation/:id",
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req)
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
     const invitation = await getInvitation(id)
     if (!invitation) {
       res.sendStatus(404)
@@ -478,7 +478,7 @@ adminRouter.post("/invitation",
   async (req: Request, res: Response) => {
     await createTransaction()
     try {
-      const invitationUpsert = matchedData<InvitationUpsert>(req)
+      const invitationUpsert = matchedData<InvitationUpsert>(req, { includeOptionals: true })
       const { groups: groupNames, ...invitationData } = invitationUpsert
 
       const id = invitationData.id ?? randomUUID()
@@ -545,7 +545,7 @@ adminRouter.delete("/invitation/:id",
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req)
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
 
     const count = await db().table<Invitation>("invitation").delete().where({ id })
 
@@ -563,7 +563,7 @@ adminRouter.post("/send_invitation/:id",
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req)
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
     const invitation = await getInvitation(id)
 
     if (!invitation) {

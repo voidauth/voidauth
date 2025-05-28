@@ -75,7 +75,7 @@ export function validate<T extends object = any>(schema: TypedSchema<T> | TypedS
   const schemas: TypedSchema<T>[] = (schema instanceof Array ? schema : [schema])
   return [
     ...schemas.map((s) => {
-      return checkSchema(s as Schema)
+      return checkSchema(s as Schema, ["body", "params", "query"])
     }),
     handleValidatorError,
   ]

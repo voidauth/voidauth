@@ -157,7 +157,7 @@ router.post("/login",
     }
     const { prompt: { name } } = interaction
 
-    const { input, password, remember } = matchedData<LoginUser>(req)
+    const { input, password, remember } = matchedData<LoginUser>(req, { includeOptionals: true })
 
     if (name !== "login") {
       res.sendStatus(400)
@@ -201,7 +201,7 @@ router.post("/:uid/confirm/",
       params,
       session,
     } = await provider.interactionDetails(req, res)
-    const { uid: uidParam } = matchedData<{ uid: string }>(req)
+    const { uid: uidParam } = matchedData<{ uid: string }>(req, { includeOptionals: true })
 
     if (uid !== uidParam) {
       res.status(400).send({ message: "Consent form is no longer valid." })
@@ -265,7 +265,7 @@ router.post("/register",
   async (req: Request, res: Response) => {
     await createTransaction()
     try {
-      const registration = matchedData<RegisterUser>(req)
+      const registration = matchedData<RegisterUser>(req, { includeOptionals: true })
 
       if (!await getInteractionDetails(req, res)) {
         const action = registration.inviteId ? "Invite" : "Registration"
@@ -349,7 +349,7 @@ router.post("/verify_email",
     challenge: stringValidation,
   }),
   async (req: Request, res: Response) => {
-    const { userId, challenge } = matchedData<VerifyUserEmail>(req)
+    const { userId, challenge } = matchedData<VerifyUserEmail>(req, { includeOptionals: true })
 
     if (!await getInteractionDetails(req, res)) {
       const redir: Redirect = {

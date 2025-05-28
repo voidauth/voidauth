@@ -31,7 +31,7 @@ userRouter.patch("/profile",
   }),
   async (req: Request, res: Response) => {
     const user = req.user
-    const profile = matchedData<UpdateProfile>(req)
+    const profile = matchedData<UpdateProfile>(req, { includeOptionals: true })
 
     // check username
     const conflictingUser = await getUserByInput(profile.username)
@@ -53,7 +53,7 @@ userRouter.patch("/email",
   async (req: Request, res: Response) => {
     const user = req.user
 
-    const { email } = matchedData<UpdateEmail>(req)
+    const { email } = matchedData<UpdateEmail>(req, { includeOptionals: true })
 
     if (appConfig.EMAIL_VERIFICATION && email) {
       await createEmailVerification(user, email)
@@ -72,7 +72,7 @@ userRouter.patch("/password",
   }),
   async (req: Request, res: Response) => {
     const user = req.user
-    const { oldPassword, newPassword } = matchedData<UpdatePassword>(req)
+    const { oldPassword, newPassword } = matchedData<UpdatePassword>(req, { includeOptionals: true })
 
     const passwordHash = (await db().select("passwordHash")
       .table<User>("user")

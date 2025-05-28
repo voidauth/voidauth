@@ -39,7 +39,7 @@ publicRouter.post("/send_password_reset",
     input: stringValidation,
   }),
   async (req: Request, res: Response) => {
-    const { input } = matchedData<{ input: string }>(req)
+    const { input } = matchedData<{ input: string }>(req, { includeOptionals: true })
     const user = await getUserByInput(input)
 
     if (!user) {
@@ -79,7 +79,7 @@ publicRouter.post("/reset_password",
     newPassword: newPasswordValidation,
   }),
   async (req: Request, res: Response) => {
-    const { userId, challenge, newPassword } = matchedData<ResetPassword>(req)
+    const { userId, challenge, newPassword } = matchedData<ResetPassword>(req, { includeOptionals: true })
     const user = await getUserById(userId)
     const passwordReset = await db().select().table<PasswordReset>("password_reset")
       .where({ userId, challenge }).andWhere("expiresAt", ">=", new Date()).first()
