@@ -86,11 +86,15 @@ const configuration: Configuration = {
   clients: [
     {
       client_id: "auth_internal_client",
+      // unique every time, never used
       client_secret: generate({
         length: 32,
         numbers: true,
-      }), // unique every time, never used
+      }),
+      // any redirect will work, injected custom redirect_uri validator below
       redirect_uris: [`${appConfig.APP_DOMAIN}/api/status`],
+      // not actually used for oidc, just for logging in for
+      // profile management and proxy auth
       response_types: ["none"],
       scope: "openid",
     },
@@ -144,8 +148,22 @@ const configuration: Configuration = {
 
 export const provider = new Provider(`${appConfig.APP_DOMAIN}/oidc`, configuration)
 
+// allow any redirect_uri when using client auth_internal_client
+// this client is not used for actual oidc, only profile or admin management, or proxy auth
+// redirectUriAllowed on a client prototype checks whether a redirect_uri is allowed or not
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const { redirectUriAllowed } = provider.Client.prototype
+provider.Client.prototype.redirectUriAllowed = (redirectUri) => {
+  // @ts-expect-error ctx actually is a static getter on Provider
+  const ctx = Provider.ctx as KoaContextWithOIDC | undefined
+  if (ctx?.oidc.params?.client_id === "auth_internal_client") {
+    return true
+  }
+  return redirectUriAllowed.call(this, redirectUri)
+}
+
 // If session cookie assigned, assign a session-id cookie as well with samesite=none on base domain
-// Used for ForwardAuth/AuthRequest proxy auth
+// Used for proxy auth
 provider.on("session.saved", (session) => {
   const sessionCookie = session.uid
   // @ts-expect-error ctx actually is a static getter on Provider

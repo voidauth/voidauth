@@ -8,7 +8,6 @@ import { UserService } from "../../services/user.service"
 import { USERNAME_REGEX } from "@shared/constants"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 import { ConfigService } from "../../services/config.service"
-import { oidcLoginPath } from "@shared/oidc"
 import { PasswordResetComponent } from "../../components/password-reset/password-reset.component"
 
 @Component({
@@ -95,23 +94,18 @@ export class HomeComponent implements OnInit {
   }
 
   async loadUser() {
-    try {
-      this.user = await this.userService.getMyUser()
+    this.user = await this.userService.getMyUser()
 
-      this.profileForm.reset({
-        username: this.user.username,
-        name: this.user.name ?? "",
-      })
-      this.emailForm.reset({
-        email: this.user.email,
-      })
-      this.passwordForm.reset()
+    this.profileForm.reset({
+      username: this.user.username,
+      name: this.user.name ?? "",
+    })
+    this.emailForm.reset({
+      email: this.user.email,
+    })
+    this.passwordForm.reset()
 
-      this.hasLoaded = true
-    } catch (_e) {
-      // user just isn't logged in
-      window.location.assign(oidcLoginPath(this.configService.getCurrentHost()))
-    }
+    this.hasLoaded = true
   }
 
   async updateProfile() {

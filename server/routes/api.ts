@@ -10,7 +10,7 @@ import type { UserDetails } from "@shared/api-response/UserDetails"
 import { authRouter } from "./auth"
 import { als } from "../util/als"
 import { publicRouter } from "./public"
-import appConfig from "../util/config"
+import { oidcLoginPath } from "@shared/oidc"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -31,23 +31,32 @@ router.use((_req, _res, next) => {
 
 // proxy cookie auth endpoint
 router.get("/authz/forward-auth", async (req: Request, res) => {
+  const proto = req.headersDistinct["x-forwarded-proto"]?.[0]
+  const host = req.host
+  const path = req.headersDistinct["x-forwarded-uri"]?.[0]
+  const url = proto ? URL.parse(`${proto}://${host}${path ?? ""}`) : null
+  if (!url) {
+    res.sendStatus(400)
+    return
+  }
+
   const ctx = provider.createContext(req, res)
   const sessionId = ctx.cookies.get("x-voidauth-session-uid")
   if (!sessionId) {
-    res.redirect(appConfig.APP_DOMAIN)
+    res.redirect(oidcLoginPath(url.href))
     return
   }
   const session = await provider.Session.adapter.findByUid(sessionId)
   const accountId = session?.accountId
   if (!accountId) {
-    res.redirect(appConfig.APP_DOMAIN)
+    res.redirect(oidcLoginPath(url.href))
     return
   }
 
   const user = await getUserById(accountId)
 
   if (!user) {
-    res.redirect(appConfig.APP_DOMAIN)
+    res.redirect(oidcLoginPath(url.href))
     return
   }
 
@@ -57,14 +66,6 @@ router.get("/authz/forward-auth", async (req: Request, res) => {
     .orderBy("name", "asc")
 
   // check if user may access url
-  // const proto = req.headersDistinct["x-forwarded-proto"]?.[0]
-  // const host = req.host
-  // const uri = req.headersDistinct["x-forwarded-uri"]?.[0]
-  // if (!URL.parse(`${proto}://${host}/${uri}`)) {
-  //   res.sendStatus(403)
-  //   return
-  // }
-
   // TODO: check if there is a proxy-auth domain
 
   res.setHeader("Remote-User", user.username)
