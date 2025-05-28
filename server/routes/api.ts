@@ -11,6 +11,7 @@ import { authRouter } from "./auth"
 import { als } from "../util/als"
 import { publicRouter } from "./public"
 import { oidcLoginPath } from "@shared/oidc"
+import appConfig from "../util/config"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -42,21 +43,11 @@ router.get("/authz/forward-auth", async (req: Request, res) => {
 
   const ctx = provider.createContext(req, res)
   const sessionId = ctx.cookies.get("x-voidauth-session-uid")
-  if (!sessionId) {
-    res.redirect(oidcLoginPath(url.href))
-    return
-  }
-  const session = await provider.Session.adapter.findByUid(sessionId)
+  const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
   const accountId = session?.accountId
-  if (!accountId) {
-    res.redirect(oidcLoginPath(url.href))
-    return
-  }
-
-  const user = await getUserById(accountId)
-
+  const user = accountId ? await getUserById(accountId) : null
   if (!user) {
-    res.redirect(oidcLoginPath(url.href))
+    res.redirect(`${appConfig.APP_DOMAIN}${oidcLoginPath(url.href)}`)
     return
   }
 
