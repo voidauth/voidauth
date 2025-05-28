@@ -469,13 +469,14 @@ function isUserUnapproved(user: UserWithoutPassword) {
 }
 
 async function isUserEmailUnverified(user: UserWithoutPassword) {
-  if (appConfig.EMAIL_VERIFICATION && !user.emailVerified && user.email) {
+  let verificationSent = false
+  if (appConfig.EMAIL_VERIFICATION && !user.emailVerified) {
     if (!await getEmailVerification(user.id)) {
-      await createEmailVerification(user, null)
+      verificationSent = await createEmailVerification(user, null)
     }
 
     const redirect: Redirect = {
-      location: `/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user.id}?sent=true`,
+      location: `/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user.id}?sent=${verificationSent ? "true" : "false"}`,
     }
     return redirect
   }

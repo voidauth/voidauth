@@ -27,7 +27,11 @@ authRouter.post("/send_verify_email",
       return
     }
 
-    await createEmailVerification(user)
+    const sent = await createEmailVerification(user)
+    if (!sent) {
+      res.status(400).send({ message: "Verification Email could not be sent." })
+      return
+    }
 
     res.send()
     return
