@@ -10,11 +10,15 @@
         <br>
         <br>
         Do you allow <br>
-        <h2>{{details.redirectUri}}</h2> <br> to read your account information?
+        <h2>{{redirectHost ?? details.redirectUri}}</h2> 
+        <br> to read your account information?
+        @if (redirectHost) {
+          <p>After you confirm, you will be redirected to <b>{{details.redirectUri}}</b>.</p>
+        }
       </div>
 
       <mat-card-actions>
-        <button mat-flat-button type="submit">Authorize</button>
+        <button mat-flat-button type="submit">Confirm</button>
       </mat-card-actions>
     </form>
   </mat-card-content>

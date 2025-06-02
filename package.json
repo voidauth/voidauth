@@ -1,5 +1,5 @@
 {
-  "name": "voidauth",
+  "name": "voidauthn",
   "main": "server/index.ts",
   "type": "module",
   "engines": {

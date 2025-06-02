@@ -11,7 +11,7 @@ export const loggedInGuard: CanActivateFn = async (_route, _state) => {
     await userService.getMyUser()
   } catch (_e) {
     // user isn't logged in
-    window.location.assign(oidcLoginPath(configService.getCurrentHost() + "/api/status"))
+    window.location.assign(oidcLoginPath(configService.getCurrentHost()))
     return false
   }
   return true

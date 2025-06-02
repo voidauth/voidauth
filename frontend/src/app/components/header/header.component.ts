@@ -32,7 +32,7 @@ export class HeaderComponent implements OnInit {
   public router = inject(Router)
 
   async ngOnInit() {
-    this.loginRedirect = oidcLoginPath(this.configService.getCurrentHost() + "/api/status")
+    this.loginRedirect = oidcLoginPath(this.configService.getCurrentHost())
 
     try {
       this.userLoading = true

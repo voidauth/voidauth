@@ -1,4 +1,4 @@
-import { Router, type Request } from "express"
+import { Router, type Request, type Response } from "express"
 import { router as interactionRouter } from "./interaction"
 import { provider } from "../oidc/provider"
 import { db } from "../db/db"
@@ -30,19 +30,10 @@ router.use((_req, _res, next) => {
   })
 })
 
-// proxy cookie auth endpoint
-router.get("/authz/forward-auth", async (req: Request, res) => {
-  const proto = req.headersDistinct["x-forwarded-proto"]?.[0]
-  const host = req.host
-  const path = req.headersDistinct["x-forwarded-uri"]?.[0]
-  const url = proto ? URL.parse(`${proto}://${host}${path ?? ""}`) : null
-  if (!url) {
-    res.sendStatus(400)
-    return
-  }
-
+// proxy auth common
+async function proxyAuth(url: URL, req: Request, res: Response) {
   const ctx = provider.createContext(req, res)
-  const sessionId = ctx.cookies.get("x-voidauth-session-uid")
+  const sessionId = ctx.cookies.get("x-voidauthn-session-uid")
   const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
   const accountId = session?.accountId
   const user = accountId ? await getUserById(accountId) : null
@@ -70,6 +61,29 @@ router.get("/authz/forward-auth", async (req: Request, res) => {
     res.setHeader("Remote-Groups", groups.map(g => g.name).join(","))
   }
   res.send()
+}
+
+// proxy cookie auth endpoints
+router.get("/authz/forward-auth", async (req: Request, res) => {
+  const proto = req.headersDistinct["x-forwarded-proto"]?.[0]
+  const host = req.headersDistinct["x-forwarded-host"]?.[0]
+  const path = req.headersDistinct["x-forwarded-uri"]?.[0]
+  const url = proto && host ? URL.parse(`${proto}://${host}${path ?? ""}`) : null
+  if (!url) {
+    res.sendStatus(400)
+    return
+  }
+  await proxyAuth(url, req, res)
+})
+
+router.get("/authz/auth-request", async (req: Request, res) => {
+  const headerUrl = req.headersDistinct["x-original-url"]?.[0]
+  const url = headerUrl ? URL.parse(headerUrl) : null
+  if (!url) {
+    res.sendStatus(400)
+    return
+  }
+  await proxyAuth(url, req, res)
 })
 
 // Set user on reqest
@@ -111,19 +125,6 @@ router.use("/interaction", interactionRouter)
 router.use("/user", userRouter)
 
 router.use("/admin", adminRouter)
-
-router.get("/status", (req, res) => {
-  const { error, error_description, iss } = req.query
-  if (error) {
-    res.status(500).send({
-      error,
-      error_description,
-      iss,
-    })
-    return
-  }
-  res.redirect("/")
-})
 
 // API route was not found
 router.use((_req, res) => {

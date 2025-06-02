@@ -67,9 +67,9 @@ const configuration: Configuration = {
     // keygrip for rotating cookie signing keys
     keys: Keygrip(providerCookieKeys),
     names: {
-      interaction: "x-voidauth-interaction",
-      resume: "x-voidauth-resume",
-      session: "x-voidauth-session",
+      interaction: "x-voidauthn-interaction",
+      resume: "x-voidauthn-resume",
+      session: "x-voidauthn-session",
     },
     long: {
       httpOnly: true,
@@ -92,7 +92,8 @@ const configuration: Configuration = {
         numbers: true,
       }),
       // any redirect will work, injected custom redirect_uri validator below
-      redirect_uris: [`${appConfig.APP_DOMAIN}/api/status`],
+      redirect_uris: [appConfig.APP_DOMAIN],
+      response_modes: ["query"],
       // not actually used for oidc, just for logging in for
       // profile management and proxy auth
       response_types: ["none"],
@@ -174,7 +175,7 @@ provider.on("session.saved", (session) => {
   // domain should be sld
   const domain = psl.get(ctx.request.hostname)
   const expires = new Date((ctx.oidc.session?.exp ?? 0) * 1000 || createExpiration(TTLs.SESSION))
-  ctx.cookies.set("x-voidauth-session-uid", sessionCookie, {
+  ctx.cookies.set("x-voidauthn-session-uid", sessionCookie, {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
@@ -191,7 +192,7 @@ provider.on("session.destroyed", (_session) => {
   }
   // domain should be sld
   const domain = psl.get(ctx.request.hostname)
-  ctx.cookies.set("x-voidauth-session-uid", "", {
+  ctx.cookies.set("x-voidauthn-session-uid", "", {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",

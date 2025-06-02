@@ -1,5 +1,5 @@
 services:
-  voidauth: 
+  voidauthn: 
     build:
       context: .
     ports:
@@ -14,7 +14,7 @@ services:
       STORAGE_KEY: # required
 
       # Not required or has default
-      # APP_TITLE: "VoidAuth"
+      # APP_TITLE: "VoidAuthn"
       # APP_COLOR: "#8864c4"
       # SIGNUP: "false"
       # SIGNUP_REQUIRES_APPROVAL: "true"
@@ -31,7 +31,7 @@ services:
       # SMTP_USER: 
       # SMTP_PASS: 
 
-  voidauth-db:
+  voidauthn-db:
     image: postgres:17
     environment:
       POSTGRES_PASSWORD: # required

@@ -6,7 +6,7 @@ process.env.NODE_ENV ??= "production"
 
 // basic config for app
 class Config {
-  APP_TITLE = "VoidAuth"
+  APP_TITLE = "VoidAuthn"
   APP_DOMAIN = ""
   APP_PORT = 3000
 

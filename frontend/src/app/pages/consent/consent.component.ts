@@ -17,6 +17,7 @@ import type { ConsentDetails } from "@shared/api-response/ConsentDetails"
 export class ConsentComponent implements OnInit {
   public uid: string | null = null
   public details?: ConsentDetails
+  public redirectHost?: string
 
   private authService = inject(AuthService)
   private route = inject(ActivatedRoute)
@@ -30,6 +31,8 @@ export class ConsentComponent implements OnInit {
           throw new Error("UID param missing from page.")
         }
         this.details = await this.authService.getInteractionDetails(this.uid)
+        const url = URL.parse(this.details.redirectUri)
+        this.redirectHost = url?.host
       } catch (e) {
         console.error(e)
         this.snackbarService.error("Confirmation details not valid.")
