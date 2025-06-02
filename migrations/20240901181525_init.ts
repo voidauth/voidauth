@@ -10,6 +10,11 @@ export async function up(knex: Knex): Promise<void> {
 
       table.check("type in ('oidc_jwk', 'cookie_key')")
     })
+    .createTable("flag", (table) => {
+      table.text("name").primary().notNullable()
+      table.text("value")
+      table.timestamp("createdAt", { useTz: true }).notNullable()
+    })
     .createTable("user", (table) => {
       table.uuid("id").primary().notNullable()
       table.text("email")

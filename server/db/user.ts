@@ -1,8 +1,14 @@
 import type { Account, AccountClaims, KoaContextWithOIDC } from "oidc-provider"
-import { db } from "./db"
+import { commit, createTransaction, db, rollback } from "./db"
 import type { UserGroup, Group } from "@shared/db/Group"
 import type { UserDetails, UserWithoutPassword } from "@shared/api-response/UserDetails"
 import type { User } from "@shared/db/User"
+import { ADMIN_USER, ADMIN_GROUP } from "@shared/constants"
+import { randomUUID } from "crypto"
+import { generate } from "generate-password"
+import { als } from "../util/als"
+import * as argon2 from "argon2"
+import type { Flag } from "@shared/db/Flag"
 
 export async function getUsers(): Promise<UserWithoutPassword[]> {
   return (await db().table<User>("user").select().orderBy("id", "asc")).map((user) => {
@@ -59,3 +65,69 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
     },
   }
 }
+
+// Create initial admin user and group
+await als.run({}, async () => {
+  await createTransaction()
+  try {
+    // Check if admin user and group have ever been created.
+    const adminCreated = await db().table<Flag>("flag").select().where({ name: "ADMIN_CREATED" }).first()
+    if (adminCreated?.value?.toLowerCase() !== "true") {
+      const password = generate({
+        length: 32,
+        numbers: true,
+      })
+
+      const initialAdminUser: User = {
+        id: randomUUID(),
+        username: ADMIN_USER,
+        name: "Auth Admin",
+        email: "admin@localhost",
+        passwordHash: await argon2.hash(password),
+        emailVerified: true,
+        approved: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      const initialAdminGroup: Group = {
+        id: randomUUID(),
+        name: ADMIN_GROUP,
+        createdBy: initialAdminUser.id,
+        updatedBy: initialAdminUser.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      await db().table<User>("user").insert(initialAdminUser)
+
+      await db().table<Group>("group").insert(initialAdminGroup)
+
+      await db().table<UserGroup>("user_group").insert({
+        userId: initialAdminUser.id,
+        groupId: initialAdminGroup.id,
+        createdBy: initialAdminUser.id,
+        updatedBy: initialAdminUser.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      await db().table<Flag>("flag").insert({ name: "ADMIN_CREATED", value: "true", createdAt: new Date() })
+        .onConflict(["name"]).merge(["value"])
+
+      console.log("")
+      console.log("")
+      console.log("The following is the default Admin username and password,")
+      console.log("These will not be shown again.")
+      console.log("")
+      console.log(initialAdminUser.username)
+      console.log(password)
+      console.log("")
+    }
+
+    await commit()
+  } catch (e) {
+    await rollback()
+    throw e
+  }
+})
