@@ -1,4 +1,3 @@
-import { CommonModule } from "@angular/common"
 import { Component, inject, type OnInit } from "@angular/core"
 import { ActivatedRoute, Router } from "@angular/router"
 import { MaterialModule } from "../../../material-module"
@@ -9,7 +8,6 @@ import { SnackbarService } from "../../../services/snackbar.service"
 @Component({
   selector: "app-verify-sent",
   imports: [
-    CommonModule,
     MaterialModule,
   ],
   templateUrl: "./verify-sent.component.html",

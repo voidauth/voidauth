@@ -1,4 +1,3 @@
-import { CommonModule } from "@angular/common"
 import { Component, input } from "@angular/core"
 import { ReactiveFormsModule, FormControl } from "@angular/forms"
 import { MaterialModule } from "../../material-module"
@@ -9,7 +8,6 @@ import { NewPasswordInputComponent } from "../new-password-input/new-password-in
   selector: "app-password-reset",
   imports: [
     ReactiveFormsModule,
-    CommonModule,
     MaterialModule,
     ValidationErrorPipe,
     NewPasswordInputComponent,

@@ -1,7 +1,6 @@
 import { Component, inject, type OnInit } from "@angular/core"
 import { AuthService } from "../../services/auth.service"
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
-import { CommonModule } from "@angular/common"
 import { MaterialModule } from "../../material-module"
 import { ActivatedRoute, RouterLink } from "@angular/router"
 import { HttpErrorResponse } from "@angular/common/http"
@@ -19,7 +18,6 @@ import { NewPasswordInputComponent } from "../../components/new-password-input/n
   imports: [
     ReactiveFormsModule,
     MaterialModule,
-    CommonModule,
     ValidationErrorPipe,
     RouterLink,
     NewPasswordInputComponent,

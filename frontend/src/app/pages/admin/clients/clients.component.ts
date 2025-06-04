@@ -1,6 +1,5 @@
 import { Component, inject, ViewChild, type AfterViewInit } from "@angular/core"
 import { AdminService } from "../../../services/admin.service"
-import { CommonModule } from "@angular/common"
 import { MaterialModule } from "../../../material-module"
 import type { ClientMetadata } from "oidc-provider"
 import { MatPaginator } from "@angular/material/paginator"
@@ -19,7 +18,6 @@ export type TableColumn<T> = {
 @Component({
   selector: "app-clients",
   imports: [
-    CommonModule,
     MaterialModule,
     RouterLink,
   ],

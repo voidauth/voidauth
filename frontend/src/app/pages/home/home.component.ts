@@ -1,7 +1,6 @@
 import { Component, inject, type OnInit } from "@angular/core"
 import { MaterialModule } from "../../material-module"
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
-import { CommonModule } from "@angular/common"
 import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
 import { SnackbarService } from "../../services/snackbar.service"
 import { UserService } from "../../services/user.service"
@@ -14,7 +13,6 @@ import { PasswordResetComponent } from "../../components/password-reset/password
   selector: "app-home",
   imports: [
     ReactiveFormsModule,
-    CommonModule,
     MaterialModule,
     ValidationErrorPipe,
     PasswordResetComponent,

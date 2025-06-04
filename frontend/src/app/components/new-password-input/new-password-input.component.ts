@@ -1,4 +1,3 @@
-import { CommonModule } from "@angular/common"
 import { Component, inject, input, model, type OnInit } from "@angular/core"
 import { ReactiveFormsModule, type FormControl } from "@angular/forms"
 import { zxcvbnOptions, zxcvbn } from "@zxcvbn-ts/core"
@@ -10,7 +9,6 @@ import { ConfigService } from "../../services/config.service"
   selector: "app-new-password-input",
   imports: [
     ReactiveFormsModule,
-    CommonModule,
     MaterialModule,
   ],
   templateUrl: "./new-password-input.component.html",

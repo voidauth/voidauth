@@ -1,4 +1,3 @@
-import { CommonModule } from "@angular/common"
 import { Component, inject, ViewChild } from "@angular/core"
 import { MaterialModule } from "../../../material-module"
 import { MatTableDataSource } from "@angular/material/table"
@@ -14,7 +13,6 @@ import type { UserDetails, UserWithoutPassword } from "@shared/api-response/User
 @Component({
   selector: "app-users",
   imports: [
-    CommonModule,
     MaterialModule,
     RouterLink,
   ],

@@ -5,7 +5,6 @@ import { MatTableDataSource } from "@angular/material/table"
 import { AdminService } from "../../../services/admin.service"
 import { SnackbarService } from "../../../services/snackbar.service"
 import type { TableColumn } from "../clients/clients.component"
-import { CommonModule } from "@angular/common"
 import { RouterLink } from "@angular/router"
 import { MaterialModule } from "../../../material-module"
 import type { Invitation } from "@shared/db/Invitation"
@@ -13,7 +12,6 @@ import type { Invitation } from "@shared/db/Invitation"
 @Component({
   selector: "app-invitations",
   imports: [
-    CommonModule,
     MaterialModule,
     RouterLink,
   ],

@@ -1,4 +1,3 @@
-import { CommonModule } from "@angular/common"
 import { Component, inject } from "@angular/core"
 import { ActivatedRoute, Router } from "@angular/router"
 import { MaterialModule } from "../../material-module"
@@ -12,7 +11,6 @@ import { HttpErrorResponse } from "@angular/common/http"
 @Component({
   selector: "app-reset-password",
   imports: [
-    CommonModule,
     MaterialModule,
     ReactiveFormsModule,
     PasswordResetComponent,

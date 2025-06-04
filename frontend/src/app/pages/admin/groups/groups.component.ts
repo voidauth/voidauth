@@ -6,7 +6,6 @@ import type { Group } from "@shared/db/Group"
 import { AdminService } from "../../../services/admin.service"
 import { SnackbarService } from "../../../services/snackbar.service"
 import type { TableColumn } from "../clients/clients.component"
-import { CommonModule } from "@angular/common"
 import { MaterialModule } from "../../../material-module"
 import { ADMIN_GROUP } from "@shared/constants"
 import { RouterLink } from "@angular/router"
@@ -14,7 +13,6 @@ import { RouterLink } from "@angular/router"
 @Component({
   selector: "app-groups",
   imports: [
-    CommonModule,
     MaterialModule,
     RouterLink,
   ],

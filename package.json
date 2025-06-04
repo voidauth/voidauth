@@ -18,8 +18,8 @@
     "*": "eslint --fix"
   },
   "dependencies": {
-    "@angular/cli": "^19.2.9",
-    "@angular/material": "^19.2.11",
+    "@angular/cli": "^20.0.1",
+    "@angular/material": "^20.0.2",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
@@ -32,7 +32,7 @@
     "jose": "^6.0.10",
     "keygrip": "^1.1.0",
     "knex": "^3.1.0",
-    "nodemailer": "^6.10.1",
+    "nodemailer": "^7.0.3",
     "oidc-provider": "^9.1.1",
     "pg": "^8.16.0",
     "psl": "^1.15.0",
@@ -52,7 +52,7 @@
     "@types/pug": "^2.0.10",
     "concurrently": "^9.1.2",
     "eslint": "^9.25.1",
-    "lint-staged": "^15.5.1",
+    "lint-staged": "^16.1.0",
     "nodemon": "^3.1.10",
     "typescript-eslint": "^8.31.1"
   }
