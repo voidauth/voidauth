@@ -39,7 +39,7 @@ export class ClientsComponent implements AfterViewInit {
     {
       columnDef: "redirect_uris",
       header: "Redirects",
-      cell: element => String(element.redirect_uris),
+      cell: element => String(element.redirect_uris?.join("\n")),
     },
   ]
 

@@ -25,6 +25,7 @@
     "@zxcvbn-ts/language-en": "^3.0.2",
     "argon2": "^0.43.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
     "generate-password": "^1.7.1",
     "helmet": "^8.1.0",

@@ -13,6 +13,7 @@ import initialize from "oidc-provider/lib/helpers/initialize_keystore"
 import { clearAllExpiredEntries, updateEncryptedTables } from "./db/util"
 import { createTransaction, commit, rollback } from "./db/db"
 import { als } from "./util/als"
+import { rateLimit } from "express-rate-limit"
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? ".")
 const FE_ROOT = path.join(PROCESS_ROOT, "../frontend/dist/browser")
@@ -37,6 +38,14 @@ app.use(helmet({
       "form-action": ["'self'", "https:"], // must be able to form action to external site
     },
   },
+}))
+
+// apply rate limiter to all requests
+const rateWindowS = 10 * 60 // 10 minutes
+app.use(rateLimit({
+  windowMs: rateWindowS * 1000,
+  max: rateWindowS * 10, // max 10 requests per second
+  validate: { trustProxy: false },
 }))
 
 app.use("/oidc", provider.callback())

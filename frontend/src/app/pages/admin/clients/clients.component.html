@@ -7,7 +7,7 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           {{column.header}}
         </th>
-        <td mat-cell *matCellDef="let row">
+        <td mat-cell style="white-space: pre-line;" *matCellDef="let row">
           @if (column.isIcon) {
             <mat-icon>{{column.cell(row)}}</mat-icon>
           } @else {
