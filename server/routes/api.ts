@@ -116,6 +116,20 @@ router.use(async (req: Request, res, next) => {
   next()
 })
 
+router.get("/cb", (req, res) => {
+  const { error, error_description, iss } = req.query
+  if (error) {
+    res.status(500).send({
+      error,
+      error_description,
+      iss,
+    })
+    return
+  }
+
+  res.redirect("/")
+})
+
 router.use("/public", publicRouter)
 
 router.use("/auth", authRouter)

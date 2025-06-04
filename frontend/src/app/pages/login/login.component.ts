@@ -69,7 +69,7 @@ export class LoginComponent implements OnInit {
       await this.authService.interactionExists()
     } catch (_e) {
       // interaction session is missing, could not log in without it
-      window.location.assign(oidcLoginPath(this.configService.getCurrentHost()))
+      window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + "/api/cb"))
     }
   }
 

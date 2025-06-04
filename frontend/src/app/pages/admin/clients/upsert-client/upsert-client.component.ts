@@ -8,7 +8,9 @@ import { ActivatedRoute, Router } from "@angular/router"
 import { SnackbarService } from "../../../../services/snackbar.service"
 import { isValidURL } from "../../../../validators/validators"
 import { generate } from "generate-password-browser"
-import type { ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
+import type { ClientUpsert, GRANT_TYPES } from "@shared/api-request/admin/ClientUpsert"
+import type { ResponseType } from "oidc-provider"
+import type { itemIn } from "@shared/utils"
 
 export type TypedFormGroup<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
@@ -51,6 +53,8 @@ export class UpsertClientComponent implements OnInit {
     redirect_uris: new FormControl<string[]>([], [Validators.required, Validators.minLength(1)]),
     client_secret: new FormControl<string>("", [Validators.required, Validators.minLength(4)]),
     token_endpoint_auth_method: new FormControl<ClientUpsert["token_endpoint_auth_method"]>("client_secret_basic"),
+    response_types: new FormControl<ResponseType[]>(["code"]),
+    grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(["authorization_code"]),
     skip_consent: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidURL]),
   })

@@ -353,7 +353,7 @@ router.post("/verify_email",
 
     if (!await getInteractionDetails(req, res)) {
       const redir: Redirect = {
-        location: oidcLoginPath(appConfig.APP_DOMAIN, "verify_email", userId, challenge),
+        location: oidcLoginPath(appConfig.APP_DOMAIN + "/api/cb", "verify_email", userId, challenge),
       }
       res.send(redir)
       return

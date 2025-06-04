@@ -1,4 +1,6 @@
-export type valueof<T> = T[keyof T]
+export type valueof<T extends object> = T[keyof T]
+
+export type itemIn<T extends readonly unknown[] | unknown[]> = T[number]
 
 export type RequireKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
 

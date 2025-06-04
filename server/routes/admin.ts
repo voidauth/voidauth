@@ -3,7 +3,7 @@ import { validate, type TypedSchema } from "../util/validate"
 import { commit, createTransaction, db, rollback } from "../db/db"
 import { matchedData } from "express-validator"
 import { provider } from "../oidc/provider"
-import type { ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
+import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
 import type { User } from "@shared/db/User"
 import { randomUUID } from "crypto"
 import {
@@ -58,6 +58,24 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   token_endpoint_auth_method: {
     optional: true,
     ...stringValidation,
+  },
+  response_types: {
+    isArray: true,
+  },
+  "response_types.*": {
+    ...stringValidation,
+    isIn: {
+      options: [RESPONSE_TYPES],
+    },
+  },
+  grant_types: {
+    isArray: true,
+  },
+  "grant_types.*": {
+    ...stringValidation,
+    isIn: {
+      options: [GRANT_TYPES],
+    },
   },
   skip_consent: {
     default: {
@@ -125,7 +143,7 @@ adminRouter.post("/client",
       res.send()
     } catch (e) {
       console.error(e)
-      res.sendStatus(400)
+      res.status(400).send({ message: e })
     }
   },
 )
@@ -144,8 +162,9 @@ adminRouter.patch("/client",
 
       await upsertClient(provider, clientMetadata, provider.createContext(req, res))
       res.send()
-    } catch (_e) {
-      res.sendStatus(400)
+    } catch (e) {
+      console.error(e)
+      res.status(400).send({ message: e })
     }
   },
 )

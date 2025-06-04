@@ -14,7 +14,7 @@ export const isAdminGuard: CanActivateFn = async (_route, _state) => {
     }
   } catch (_e) {
     // user isn't logged in
-    window.location.assign(oidcLoginPath(configService.getCurrentHost()))
+    window.location.assign(oidcLoginPath(configService.getCurrentHost() + "/api/cb"))
     return false
   }
   return true
