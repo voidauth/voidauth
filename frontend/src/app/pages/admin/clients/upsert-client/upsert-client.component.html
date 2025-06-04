@@ -69,6 +69,24 @@
       </mat-form-field>
 
       <mat-form-field>
+        <mat-label>Response Types</mat-label>
+        <mat-select formControlName="response_types" multiple>
+          @for (rt of uniqueResponseTypes; track rt) {
+            <mat-option [value]="rt">{{rt}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Grant Types</mat-label>
+        <mat-select formControlName="grant_types" multiple>
+          @for (gt of grantTypes; track gt) {
+            <mat-option [value]="gt">{{gt}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
         <mat-label>Logo Url</mat-label>
         <input matInput type="text" formControlName="logo_uri">
         <mat-hint>Logo shown on client consent page, can be a remote url</mat-hint>

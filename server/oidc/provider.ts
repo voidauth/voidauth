@@ -17,6 +17,12 @@ for (e in errors) {
   Object.defineProperty(errors[e].prototype, "allow_redirect", { value: false })
 }
 
+export function isOIDCProviderError(e: unknown): e is errors.OIDCProviderError {
+  return typeof e === "object"
+    && e !== null
+    && "error_description" in e
+}
+
 const extraParams: (keyof OIDCExtraParams)[] = ["login_type", "login_id", "login_challenge"]
 export const initialJwks = { keys: (await getJWKs()).map(k => k.jwk) }
 export const providerCookieKeys = (await getCookieKeys()).map(k => k.value)

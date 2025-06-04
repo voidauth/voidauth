@@ -8,9 +8,10 @@ import { ActivatedRoute, Router } from "@angular/router"
 import { SnackbarService } from "../../../../services/snackbar.service"
 import { isValidURL } from "../../../../validators/validators"
 import { generate } from "generate-password-browser"
-import type { ClientUpsert, GRANT_TYPES } from "@shared/api-request/admin/ClientUpsert"
+import { GRANT_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
 import type { ResponseType } from "oidc-provider"
 import type { itemIn } from "@shared/utils"
+import { HttpErrorResponse } from "@angular/common/http"
 
 export type TypedFormGroup<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
@@ -36,6 +37,10 @@ export class UpsertClientComponent implements OnInit {
     "none",
   ]
 
+  public uniqueResponseTypes = UNIQUE_RESPONSE_TYPES
+
+  public grantTypes = GRANT_TYPES
+
   public client_id: string | null = null
   public hasLoaded = false
 
@@ -44,9 +49,7 @@ export class UpsertClientComponent implements OnInit {
     disabled: false,
   }, [isValidURL])
 
-  profile = new FormControl<boolean>(true)
-  email = new FormControl<boolean>(true)
-  groups = new FormControl<boolean>(true)
+  responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>([])
 
   form = new FormGroup<TypedFormGroup<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
@@ -54,7 +57,7 @@ export class UpsertClientComponent implements OnInit {
     client_secret: new FormControl<string>("", [Validators.required, Validators.minLength(4)]),
     token_endpoint_auth_method: new FormControl<ClientUpsert["token_endpoint_auth_method"]>("client_secret_basic"),
     response_types: new FormControl<ResponseType[]>(["code"]),
-    grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(["authorization_code"]),
+    grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(["authorization_code", "refresh_token"]),
     skip_consent: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidURL]),
   })
@@ -78,12 +81,23 @@ export class UpsertClientComponent implements OnInit {
             client_secret: client.client_secret ?? "",
             redirect_uris: client.redirect_uris ?? [],
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? "client_secret_basic",
+            response_types: client.response_types ?? ["code"],
+            grant_types: client.grant_types ?? ["authorization_code", "refresh_token"],
             skip_consent: client["skip_consent"] ?? false,
             logo_uri: client.logo_uri,
           })
-          this.profile.setValue(!!(client.scope?.includes("profile")))
-          this.email.setValue(!!(client.scope?.includes("email")))
-          this.groups.setValue(!!(client.scope?.includes("groups")))
+
+          const intialResponseType: itemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
+          if (client.response_types?.some(t => t.includes("code"))) {
+            intialResponseType.push("code")
+          }
+          if (client.response_types?.some(t => t.includes("id_token"))) {
+            intialResponseType.push("id_token")
+          }
+          if (client.response_types?.some(t => t.includes("token"))) {
+            intialResponseType.push("token")
+          }
+          this.responseTypeControl.setValue(intialResponseType)
         }
 
         this.enablePage()
@@ -92,6 +106,21 @@ export class UpsertClientComponent implements OnInit {
         console.error(e)
         this.snackbarService.error("Error loading Client.")
       }
+    })
+
+    this.responseTypeControl.valueChanges.subscribe((value) => {
+      const response_types: ResponseType[] = []
+      if (!value?.length) {
+        response_types.push("none")
+      } else {
+        value.sort().forEach((ur) => {
+          response_types.concat(response_types.map(r => (r + " " + ur) as ResponseType))
+          if (ur !== "token") {
+            response_types.push(ur)
+          }
+        })
+      }
+      this.form.controls.response_types.setValue(response_types)
     })
   }
 
@@ -123,8 +152,18 @@ export class UpsertClientComponent implements OnInit {
       await this.router.navigate(["/admin/client", this.client_id], {
         replaceUrl: true,
       })
-    } catch (_e) {
-      this.snackbarService.error(`Could not ${this.client_id ? "update" : "create"} client.`)
+    } catch (e) {
+      console.error(e)
+
+      let shownError: string | null = null
+      if (e instanceof HttpErrorResponse) {
+        shownError ??= e.error?.message
+      } else {
+        shownError ??= (e as Error).message
+      }
+
+      shownError ??= `Could not ${this.client_id ? "update" : "create"} client.`
+      this.snackbarService.error(shownError)
     } finally {
       this.enablePage()
     }

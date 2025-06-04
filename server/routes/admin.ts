@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from "express"
 import { validate, type TypedSchema } from "../util/validate"
 import { commit, createTransaction, db, rollback } from "../db/db"
 import { matchedData } from "express-validator"
-import { provider } from "../oidc/provider"
+import { isOIDCProviderError, provider } from "../oidc/provider"
 import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
 import type { User } from "@shared/db/User"
 import { randomUUID } from "crypto"
@@ -142,8 +142,7 @@ adminRouter.post("/client",
       await upsertClient(provider, clientMetadata, provider.createContext(req, res))
       res.send()
     } catch (e) {
-      console.error(e)
-      res.status(400).send({ message: e })
+      res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
     }
   },
 )
@@ -163,8 +162,7 @@ adminRouter.patch("/client",
       await upsertClient(provider, clientMetadata, provider.createContext(req, res))
       res.send()
     } catch (e) {
-      console.error(e)
-      res.status(400).send({ message: e })
+      res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
     }
   },
 )

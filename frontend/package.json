@@ -22,6 +22,7 @@
     "@angular/platform-browser-dynamic": "^20.0.1",
     "@angular/router": "^20.0.1",
     "@types/jasmine": "~5.1.0",
+    "@types/oidc-provider": "^9.1.0",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
