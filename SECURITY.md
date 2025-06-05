@@ -2,6 +2,8 @@
 
 ## Reporting a Vulnerability
 
-To report a vulnerability, open an issue explaining how to replicate the problem and if possible a solution.
+To report a security issue, please email security@notquitenothing.com with details.
 
-You can expect a quick response, this repository is monitored.
+You may also write a [Security Advisory](https://github.com/notquitenothing/VoidAuthn/security/advisorieshttps:/) draft and collaborate on a fix.
+
+You can expect a quick response.

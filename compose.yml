@@ -15,6 +15,7 @@ services:
 
       # Not required or has default
       # APP_TITLE: "VoidAuthn"
+      # APP_PORT: "3000"
       # APP_COLOR: "#8864c4"
       # SIGNUP: "false"
       # SIGNUP_REQUIRES_APPROVAL: "true"
@@ -30,6 +31,8 @@ services:
       # SMTP_SECURE: "false"
       # SMTP_USER: 
       # SMTP_PASS: 
+    depends_on:
+      - voidauthn-db
 
   voidauthn-db:
     image: postgres:17
