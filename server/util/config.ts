@@ -12,7 +12,7 @@ class Config {
 
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
-  EMAIL_VERIFICATION = false
+  EMAIL_VERIFICATION = true
 
   APP_COLOR = "#8864c4"
 
