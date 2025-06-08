@@ -30,6 +30,7 @@ import type { Invitation } from "@shared/db/Invitation"
 import type { Consent } from "@shared/db/Consent"
 import { type OIDCExtraParams, oidcLoginPath } from "@shared/oidc"
 import { getClient } from "../db/client"
+import type { InvitationGroup, UserGroup } from "@shared/db/Group"
 
 export const router = Router()
 
@@ -315,6 +316,19 @@ router.post("/register",
       await db().table<User>("user").insert(user)
 
       if (invitationValid) {
+        const inviteGroups = await db().select().table<InvitationGroup>("invitation_group")
+          .where({ invitationId: invitation.id })
+        const userGroups: UserGroup[] = inviteGroups.map((g) => {
+          return {
+            groupId: g.groupId,
+            userId: user.id,
+            createdBy: g.createdBy,
+            updatedBy: g.updatedBy,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }
+        })
+        await db().table<UserGroup>("user_group").insert(userGroups)
         await db().table<Invitation>("invitation").delete().where({ id: invitation.id })
       }
 

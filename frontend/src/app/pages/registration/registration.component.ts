@@ -60,6 +60,14 @@ export class RegistrationComponent implements OnInit {
       const inviteId = queryParams.get("invite")
       const challenge = queryParams.get("challenge")
 
+      try {
+        await this.authService.interactionExists()
+      } catch (_e) {
+        // interaction session is missing, could not log in without it
+        window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + "/api/cb",
+          "register", inviteId, challenge))
+      }
+
       if (inviteId && challenge) {
         try {
           this.invitation = await this.authService.getInviteDetails(inviteId, challenge)
@@ -87,14 +95,6 @@ export class RegistrationComponent implements OnInit {
         if ((await this.configService.getConfig()).emailVerification) {
           this.form.controls.email.addValidators(Validators.required)
         }
-      }
-
-      try {
-        await this.authService.interactionExists()
-      } catch (_e) {
-        // interaction session is missing, could not log in without it
-        window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + "/api/cb",
-          "register", inviteId, challenge))
       }
     })
   }

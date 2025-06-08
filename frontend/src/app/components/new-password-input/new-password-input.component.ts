@@ -1,7 +1,7 @@
 import { Component, inject, input, model, type OnInit } from "@angular/core"
 import { ReactiveFormsModule, type FormControl } from "@angular/forms"
 import { zxcvbnOptions, zxcvbn } from "@zxcvbn-ts/core"
-import { debounceTime } from "rxjs"
+import { debounceTime, map } from "rxjs"
 import { MaterialModule } from "../../material-module"
 import { ConfigService } from "../../services/config.service"
 
@@ -34,7 +34,11 @@ export class NewPasswordInputComponent implements OnInit {
     const options = await this.loadOptions()
     zxcvbnOptions.setOptions(options)
 
-    this.password().valueChanges.pipe(debounceTime(300)).subscribe((v) => {
+    this.password().valueChanges.pipe(map((value) => {
+      const c = this.password()
+      c.setErrors({ ...c.errors, strength: { min: this.minScore, current: "pending" } })
+      return value
+    }), debounceTime(500)).subscribe((v) => {
       if (!v) {
         this.score = 0
       } else {
@@ -66,8 +70,8 @@ export class NewPasswordInputComponent implements OnInit {
         c.setErrors({ ...c.errors, strength: { min: this.minScore, current: this.score } })
       } else {
         if (c.errors) {
-          const { strength, ...errors } = c.errors
-          c.setErrors(errors)
+          // const { strength, ...errors } = c.errors
+          c.setErrors(null)
         }
       }
     })

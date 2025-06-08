@@ -1,17 +1,18 @@
 services:
   voidauthn: 
-    build:
-      context: .
+    image: notquitenothing/voidauthn:latest
+    env_file:
+      - ".env"
     ports:
       - "3000:3000"
     volumes:
       - "./config:/app/config"
     environment:
       # Required environment variables
-      APP_DOMAIN: # required
-      DB_PASSWORD: # required
-      DB_HOST: # required
-      STORAGE_KEY: # required
+      APP_DOMAIN: ${APP_DOMAIN:?err} # required
+      DB_HOST: ${DB_HOST:?err} # required
+      DB_PASSWORD: ${DB_PASSWORD:?err} # required
+      STORAGE_KEY: ${STORAGE_KEY:?err} # required
 
       # Not required or has default
       # APP_TITLE: "VoidAuthn"
@@ -24,7 +25,7 @@ services:
       # DB_USER: "postgres"
       # DB_NAME: "postgres"
       # STORAGE_KEY_SECONDARY: 
-      # ZXCVBN_MIN: 
+      # ZXCVBN_MIN: "3"
       # SMTP_HOST: 
       # SMTP_FROM: 
       # SMTP_PORT: "587"
@@ -37,7 +38,7 @@ services:
   voidauthn-db:
     image: postgres:17
     environment:
-      POSTGRES_PASSWORD: # required
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:

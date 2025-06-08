@@ -52,7 +52,10 @@ export class LoginComponent implements OnInit {
   private snackbarService = inject(SnackbarService)
 
   async ngOnInit() {
-    this.config = await this.configService.getConfig()
+    this.configService.getConfig().then(c => this.config = c).catch((e: unknown) => {
+      throw e
+    })
+
     try {
       await this.userService.getMyUser()
       // The user is already logged in

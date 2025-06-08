@@ -28,7 +28,7 @@ class Config {
 
   // Optional
   STORAGE_KEY_SECONDARY?: string
-  ZXCVBN_MIN = 2
+  ZXCVBN_MIN = 3
 
   // SMTP
   SMTP_HOST?: string
@@ -131,8 +131,8 @@ if (appConfig.STORAGE_KEY.length < 32) {
 }
 
 // check ZXCVBN_MIN is between 2 and 4
-if (appConfig.ZXCVBN_MIN < 2 || appConfig.ZXCVBN_MIN > 4) {
-  console.error("ZXCVBN_MIN must be between 2 and 4.")
+if (appConfig.ZXCVBN_MIN < 0 || appConfig.ZXCVBN_MIN > 4) {
+  console.error("ZXCVBN_MIN must be between 0 and 4.")
   exit(1)
 }
 
