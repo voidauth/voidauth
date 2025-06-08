@@ -160,7 +160,7 @@ export const provider = new Provider(`${appConfig.APP_DOMAIN}/oidc`, configurati
 // redirectUriAllowed on a client prototype checks whether a redirect_uri is allowed or not
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const { redirectUriAllowed } = provider.Client.prototype
-provider.Client.prototype.redirectUriAllowed = (redirectUri) => {
+provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
   // @ts-expect-error ctx actually is a static getter on Provider
   const ctx = Provider.ctx as KoaContextWithOIDC | undefined
   if (ctx?.oidc.params?.client_id === "auth_internal_client") {

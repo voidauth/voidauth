@@ -1,5 +1,8 @@
 <div class="container">
-  <a mat-flat-button style="align-self: end;" routerLink="/admin/client">Create OIDC Client</a>
+  <span style="align-self: end;">
+    <a mat-button target="_blank" href="/oidc/.well-known/openid-configuration">OIDC Info</a>
+    <a mat-flat-button routerLink="/admin/client">Create OIDC Client</a>
+  </span>
 
   <table mat-table [dataSource]="dataSource" matSort>
     @for (column of columns; track column) {

@@ -69,6 +69,12 @@ volumes:
   db:
 ```
 
+## Integration
+
+I would highly recommend following [Authelia's Integration Guides](https://www.authelia.com/integration/prologue/introduction/) for setting up OIDC Clients (Apps) and ProxyAuth Domains for your reverse-proxy. You should be able to set up the external services the same way as in the Authelia guide (VoidAuthn is a drop-in Authelia replacement) while using the web interface to set up VoidAuthn OIDC Clients and ProxyAuth Domains.
+
+## Customization
+
 VoidAuthn is configurable primarily by environment variable. The available environment variables and their defaults are listed in the table below:
 
 
@@ -96,19 +102,29 @@ VoidAuthn is configurable primarily by environment variable. The available envir
 | SMTP_USER                |           | SMTP username used to sign into email provider; ex "user@example.com"                                                                                                          |          |
 | SMTP_PASS                |           | SMTP password used to sign into email provider                                                                                                                                 |          |
 
+Your own branding can be applied to the app by mounting the **/app/config** directory and adding or modifying the existing files.
+
+The logo and favicon of the web interface can be customized by placing your own **logo.png** and **favicon.png** in the mounted **/app/config/branding** directory.
+
+The email templates for email verification, invitations, and password resets can be changed by modifying the files in the **/app/config/email_templates** directory. The files are [pug](https://pugjs.org/api/getting-started.html) template format and text, which should be updated together when changed.
+
 ## Roadmap
 
-* ProxyAuth Domain Rules
-* Passkey Support
+
+| Item                   | Status         |
+| ------------------------ | :--------------- |
+| ProxyAuth Domain Rules | In progress... |
+| Passkey Support        |                |
+| Integration Guides     |                |
 
 ## Disclaimer
 
-I am not a security researcher, just a developer unsatisfied with the complexity and difficult onboarding process of existing selfhosted auth solutions. Use at your own risk.
+I am not a security researcher or expert, just a developer unsatisfied with the complexity and difficult onboarding process of existing selfhosted auth solutions. Use at your own risk.
 
 ## Credits
 
-node-oidc-provider
+[node-oidc-provider](https://github.com/panva/node-oidc-provider) The core library of VoidAuthn, handles OIDC Provider functionality
 
-authelia
+[authelia](https://www.authelia.com/) An amazing project and heavy inspiration, VoidAuthn aims to be less feature-complete but more user friendly
 
-lldap
+[lldap](https://github.com/lldap/lldap) Inspiration for user management, a very good selfhosted ldap service
