@@ -8,7 +8,7 @@ services:
     volumes:
       - "./config:/app/config"
     environment:
-      # Required environment variables
+      # Required environment variables, set in .env file
       APP_DOMAIN: ${APP_DOMAIN:?err} # required
       DB_HOST: ${DB_HOST:?err} # required
       DB_PASSWORD: ${DB_PASSWORD:?err} # required
