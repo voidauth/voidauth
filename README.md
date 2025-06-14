@@ -4,15 +4,15 @@
   <img src="./frontend/public/logo.png" width="150" title="VoidAuthn">
 </p>
 
-VoidAuthn is an OIDC Provider, Proxy Auth, and User Management application designed to make securing your selfhosted applications easy.
+VoidAuthn is a Single Sign-On Provider that includes: User Management, Proxy Auth, and is an OIDC Provider. It is designed to make securing your applications and resources easy.
 
 ## Features:
 
-* OIDC Provider
-* Proxy ForwardAuth Endpoint
 * User Management
+* Proxy ForwardAuth Endpoint
+* OIDC Provider
 * Invitations
-* Email Support
+* Password Reset with Email Address Verification
 * Custom Branding and CSS
 * ZXCVBN Password Complexity Rules
 
