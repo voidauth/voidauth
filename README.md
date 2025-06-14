@@ -9,7 +9,7 @@ VoidAuthn is a Single Sign-On Provider that includes: User Management, Proxy Aut
 ## Features:
 
 * User Management
-* * Proxy ForwardAuth Endpoint
+* Proxy ForwardAuth Endpoint
 * OIDC Provider
 * Invitations
 * Password Reset with Email Address Verification
