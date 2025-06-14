@@ -4,7 +4,7 @@ import { provider } from "../oidc/provider"
 import { db } from "../db/db"
 import { getUserById } from "../db/user"
 import { userRouter } from "./user"
-import type { Group, UserGroup } from "@shared/db/Group"
+import type { ProxyAuthGroup, Group, UserGroup } from "@shared/db/Group"
 import { adminRouter } from "./admin"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 import { authRouter } from "./auth"
@@ -12,6 +12,9 @@ import { als } from "../util/als"
 import { publicRouter } from "./public"
 import { oidcLoginPath } from "@shared/oidc"
 import appConfig from "../util/config"
+import { isMatch } from "matcher"
+import type { ProxyAuth } from "@shared/db/ProxyAuth"
+import { sortWildcardDomains } from "@shared/utils"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -30,10 +33,14 @@ router.use((_req, _res, next) => {
   })
 })
 
+// proxy auth cache
+let proxyAuthCache: { domain: string, groups: string[] }[] = []
+let proxyAuthCacheExpires: number = 0
+
 // proxy auth common
 async function proxyAuth(url: URL, req: Request, res: Response) {
   const ctx = provider.createContext(req, res)
-  const sessionId = ctx.cookies.get("x-voidauthn-session-uid")
+  const sessionId = ctx.cookies.get("x-void-auth-session-uid")
   const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
   const accountId = session?.accountId
   const user = accountId ? await getUserById(accountId) : null
@@ -48,7 +55,37 @@ async function proxyAuth(url: URL, req: Request, res: Response) {
     .orderBy("name", "asc")
 
   // check if user may access url
-  // TODO: check if there is a proxy-auth domain
+  const formattedUrl = `${url.hostname}${url.pathname}*`
+  // using a short cache
+  if (proxyAuthCacheExpires < new Date().getTime()) {
+    proxyAuthCache = (await db()
+      .select("domain", "name").table<ProxyAuth>("proxy_auth")
+      .leftJoin<ProxyAuthGroup>("proxy_auth_group", "proxy_auth_group.proxyAuthId", "proxy_auth.id")
+      .leftJoin<Group>("group", "proxy_auth_group.groupId", "group.id"))
+      .reduce<{ domain: string, groups: string[] }[]>((arr, d: { domain: string, name: string | null }) => {
+        const existing = arr.find(a => a.domain === d.domain)
+
+        if (!existing) {
+          arr.push({
+            domain: d.domain,
+            groups: d.name != null ? [d.name] : [],
+          })
+        } else {
+          existing.groups.push(d.name as string) // will never be null
+        }
+
+        return arr
+      }, []).sort((ad, bd) => sortWildcardDomains(ad.domain, bd.domain))
+
+    proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
+  }
+
+  const match = proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
+
+  if (!match || (match.groups.length && !groups.some(g => match.groups.includes(g.name)))) {
+    res.sendStatus(403)
+    return
+  }
 
   res.setHeader("Remote-User", user.username)
   if (user.email) {

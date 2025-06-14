@@ -1,10 +1,10 @@
-# VoidAuthn
+# void-auth
 
 <p align="center">
-  <img src="./frontend/public/logo.png" width="150" title="VoidAuthn">
+  <img src="./frontend/public/logo.png" width="150" title="void-auth">
 </p>
 
-VoidAuthn is a Single Sign-On Provider that includes: User Management, Proxy Auth, and is an OIDC Provider. It is designed to make securing your applications and resources easy.
+void-auth is a Single Sign-On Provider that includes: User Management, Proxy Auth, and is an OIDC Provider. It is designed to make securing your applications and resources easy.
 
 ## Features:
 
@@ -16,7 +16,7 @@ VoidAuthn is a Single Sign-On Provider that includes: User Management, Proxy Aut
 * Custom Branding and CSS
 * ZXCVBN Password Complexity Rules
 
-VoidAuthn is accessed through an easy to use web interface, meant to make user sign-in and domain management simple. The web app also has a configurable app title, logo, and theme color so you can make your sign-in page match your brand.
+void-auth is accessed through an easy to use web interface, meant to make user sign-in and domain management simple. The web app also has a configurable app title, logo, and theme color so you can make your sign-in page match your brand.
 
 ## Screenshots
 
@@ -24,18 +24,13 @@ VoidAuthn is accessed through an easy to use web interface, meant to make user s
 Login Portal
 </P>
 <p align="center">
-  <img src="./docs/login_portal.png" width="200" title="VoidAuthn">
+  <img src="./docs/login_portal.png" width="200" title="void-auth">
 </p>
 <p align="center">
-Profile Settings
-</P>
-<p align="center">
-  <img src="./docs/profile_settings.png" width="200" title="VoidAuthn">
-</p>
 
 ## Getting Started
 
-VoidAuthn **MUST** be behind an https terminating reverse-proxy. VoidAuthn does **NOT** provide https termination itself, but it is absolutely **required**. A simple setup using docker compose might look like this:
+void-auth **MUST** be behind an https terminating reverse-proxy. void-auth does **NOT** provide https termination itself, but it is absolutely **required**. A simple setup using docker compose might look like this:
 
 ```
 
@@ -44,8 +39,8 @@ services:
   # Your reverse-proxy service here
   # ---------------------------------
 
-  voidauthn: 
-    image: notquitenothing/voidauthn:latest
+  void-auth: 
+    image: void-auth/void-auth:latest
     volumes:
       - config:/app/config
     environment:
@@ -55,9 +50,9 @@ services:
       DB_HOST: # required
       STORAGE_KEY: # required
     depends_on:
-      - voidauthn-db
+      - void-auth-db
 
-  voidauthn-db:
+  void-auth-db:
     image: postgres:17
     environment:
       POSTGRES_PASSWORD: # required
@@ -71,17 +66,17 @@ volumes:
 
 ## Integration
 
-I would highly recommend following [Authelia's Integration Guides](https://www.authelia.com/integration/prologue/introduction/) for setting up OIDC Clients (Apps) and ProxyAuth Domains for your reverse-proxy. You should be able to set up the external services the same way as in the Authelia guide (VoidAuthn is a drop-in Authelia replacement) while using the web interface to set up VoidAuthn OIDC Clients and ProxyAuth Domains.
+I would highly recommend following [Authelia's Integration Guides](https://www.authelia.com/integration/prologue/introduction/) for setting up OIDC Clients (Apps) and ProxyAuth Domains for your reverse-proxy. You should be able to set up the external services the same way as in the Authelia guide (void-auth is a drop-in Authelia replacement) while using the web interface to set up void-auth OIDC Clients and ProxyAuth Domains.
 
 ## Customization
 
-VoidAuthn is configurable primarily by environment variable. The available environment variables and their defaults are listed in the table below:
+void-auth is configurable primarily by environment variable. The available environment variables and their defaults are listed in the table below:
 
 
 | Name                     | Default   | Description                                                                                                                                                                    | Required |
 | :------------------------- | ----------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
 | APP_DOMAIN               |           | Domain and path app will be served on. Must include "http(s)://"; ex. https://your.domain.here/optional/subpath                                                                | Y        |
-| APP_TITLE                | VoidAuthn | Title that will show on the web interface.                                                                                                                                     |          |
+| APP_TITLE                | void-auth | Title that will show on the web interface.                                                                                                                                     |          |
 | APP_PORT                 | 3000      | The port that app will listen on.                                                                                                                                              |          |
 | APP_COLOR                | #8864c4   | Theme color, rgb format; ex. #xxyyzz                                                                                                                                           |          |
 | SIGNUP                   | false     | Whether the app allows new users to register themselves without invitation.                                                                                                    |          |
@@ -123,8 +118,8 @@ I am not a security researcher or expert, just a developer unsatisfied with the 
 
 ## Credits
 
-[node-oidc-provider](https://github.com/panva/node-oidc-provider) The core library of VoidAuthn, handles OIDC Provider functionality
+[node-oidc-provider](https://github.com/panva/node-oidc-provider) The core library of void-auth, handles OIDC Provider functionality
 
-[authelia](https://www.authelia.com/) An amazing project and heavy inspiration, VoidAuthn aims to be less feature-complete but more user friendly
+[authelia](https://www.authelia.com/) An amazing project and heavy inspiration, void-auth aims to be less feature-complete but more user friendly
 
 [lldap](https://github.com/lldap/lldap) Inspiration for user management, a very good selfhosted ldap service

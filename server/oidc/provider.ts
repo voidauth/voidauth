@@ -105,19 +105,19 @@ const configuration: Configuration = {
     // keygrip for rotating cookie signing keys
     keys: Keygrip(providerCookieKeys),
     names: {
-      interaction: "x-voidauthn-interaction",
-      resume: "x-voidauthn-resume",
-      session: "x-voidauthn-session",
+      interaction: "x-void-auth-interaction",
+      resume: "x-void-auth-resume",
+      session: "x-void-auth-session",
     },
     long: {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: URL.parse(appConfig.APP_DOMAIN)?.protocol === "https:",
     },
     short: {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: URL.parse(appConfig.APP_DOMAIN)?.protocol === "https:",
     },
   },
   jwks: initialJwks,
@@ -213,10 +213,10 @@ provider.on("session.saved", (session) => {
   // domain should be sld
   const domain = psl.get(ctx.request.hostname)
   const expires = new Date((ctx.oidc.session?.exp ?? 0) * 1000 || createExpiration(TTLs.SESSION))
-  ctx.cookies.set("x-voidauthn-session-uid", sessionCookie, {
+  ctx.cookies.set("x-void-auth-session-uid", sessionCookie, {
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: ctx.request.secure ? "none" : "lax", // browsers will not accept "none" with insecure cookies
+    secure: ctx.request.secure,
     expires,
     domain: domain ?? undefined,
   })
@@ -230,10 +230,10 @@ provider.on("session.destroyed", (_session) => {
   }
   // domain should be sld
   const domain = psl.get(ctx.request.hostname)
-  ctx.cookies.set("x-voidauthn-session-uid", "", {
+  ctx.cookies.set("x-void-auth-session-uid", "", {
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: ctx.request.secure ? "none" : "lax",
+    secure: ctx.request.secure,
     maxAge: 0,
     domain: domain ?? undefined,
   })
