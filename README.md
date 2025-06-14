@@ -12,7 +12,7 @@ VoidAuthn is an OIDC Provider, Proxy Auth, and User Management application desig
 * Proxy ForwardAuth Endpoint
 * User Management
 * Invitations
-* Email Support
+* Password Reset with Email Address Verification
 * Custom Branding and CSS
 * ZXCVBN Password Complexity Rules
 
