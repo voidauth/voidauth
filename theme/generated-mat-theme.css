@@ -1,7 +1,5 @@
 html {
   color-scheme: light dark;
-}
-html {
   --mat-sys-background: light-dark(#fef7ff, #151218);
   --mat-sys-error: light-dark(#ba1a1a, #ffb4ab);
   --mat-sys-error-container: light-dark(#ffdad6, #93000a);
@@ -53,26 +51,12 @@ html {
   --mat-sys-tertiary-fixed-dim: light-dark(#ffafd4, #ffafd4);
   --mat-sys-neutral-variant20: #332e3a;
   --mat-sys-neutral10: #1d1a21;
-}
-html {
   --mat-sys-level0: 0px 0px 0px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 0px rgba(0, 0, 0, 0.14), 0px 0px 0px 0px rgba(0, 0, 0, 0.12);
-}
-html {
   --mat-sys-level1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
-}
-html {
   --mat-sys-level2: 0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12);
-}
-html {
   --mat-sys-level3: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);
-}
-html {
   --mat-sys-level4: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
-}
-html {
   --mat-sys-level5: 0px 7px 8px -4px rgba(0, 0, 0, 0.2), 0px 12px 17px 2px rgba(0, 0, 0, 0.14), 0px 5px 22px 4px rgba(0, 0, 0, 0.12);
-}
-html {
   --mat-sys-body-large: 400 1rem / 1.5rem monospace;
   --mat-sys-body-large-font: monospace;
   --mat-sys-body-large-line-height: 1.5rem;
@@ -165,8 +149,6 @@ html {
   --mat-sys-title-small-size: 0.875rem;
   --mat-sys-title-small-tracking: 0.006rem;
   --mat-sys-title-small-weight: 500;
-}
-html {
   --mat-sys-corner-extra-large: 28px;
   --mat-sys-corner-extra-large-top: 28px 28px 0 0;
   --mat-sys-corner-extra-small: 4px;
@@ -179,8 +161,6 @@ html {
   --mat-sys-corner-medium: 12px;
   --mat-sys-corner-none: 0;
   --mat-sys-corner-small: 8px;
-}
-html {
   --mat-sys-dragged-state-layer-opacity: 0.16;
   --mat-sys-focus-state-layer-opacity: 0.12;
   --mat-sys-hover-state-layer-opacity: 0.08;
