@@ -8,6 +8,7 @@ import { USERNAME_REGEX } from "@shared/constants"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 import { ConfigService } from "../../services/config.service"
 import { PasswordResetComponent } from "../../components/password-reset/password-reset.component"
+import { SpinnerService } from "../../services/spinner.service"
 
 @Component({
   selector: "app-home",
@@ -21,7 +22,6 @@ import { PasswordResetComponent } from "../../components/password-reset/password
   styleUrl: "./home.component.scss",
 })
 export class HomeComponent implements OnInit {
-  hasLoaded: boolean = false
   user?: UserDetails
   public message?: string
   public error?: string
@@ -72,43 +72,33 @@ export class HomeComponent implements OnInit {
   private configService = inject(ConfigService)
   private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
-    this.disablePage()
     await this.loadUser()
-    this.enablePage()
-  }
-
-  disablePage() {
-    this.profileForm.disable()
-    this.passwordForm.disable()
-    this.emailForm.disable()
-  }
-
-  enablePage() {
-    this.profileForm.enable()
-    this.passwordForm.enable()
-    this.emailForm.enable()
   }
 
   async loadUser() {
-    this.user = await this.userService.getMyUser()
+    try {
+      this.spinnerService.show()
+      this.user = await this.userService.getMyUser()
 
-    this.profileForm.reset({
-      username: this.user.username,
-      name: this.user.name ?? "",
-    })
-    this.emailForm.reset({
-      email: this.user.email,
-    })
-    this.passwordForm.reset()
-
-    this.hasLoaded = true
+      this.profileForm.reset({
+        username: this.user.username,
+        name: this.user.name ?? "",
+      })
+      this.emailForm.reset({
+        email: this.user.email,
+      })
+      this.passwordForm.reset()
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   async updateProfile() {
-    this.disablePage()
     try {
+      this.spinnerService.show()
       if (!this.profileForm.value.username) {
         throw new Error("Username is required.")
       }
@@ -122,13 +112,13 @@ export class HomeComponent implements OnInit {
       this.snackbarService.error("Could not update profile.")
     } finally {
       await this.loadUser()
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 
   async updatePassword() {
-    this.disablePage()
     try {
+      this.spinnerService.show()
       const { oldPassword, newPassword } = this.passwordForm.value
       if (!oldPassword || !newPassword) {
         throw new Error("Password missing.")
@@ -143,13 +133,13 @@ export class HomeComponent implements OnInit {
     } catch (_e) {
       this.snackbarService.error("Could not update password.")
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 
   async updateEmail() {
-    this.disablePage()
     try {
+      this.spinnerService.show()
       const email = this.emailForm.value.email
       if (!email) {
         throw new Error("Email missing.")
@@ -167,7 +157,7 @@ export class HomeComponent implements OnInit {
       this.snackbarService.error("Could not update email.")
     } finally {
       await this.loadUser()
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 }

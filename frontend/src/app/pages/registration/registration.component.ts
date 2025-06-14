@@ -11,6 +11,7 @@ import type { InvitationDetails } from "@shared/api-response/InvitationDetails"
 import { ConfigService } from "../../services/config.service"
 import { oidcLoginPath } from "@shared/oidc"
 import { NewPasswordInputComponent } from "../../components/new-password-input/new-password-input.component"
+import { SpinnerService } from "../../services/spinner.service"
 @Component({
   selector: "app-registration",
   templateUrl: "./registration.component.html",
@@ -54,6 +55,7 @@ export class RegistrationComponent implements OnInit {
   private authService = inject(AuthService)
   private configService = inject(ConfigService)
   private route = inject(ActivatedRoute)
+  private spinnerService = inject(SpinnerService)
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(async (queryParams) => {
@@ -70,11 +72,14 @@ export class RegistrationComponent implements OnInit {
 
       if (inviteId && challenge) {
         try {
+          this.spinnerService.show()
           this.invitation = await this.authService.getInviteDetails(inviteId, challenge)
         } catch (e) {
           this.snackbarService.error("Invalid invite link.")
           console.error(e)
           return
+        } finally {
+          this.spinnerService.hide()
         }
 
         if (this.invitation.username) {
@@ -92,8 +97,13 @@ export class RegistrationComponent implements OnInit {
           this.form.controls.name.disable()
         }
 
-        if ((await this.configService.getConfig()).emailVerification) {
-          this.form.controls.email.addValidators(Validators.required)
+        try {
+          this.spinnerService.show()
+          if ((await this.configService.getConfig()).emailVerification) {
+            this.form.controls.email.addValidators(Validators.required)
+          }
+        } finally {
+          this.spinnerService.hide()
         }
       }
     })
@@ -101,6 +111,7 @@ export class RegistrationComponent implements OnInit {
 
   async register() {
     try {
+      this.spinnerService.show()
       const redirect = await this.authService.register({
         ...this.form.getRawValue(),
         inviteId: this.invitation?.id,
@@ -119,6 +130,8 @@ export class RegistrationComponent implements OnInit {
 
       shownError ??= "Something went wrong."
       this.snackbarService.error(shownError)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

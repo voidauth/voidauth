@@ -11,6 +11,7 @@ import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
 import { ConfigService } from "../../services/config.service"
 import { UserService } from "../../services/user.service"
 import { oidcLoginPath } from "@shared/oidc"
+import { SpinnerService } from "../../services/spinner.service"
 
 @Component({
   selector: "app-login",
@@ -50,6 +51,7 @@ export class LoginComponent implements OnInit {
   private configService = inject(ConfigService)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
     this.configService.getConfig().then(c => this.config = c).catch((e: unknown) => {
@@ -57,26 +59,33 @@ export class LoginComponent implements OnInit {
     })
 
     try {
-      await this.userService.getMyUser()
-      // The user is already logged in
-      await this.router.navigate(["/"], {
-        replaceUrl: true,
-      })
-      return
-    } catch (_e) {
-      // This is expected, that the user is not logged in
-    }
+      this.spinnerService.show()
 
-    try {
-      await this.authService.interactionExists()
-    } catch (_e) {
-      // interaction session is missing, could not log in without it
-      window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + "/api/cb"))
+      try {
+        await this.userService.getMyUser()
+        // The user is already logged in
+        await this.router.navigate(["/"], {
+          replaceUrl: true,
+        })
+        return
+      } catch (_e) {
+        // This is expected, that the user is not logged in
+      }
+
+      try {
+        await this.authService.interactionExists()
+      } catch (_e) {
+        // interaction session is missing, could not log in without it
+        window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + "/api/cb"))
+      }
+    } finally {
+      this.spinnerService.hide()
     }
   }
 
   async login() {
     const { email, password, rememberMe: remember } = this.form.value
+    this.spinnerService.show()
     try {
       if (!email || !password) {
         throw new Error("Invalid email or password")
@@ -105,6 +114,8 @@ export class LoginComponent implements OnInit {
       console.error(e)
       shownError ??= "Something went wrong."
       this.snackbarService.error(shownError)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

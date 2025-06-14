@@ -6,6 +6,7 @@ import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
 import { AuthService } from "../../services/auth.service"
 import { SnackbarService } from "../../services/snackbar.service"
 import { HttpErrorResponse } from "@angular/common/http"
+import { SpinnerService } from "../../services/spinner.service"
 
 @Component({
   selector: "app-forgot-password",
@@ -31,6 +32,7 @@ export class ForgotPasswordComponent implements OnInit {
   configService = inject(ConfigService)
   authService = inject(AuthService)
   snackbarService = inject(SnackbarService)
+  spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
     this.emailActive = (await this.configService.getConfig()).emailActive
@@ -38,6 +40,7 @@ export class ForgotPasswordComponent implements OnInit {
 
   async send() {
     try {
+      this.spinnerService.show()
       const input = this.form.controls.input.value
       if (!input) {
         throw new Error("Invalid email or username.")
@@ -65,6 +68,8 @@ export class ForgotPasswordComponent implements OnInit {
       console.error(e)
       shownError ??= "Something went wrong."
       this.snackbarService.error(shownError)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

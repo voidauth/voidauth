@@ -5,6 +5,7 @@ import { AuthService } from "../../../services/auth.service"
 import { HttpErrorResponse } from "@angular/common/http"
 import { MaterialModule } from "../../../material-module"
 import { SnackbarService } from "../../../services/snackbar.service"
+import { SpinnerService } from "../../../services/spinner.service"
 
 @Component({
   selector: "app-verify",
@@ -22,12 +23,15 @@ export class VerifyComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
     const params = this.activatedRoute.snapshot.paramMap
 
     try {
       this.title = "Verifying Email..."
+
+      this.spinnerService.show()
 
       const id = params.get("id")
       const challenge = params.get("challenge")
@@ -60,12 +64,15 @@ export class VerifyComponent implements OnInit {
       error ||= "Something went wrong."
       this.snackbarService.error(error)
       this.title = "Email Could Not Be Verified :("
+    } finally {
+      this.spinnerService.hide()
     }
   }
 
   public async sendVerification() {
     this.title = "Sending New Verification..."
     try {
+      this.spinnerService.show()
       if (!this.userid) {
         throw new Error("Missing User ID.")
       }
@@ -83,6 +90,8 @@ export class VerifyComponent implements OnInit {
       error ||= "Something went wrong."
       this.title = "Email Verification Not Be Sent :("
       this.snackbarService.error(error)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

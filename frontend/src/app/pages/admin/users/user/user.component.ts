@@ -12,6 +12,7 @@ import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
 import { USERNAME_REGEX } from "@shared/constants"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 import { UserService } from "../../../../services/user.service"
+import { SpinnerService } from "../../../../services/spinner.service"
 
 @Component({
   selector: "app-user",
@@ -69,15 +70,16 @@ export class UserComponent {
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
       try {
+        this.spinnerService.show()
+
         this.me = await this.userService.getMyUser()
 
         this.id = params.get("id")
-
-        this.disablePage()
 
         if (!this.id) {
           throw new Error("User ID missing.")
@@ -97,27 +99,14 @@ export class UserComponent {
         this.groups = (await this.adminService.groups()).map(g => g.name)
         this.groupAutoFilter()
 
-        this.enablePage()
         this.hasLoaded = true
       } catch (e) {
         console.error(e)
         this.snackbarService.error("Error loading user.")
+      } finally {
+        this.spinnerService.hide()
       }
     })
-  }
-
-  disablePage() {
-    this.form.disable()
-    this.groupSelect.disable()
-  }
-
-  enablePage() {
-    this.form.enable()
-    if (this.selectableGroups.length) {
-      this.groupSelect.enable()
-    } else {
-      this.groupSelect.disable()
-    }
   }
 
   groupAutoFilter(value: string = "") {
@@ -153,20 +142,20 @@ export class UserComponent {
 
   async submit() {
     try {
-      this.disablePage()
+      this.spinnerService.show()
 
       await this.adminService.updateUser({ ...this.form.getRawValue(), id: this.id })
       this.snackbarService.show("User updated.")
     } catch (_e) {
       this.snackbarService.error("Could not update user.")
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 
   async remove() {
     try {
-      this.disablePage()
+      this.spinnerService.show()
 
       if (this.id) {
         await this.adminService.deleteUser(this.id)
@@ -177,7 +166,7 @@ export class UserComponent {
     } catch (_e) {
       this.snackbarService.error("Could not delete user.")
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 }

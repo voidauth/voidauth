@@ -9,6 +9,7 @@ import type { TableColumn } from "../clients/clients.component"
 import { RouterLink } from "@angular/router"
 import { UserService } from "../../../services/user.service"
 import type { UserDetails, UserWithoutPassword } from "@shared/api-response/UserDetails"
+import { SpinnerService } from "../../../services/spinner.service"
 
 @Component({
   selector: "app-users",
@@ -57,22 +58,31 @@ export class UsersComponent {
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
   private userService = inject(UserService)
+  private spinnerService = inject(SpinnerService)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
-    this.me = await this.userService.getMyUser()
-    this.dataSource.data = await this.adminService.users()
-    this.dataSource.paginator = this.paginator
-    this.dataSource.sort = this.sort
+    try {
+      this.spinnerService.show()
+      this.me = await this.userService.getMyUser()
+      this.dataSource.data = await this.adminService.users()
+      this.dataSource.paginator = this.paginator
+      this.dataSource.sort = this.sort
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   async delete(id: string) {
     try {
+      this.spinnerService.show()
       await this.adminService.deleteUser(id)
       this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
       this.snackbarService.show("User was deleted.")
     } catch (_e) {
       this.snackbarService.error("Could not delete user.")
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

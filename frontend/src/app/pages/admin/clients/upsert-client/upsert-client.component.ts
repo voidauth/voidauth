@@ -12,6 +12,7 @@ import { GRANT_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from "@shared/a
 import type { ResponseType } from "oidc-provider"
 import type { itemIn } from "@shared/utils"
 import { HttpErrorResponse } from "@angular/common/http"
+import { SpinnerService } from "../../../../services/spinner.service"
 
 export type TypedFormGroup<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
@@ -42,7 +43,6 @@ export class UpsertClientComponent implements OnInit {
   public grantTypes = GRANT_TYPES
 
   public client_id: string | null = null
-  public hasLoaded = false
 
   redirectUrlControl = new FormControl<string>({
     value: "",
@@ -66,13 +66,13 @@ export class UpsertClientComponent implements OnInit {
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
       try {
+        this.spinnerService.show()
         this.client_id = params.get("client_id")
-
-        this.disablePage()
 
         if (this.client_id) {
           const client = await this.adminService.client(this.client_id)
@@ -87,6 +87,8 @@ export class UpsertClientComponent implements OnInit {
             logo_uri: client.logo_uri,
           })
 
+          this.form.controls.client_id.disable()
+
           const intialResponseType: itemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
           if (client.response_types?.some(t => t.includes("code"))) {
             intialResponseType.push("code")
@@ -99,12 +101,11 @@ export class UpsertClientComponent implements OnInit {
           }
           this.responseTypeControl.setValue(intialResponseType)
         }
-
-        this.enablePage()
-        this.hasLoaded = true
       } catch (e) {
         console.error(e)
         this.snackbarService.error("Error loading Client.")
+      } finally {
+        this.spinnerService.hide()
       }
     })
 
@@ -124,22 +125,9 @@ export class UpsertClientComponent implements OnInit {
     })
   }
 
-  disablePage() {
-    this.form.disable()
-    this.redirectUrlControl.disable()
-  }
-
-  enablePage() {
-    this.form.enable()
-    this.redirectUrlControl.enable()
-    if (this.client_id) {
-      this.form.controls.client_id.disable()
-    }
-  }
-
   async submit() {
     try {
-      this.disablePage()
+      this.spinnerService.show()
 
       if (this.client_id) {
         await this.adminService.updateClient(this.form.getRawValue())
@@ -165,13 +153,13 @@ export class UpsertClientComponent implements OnInit {
       shownError ??= `Could not ${this.client_id ? "update" : "create"} client.`
       this.snackbarService.error(shownError)
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 
   async deleteClient() {
     try {
-      this.disablePage()
+      this.spinnerService.show()
 
       if (this.client_id) {
         await this.adminService.deleteClient(this.client_id)
@@ -182,7 +170,7 @@ export class UpsertClientComponent implements OnInit {
     } catch (_e) {
       this.snackbarService.error("Could not delete client.")
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 

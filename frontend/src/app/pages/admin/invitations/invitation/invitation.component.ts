@@ -13,6 +13,7 @@ import type { InvitationUpsert } from "@shared/api-request/admin/InvitationUpser
 import type { InvitationDetails } from "@shared/api-response/InvitationDetails"
 import { ConfigService } from "../../../../services/config.service"
 import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
+import { SpinnerService } from "../../../../services/spinner.service"
 
 @Component({
   selector: "app-invitation",
@@ -27,7 +28,6 @@ import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
 })
 export class InvitationComponent {
   public id: string | null = null
-  public hasLoaded = false
   public config?: ConfigResponse
 
   public groups: string[] = []
@@ -72,12 +72,13 @@ export class InvitationComponent {
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   public snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   ngOnInit() {
-    this.disablePage()
-
     this.route.paramMap.subscribe(async (params) => {
       try {
+        this.spinnerService.show()
+
         const id = params.get("id")
 
         this.config = await this.configService.getConfig()
@@ -94,12 +95,11 @@ export class InvitationComponent {
         this.form.controls.email.valueChanges.subscribe(() => {
           this.setEmailVerifiedState()
         })
-
-        this.enablePage()
-        this.hasLoaded = true
       } catch (e) {
         console.error(e)
         this.snackbarService.error("Error loading invitation.")
+      } finally {
+        this.spinnerService.hide()
       }
     })
   }
@@ -114,21 +114,6 @@ export class InvitationComponent {
     })
     this.inviteEmail = invitation.email
     this.inviteLink = this.adminService.getInviteLink(invitation.id, invitation.challenge)
-  }
-
-  disablePage() {
-    this.form.disable()
-    this.groupSelect.disable()
-  }
-
-  enablePage() {
-    this.form.enable()
-    if (this.unselectedGroups.length) {
-      this.groupSelect.enable()
-    } else {
-      this.groupSelect.disable()
-    }
-    this.setEmailVerifiedState()
   }
 
   groupAutoFilter(value: string = "") {
@@ -172,6 +157,8 @@ export class InvitationComponent {
 
   async sendEmail() {
     try {
+      this.spinnerService.show()
+
       if (!this.id) {
         throw new Error("Invite ID missing.")
       }
@@ -181,12 +168,14 @@ export class InvitationComponent {
     } catch (e) {
       console.error(e)
       this.snackbarService.error("Could not send invitation.")
+    } finally {
+      this.spinnerService.hide()
     }
   }
 
   async submit() {
     try {
-      this.disablePage()
+      this.spinnerService.show()
 
       const invitation = await this.adminService.upsertInvitation({
         ...this.form.getRawValue(),
@@ -205,13 +194,13 @@ export class InvitationComponent {
       console.error(e)
       this.snackbarService.error(`Could not ${this.id ? "update" : "create"} invitation.`)
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 
   async remove() {
     try {
-      this.disablePage()
+      this.spinnerService.show()
 
       if (this.id) {
         await this.adminService.deleteInvitation(this.id)
@@ -222,7 +211,7 @@ export class InvitationComponent {
     } catch (_e) {
       this.snackbarService.error("Could not delete invitation.")
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 }

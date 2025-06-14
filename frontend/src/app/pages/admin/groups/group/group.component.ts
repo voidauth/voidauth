@@ -12,6 +12,7 @@ import type { MatAutocompleteSelectedEvent } from "@angular/material/autocomplet
 import type { UserWithoutPassword } from "@shared/api-response/UserDetails"
 import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
 import { ADMIN_GROUP } from "@shared/constants"
+import { SpinnerService } from "../../../../services/spinner.service"
 
 @Component({
   selector: "app-group",
@@ -46,11 +47,12 @@ export class GroupComponent {
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   ngOnInit() {
-    this.disablePage()
     this.route.paramMap.subscribe(async (params) => {
       try {
+        this.spinnerService.show()
         const id = params.get("id")
 
         if (id) {
@@ -67,26 +69,16 @@ export class GroupComponent {
         this.users = await this.adminService.users()
         this.userAutoFilter()
 
-        this.enablePage()
+        if (this.form.controls.name.value?.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
+          this.form.controls.name.disable()
+        }
       } catch (e) {
         console.error(e)
         this.snackbarService.error("Error loading group.")
+      } finally {
+        this.spinnerService.hide()
       }
     })
-  }
-
-  enablePage() {
-    this.form.enable()
-    this.userSelect.enable()
-    // If admin group, disable name edit
-    if (this.form.controls.name.value?.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
-      this.form.controls.name.disable()
-    }
-  }
-
-  disablePage() {
-    this.form.disable()
-    this.userSelect.disable()
   }
 
   userAutoFilter(value: string = "") {
@@ -127,7 +119,7 @@ export class GroupComponent {
 
   async submit() {
     try {
-      this.disablePage()
+      this.spinnerService.show()
       const group = await this.adminService.upsertGroup({ ...this.form.getRawValue(), id: this.id })
       this.snackbarService.show(`Group ${this.id ? "updated" : "created"}.`)
 
@@ -138,13 +130,13 @@ export class GroupComponent {
     } catch (_e) {
       this.snackbarService.error(`Could not ${this.id ? "update" : "create"} group.`)
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 
   async remove() {
     try {
-      this.disablePage()
+      this.spinnerService.show()
 
       if (this.id) {
         await this.adminService.deleteGroup(this.id)
@@ -155,7 +147,7 @@ export class GroupComponent {
     } catch (_e) {
       this.snackbarService.error("Could not delete group.")
     } finally {
-      this.enablePage()
+      this.spinnerService.hide()
     }
   }
 }

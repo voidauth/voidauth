@@ -8,6 +8,7 @@ import type { TableColumn } from "../clients/clients.component"
 import { RouterLink } from "@angular/router"
 import { MaterialModule } from "../../../material-module"
 import type { Invitation } from "@shared/db/Invitation"
+import { SpinnerService } from "../../../services/spinner.service"
 
 @Component({
   selector: "app-invitations",
@@ -46,21 +47,30 @@ export class InvitationsComponent {
 
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
-    this.dataSource.data = await this.adminService.invitations()
-    this.dataSource.paginator = this.paginator
-    this.dataSource.sort = this.sort
+    try {
+      this.spinnerService.show()
+      this.dataSource.data = await this.adminService.invitations()
+      this.dataSource.paginator = this.paginator
+      this.dataSource.sort = this.sort
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   async delete(id: string) {
     try {
+      this.spinnerService.show()
       await this.adminService.deleteInvitation(id)
       this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
       this.snackbarService.show("Invitation was deleted.")
     } catch (_e) {
       this.snackbarService.error("Could not delete invitation.")
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

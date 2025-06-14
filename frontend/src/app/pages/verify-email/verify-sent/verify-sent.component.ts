@@ -4,6 +4,7 @@ import { MaterialModule } from "../../../material-module"
 import { AuthService } from "../../../services/auth.service"
 import { HttpErrorResponse } from "@angular/common/http"
 import { SnackbarService } from "../../../services/snackbar.service"
+import { SpinnerService } from "../../../services/spinner.service"
 
 @Component({
   selector: "app-verify-sent",
@@ -21,6 +22,7 @@ export class VerifySentComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   ngOnInit() {
     this.activatedRoute.queryParamMap.subscribe((queryParams) => {
@@ -34,6 +36,7 @@ export class VerifySentComponent implements OnInit {
 
   public async sendVerification() {
     try {
+      this.spinnerService.show()
       if (!this.userId) {
         throw new Error("Missing User ID.")
       }
@@ -57,6 +60,8 @@ export class VerifySentComponent implements OnInit {
 
       error ??= "Something went wrong."
       this.snackbarService.error(error)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

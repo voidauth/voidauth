@@ -1,135 +1,133 @@
 <h1>{{id ? "Update" : "Create"}} Invitation</h1>
-@if (hasLoaded) {
-  @if (id) {
-    <mat-card class="form-card">
-      <mat-card-content>
-        <form>
-          <mat-form-field>
-            <mat-label>Invite Link</mat-label>
-            <input matInput [value]="inviteLink" type="text" disabled>
-            <button 
-              class="field-suffix" 
-              type="button" 
-              mat-icon-button 
-              matSuffix 
-              matTooltip="Copy Invite Link"
-              [cdkCopyToClipboard]="inviteLink || ''"
-              (click)="snackbarService.show('Invite link copied to clipboard.')">
-              <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
-            </button>
-          </mat-form-field>
-          <mat-card-actions>
-            @if (!config?.emailActive) {
-              <p>Cannot email invitation link, because email connection not verified.</p>
-            } @else if (!inviteEmail) {
-              <p>Cannot email invitation link, because invite does not include an email address.</p>
-            } @else {
-              <button mat-button 
-                type="button"
-                disabledInteractive
-                [matTooltip]="form.dirty ? 'You have unsaved changes.' : 'Send invite to: '+inviteEmail"
-                [disabled]="form.dirty"
-                (click)="sendEmail()">
-                Email Invite
-              </button>
-            }
-          </mat-card-actions>
-        </form>
-      </mat-card-content>
-    </mat-card>
-  
-    <mat-divider></mat-divider>
-  }
-
+@if (id) {
   <mat-card class="form-card">
     <mat-card-content>
-      <form [formGroup]="form" (ngSubmit)="submit()">
+      <form>
         <mat-form-field>
-          <mat-label>Username</mat-label>
-          <input matInput type="text" formControlName="username">
-          @if (form.controls.username.errors) {
-          <mat-error>{{form.controls.username.errors | validationError:"Only A-Z,0-9,and _ allowed"}}</mat-error>
-          }
+          <mat-label>Invite Link</mat-label>
+          <input matInput [value]="inviteLink" type="text" disabled>
+          <button 
+            class="field-suffix" 
+            type="button" 
+            mat-icon-button 
+            matSuffix 
+            matTooltip="Copy Invite Link"
+            [cdkCopyToClipboard]="inviteLink || ''"
+            (click)="snackbarService.show('Invite link copied to clipboard.')">
+            <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
+          </button>
         </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Email</mat-label>
-          <input matInput type="text" formControlName="email">
-          @if (form.controls.email.errors) {
-          <mat-error>{{form.controls.email.errors | validationError}}</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Name</mat-label>
-          <input matInput type="text" formControlName="name">
-          @if (form.controls.name.errors) {
-          <mat-error>{{form.controls.name.errors | validationError}}</mat-error>
-          }
-        </mat-form-field>
-
-        <!-- Tricky set false while disabled, while keeping previous value -->
-        @if (form.controls.emailVerified.enabled) {
-          <mat-checkbox formControlName="emailVerified">Email Verified</mat-checkbox>
-        } @else {
-          <mat-checkbox disabled>Email Verified</mat-checkbox>
-        }
-        
-
-
-        <mat-list [ngClass]="{invalid: form.controls.groups.errors}">
-          <mat-form-field>
-            <mat-label>Add Group</mat-label>
-            <input #input
-                   type="text"
-                   placeholder="Pick one"
-                   matInput
-                   [formControl]="groupSelect"
-                   [matAutocomplete]="auto"
-                   (input)="groupAutoFilter(input.value)"
-                   (focus)="groupAutoFilter(input.value)">
-            <mat-autocomplete (optionSelected)="addGroup($event);input.value=''" requireSelection #auto="matAutocomplete">
-              @for (option of selectableGroups; track option) {
-                <mat-option [value]="option">{{option}}</mat-option>
-              }
-            </mat-autocomplete>
-            @if (groupSelect.errors) {
-              <mat-error>{{groupSelect.errors | validationError}}</mat-error>
-            }
-          </mat-form-field>
-
-          <div mat-subheader>Groups:</div>
-          @for (g of form.value.groups; track g) {
-            <mat-list-item>
-              <mat-icon matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
-              <div matListItemTitle>{{g}}</div>
-            </mat-list-item>
-          }
-          @if (!form.value.groups?.length) {
-            <mat-list-item>
-            </mat-list-item>
-          }
-        </mat-list>
-        @if (form.controls.groups.errors) {
-          <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px;">
-            {{form.controls.groups.errors | validationError}}
-          </mat-error>
-        }
-
-        @if (form.errors) {
-          <mat-error>
-            {{form.errors | validationError}}
-          </mat-error>
-        }
-
         <mat-card-actions>
-          <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{this.id ? "Update" : "Create"}}</button>
-          @if (id) {
-            <button mat-button type="button" (click)="remove()">Delete</button>
+          @if (!config?.emailActive) {
+            <p>Cannot email invitation link, because email connection not verified.</p>
+          } @else if (!inviteEmail) {
+            <p>Cannot email invitation link, because invite does not include an email address.</p>
+          } @else {
+            <button mat-button 
+              type="button"
+              disabledInteractive
+              [matTooltip]="form.dirty ? 'You have unsaved changes.' : 'Send invite to: '+inviteEmail"
+              [disabled]="form.dirty"
+              (click)="sendEmail()">
+              Email Invite
+            </button>
           }
         </mat-card-actions>
-
       </form>
     </mat-card-content>
   </mat-card>
+
+  <mat-divider></mat-divider>
 }
+
+<mat-card class="form-card">
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field>
+        <mat-label>Username</mat-label>
+        <input matInput type="text" formControlName="username">
+        @if (form.controls.username.errors) {
+        <mat-error>{{form.controls.username.errors | validationError:"Only A-Z,0-9,and _ allowed"}}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Email</mat-label>
+        <input matInput type="text" formControlName="email">
+        @if (form.controls.email.errors) {
+        <mat-error>{{form.controls.email.errors | validationError}}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Name</mat-label>
+        <input matInput type="text" formControlName="name">
+        @if (form.controls.name.errors) {
+        <mat-error>{{form.controls.name.errors | validationError}}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Tricky set false while disabled, while keeping previous value -->
+      @if (form.controls.emailVerified.enabled) {
+        <mat-checkbox formControlName="emailVerified">Email Verified</mat-checkbox>
+      } @else {
+        <mat-checkbox disabled>Email Verified</mat-checkbox>
+      }
+      
+
+
+      <mat-list [ngClass]="{invalid: form.controls.groups.errors}">
+        <mat-form-field>
+          <mat-label>Add Group</mat-label>
+          <input #input
+                  type="text"
+                  placeholder="Pick one"
+                  matInput
+                  [formControl]="groupSelect"
+                  [matAutocomplete]="auto"
+                  (input)="groupAutoFilter(input.value)"
+                  (focus)="groupAutoFilter(input.value)">
+          <mat-autocomplete (optionSelected)="addGroup($event);input.value=''" requireSelection #auto="matAutocomplete">
+            @for (option of selectableGroups; track option) {
+              <mat-option [value]="option">{{option}}</mat-option>
+            }
+          </mat-autocomplete>
+          @if (groupSelect.errors) {
+            <mat-error>{{groupSelect.errors | validationError}}</mat-error>
+          }
+        </mat-form-field>
+
+        <div mat-subheader>Groups:</div>
+        @for (g of form.value.groups; track g) {
+          <mat-list-item>
+            <mat-icon matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
+            <div matListItemTitle>{{g}}</div>
+          </mat-list-item>
+        }
+        @if (!form.value.groups?.length) {
+          <mat-list-item>
+          </mat-list-item>
+        }
+      </mat-list>
+      @if (form.controls.groups.errors) {
+        <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px;">
+          {{form.controls.groups.errors | validationError}}
+        </mat-error>
+      }
+
+      @if (form.errors) {
+        <mat-error>
+          {{form.errors | validationError}}
+        </mat-error>
+      }
+
+      <mat-card-actions>
+        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{this.id ? "Update" : "Create"}}</button>
+        @if (id) {
+          <button mat-button type="button" (click)="remove()">Delete</button>
+        }
+      </mat-card-actions>
+
+    </form>
+  </mat-card-content>
+</mat-card>

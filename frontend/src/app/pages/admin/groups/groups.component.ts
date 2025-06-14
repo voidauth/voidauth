@@ -9,6 +9,7 @@ import type { TableColumn } from "../clients/clients.component"
 import { MaterialModule } from "../../../material-module"
 import { ADMIN_GROUP } from "@shared/constants"
 import { RouterLink } from "@angular/router"
+import { SpinnerService } from "../../../services/spinner.service"
 
 @Component({
   selector: "app-groups",
@@ -39,21 +40,30 @@ export class GroupsComponent {
 
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   async ngAfterViewInit() {
-    // Assign the data to the data source for the table to render
-    this.dataSource.data = await this.adminService.groups()
-    this.dataSource.paginator = this.paginator
-    this.dataSource.sort = this.sort
+    try {
+      // Assign the data to the data source for the table to render
+      this.spinnerService.show()
+      this.dataSource.data = await this.adminService.groups()
+      this.dataSource.paginator = this.paginator
+      this.dataSource.sort = this.sort
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   async delete(id: string) {
     try {
+      this.spinnerService.show()
       await this.adminService.deleteGroup(id)
       this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
       this.snackbarService.show("Group was deleted.")
     } catch (_e) {
       this.snackbarService.error("Could not delete group.")
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

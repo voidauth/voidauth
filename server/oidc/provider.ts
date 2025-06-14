@@ -68,6 +68,38 @@ const configuration: Configuration = {
     Session: TTLs.SESSION,
     Grant: TTLs.GRANT,
     Interaction: TTLs.SESSION,
+    // Below copied from node-oidc-provider, if omitted it will complain
+    // Even though these seem like sensible defaults
+    AccessToken: function AccessTokenTTL(_ctx, token, _client) {
+      return token.resourceServer?.accessTokenTTL || 60 * 60 // 1 hour in seconds
+    },
+    AuthorizationCode: 60 /* 1 minute in seconds */,
+    BackchannelAuthenticationRequest: function BackchannelAuthenticationRequestTTL(ctx, _request, _client) {
+      if (ctx.oidc.params?.requested_expiry) {
+        // 10 minutes in seconds or requested_expiry, whichever is shorter
+        return Math.min(10 * 60, +ctx.oidc.params.requested_expiry)
+      }
+
+      return 10 * 60 // 10 minutes in seconds
+    },
+    ClientCredentials: function ClientCredentialsTTL(_ctx, token, _client) {
+      return token.resourceServer?.accessTokenTTL || 10 * 60 // 10 minutes in seconds
+    },
+    DeviceCode: 600 /* 10 minutes in seconds */,
+    IdToken: 3600 /* 1 hour in seconds */,
+    RefreshToken: function RefreshTokenTTL(ctx, token, client) {
+      if (
+        ctx.oidc.entities.RotatedRefreshToken
+        && client.applicationType === "web"
+        && client.clientAuthMethod === "none"
+        && !token.isSenderConstrained()
+      ) {
+      // Non-Sender Constrained SPA RefreshTokens do not have infinite expiration through rotation
+        return ctx.oidc.entities.RotatedRefreshToken.remainingTTL
+      }
+
+      return 14 * 24 * 60 * 60 // 14 days in seconds
+    },
   },
   cookies: {
     // keygrip for rotating cookie signing keys

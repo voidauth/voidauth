@@ -1,6 +1,5 @@
 <mat-toolbar>
-  <a class="header-logo" routerLink="/"
-    style="display: flex; max-height: 90%; aspect-ratio: 1;">
+  <a class="header-logo" routerLink="/" style="display: flex; max-height: 90%; aspect-ratio: 1;">
     <img src="logo.png">
   </a>
 
@@ -8,7 +7,6 @@
 
   <span class="right-actions">
     <app-theme-toggle></app-theme-toggle>
-    @if (!userLoading) {
     <span>
       @if (!user && loginRedirect && !router.url.includes('login')) {
       <span>
@@ -21,7 +19,6 @@
       </button>
       }
     </span>
-    }
   </span>
 
 </mat-toolbar>

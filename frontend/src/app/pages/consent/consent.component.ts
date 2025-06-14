@@ -5,6 +5,7 @@ import { HttpErrorResponse } from "@angular/common/http"
 import { SnackbarService } from "../../services/snackbar.service"
 import { MaterialModule } from "../../material-module"
 import type { ConsentDetails } from "@shared/api-response/ConsentDetails"
+import { SpinnerService } from "../../services/spinner.service"
 
 @Component({
   selector: "app-consent",
@@ -22,10 +23,12 @@ export class ConsentComponent implements OnInit {
   private authService = inject(AuthService)
   private route = inject(ActivatedRoute)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (paramMap) => {
       try {
+        this.spinnerService.show()
         this.uid = paramMap.get("uid")
         if (!this.uid) {
           throw new Error("UID param missing from page.")
@@ -36,12 +39,15 @@ export class ConsentComponent implements OnInit {
       } catch (e) {
         console.error(e)
         this.snackbarService.error("Confirmation details not valid.")
+      } finally {
+        this.spinnerService.hide()
       }
     })
   }
 
   async submit() {
     try {
+      this.spinnerService.show()
       if (!this.uid) {
         throw Error("Interaction ID missing from login")
       }
@@ -59,6 +65,8 @@ export class ConsentComponent implements OnInit {
 
       shownError ??= "Something went wrong."
       this.snackbarService.error(shownError)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

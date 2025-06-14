@@ -19,9 +19,11 @@ import { MatAutocompleteModule } from "@angular/material/autocomplete"
 import { MatTooltipModule } from "@angular/material/tooltip"
 import { ClipboardModule } from "@angular/cdk/clipboard"
 import { MatProgressBarModule } from "@angular/material/progress-bar"
+import { NgxSpinnerModule } from "ngx-spinner"
 
 @NgModule({
   exports: [
+    NgxSpinnerModule,
     ClipboardModule,
     MatIconModule,
     MatButtonModule,

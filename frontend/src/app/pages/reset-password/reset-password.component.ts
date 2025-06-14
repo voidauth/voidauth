@@ -7,6 +7,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angula
 import { PasswordResetComponent } from "../../components/password-reset/password-reset.component"
 import { REDIRECT_PATHS } from "@shared/constants"
 import { HttpErrorResponse } from "@angular/common/http"
+import { SpinnerService } from "../../services/spinner.service"
 
 @Component({
   selector: "app-reset-password",
@@ -47,6 +48,7 @@ export class ResetPasswordComponent {
   private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
   private router = inject(Router)
+  private spinnerService = inject(SpinnerService)
 
   ngOnInit() {
     const params = this.activatedRoute.snapshot.queryParamMap
@@ -69,6 +71,8 @@ export class ResetPasswordComponent {
         throw new Error("Missing required parameters for submit.")
       }
 
+      this.spinnerService.show()
+
       await this.authService.resetPassword({
         userId: this.userid,
         challenge: this.challenge,
@@ -88,6 +92,8 @@ export class ResetPasswordComponent {
 
       shownError ??= "Something went wrong."
       this.snackbarService.error(shownError)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

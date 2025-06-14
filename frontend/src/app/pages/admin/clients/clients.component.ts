@@ -7,6 +7,7 @@ import { MatSort } from "@angular/material/sort"
 import { MatTableDataSource } from "@angular/material/table"
 import { SnackbarService } from "../../../services/snackbar.service"
 import { RouterLink } from "@angular/router"
+import { SpinnerService } from "../../../services/spinner.service"
 
 export type TableColumn<T> = {
   columnDef: keyof T & string
@@ -47,21 +48,30 @@ export class ClientsComponent implements AfterViewInit {
 
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   async ngAfterViewInit() {
-    // Assign the data to the data source for the table to render
-    this.dataSource.data = await this.adminService.clients()
-    this.dataSource.paginator = this.paginator
-    this.dataSource.sort = this.sort
+    try {
+      // Assign the data to the data source for the table to render
+      this.spinnerService.show()
+      this.dataSource.data = await this.adminService.clients()
+      this.dataSource.paginator = this.paginator
+      this.dataSource.sort = this.sort
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   async delete(client_id: string) {
     try {
+      this.spinnerService.show()
       await this.adminService.deleteClient(client_id)
       this.dataSource.data = this.dataSource.data.filter(c => c.client_id !== client_id)
       this.snackbarService.show(`Client ${client_id} was deleted.`)
     } catch (_e) {
       this.snackbarService.error("Could not delete client.")
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }
