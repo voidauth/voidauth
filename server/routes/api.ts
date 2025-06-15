@@ -14,7 +14,7 @@ import { oidcLoginPath } from "@shared/oidc"
 import appConfig from "../util/config"
 import { isMatch } from "matcher"
 import type { ProxyAuth } from "@shared/db/ProxyAuth"
-import { sortWildcardDomains } from "@shared/utils"
+import { formatWildcardDomain, sortWildcardDomains } from "@shared/utils"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -55,7 +55,7 @@ async function proxyAuth(url: URL, req: Request, res: Response) {
     .orderBy("name", "asc")
 
   // check if user may access url
-  const formattedUrl = `${url.hostname}${url.pathname}*`
+  const formattedUrl = `${url.hostname}${url.pathname}`
   // using a short cache
   if (proxyAuthCacheExpires < new Date().getTime()) {
     proxyAuthCache = (await db()
@@ -67,7 +67,7 @@ async function proxyAuth(url: URL, req: Request, res: Response) {
 
         if (!existing) {
           arr.push({
-            domain: d.domain,
+            domain: formatWildcardDomain(d.domain),
             groups: d.name != null ? [d.name] : [],
           })
         } else {

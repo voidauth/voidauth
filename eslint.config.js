@@ -11,7 +11,7 @@ export default tseslint.config(
   {
     rules: {
       "@stylistic/semi": ["error", "never"],
-      "@stylistic/max-len": ["error", 120, 2, {
+      "@stylistic/max-len": ["error", 140, 2, {
         "ignoreTemplateLiterals": true,
       }],
       "@stylistic/quotes": ["error", "double"],

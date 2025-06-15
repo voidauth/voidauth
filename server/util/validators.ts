@@ -1,10 +1,10 @@
 import { ADMIN_GROUP, USERNAME_REGEX } from "@shared/constants"
-import type { ValidParamSchema } from "./validate"
 import type { NextFunction, Request, Response } from "express"
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core"
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common"
 import * as zxcvbnEnPackage from "@zxcvbn-ts/language-en"
 import appConfig from "./config"
+import type { ParamSchema } from "express-validator"
 
 const options = {
   // recommended
@@ -37,7 +37,7 @@ export function checkAdmin(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-export const optionalNull: ValidParamSchema = {
+export const optionalNull: ParamSchema = {
   optional: {
     options: {
       values: "null",
@@ -45,9 +45,9 @@ export const optionalNull: ValidParamSchema = {
   },
 } as const
 
-export const stringValidation: ValidParamSchema = { isString: true, stripLow: true, trim: true } as const
-export const uuidValidation: ValidParamSchema = { ...stringValidation, isUUID: true } as const
-export const emailValidation: ValidParamSchema = {
+export const stringValidation: ParamSchema = { isString: true, stripLow: true, trim: true } as const
+export const uuidValidation: ParamSchema = { ...stringValidation, isUUID: true } as const
+export const emailValidation: ParamSchema = {
   isEmail: {
     options: {
       require_tld: false,
@@ -55,12 +55,12 @@ export const emailValidation: ValidParamSchema = {
   }, normalizeEmail: true, trim: true,
 } as const
 
-export const usernameValidation: ValidParamSchema = {
+export const usernameValidation: ParamSchema = {
   ...stringValidation,
   matches: { options: USERNAME_REGEX },
 } as const
 
-export const nameValidation: ValidParamSchema = {
+export const nameValidation: ParamSchema = {
   default: {
     options: null,
   },
@@ -73,7 +73,8 @@ export const nameValidation: ValidParamSchema = {
   matches: { options: /^[\w\s]{4,64}$/ },
 } as const
 
-export const newPasswordValidation: ValidParamSchema = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const newPasswordValidation: ParamSchema<any> = {
   ...stringValidation,
   zxcvbn: {
     custom: (value: unknown) => {

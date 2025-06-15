@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextFunction, Request, Response } from "express"
-import { checkSchema, validationResult, type ParamSchema, type Schema } from "express-validator"
-import type { RemoveKeys, RequireKeys } from "@shared/utils"
+import { checkSchema, validationResult, type ParamSchema } from "express-validator"
 
 type IsGenericKey<T> = string extends T ? true : number extends T ? true : false
 
@@ -54,37 +53,24 @@ type WasOptionalKey<T extends string> = T extends `${infer _A}?${infer _B}`
 
 type FixOptionalKey<T extends string> = T extends `${infer A}?${infer B}` ? FixOptionalKey<`${A}${B}`> : T
 
-type UncheckedParamSchema = RemoveKeys<ParamSchema<any>, "isString" | "isEmail" | "isURL">
-type StringParamSchema = RequireKeys<ParamSchema<any>, "isString" | "stripLow" | "trim">
-  | RequireKeys<ParamSchema<any>, "isString" | "matches">
-type EmailParamSchema = RequireKeys<ParamSchema<any>, "isEmail" | "normalizeEmail" | "trim">
-type URLParamSchema = RequireKeys<ParamSchema<any>, "isURL" | "trim">
-
-export type ValidParamSchema = UncheckedParamSchema | StringParamSchema | EmailParamSchema | URLParamSchema
-
 export type TypedSchema<T extends object> = {
-  [K in DotNotation<T> as WasOptionalKey<K> extends false ? K : never]: ValidParamSchema
+  [K in DotNotation<T> as WasOptionalKey<K> extends false ? K : never]: ParamSchema<any>
 } & {
-  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ValidParamSchema
+  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ParamSchema<any>
 }
-// & {
-//   [key: string | number]: ValidParamSchema
-// };
 
 export function validate<T extends object = any>(schema: TypedSchema<T> | TypedSchema<T>[]) {
   const schemas: TypedSchema<T>[] = (schema instanceof Array ? schema : [schema])
   return [
     ...schemas.map((s) => {
-      return checkSchema(s as Schema, ["body", "params", "query"])
+      return checkSchema(s, ["body", "params", "query"])
     }),
     handleValidatorError,
   ]
 }
 
 function handleValidatorError(req: Request, res: Response, next: NextFunction) {
-  const result = validationResult(req).array({
-    // onlyFirstError: true
-  })
+  const result = validationResult(req).array()
   if (result.length) {
     res.status(422).send(result)
   } else {

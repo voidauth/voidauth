@@ -11,7 +11,7 @@ import {
   nameValidation, stringValidation, usernameValidation, uuidValidation,
 } from "../util/validators"
 import { getClient, getClients, removeClient, upsertClient } from "../db/client"
-import type { UserGroup, Group, InvitationGroup } from "@shared/db/Group"
+import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from "@shared/db/Group"
 import type { GroupUpsert } from "@shared/api-request/admin/GroupUpsert"
 import { ADMIN_GROUP, TTLs } from "@shared/constants"
 import type { UserUpdate } from "@shared/api-request/admin/UserUpdate"
@@ -24,6 +24,10 @@ import type { InvitationUpsert } from "@shared/api-request/admin/InvitationUpser
 import { sendInvitation } from "../util/email"
 import { generate } from "generate-password"
 import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
+import type { ProxyAuth } from "@shared/db/ProxyAuth"
+import { formatWildcardDomain, isValidWildcardDomain, sortWildcardDomains } from "@shared/utils"
+import type { ProxyAuthResponse } from "@shared/api-response/admin/ProxyAuthResponse"
+import type { ProxyAuthUpsert } from "@shared/api-request/admin/ProxyAuthUpsert"
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -178,6 +182,130 @@ adminRouter.delete("/client/:client_id",
       return
     }
     await removeClient(client_id)
+    res.send()
+  },
+)
+
+adminRouter.get("/proxyauths", async (_req, res) => {
+  const proxyauths = (await db().select().table<ProxyAuth>("proxy_auth")).sort((ad, bd) => sortWildcardDomains(ad.domain, bd.domain))
+  res.send(proxyauths)
+})
+
+adminRouter.get("/proxyauth/:id",
+  ...validate<{ id: string }>({
+    id: uuidValidation,
+  }),
+  async (req: Request, res: Response) => {
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+    const proxyauth = await db().select().table<ProxyAuth>("proxy_auth").where({ id }).first()
+
+    if (!proxyauth) {
+      res.sendStatus(404)
+      return
+    }
+
+    const response: ProxyAuthResponse = {
+      ...proxyauth,
+      groups: (await db().select("name")
+        .table<Group>("group")
+        .innerJoin<ProxyAuthGroup>("proxy_auth_group", "proxy_auth_group.groupId", "group.id")
+        .where({ proxyAuthId: proxyauth.id }).orderBy("id", "asc")).map(v => v.name),
+    }
+
+    res.send(response)
+  },
+)
+
+adminRouter.post("/proxyAuth",
+  ...validate<ProxyAuthUpsert>({
+    id: {
+      optional: {
+        options: {
+          values: "null",
+        },
+      },
+      ...uuidValidation,
+    },
+    domain: {
+      ...stringValidation,
+      valid: {
+        custom: (d: unknown) => {
+          if (typeof d !== "string") {
+            return false
+          }
+          return isValidWildcardDomain(d)
+        },
+      },
+      format: {
+        customSanitizer: (d: string) => {
+          return formatWildcardDomain(d)
+        },
+      },
+    },
+    groups: {
+      isArray: true,
+    },
+    "groups.*": stringValidation,
+  }),
+  async (req: Request, res: Response) => {
+    const { id, domain, groups } = matchedData<ProxyAuthUpsert>(req, { includeOptionals: true })
+
+    // Check for domain conflict
+    const conflicting = await db().select()
+      .table<ProxyAuth>("proxy_auth")
+      .whereRaw("lower(\"domain\") = lower(?)", [domain])
+      .first()
+    if (conflicting && conflicting.id !== id) {
+      res.sendStatus(409)
+      return
+    }
+
+    const proxyAuthId = id ?? randomUUID()
+
+    const proxyAuth: ProxyAuth = {
+      id: proxyAuthId,
+      domain,
+      createdBy: req.user.id,
+      updatedBy: req.user.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    await db().table<ProxyAuth>("proxy_auth").insert(proxyAuth).onConflict(["id"]).merge(mergeKeys(proxyAuth))
+
+    const proxyAuthGroups: ProxyAuthGroup[] = (await db().select().table<Group>("group").whereIn("name", groups)).map((g) => {
+      return {
+        proxyAuthId: proxyAuthId,
+        groupId: g.id,
+        createdBy: req.user.id,
+        updatedBy: req.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+
+    if (proxyAuthGroups[0]) {
+      await db().table<ProxyAuthGroup>("proxy_auth_group").insert(proxyAuthGroups)
+        .onConflict(["groupId", "proxyAuthId"]).merge(mergeKeys(proxyAuthGroups[0]))
+    }
+
+    await db().table<ProxyAuthGroup>("proxy_auth_group").delete()
+      .where({ proxyAuthId: proxyAuthId }).and
+      .whereNotIn("groupId", proxyAuthGroups.map(g => g.groupId))
+
+    res.send({ id: proxyAuthId })
+  },
+)
+
+adminRouter.delete("/proxyauth/:id",
+  ...validate<{ id: string }>({
+    id: uuidValidation,
+  }),
+  async (req: Request, res: Response) => {
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+
+    await db().table<ProxyAuth>("proxy_auth").delete().where({ id })
+
     res.send()
   },
 )

@@ -8,25 +8,54 @@ export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefin
 
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 
+function urlFromWildcardDomain(input: string) {
+  const url = URL.parse(`http://${input.replaceAll(/\*+/g, "*").replaceAll("*", "__wildcard__")}`)
+  if (!url) {
+    return null
+  }
+  url.hostname = url.hostname.replaceAll("__wildcard__", "*")
+  url.pathname = url.pathname.replaceAll("__wildcard__", "*")
+  return url
+}
+
 export function isValidWildcardDomain(input: string) {
   try {
-    new URL(`http://${input.replaceAll("*", "a")}`)
+    const url = urlFromWildcardDomain(input)
+    if (!url) {
+      return false
+    }
+    if (url.search) {
+      return false
+    }
     return true
   } catch (_e) {
     return false
   }
 }
 
+export function formatWildcardDomain(input: string) {
+  const url = urlFromWildcardDomain(input) as URL
+  const hostname = url.hostname
+  let pathname = url.pathname
+  if (!pathname.endsWith("*")) {
+    if (!pathname.endsWith("/")) {
+      pathname += "/"
+    }
+    pathname += "*"
+  }
+  return `${hostname}${pathname}`
+}
+
 export function sortWildcardDomains(ad: string, bd: string) {
-  const a = URL.parse(`http://${ad.replaceAll(/\*+/g, "*").replaceAll("*", "__wildcard__")}`)
-  const b = URL.parse(`http://${bd.replaceAll(/\*+/g, "*").replaceAll("*", "__wildcard__")}`)
+  const a = urlFromWildcardDomain(ad)
+  const b = urlFromWildcardDomain(bd)
 
   if (!a || !b) {
     return +!a - +!b
   }
 
-  const ah = a.hostname.replaceAll("__wildcard__", "*")
-  const bh = b.hostname.replaceAll("__wildcard__", "*")
+  const ah = a.hostname
+  const bh = b.hostname
 
   // Check if one domain has more subdomains
   const aSubs = ah.split(".").filter(s => !!s).reverse()
@@ -68,8 +97,8 @@ export function sortWildcardDomains(ad: string, bd: string) {
   }
 
   // Do the same for paths
-  const ap = a.pathname.replaceAll("__wildcard__", "*")
-  const bp = b.pathname.replaceAll("__wildcard__", "*")
+  const ap = a.pathname
+  const bp = b.pathname
 
   // Check if one path has more subpaths
   const aPaths = ap.split(".").filter(s => !!s).reverse()
