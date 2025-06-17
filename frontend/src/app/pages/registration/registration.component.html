@@ -1,32 +1,29 @@
-<h1>{{ invitation ? 'Accept Invitation' : 'Register' }}</h1>
+<h1>{{ invitation ? "Accept Invitation" : "Register" }}</h1>
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="register()">
       <mat-form-field>
         <mat-label>Username</mat-label>
-        <input matInput type="text" formControlName="username">
+        <input matInput type="text" formControlName="username" />
         @if (form.controls.username.errors) {
-        <mat-error>{{form.controls.username.errors | validationError:"Only A-Z,0-9,and _ allowed"}}</mat-error>
+          <mat-error>{{ form.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" }}</mat-error>
         }
       </mat-form-field>
       <mat-form-field>
         <mat-label>Email</mat-label>
-        <input matInput type="email" formControlName="email">
+        <input matInput type="email" formControlName="email" />
         @if (form.controls.email.errors) {
-        <mat-error>{{form.controls.email.errors | validationError}}</mat-error>
+          <mat-error>{{ form.controls.email.errors | validationError }}</mat-error>
         }
       </mat-form-field>
       <mat-form-field>
         <mat-label>Name</mat-label>
-        <input matInput type="text" formControlName="name">
+        <input matInput type="text" formControlName="name" />
         @if (form.controls.name.errors) {
-        <mat-error>{{form.controls.name.errors | validationError}}</mat-error>
+          <mat-error>{{ form.controls.name.errors | validationError }}</mat-error>
         }
       </mat-form-field>
-      <app-new-password-input style="width: 100%;"
-        [password]="form.controls.password"
-        [(pwdShow)]="pwdShow"
-      ></app-new-password-input>
+      <app-new-password-input style="width: 100%" [password]="form.controls.password" [(pwdShow)]="pwdShow"></app-new-password-input>
 
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid" type="submit">Register</button>
@@ -34,7 +31,6 @@
           <a mat-button routerLink="/login">Login</a>
         }
       </mat-card-actions>
-
     </form>
   </mat-card-content>
 </mat-card>

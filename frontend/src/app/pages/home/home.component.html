@@ -1,27 +1,24 @@
 <h1>Settings</h1>
 <mat-card class="form-card">
   <mat-card-header>
-    <mat-card-title>
-      Change Profile
-    </mat-card-title>
+    <mat-card-title> Change Profile </mat-card-title>
   </mat-card-header>
 
   <mat-card-content>
     <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
-
       <mat-form-field>
         <mat-label>Username</mat-label>
-        <input matInput type="text" formControlName="username">
+        <input matInput type="text" formControlName="username" />
         @if (profileForm.controls.username.errors) {
-        <mat-error>{{profileForm.controls.username.errors | validationError:"Only A-Z,0-9,and _ allowed"}}</mat-error>
+          <mat-error>{{ profileForm.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" }}</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field>
         <mat-label>Name</mat-label>
-        <input matInput type="text" formControlName="name">
+        <input matInput type="text" formControlName="name" />
         @if (profileForm.controls.name.errors) {
-        <mat-error>{{profileForm.controls.name.errors | validationError}}</mat-error>
+          <mat-error>{{ profileForm.controls.name.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
@@ -30,7 +27,6 @@
           Update Profile
         </button>
       </mat-card-actions>
-
     </form>
   </mat-card-content>
 </mat-card>
@@ -40,24 +36,20 @@
 <!-- email change form -->
 <mat-card class="form-card">
   <mat-card-header>
-    <mat-card-title>
-      Change Email
-    </mat-card-title>
+    <mat-card-title> Change Email </mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <form [formGroup]="emailForm" (ngSubmit)="updateEmail()">
       <mat-form-field>
         <mat-label>Email</mat-label>
-        <input matInput type="text" formControlName="email">
+        <input matInput type="text" formControlName="email" />
         @if (emailForm.controls.email.errors) {
-        <mat-error>{{emailForm.controls.email.errors | validationError}}</mat-error>
+          <mat-error>{{ emailForm.controls.email.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
       <mat-card-actions>
-        <button mat-flat-button type="submit" [disabled]="!emailForm.enabled || !emailForm.valid || !emailForm.dirty">
-          Update Email
-        </button>
+        <button mat-flat-button type="submit" [disabled]="!emailForm.enabled || !emailForm.valid || !emailForm.dirty">Update Email</button>
       </mat-card-actions>
     </form>
   </mat-card-content>
@@ -68,27 +60,30 @@
 <!-- password change form -->
 <mat-card class="form-card">
   <mat-card-header>
-    <mat-card-title>
-      Change Password
-    </mat-card-title>
+    <mat-card-title> Change Password </mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <form [formGroup]="passwordForm">
-      <app-password-reset style="width: 100%; margin-top: 0px;"
+      <app-password-reset
+        style="width: 100%; margin-top: 0px"
         [oldPassword]="passwordForm.controls.oldPassword"
-        [newPassword]="passwordForm.controls.newPassword" 
-        [confirmPassword]="passwordForm.controls.confirmPassword">
+        [newPassword]="passwordForm.controls.newPassword"
+        [confirmPassword]="passwordForm.controls.confirmPassword"
+      >
       </app-password-reset>
-    
+
       <mat-card-actions>
-        <button mat-flat-button type="button" (click)="updatePassword()"
-          [disabled]="!passwordForm.enabled || !passwordForm.valid || !passwordForm.dirty">
+        <button
+          mat-flat-button
+          type="button"
+          (click)="updatePassword()"
+          [disabled]="!passwordForm.enabled || !passwordForm.valid || !passwordForm.dirty"
+        >
           Update Password
         </button>
       </mat-card-actions>
     </form>
-
   </mat-card-content>
 </mat-card>
 
-<span style="flex-grow: 1;"></span>
+<span style="flex-grow: 1"></span>

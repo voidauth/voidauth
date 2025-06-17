@@ -1,12 +1,12 @@
-<h1>{{id ? "Update" : "Create"}} ProxyAuth Domain</h1>
+<h1>{{ id ? "Update" : "Create" }} ProxyAuth Domain</h1>
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
         <mat-label>Domain</mat-label>
-        <input matInput type="text" formControlName="domain" placeholder="ex. *.your.domain.com/path/">
+        <input matInput type="text" formControlName="domain" placeholder="ex. *.your.domain.com/path/" />
         @if (form.controls.domain.errors) {
-        <mat-error>{{form.controls.domain.errors | validationError}}</mat-error>
+          <mat-error>{{ form.controls.domain.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
@@ -15,58 +15,56 @@
           <mat-panel-title> Domain Info </mat-panel-title>
         </mat-expansion-panel-header>
         <ol>
-          <li>
-            Domain should not include protocol, may include a path, and supports wildcards (*) at any position.
-          </li>
-          <li>
-            <b>example.domain.com/api/alive</b> will only check access to a single endpoint. 
-          </li>
-          <li>
-            <b>example.domain.com/api/</b> (note the ending /) will check access for all endpoints under /api.
-          </li>
+          <li>Domain should not include protocol, may include a path, and supports wildcards (*) at any position.</li>
+          <li><b>example.domain.com/api/alive</b> will only check access to a single endpoint.</li>
+          <li><b>example.domain.com/api/</b> (note the ending /) will check access for all endpoints under /api.</li>
         </ol>
       </mat-expansion-panel>
 
-      <mat-list [ngClass]="{invalid: form.controls.groups.errors}">
+      <mat-list [ngClass]="{ invalid: form.controls.groups.errors }">
         <mat-form-field>
           <mat-label>Add Group</mat-label>
-          <input #input type="text" placeholder="Pick one" matInput [formControl]="groupSelect" [matAutocomplete]="auto"
-            (input)="groupAutoFilter(input.value)" (focus)="groupAutoFilter(input.value)">
-          <mat-autocomplete (optionSelected)="addGroup($event);input.value=''" requireSelection #auto="matAutocomplete">
+          <input
+            #input
+            type="text"
+            placeholder="Pick one"
+            matInput
+            [formControl]="groupSelect"
+            [matAutocomplete]="auto"
+            (input)="groupAutoFilter(input.value)"
+            (focus)="groupAutoFilter(input.value)"
+          />
+          <mat-autocomplete (optionSelected)="addGroup($event); input.value = ''" requireSelection #auto="matAutocomplete">
             @for (option of selectableGroups; track option) {
-            <mat-option [value]="option">{{option}}</mat-option>
+              <mat-option [value]="option">{{ option }}</mat-option>
             }
           </mat-autocomplete>
           @if (groupSelect.errors) {
-          <mat-error>{{groupSelect.errors | validationError}}</mat-error>
+            <mat-error>{{ groupSelect.errors | validationError }}</mat-error>
           }
         </mat-form-field>
 
         <div mat-subheader>Groups:</div>
         @for (g of form.value.groups; track g) {
-        <mat-list-item>
-          <mat-icon matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
-          <div matListItemTitle>{{g}}</div>
-        </mat-list-item>
+          <mat-list-item>
+            <mat-icon matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
+            <div matListItemTitle>{{ g }}</div>
+          </mat-list-item>
         }
         @if (!form.value.groups?.length) {
-        <mat-list-item>
-          No Groups, so <b>ALL</b> users will have access.
-        </mat-list-item>
+          <mat-list-item> No Groups, so <b>ALL</b> users will have access. </mat-list-item>
         }
       </mat-list>
       @if (form.controls.groups.errors) {
-      <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px;">
-        {{form.controls.groups.errors | validationError}}
-      </mat-error>
+        <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
+          {{ form.controls.groups.errors | validationError }}
+        </mat-error>
       }
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{id ? "Update" :
-          "Create"}}</button>
+        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{ id ? "Update" : "Create" }}</button>
         <button mat-button type="button" (click)="remove()">Delete</button>
       </mat-card-actions>
-
     </form>
   </mat-card-content>
 </mat-card>

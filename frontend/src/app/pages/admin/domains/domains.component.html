@@ -1,5 +1,5 @@
 <div class="container">
-  <span style="align-self: end;">
+  <span style="align-self: end">
     <a mat-flat-button routerLink="/admin/domain">Create ProxyAuth Domain</a>
   </span>
 
@@ -8,24 +8,25 @@
       <mat-panel-title> Domain Info </mat-panel-title>
     </mat-expansion-panel-header>
     <p>
-      Domains will be checked from most to least specific. Once a match is found user access is checked and the user will be rejected or allowed access.
+      Domains will be checked from most to least specific. Once a match is found user access is checked and the user will be rejected or
+      allowed access.
     </p>
   </mat-expansion-panel>
 
   <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
     @for (column of columns; track column) {
-    <ng-container [matColumnDef]="column.columnDef">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>
-        {{column.header}}
-      </th>
-      <td mat-cell style="white-space: pre-line;" *matCellDef="let row">
-        @if (column.isIcon) {
-        <mat-icon>{{column.cell(row)}}</mat-icon>
-        } @else {
-        {{column.cell(row)}}
-        }
-      </td>
-    </ng-container>
+      <ng-container [matColumnDef]="column.columnDef">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ column.header }}
+        </th>
+        <td mat-cell style="white-space: pre-line" *matCellDef="let row">
+          @if (column.isIcon) {
+            <mat-icon>{{ column.cell(row) }}</mat-icon>
+          } @else {
+            {{ column.cell(row) }}
+          }
+        </td>
+      </ng-container>
     }
 
     <ng-container matColumnDef="actions">
@@ -41,13 +42,13 @@
 
     <!-- Row shown when there is no matching data. -->
     <tr *matNoDataRow>
-      <td style="height: 40px; text-align: center; font-weight: bold;" [attr.colspan]="columns.length+1">
+      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1">
         <h1>No Domains.</h1>
       </td>
     </tr>
   </table>
 
-  <div style="flex-grow: 1;"></div>
+  <div style="flex-grow: 1"></div>
 
   <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10"></mat-paginator>
 </div>

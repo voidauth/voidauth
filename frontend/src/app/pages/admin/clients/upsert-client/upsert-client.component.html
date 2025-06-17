@@ -1,69 +1,73 @@
-<h1>{{this.client_id ? "Update" : "Create"}} OIDC Client</h1>
+<h1>{{ this.client_id ? "Update" : "Create" }} OIDC Client</h1>
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
         <mat-label>Client ID</mat-label>
-        <input matInput type="text" formControlName="client_id">
+        <input matInput type="text" formControlName="client_id" />
         @if (form.controls.client_id.errors) {
-        <mat-error>{{form.controls.client_id.errors | validationError}}</mat-error>
+          <mat-error>{{ form.controls.client_id.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field>
         <mat-label>Client Secret</mat-label>
-        <input matInput type="text" formControlName="client_secret">
+        <input matInput type="text" formControlName="client_secret" />
         <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="generateSecret()">
           <mat-icon matSuffix>autorenew</mat-icon>
         </button>
         @if (form.controls.client_secret.errors) {
-        <mat-error>{{form.controls.client_secret.errors | validationError}}</mat-error>
+          <mat-error>{{ form.controls.client_secret.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
-      <mat-list [ngClass]="{invalid: form.controls.redirect_uris.errors}">
+      <mat-list [ngClass]="{ invalid: form.controls.redirect_uris.errors }">
         <mat-form-field>
           <mat-label>New Redirect URL</mat-label>
-          <input #redirect matInput type="text" [formControl]="redirectUrlControl">
-          <button class="field-suffix" type="button" mat-icon-button matSuffix
+          <input #redirect matInput type="text" [formControl]="redirectUrlControl" />
+          <button
+            class="field-suffix"
+            type="button"
+            mat-icon-button
+            matSuffix
             [disabled]="redirectUrlControl.errors || !redirect.value"
-            (click)="addRedirectUrl(redirect.value); redirect.value=''">
+            (click)="addRedirectUrl(redirect.value); redirect.value = ''"
+          >
             <mat-icon fontSet="material-icons-round" matSuffix>add_circle</mat-icon>
           </button>
           @if (redirectUrlControl.errors) {
-          <mat-error>{{redirectUrlControl.errors | validationError}}</mat-error>
+            <mat-error>{{ redirectUrlControl.errors | validationError }}</mat-error>
           }
         </mat-form-field>
         <div mat-subheader>Redirect URLs:</div>
         @for (uri of form.value.redirect_uris; track uri) {
-        <mat-list-item>
-          <mat-icon matListItemIcon class="clickable" (click)="removeRedirectUrl(uri)">cancel</mat-icon>
-          <div matListItemTitle>{{uri}}</div>
-        </mat-list-item>
+          <mat-list-item>
+            <mat-icon matListItemIcon class="clickable" (click)="removeRedirectUrl(uri)">cancel</mat-icon>
+            <div matListItemTitle>{{ uri }}</div>
+          </mat-list-item>
         }
         @if (!form.value.redirect_uris?.length) {
-        <mat-list-item>
-        </mat-list-item>
+          <mat-list-item> </mat-list-item>
         }
       </mat-list>
       @if (form.controls.redirect_uris.errors) {
-      <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px;">
-        {{form.controls.redirect_uris.errors | validationError}}
-      </mat-error>
+        <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
+          {{ form.controls.redirect_uris.errors | validationError }}
+        </mat-error>
       }
 
       <mat-form-field>
         <mat-label>Token Endpoint Auth Method</mat-label>
         <mat-select formControlName="token_endpoint_auth_method">
           @for (method of authMethods; track method) {
-          <mat-option [value]="method">{{method}}</mat-option>
+            <mat-option [value]="method">{{ method }}</mat-option>
           }
         </mat-select>
-        @if (form.controls.token_endpoint_auth_method.value === 'none') {
-        <mat-hint>If 'none', client must use PKCE</mat-hint>
+        @if (form.controls.token_endpoint_auth_method.value === "none") {
+          <mat-hint>If 'none', client must use PKCE</mat-hint>
         }
         @if (form.controls.token_endpoint_auth_method.errors) {
-        <mat-error>{{form.controls.token_endpoint_auth_method.errors | validationError}}</mat-error>
+          <mat-error>{{ form.controls.token_endpoint_auth_method.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
@@ -71,7 +75,7 @@
         <mat-label>Response Types</mat-label>
         <mat-select formControlName="response_types" multiple>
           @for (rt of uniqueResponseTypes; track rt) {
-            <mat-option [value]="rt">{{rt}}</mat-option>
+            <mat-option [value]="rt">{{ rt }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -80,34 +84,28 @@
         <mat-label>Grant Types</mat-label>
         <mat-select formControlName="grant_types" multiple>
           @for (gt of grantTypes; track gt) {
-            <mat-option [value]="gt">{{gt}}</mat-option>
+            <mat-option [value]="gt">{{ gt }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
 
       <mat-form-field>
         <mat-label>Logo Url</mat-label>
-        <input matInput type="text" formControlName="logo_uri">
+        <input matInput type="text" formControlName="logo_uri" />
         <mat-hint>Logo shown on client consent page, can be a remote url</mat-hint>
         @if (form.controls.logo_uri.errors) {
-        <mat-error>{{form.controls.logo_uri.errors | validationError}}</mat-error>
+          <mat-error>{{ form.controls.logo_uri.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
-      <mat-checkbox 
-        formControlName="skip_consent" 
-        matTooltip="Skip user confirmation for this client.">
-        Skip Consent
-      </mat-checkbox>
+      <mat-checkbox formControlName="skip_consent" matTooltip="Skip user confirmation for this client."> Skip Consent </mat-checkbox>
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{this.client_id ? "Update" :
-          "Create"}}</button>
+        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{ this.client_id ? "Update" : "Create" }}</button>
         @if (client_id) {
-        <button mat-button type="button" (click)="deleteClient()">Delete</button>
+          <button mat-button type="button" (click)="deleteClient()">Delete</button>
         }
       </mat-card-actions>
-
     </form>
   </mat-card-content>
 </mat-card>

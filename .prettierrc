@@ -1,4 +1,5 @@
 {
+  "printWidth": 140,
   "overrides": [
     {
       "files": "*.html",
