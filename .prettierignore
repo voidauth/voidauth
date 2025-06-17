@@ -1,0 +1,8 @@
+# Ignore everything
+*
+
+# Except for specific extensions
+!*.html
+
+# Magic, check subdirectories
+!*/
