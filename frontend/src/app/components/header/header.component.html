@@ -1,6 +1,6 @@
 <mat-toolbar>
-  <a class="header-logo" routerLink="/" style="display: flex; max-height: 90%; aspect-ratio: 1;">
-    <img src="logo.png">
+  <a class="header-logo" routerLink="/" style="display: flex; max-height: 90%; aspect-ratio: 1">
+    <img src="logo.png" />
   </a>
 
   <span class="example-spacer"></span>
@@ -8,17 +8,15 @@
   <span class="right-actions">
     <app-theme-toggle></app-theme-toggle>
     <span>
-      @if (!user && loginRedirect && !router.url.includes('login')) {
-      <span>
-        <a mat-flat-button [href]="loginRedirect">Login</a>
-      </span>
-      }
-      @else if (user) {
-      <button mat-icon-button (click)="toggleSidenav.emit()">
-        <mat-icon>menu</mat-icon>
-      </button>
+      @if (!user && loginRedirect && !router.url.includes("login")) {
+        <span>
+          <a mat-flat-button [href]="loginRedirect">Login</a>
+        </span>
+      } @else if (user) {
+        <button mat-icon-button (click)="toggleSidenav.emit()">
+          <mat-icon>menu</mat-icon>
+        </button>
       }
     </span>
   </span>
-
 </mat-toolbar>
