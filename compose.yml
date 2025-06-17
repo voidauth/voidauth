@@ -1,6 +1,6 @@
 services:
-  void-auth: 
-    image: void-auth/void-auth:latest
+  voidauth: 
+    image: voidauth/voidauth:latest
     env_file:
       - ".env"
     ports:
@@ -15,7 +15,7 @@ services:
       STORAGE_KEY: ${STORAGE_KEY:?err} # required
 
       # Not required or has default
-      # APP_TITLE: "void-auth"
+      # APP_TITLE: "VoidAuth"
       # APP_PORT: "3000"
       # APP_COLOR: "#8864c4"
       # SIGNUP: "false"
@@ -33,9 +33,9 @@ services:
       # SMTP_USER: 
       # SMTP_PASS: 
     depends_on:
-      - void-auth-db
+      - voidauth-db
 
-  void-auth-db:
+  voidauth-db:
     image: postgres:17
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}

@@ -39,7 +39,7 @@ let proxyAuthCacheExpires: number = 0
 // proxy auth common
 async function proxyAuth(url: URL, req: Request, res: Response) {
   const ctx = provider.createContext(req, res)
-  const sessionId = ctx.cookies.get("x-void-auth-session-uid")
+  const sessionId = ctx.cookies.get("x-voidauth-session-uid")
   const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
   const accountId = session?.accountId
   const user = accountId ? await getUserById(accountId) : null

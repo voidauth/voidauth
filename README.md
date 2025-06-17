@@ -1,22 +1,22 @@
-# void-auth
+# VoidAuth
 
 <p align="center">
-  <img src="./frontend/public/logo.png" width="150" title="void-auth">
+  <img src="./frontend/public/logo.png" width="150" title="VoidAuth" alt="VoidAuth logo">
 </p>
 
-void-auth is a Single Sign-On Provider that includes: User Management, Proxy Auth, and is an OIDC Provider. It is designed to make securing your applications and resources easy.
+VoidAuth is a Single Sign-On Provider that includes: User Management, Proxy Auth, and is an OIDC Provider. It is designed to make securing your applications and resources easy.
 
-## Features:
+## Features
 
 * User Management
-* Proxy ForwardAuth Endpoint
 * OIDC Provider
+* Proxy ForwardAuth Domains
 * Invitations
 * Password Reset with Email Address Verification
 * Custom Branding and CSS
 * ZXCVBN Password Complexity Rules
 
-void-auth is accessed through an easy to use web interface, meant to make user sign-in and domain management simple. The web app also has a configurable app title, logo, and theme color so you can make your sign-in page match your brand.
+VoidAuth is accessed through an easy to use web interface, meant to make user sign-in and domain management simple. The web app also has a configurable app title, logo, and theme color so you can make your sign-in page match your brand.
 
 ## Screenshots
 
@@ -24,13 +24,13 @@ void-auth is accessed through an easy to use web interface, meant to make user s
 Login Portal
 </P>
 <p align="center">
-  <img src="./docs/login_portal.png" width="200" title="void-auth">
+  <img src="./docs/login_portal.png" width="200">
 </p>
 <p align="center">
 
 ## Getting Started
 
-void-auth **MUST** be behind an https terminating reverse-proxy. void-auth does **NOT** provide https termination itself, but it is absolutely **required**. A simple setup using docker compose might look like this:
+VoidAuth **MUST** be behind an https terminating reverse-proxy. VoidAuth does **NOT** provide https termination itself, but it is absolutely **required**. A simple setup using docker compose might look like this:
 
 ```
 
@@ -39,8 +39,8 @@ services:
   # Your reverse-proxy service here
   # ---------------------------------
 
-  void-auth: 
-    image: void-auth/void-auth:latest
+  voidauth: 
+    image: voidauth/voidauth:latest
     volumes:
       - config:/app/config
     environment:
@@ -50,9 +50,9 @@ services:
       DB_HOST: # required
       STORAGE_KEY: # required
     depends_on:
-      - void-auth-db
+      - voidauth-db
 
-  void-auth-db:
+  voidauth-db:
     image: postgres:17
     environment:
       POSTGRES_PASSWORD: # required
@@ -66,17 +66,16 @@ volumes:
 
 ## Integration
 
-I would highly recommend following [Authelia's Integration Guides](https://www.authelia.com/integration/prologue/introduction/) for setting up OIDC Clients (Apps) and ProxyAuth Domains for your reverse-proxy. You should be able to set up the external services the same way as in the Authelia guide (void-auth is a drop-in Authelia replacement) while using the web interface to set up void-auth OIDC Clients and ProxyAuth Domains.
+I would highly recommend following [Authelia's Integration Guides](https://www.authelia.com/integration/prologue/introduction/) for setting up OIDC Clients (Apps) and ProxyAuth Domains for your reverse-proxy. You should be able to set up the external services the same way as in the Authelia guide while using the VoidAuth web interface to set up OIDC Clients and ProxyAuth Domains.
 
 ## Customization
 
-void-auth is configurable primarily by environment variable. The available environment variables and their defaults are listed in the table below:
-
+VoidAuth is configurable primarily by environment variable. The available environment variables and their defaults are listed in the table below:
 
 | Name                     | Default   | Description                                                                                                                                                                    | Required |
 | :------------------------- | ----------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
 | APP_DOMAIN               |           | Domain and path app will be served on. Must include "http(s)://"; ex. https://your.domain.here/optional/subpath                                                                | Y        |
-| APP_TITLE                | void-auth | Title that will show on the web interface.                                                                                                                                     |          |
+| APP_TITLE                | VoidAuth | Title that will show on the web interface.                                                                                                                                     |          |
 | APP_PORT                 | 3000      | The port that app will listen on.                                                                                                                                              |          |
 | APP_COLOR                | #8864c4   | Theme color, rgb format; ex. #xxyyzz                                                                                                                                           |          |
 | SIGNUP                   | false     | Whether the app allows new users to register themselves without invitation.                                                                                                    |          |
@@ -105,21 +104,21 @@ The email templates for email verification, invitations, and password resets can
 
 ## Roadmap
 
-
 | Item                   | Status         |
-| ------------------------ | :--------------- |
-| ProxyAuth Domain Rules | In progress... |
+| ---------------------- | -------------- |
 | Passkey Support        |                |
 | Integration Guides     |                |
 
 ## Disclaimer
 
-I am not a security researcher or expert, just a developer unsatisfied with the complexity and difficult onboarding process of existing selfhosted auth solutions. Use at your own risk.
+I am not a security researcher or expert, just a developer unsatisfied with the difficult onboarding process of existing selfhosted auth solutions. Use at your own risk.
 
 ## Credits
 
-[node-oidc-provider](https://github.com/panva/node-oidc-provider) The core library of void-auth, handles OIDC Provider functionality
+[node-oidc-provider](https://github.com/panva/node-oidc-provider) The core library of VoidAuth, handles OIDC Provider functionality
 
-[authelia](https://www.authelia.com/) An amazing project and heavy inspiration, void-auth aims to be less feature-complete but more user friendly
+[Angular](https://angular.dev) Frontend web framework used by VoidAuth
+
+[authelia](https://www.authelia.com/) An amazing project and heavy inspiration, VoidAuth aims to be less feature-complete but more user friendly
 
 [lldap](https://github.com/lldap/lldap) Inspiration for user management, a very good selfhosted ldap service
