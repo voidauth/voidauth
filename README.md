@@ -30,7 +30,7 @@ VoidAuth is accessed through an easy to use web interface, meant to make user si
 
 VoidAuth **MUST** be behind an https terminating reverse-proxy. VoidAuth does **NOT** provide https termination itself, but it is absolutely **required**. A simple setup using docker compose might look like this:
 
-```
+```yaml
 
 services:
   # ---------------------------------
