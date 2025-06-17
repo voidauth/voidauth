@@ -25,9 +25,10 @@ import { sendInvitation } from "../util/email"
 import { generate } from "generate-password"
 import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
 import type { ProxyAuth } from "@shared/db/ProxyAuth"
-import { formatWildcardDomain, isValidWildcardDomain, sortWildcardDomains } from "@shared/utils"
+import { formatWildcardDomain, isValidWildcardDomain } from "@shared/utils"
 import type { ProxyAuthResponse } from "@shared/api-response/admin/ProxyAuthResponse"
 import type { ProxyAuthUpsert } from "@shared/api-request/admin/ProxyAuthUpsert"
+import { getProxyAuth, getProxyAuths } from "../db/proxyAuth"
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -187,7 +188,7 @@ adminRouter.delete("/client/:client_id",
 )
 
 adminRouter.get("/proxyauths", async (_req, res) => {
-  const proxyauths = (await db().select().table<ProxyAuth>("proxy_auth")).sort((ad, bd) => sortWildcardDomains(ad.domain, bd.domain))
+  const proxyauths = await getProxyAuths()
   res.send(proxyauths)
 })
 
@@ -197,7 +198,7 @@ adminRouter.get("/proxyauth/:id",
   }),
   async (req: Request, res: Response) => {
     const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
-    const proxyauth = await db().select().table<ProxyAuth>("proxy_auth").where({ id }).first()
+    const proxyauth = await getProxyAuth(id)
 
     if (!proxyauth) {
       res.sendStatus(404)
@@ -293,7 +294,7 @@ adminRouter.post("/proxyAuth",
       .where({ proxyAuthId: proxyAuthId }).and
       .whereNotIn("groupId", proxyAuthGroups.map(g => g.groupId))
 
-    res.send({ id: proxyAuthId })
+    res.send(await getProxyAuth(proxyAuthId))
   },
 )
 

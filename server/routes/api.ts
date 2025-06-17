@@ -4,7 +4,7 @@ import { provider } from "../oidc/provider"
 import { db } from "../db/db"
 import { getUserById } from "../db/user"
 import { userRouter } from "./user"
-import type { ProxyAuthGroup, Group, UserGroup } from "@shared/db/Group"
+import type { Group, UserGroup } from "@shared/db/Group"
 import { adminRouter } from "./admin"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 import { authRouter } from "./auth"
@@ -13,8 +13,7 @@ import { publicRouter } from "./public"
 import { oidcLoginPath } from "@shared/oidc"
 import appConfig from "../util/config"
 import { isMatch } from "matcher"
-import type { ProxyAuth } from "@shared/db/ProxyAuth"
-import { formatWildcardDomain, sortWildcardDomains } from "@shared/utils"
+import { getProxyAuths } from "../db/proxyAuth"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -58,24 +57,7 @@ async function proxyAuth(url: URL, req: Request, res: Response) {
   const formattedUrl = `${url.hostname}${url.pathname}`
   // using a short cache
   if (proxyAuthCacheExpires < new Date().getTime()) {
-    proxyAuthCache = (await db()
-      .select("domain", "name").table<ProxyAuth>("proxy_auth")
-      .leftJoin<ProxyAuthGroup>("proxy_auth_group", "proxy_auth_group.proxyAuthId", "proxy_auth.id")
-      .leftJoin<Group>("group", "proxy_auth_group.groupId", "group.id"))
-      .reduce<{ domain: string, groups: string[] }[]>((arr, d: { domain: string, name: string | null }) => {
-        const existing = arr.find(a => a.domain === d.domain)
-
-        if (!existing) {
-          arr.push({
-            domain: formatWildcardDomain(d.domain),
-            groups: d.name != null ? [d.name] : [],
-          })
-        } else {
-          existing.groups.push(d.name as string) // will never be null
-        }
-
-        return arr
-      }, []).sort((ad, bd) => sortWildcardDomains(ad.domain, bd.domain))
+    proxyAuthCache = await getProxyAuths()
 
     proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
   }

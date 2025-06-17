@@ -20,6 +20,8 @@ import { ForgotPasswordComponent } from "./pages/forgot-password/forgot-password
 import { ResetPasswordComponent } from "./pages/reset-password/reset-password.component"
 import { loggedInGuard } from "./guards/logged-in.guard"
 import { isAdminGuard } from "./guards/is-admin.guard"
+import { DomainComponent } from "./pages/admin/domains/domain/domain.component"
+import { DomainsComponent } from "./pages/admin/domains/domains.component"
 
 export const routes: Routes = [
   { path: "", component: HomeComponent, canActivate: [loggedInGuard] },
@@ -46,6 +48,10 @@ export const routes: Routes = [
   { path: "admin/clients", component: ClientsComponent, canActivate: [isAdminGuard] },
   { path: "admin/client/:client_id", component: UpsertClientComponent, canActivate: [isAdminGuard] },
   { path: "admin/client", redirectTo: "admin/client/", pathMatch: "full" },
+
+  { path: "admin/domains", component: DomainsComponent, canActivate: [isAdminGuard] },
+  { path: "admin/domain/:id", component: DomainComponent, canActivate: [isAdminGuard] },
+  { path: "admin/domain", redirectTo: "admin/domain/", pathMatch: "full" },
 
   { path: "admin/groups", component: GroupsComponent, canActivate: [isAdminGuard] },
   { path: "admin/group/:id", component: GroupComponent, canActivate: [isAdminGuard] },

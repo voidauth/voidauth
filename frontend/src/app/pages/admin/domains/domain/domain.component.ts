@@ -1,32 +1,30 @@
-import { CommonModule } from "@angular/common"
 import { Component, inject } from "@angular/core"
-import { ReactiveFormsModule, FormControl, FormGroup, Validators } from "@angular/forms"
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
+import type { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
 import { ActivatedRoute, Router } from "@angular/router"
-import { MaterialModule } from "../../../../material-module"
-import { ValidationErrorPipe } from "../../../../pipes/ValidationErrorPipe"
 import { AdminService } from "../../../../services/admin.service"
 import { SnackbarService } from "../../../../services/snackbar.service"
-import type { TypedFormGroup } from "../../clients/upsert-client/upsert-client.component"
-import type { UserUpdate } from "@shared/api-request/admin/UserUpdate"
-import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
-import { USERNAME_REGEX } from "@shared/constants"
-import type { UserDetails } from "@shared/api-response/UserDetails"
-import { UserService } from "../../../../services/user.service"
 import { SpinnerService } from "../../../../services/spinner.service"
+import type { TypedFormGroup } from "../../clients/upsert-client/upsert-client.component"
+import type { ProxyAuthUpsert } from "@shared/api-request/admin/ProxyAuthUpsert"
+import { CommonModule } from "@angular/common"
+import { MaterialModule } from "../../../../material-module"
+import { ValidationErrorPipe } from "../../../../pipes/ValidationErrorPipe"
+import { isValidWildcardDomain } from "@shared/utils"
+import type { ProxyAuthResponse } from "@shared/api-response/admin/ProxyAuthResponse"
 
 @Component({
-  selector: "app-user",
+  selector: "app-domain",
   imports: [
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
   ],
-  templateUrl: "./user.component.html",
-  styleUrl: "./user.component.scss",
+  templateUrl: "./domain.component.html",
+  styleUrl: "./domain.component.scss",
 })
-export class UserComponent {
-  public me?: UserDetails
+export class DomainComponent {
   public id: string | null = null
 
   public groups: string[] = []
@@ -37,27 +35,16 @@ export class UserComponent {
     disabled: false,
   }, [])
 
-  public form = new FormGroup<TypedFormGroup<Omit<UserUpdate, "id">>>({
-    username: new FormControl<string>({
+  public form = new FormGroup<TypedFormGroup<Omit<ProxyAuthUpsert, "id">>>({
+    domain: new FormControl<string>({
       value: "",
       disabled: false,
-    }, [Validators.required, Validators.minLength(4), Validators.pattern(USERNAME_REGEX)]),
-    email: new FormControl<string>({
-      value: "",
-      disabled: false,
-    }, [Validators.email]),
-    name: new FormControl<string | null>({
-      value: null,
-      disabled: false,
-    }, [Validators.minLength(4)]),
-    emailVerified: new FormControl<boolean>({
-      value: false,
-      disabled: false,
-    }, [Validators.required]),
-    approved: new FormControl<boolean>({
-      value: false,
-      disabled: false,
-    }, [Validators.required]),
+    }, [Validators.required, (c) => {
+      if (!isValidWildcardDomain(c.value as string)) {
+        return { invalid: "Must be a valid domain with optional path, supports wildcard (*)" }
+      }
+      return null
+    }]),
     groups: new FormControl<string[]>({
       value: [],
       disabled: false,
@@ -65,7 +52,6 @@ export class UserComponent {
   })
 
   private adminService = inject(AdminService)
-  private userService = inject(UserService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
@@ -75,35 +61,27 @@ export class UserComponent {
     this.route.paramMap.subscribe(async (params) => {
       try {
         this.spinnerService.show()
+        const id = params.get("id")
 
-        this.me = await this.userService.getMyUser()
-
-        this.id = params.get("id")
-
-        if (!this.id) {
-          throw new Error("User ID missing.")
+        if (id) {
+          this.id = id
+          const proxyAuth = await this.adminService.proxyAuth(this.id)
+          this.resetForm(proxyAuth)
         }
-
-        const user = await this.adminService.user(this.id)
-
-        this.form.reset({
-          username: user.username,
-          name: user.name ?? null,
-          email: user.email ?? "",
-          emailVerified: user.emailVerified ?? false,
-          approved: user.approved ?? false,
-          groups: user.groups,
-        })
 
         this.groups = (await this.adminService.groups()).map(g => g.name)
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
-        this.snackbarService.error("Error loading user.")
+        this.snackbarService.error("Error loading ProxyAuth domain.")
       } finally {
         this.spinnerService.hide()
       }
     })
+  }
+
+  resetForm(proxyAuth: ProxyAuthResponse) {
+    this.form.reset({ domain: proxyAuth.domain, groups: proxyAuth.groups })
   }
 
   groupAutoFilter(value: string = "") {
@@ -140,11 +118,16 @@ export class UserComponent {
   async submit() {
     try {
       this.spinnerService.show()
+      const response = await this.adminService.upsertProxyAuth({ ...this.form.getRawValue(), id: this.id })
+      this.snackbarService.show(`Domain ${this.id ? "updated" : "created"}.`)
 
-      await this.adminService.updateUser({ ...this.form.getRawValue(), id: this.id })
-      this.snackbarService.show("User updated.")
+      this.id = response.id
+      this.resetForm(response)
+      await this.router.navigate(["/admin/domain", this.id], {
+        replaceUrl: true,
+      })
     } catch (_e) {
-      this.snackbarService.error("Could not update user.")
+      this.snackbarService.error(`Could not ${this.id ? "update" : "create"} domain.`)
     } finally {
       this.spinnerService.hide()
     }
@@ -155,13 +138,13 @@ export class UserComponent {
       this.spinnerService.show()
 
       if (this.id) {
-        await this.adminService.deleteUser(this.id)
+        await this.adminService.deleteProxyAuth(this.id)
       }
 
-      this.snackbarService.show("User deleted.")
-      await this.router.navigate(["/admin/users"])
+      this.snackbarService.show("Domain deleted.")
+      await this.router.navigate(["/admin/domains"])
     } catch (_e) {
-      this.snackbarService.error("Could not delete user.")
+      this.snackbarService.error("Could not delete domain.")
     } finally {
       this.spinnerService.hide()
     }

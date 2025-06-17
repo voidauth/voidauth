@@ -15,6 +15,8 @@ import type { Invitation } from "@shared/db/Invitation"
 import { ConfigService } from "./config.service"
 import { REDIRECT_PATHS } from "@shared/constants"
 import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
+import type { ProxyAuthUpsert } from "@shared/api-request/admin/ProxyAuthUpsert"
+import type { ProxyAuthResponse } from "@shared/api-response/admin/ProxyAuthResponse"
 
 @Injectable({
   providedIn: "root",
@@ -46,6 +48,22 @@ export class AdminService {
 
   async deleteClient(client_id: string) {
     return firstValueFrom(this.http.delete<null>(`${environment.apiUrl}/admin/client/${client_id}`))
+  }
+
+  async proxyAuths() {
+    return firstValueFrom(this.http.get<ProxyAuthResponse[]>(`${environment.apiUrl}/admin/proxyauths`))
+  }
+
+  async proxyAuth(proxyauth_id: string) {
+    return firstValueFrom(this.http.get<ProxyAuthResponse>(`${environment.apiUrl}/admin/proxyauth/${proxyauth_id}`))
+  }
+
+  async upsertProxyAuth(proxyAuth: Nullable<ProxyAuthUpsert>) {
+    return firstValueFrom(this.http.post<ProxyAuthResponse>(`${environment.apiUrl}/admin/proxyauth`, proxyAuth))
+  }
+
+  async deleteProxyAuth(proxyauth_id: string) {
+    return firstValueFrom(this.http.delete<null>(`${environment.apiUrl}/admin/proxyauth/${proxyauth_id}`))
   }
 
   async groups() {

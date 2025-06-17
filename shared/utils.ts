@@ -13,18 +13,21 @@ function urlFromWildcardDomain(input: string) {
   if (!url) {
     return null
   }
-  url.hostname = url.hostname.replaceAll("__wildcard__", "*")
-  url.pathname = url.pathname.replaceAll("__wildcard__", "*")
-  return url
+  return {
+    hostname: url.hostname.replaceAll("__wildcard__", "*"),
+    pathname: url.pathname.replaceAll("__wildcard__", "*"),
+    href: url.href.replaceAll("__wildcard__", "*"),
+    search: url.search,
+    hash: url.hash,
+    password: url.password,
+    username: url.username,
+  }
 }
 
 export function isValidWildcardDomain(input: string) {
   try {
     const url = urlFromWildcardDomain(input)
-    if (!url) {
-      return false
-    }
-    if (url.search) {
+    if (!url || url.search || url.hash || url.password || url.username) {
       return false
     }
     return true
@@ -37,10 +40,7 @@ export function formatWildcardDomain(input: string) {
   const url = urlFromWildcardDomain(input) as URL
   const hostname = url.hostname
   let pathname = url.pathname
-  if (!pathname.endsWith("*")) {
-    if (!pathname.endsWith("/")) {
-      pathname += "/"
-    }
+  if (!pathname.endsWith("*") && pathname.endsWith("/")) {
     pathname += "*"
   }
   return `${hostname}${pathname}`
@@ -60,40 +60,9 @@ export function sortWildcardDomains(ad: string, bd: string) {
   // Check if one domain has more subdomains
   const aSubs = ah.split(".").filter(s => !!s).reverse()
   const bSubs = bh.split(".").filter(s => !!s).reverse()
-  if (aSubs.length !== bSubs.length) {
-    return bSubs.length - aSubs.length
-  }
-
-  // Check if one domain has wildcard and if so in what subdomain
-  const aWildSubs = aSubs.filter(sd => sd.includes("*"))
-  const bWildSubs = bSubs.filter(sd => sd.includes("*"))
-  if (aWildSubs.length || bWildSubs.length) {
-    // there are wildcards in hostname
-    // check if one has more
-    if (aWildSubs.length !== bWildSubs.length) {
-      return bWildSubs.length - aWildSubs.length
-    }
-
-    // check each subdomain individually
-    for (let i = 0; i < aSubs.length; i++) {
-      // check if one has an earlier or more wildcards in sub
-      const aSub = aSubs[i] as string
-      const bSub = bSubs[i] as string
-      const aSubWildCount = aSub.match(new RegExp("/*", "g"))?.length ?? 0
-      const bSubWildCount = bSub.match(new RegExp("/*", "g"))?.length ?? 0
-      if (aSubWildCount || bSubWildCount) {
-        // This sub has wildcard(s)
-        // check if one has more
-        if (aSubWildCount !== bSubWildCount) {
-          return bSubWildCount - aSubWildCount
-        }
-
-        // if not, longer one is more specific
-        if (aSub.length !== bSub.length) {
-          return bSub.length - aSub.length
-        }
-      }
-    }
+  const subResult = sortWildcardParts(aSubs, bSubs)
+  if (subResult) {
+    return subResult
   }
 
   // Do the same for paths
@@ -101,43 +70,52 @@ export function sortWildcardDomains(ad: string, bd: string) {
   const bp = b.pathname
 
   // Check if one path has more subpaths
-  const aPaths = ap.split(".").filter(s => !!s).reverse()
-  const bPaths = bp.split(".").filter(s => !!s).reverse()
-  if (aPaths.length !== bPaths.length) {
-    return bPaths.length - aPaths.length
+  const aPaths = ap.split("/").filter(s => !!s)
+  const bPaths = bp.split("/").filter(s => !!s)
+  const pathResult = sortWildcardParts(aPaths, bPaths)
+  if (pathResult) {
+    return pathResult
   }
 
-  // Check if one path has wildcard and if so in what subpath
-  const aWildPaths = aPaths.filter(sd => sd.includes("*"))
-  const bWildPaths = bPaths.filter(sd => sd.includes("*"))
-  if (aWildPaths.length || bWildPaths.length) {
-    // there are wildcards in hostname
-    // check if one has more
-    if (aWildPaths.length !== bWildPaths.length) {
-      return bWildPaths.length - aWildPaths.length
+  return b.href.localeCompare(a.href)
+}
+
+function sortWildcardParts(aParts: string[], bParts: string[]) {
+  // If one has more parts, it is more specific
+  if (aParts.length !== bParts.length) {
+    return bParts.length - aParts.length
+  }
+
+  // Check if one parts has wildcard and if so in what part
+  const aWildParts = aParts.filter(sd => sd.includes("*"))
+  const bWildParts = bParts.filter(sd => sd.includes("*"))
+  if (aWildParts.length || bWildParts.length) {
+    // there are wildcards in the parts
+    // check if one has more, if so it is LESS specific
+    if (aWildParts.length !== bWildParts.length) {
+      return aWildParts.length - bWildParts.length
     }
 
-    // check each subdomain individually
-    for (let i = 0; i < aPaths.length; i++) {
-      // check if one has an earlier or more wildcards in sub
-      const aPath = aPaths[i] as string
-      const bPath = bPaths[i] as string
-      const aPathWildCount = aPath.match(new RegExp("/*", "g"))?.length ?? 0
-      const bPathWildCount = bPath.match(new RegExp("/*", "g"))?.length ?? 0
-      if (aPathWildCount || bPathWildCount) {
-        // This sub has wildcard(s)
-        // check if one has more
-        if (aPathWildCount !== bPathWildCount) {
-          return bPathWildCount - aPathWildCount
+    // check each part individually
+    for (let i = 0; i < aParts.length; i++) {
+      // check if one has an earlier wildcard part
+      // or more wildcards in a part
+      const aPart = aParts[i] as string
+      const bPart = bParts[i] as string
+      const aPartWildCount = aPart.match(new RegExp("\\*", "g"))?.length ?? 0
+      const bPartWildCount = bPart.match(new RegExp("\\*", "g"))?.length ?? 0
+      if (aPartWildCount || bPartWildCount) {
+        // This part has wildcard(s)
+        // check if one has more, if so it is MORE specific
+        if (aPartWildCount !== bPartWildCount) {
+          return bPartWildCount - aPartWildCount
         }
 
         // if not, longer one is more specific
-        if (aPath.length !== bPath.length) {
-          return bPath.length - aPath.length
+        if (aPart.length !== bPart.length) {
+          return bPart.length - aPart.length
         }
       }
     }
   }
-
-  return b.href.localeCompare(a.href)
 }
