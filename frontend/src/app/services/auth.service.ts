@@ -1,6 +1,5 @@
 import { inject, Injectable } from "@angular/core"
 import { HttpClient } from "@angular/common/http"
-import environment from "../../environment/environment"
 import { firstValueFrom } from "rxjs"
 import type { RegisterUser } from "@shared/api-request/RegisterUser"
 import type { LoginUser } from "@shared/api-request/LoginUser"
@@ -19,42 +18,42 @@ export class AuthService {
   private http = inject(HttpClient)
 
   async getInteractionDetails(uid: string) {
-    return firstValueFrom(this.http.get<ConsentDetails>(`${environment.apiUrl}/interaction/${uid}/detail`))
+    return firstValueFrom(this.http.get<ConsentDetails>(`/api/interaction/${uid}/detail`))
   }
 
   async interactionExists() {
-    return firstValueFrom(this.http.get<null>(`${environment.apiUrl}/interaction/exists`))
+    return firstValueFrom(this.http.get<null>("/api/interaction/exists"))
   }
 
   async register(body: Nullable<RegisterUser>) {
-    return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/interaction/register`, body))
+    return firstValueFrom(this.http.post<Redirect>("/api/interaction/register", body))
   }
 
   async login(body: LoginUser) {
-    return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/interaction/login`, body))
+    return firstValueFrom(this.http.post<Redirect>("/api/interaction/login", body))
   }
 
   async consent(uid: string) {
-    return firstValueFrom(this.http.post<null>(`${environment.apiUrl}/interaction/${uid}/confirm`, null))
+    return firstValueFrom(this.http.post<null>(`/api/interaction/${uid}/confirm`, null))
   }
 
   async verifyEmail(body: VerifyUserEmail) {
-    return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/interaction/verify_email`, body))
+    return firstValueFrom(this.http.post<Redirect>("/api/interaction/verify_email", body))
   }
 
   async sendEmailVerification(body: { id: string }) {
-    return firstValueFrom(this.http.post<Redirect>(`${environment.apiUrl}/auth/send_verify_email`, body))
+    return firstValueFrom(this.http.post<Redirect>("/api/auth/send_verify_email", body))
   }
 
   async getInviteDetails(id: string, challenge: string) {
-    return firstValueFrom(this.http.get<InvitationDetails>(`${environment.apiUrl}/auth/invitation/${id}/${challenge}`))
+    return firstValueFrom(this.http.get<InvitationDetails>(`/api/auth/invitation/${id}/${challenge}`))
   }
 
   async sendPasswordReset(input: string) {
-    return firstValueFrom(this.http.post<SendPasswordResetResponse>(`${environment.apiUrl}/public/send_password_reset`, { input }))
+    return firstValueFrom(this.http.post<SendPasswordResetResponse>("/api/public/send_password_reset", { input }))
   }
 
   async resetPassword(body: ResetPassword) {
-    return firstValueFrom(this.http.post<SendPasswordResetResponse>(`${environment.apiUrl}/public/reset_password`, body))
+    return firstValueFrom(this.http.post<SendPasswordResetResponse>("/api/public/reset_password", body))
   }
 }
