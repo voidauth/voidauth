@@ -1,0 +1,17 @@
+<mat-form-field style="width: 100%">
+  <mat-label>{{ label() }}</mat-label>
+  <input matInput [value]="value()" disabled />
+  @if (value(); as val) {
+    <button
+      class="field-suffix"
+      type="button"
+      mat-icon-button
+      matSuffix
+      [matTooltip]="label() + ' Endpoint'"
+      [cdkCopyToClipboard]="val"
+      (click)="snackbarService.show(label() + ' copied to clipboard.')"
+    >
+      <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
+    </button>
+  }
+</mat-form-field>

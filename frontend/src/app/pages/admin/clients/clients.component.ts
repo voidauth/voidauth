@@ -8,6 +8,7 @@ import { MatTableDataSource } from "@angular/material/table"
 import { SnackbarService } from "../../../services/snackbar.service"
 import { RouterLink } from "@angular/router"
 import { SpinnerService } from "../../../services/spinner.service"
+import { OidcInfoComponent } from "../../../components/oidc-info/oidc-info.component"
 
 export type TableColumn<T> = {
   columnDef: keyof T & string
@@ -21,6 +22,7 @@ export type TableColumn<T> = {
   imports: [
     MaterialModule,
     RouterLink,
+    OidcInfoComponent,
   ],
   templateUrl: "./clients.component.html",
   styleUrl: "./clients.component.scss",

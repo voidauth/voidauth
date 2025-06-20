@@ -118,4 +118,6 @@ function sortWildcardParts(aParts: string[], bParts: string[]) {
       }
     }
   }
+
+  return
 }

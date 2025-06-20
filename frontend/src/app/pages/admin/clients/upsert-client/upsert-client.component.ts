@@ -13,6 +13,7 @@ import type { ResponseType } from "oidc-provider"
 import type { itemIn } from "@shared/utils"
 import { HttpErrorResponse } from "@angular/common/http"
 import { SpinnerService } from "../../../../services/spinner.service"
+import { OidcInfoComponent } from "../../../../components/oidc-info/oidc-info.component"
 
 export type TypedFormGroup<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
@@ -25,6 +26,7 @@ export type TypedFormGroup<T> = {
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
+    OidcInfoComponent,
   ],
   templateUrl: "./upsert-client.component.html",
   styleUrl: "./upsert-client.component.scss",
