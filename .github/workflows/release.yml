@@ -44,6 +44,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
+            ${{ env.DOCKER_IMAGE_NAME }}
             ghcr.io/${{ env.DOCKER_IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
@@ -51,7 +52,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=edge
 
-            - name: Docker QEMU
+      - name: Docker QEMU
         uses: docker/setup-qemu-action@v3
         
       - name: Docker Buildx
@@ -68,9 +69,16 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           push: true
 
-      - name: Attestation
+      - name: Attestation Github Registry
         uses: actions/attest-build-provenance@v2
         with:
           subject-name: "ghcr.io/${{ env.DOCKER_IMAGE_NAME }}"
+          subject-digest: ${{ steps.docker-build.outputs.digest }}
+          push-to-registry: true
+
+      - name: Attestation Dockerhub Registry
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: "${{ env.DOCKER_IMAGE_NAME }}"
           subject-digest: ${{ steps.docker-build.outputs.digest }}
           push-to-registry: true
