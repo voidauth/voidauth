@@ -2,11 +2,11 @@ import { Router, type Request, type Response } from "express"
 import { router as interactionRouter } from "./interaction"
 import { provider } from "../oidc/provider"
 import { db } from "../db/db"
-import { getUserById } from "../db/user"
+import { getUserById, getUserByInput } from "../db/user"
 import { userRouter } from "./user"
 import type { Group, UserGroup } from "@shared/db/Group"
 import { adminRouter } from "./admin"
-import type { UserDetails } from "@shared/api-response/UserDetails"
+import type { UserDetails, UserWithoutPassword } from "@shared/api-response/UserDetails"
 import { authRouter } from "./auth"
 import { als } from "../util/als"
 import { publicRouter } from "./public"
@@ -14,6 +14,8 @@ import { oidcLoginPath } from "@shared/oidc"
 import appConfig from "../util/config"
 import { isMatch } from "matcher"
 import { getProxyAuths } from "../db/proxyAuth"
+import * as argon2 from "argon2"
+import type { User } from "@shared/db/User"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -38,12 +40,35 @@ let proxyAuthCacheExpires: number = 0
 
 // proxy auth common
 async function proxyAuth(url: URL, req: Request, res: Response) {
+  const formattedUrl = `${url.hostname}${url.pathname}`
+
   const ctx = provider.createContext(req, res)
   const sessionId = ctx.cookies.get("x-voidauth-session-uid")
-  const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
-  const accountId = session?.accountId
-  const user = accountId ? await getUserById(accountId) : null
-  if (!user) {
+  const authorizationHeader = req.headersDistinct["authorization"]?.[0]
+  let user: User | UserWithoutPassword | undefined
+
+  if (sessionId) {
+    // Cookie auth flow
+    const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
+    const accountId = session?.accountId
+    user = accountId ? await getUserById(accountId) : undefined
+    if (!user) {
+      res.redirect(`${appConfig.APP_DOMAIN}${oidcLoginPath(url.href)}`)
+      return
+    }
+  } else if (authorizationHeader) {
+    // Authorization header flow
+    // Decode the Basic Authorization header
+    const [, base64Credentials] = authorizationHeader.split(" ")
+    const [username, password] = base64Credentials ? Buffer.from(base64Credentials, "base64").toString().split(":") : []
+    user = username ? await getUserByInput(username) : undefined
+    if (!user || !password || !await argon2.verify(user.passwordHash, password)) {
+      res.setHeader("WWW-Authenticate", `Basic realm="${formattedUrl}"`)
+      res.sendStatus(401)
+      return
+    }
+  } else {
+    // flow missing, go to login
     res.redirect(`${appConfig.APP_DOMAIN}${oidcLoginPath(url.href)}`)
     return
   }
@@ -54,7 +79,6 @@ async function proxyAuth(url: URL, req: Request, res: Response) {
     .orderBy("name", "asc")
 
   // check if user may access url
-  const formattedUrl = `${url.hostname}${url.pathname}`
   // using a short cache
   if (proxyAuthCacheExpires < new Date().getTime()) {
     proxyAuthCache = await getProxyAuths()

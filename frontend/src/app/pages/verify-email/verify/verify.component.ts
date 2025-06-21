@@ -88,7 +88,7 @@ export class VerifyComponent implements OnInit {
       }
 
       error ||= "Something went wrong."
-      this.title = "Email Verification Not Be Sent :("
+      this.title = "Email Verification Could Not Be Sent :("
       this.snackbarService.error(error)
     } finally {
       this.spinnerService.hide()
