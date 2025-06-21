@@ -4,4 +4,7 @@
 <button mat-button (click)="sendVerification()">
   {{ sent ? "Send Again" : "Send Verification Email" }}
 </button>
+@if (sent) {
+  <a mat-flat-button routerLink="/">Login</a>
+}
 <span style="flex-grow: 1"></span>

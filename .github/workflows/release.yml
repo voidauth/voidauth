@@ -19,18 +19,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Login GitHub
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login Dockerhub
+        uses: docker/login-action@v3
+        with:
+          username: voidauth
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: DOCKER_IMAGE_NAME
         run: |
           REPO_OWNER=${{ github.repository_owner }}
           DOCKER_IMAGE_NAME="${REPO_OWNER,,}/voidauth"
           # Make DOCKER_IMAGE_NAME accessible in other steps
           echo "DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME}" >>${GITHUB_ENV}
-        
-      - name: Docker QEMU
-        uses: docker/setup-qemu-action@v3
-        
-      - name: Docker Buildx
-        uses: docker/setup-buildx-action@v3
           
       - name: Docker Metadata
         id: metadata
@@ -44,12 +51,11 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=edge
 
-      - name: Login GitHub
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{github.repository_owner}}
-          password: ${{secrets.GITHUB_TOKEN}}
+            - name: Docker QEMU
+        uses: docker/setup-qemu-action@v3
+        
+      - name: Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Push
         uses: docker/build-push-action@v6

@@ -1,5 +1,5 @@
 import { Component, inject, type OnInit } from "@angular/core"
-import { ActivatedRoute, Router } from "@angular/router"
+import { ActivatedRoute, Router, RouterLink } from "@angular/router"
 import { MaterialModule } from "../../../material-module"
 import { AuthService } from "../../../services/auth.service"
 import { HttpErrorResponse } from "@angular/common/http"
@@ -10,6 +10,7 @@ import { SpinnerService } from "../../../services/spinner.service"
   selector: "app-verify-sent",
   imports: [
     MaterialModule,
+    RouterLink,
   ],
   templateUrl: "./verify-sent.component.html",
   styleUrl: "./verify-sent.component.scss",

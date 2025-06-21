@@ -41,6 +41,11 @@ export class InvitationsComponent {
       header: "Name",
       cell: element => element.name ?? "-",
     },
+    {
+      columnDef: "expiresAt",
+      header: "Expires In",
+      cell: element => humanDuration(new Date(element.expiresAt).getTime() - new Date().getTime()),
+    },
   ]
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(["actions"])
@@ -73,4 +78,50 @@ export class InvitationsComponent {
       this.spinnerService.hide()
     }
   }
+}
+
+function humanDuration(ms: number): string {
+  const MINUTE = 60
+  const HOUR = MINUTE * 60
+  const DAY = HOUR * 24
+  const WEEK = DAY * 7
+  const YEAR = DAY * 365.25
+  const MONTH = YEAR / 12
+
+  const seconds = Math.floor(ms / 1000)
+  const years = Math.floor(seconds / YEAR)
+  const months = Math.floor(seconds / MONTH)
+  const weeks = Math.floor(seconds / WEEK)
+  const days = Math.floor(seconds / DAY)
+  const hours = Math.floor(seconds / HOUR)
+  const minutes = Math.floor(seconds / MINUTE)
+
+  if (years || months > 11) {
+    return String(Math.max(years, 1)) + " year" + ((years > 1) ? "s" : "")
+  }
+
+  if (months || weeks > 4) {
+    return String(Math.max(months, 1)) + " month" + ((months > 1) ? "s" : "")
+  }
+
+  if (weeks || days > 6) {
+    return String(Math.max(weeks, 1)) + " week" + ((weeks > 1) ? "s" : "")
+  }
+
+  if (days || hours > 23) {
+    return String(Math.max(days, 1)) + " day" + ((days > 1) ? "s" : "")
+  }
+
+  if (hours || minutes > 59) {
+    return String(Math.max(hours, 1)) + " hour" + ((hours > 1) ? "s" : "")
+  }
+
+  if (minutes || seconds > 59) {
+    return String(Math.max(minutes, 1)) + " minute" + ((minutes > 1) ? "s" : "")
+  }
+
+  if (seconds || ms > 500) {
+    return String(Math.max(seconds, 1)) + " second" + ((seconds > 1) ? "s" : "")
+  }
+  return "now"
 }
