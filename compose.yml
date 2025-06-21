@@ -9,29 +9,10 @@ services:
       - "./config:/app/config"
     environment:
       # Required environment variables, set in .env file
-      APP_DOMAIN: ${APP_DOMAIN:?err} # required
-      DB_HOST: ${DB_HOST:?err} # required
-      DB_PASSWORD: ${DB_PASSWORD:?err} # required
-      STORAGE_KEY: ${STORAGE_KEY:?err} # required
-
-      # Not required or has default
-      # APP_TITLE: "VoidAuth"
-      # APP_PORT: "3000"
-      # APP_COLOR: "#8864c4"
-      # SIGNUP: "false"
-      # SIGNUP_REQUIRES_APPROVAL: "true"
-      # EMAIL_VERIFICATION: "false"
-      # DB_PORT: "5432"
-      # DB_USER: "postgres"
-      # DB_NAME: "postgres"
-      # STORAGE_KEY_SECONDARY: 
-      # ZXCVBN_MIN: "3"
-      # SMTP_HOST: 
-      # SMTP_FROM: 
-      # SMTP_PORT: "587"
-      # SMTP_SECURE: "false"
-      # SMTP_USER: 
-      # SMTP_PASS: 
+      APP_DOMAIN: ${APP_DOMAIN} # required
+      DB_HOST: voidauth-db # required
+      DB_PASSWORD: ${DB_PASSWORD} # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service
+      STORAGE_KEY: ${STORAGE_KEY} # required
     depends_on:
       - voidauth-db
 
