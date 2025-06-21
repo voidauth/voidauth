@@ -79,6 +79,6 @@ jobs:
       - name: Attestation Dockerhub Registry
         uses: actions/attest-build-provenance@v2
         with:
-          subject-name: "${{ env.DOCKER_IMAGE_NAME }}"
+          subject-name: "index.docker.io/${{ env.DOCKER_IMAGE_NAME }}"
           subject-digest: ${{ steps.docker-build.outputs.digest }}
           push-to-registry: true
