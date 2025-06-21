@@ -68,17 +68,3 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           push: true
-
-      - name: Attestation Github Registry
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: "ghcr.io/${{ env.DOCKER_IMAGE_NAME }}"
-          subject-digest: ${{ steps.docker-build.outputs.digest }}
-          push-to-registry: true
-
-      - name: Attestation Dockerhub Registry
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: "index.docker.io/${{ env.DOCKER_IMAGE_NAME }}"
-          subject-digest: ${{ steps.docker-build.outputs.digest }}
-          push-to-registry: true
