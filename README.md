@@ -27,7 +27,14 @@ VoidAuth is accessed through an easy to use web interface, meant to make user si
 
 ## Getting Started
 
-VoidAuth **MUST** be behind an https terminating reverse-proxy. VoidAuth does **NOT** provide https termination itself, but it is absolutely **required**. A simple setup using docker compose might look like this:
+> [!IMPORTANT]
+> During the first start of the app, the **initial admin username and password** will be shown in the logs. They will never be shown again.
+
+> [!IMPORTANT]
+> Any user in the **auth_admins** group will be an administrator in VoidAuth.
+
+> [!WARNING]  
+> VoidAuth **MUST** be behind an https terminating reverse-proxy. VoidAuth does **NOT** provide https termination itself, but it is absolutely **required**. A simple setup using docker compose might look like this:
 
 ```yaml
 
@@ -98,6 +105,7 @@ The email templates for email verification, invitations, and password resets can
 ## Integration
 
 ### OIDC
+
 When setting up OIDC Clients (Apps) you should follow the guide provided by the application. You will be able to set all the configuration values using the VoidAuth OIDC Clients admin page by creating a new OIDC Client. For example, a client app guide:
 
 ```
@@ -108,12 +116,14 @@ token_endpoint_auth_method: "client_secret_post"
 response_types: "code"
 grant_types: "authorization_code"
 ```
+
 Which would be followed by filling out the Create OIDC Client form like this:
 <p align="center">
   <img src="./docs/oidc_client.png" width="200">
 </p>
 
 ### ProxyAuth
+
 VoidAuth exposes two proxy auth endpoints, which one you use will depend on your reverse-proxy.
 
 | Endpoint                | Reverse Proxy |
