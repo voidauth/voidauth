@@ -89,7 +89,7 @@ export class GroupComponent {
       return u.username.toLowerCase().includes(value.toLowerCase())
         || u.email?.toLowerCase().includes(value.toLowerCase())
         || u.name?.toLowerCase().includes(value.toLowerCase())
-    })
+    }).slice(0, 5)
     if (this.unselectedUsers.length) {
       this.userSelect.enable()
     } else {

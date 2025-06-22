@@ -103,7 +103,7 @@
         <div mat-subheader>Groups:</div>
         @for (g of form.value.groups; track g) {
           <mat-list-item>
-            <mat-icon matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
+            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
             <div matListItemTitle>{{ g }}</div>
           </mat-list-item>
         }

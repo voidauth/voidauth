@@ -22,6 +22,7 @@ import { loggedInGuard } from "./guards/logged-in.guard"
 import { isAdminGuard } from "./guards/is-admin.guard"
 import { DomainComponent } from "./pages/admin/domains/domain/domain.component"
 import { DomainsComponent } from "./pages/admin/domains/domains.component"
+import { PasswordResetsComponent } from "./pages/admin/password-resets/password-resets.component"
 
 export const routes: Routes = [
   { path: "", component: HomeComponent, canActivate: [loggedInGuard] },
@@ -63,6 +64,8 @@ export const routes: Routes = [
   { path: "admin/invitations", component: InvitationsComponent, canActivate: [isAdminGuard] },
   { path: "admin/invitation/:id", component: InvitationComponent, canActivate: [isAdminGuard] },
   { path: "admin/invitation", redirectTo: "admin/invitation/", pathMatch: "full" },
+
+  { path: "admin/passwordresets", component: PasswordResetsComponent, canActivate: [isAdminGuard] },
 
   { path: "**", redirectTo: "", pathMatch: "full" },
 ]

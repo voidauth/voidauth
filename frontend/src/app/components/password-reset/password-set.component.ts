@@ -5,17 +5,17 @@ import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
 import { NewPasswordInputComponent } from "../new-password-input/new-password-input.component"
 
 @Component({
-  selector: "app-password-reset",
+  selector: "app-password-set",
   imports: [
     ReactiveFormsModule,
     MaterialModule,
     ValidationErrorPipe,
     NewPasswordInputComponent,
   ],
-  templateUrl: "./password-reset.component.html",
-  styleUrl: "./password-reset.component.scss",
+  templateUrl: "./password-set.component.html",
+  styleUrl: "./password-set.component.scss",
 })
-export class PasswordResetComponent {
+export class PasswordSetComponent {
   oldPassword = input<FormControl<string | null>>()
   newPassword = input.required<FormControl<string | null>>()
   confirmPassword = input.required<FormControl<string | null>>()

@@ -16,6 +16,8 @@ import { REDIRECT_PATHS } from "@shared/constants"
 import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
 import type { ProxyAuthUpsert } from "@shared/api-request/admin/ProxyAuthUpsert"
 import type { ProxyAuthResponse } from "@shared/api-response/admin/ProxyAuthResponse"
+import type { PasswordResetUser } from "@shared/api-response/admin/PasswordResetUser"
+import type { PasswordResetCreate } from "@shared/api-request/admin/PasswordResetCreate"
 
 @Injectable({
   providedIn: "root",
@@ -27,6 +29,11 @@ export class AdminService {
   getInviteLink(id: string, challenge: string) {
     const query = `invite=${id}&challenge=${challenge}`
     return `${this.configService.getCurrentHost()}/${REDIRECT_PATHS.INVITE}?${query}`
+  }
+
+  getPasswordResetLink(id: string, challenge: string) {
+    const query = `id=${id}&challenge=${challenge}`
+    return `${this.configService.getCurrentHost()}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`
   }
 
   async clients() {
@@ -115,5 +122,21 @@ export class AdminService {
 
   async sendInvitation(id: string) {
     return firstValueFrom(this.http.post<null>(`/api/admin/send_invitation/${id}`, null))
+  }
+
+  async passwordResets() {
+    return firstValueFrom(this.http.get<PasswordResetUser[]>("/api/admin/passwordresets"))
+  }
+
+  async createPasswordReset(passwordReset: PasswordResetCreate) {
+    return firstValueFrom(this.http.post<PasswordResetUser>("/api/admin/passwordreset", passwordReset))
+  }
+
+  async deletePasswordReset(id: string) {
+    return firstValueFrom(this.http.delete<null>(`/api/admin/passwordreset/${id}`))
+  }
+
+  async sendPasswordReset(id: string) {
+    return firstValueFrom(this.http.post<null>(`/api/admin/send_passwordreset/${id}`, null))
   }
 }
