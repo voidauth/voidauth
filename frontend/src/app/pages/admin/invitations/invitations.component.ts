@@ -80,7 +80,7 @@ export class InvitationsComponent {
   }
 }
 
-function humanDuration(ms: number): string {
+export function humanDuration(ms: number): string {
   const MINUTE = 60
   const HOUR = MINUTE * 60
   const DAY = HOUR * 24
@@ -88,40 +88,40 @@ function humanDuration(ms: number): string {
   const YEAR = DAY * 365.25
   const MONTH = YEAR / 12
 
-  const seconds = Math.floor(ms / 1000)
-  const years = Math.floor(seconds / YEAR)
-  const months = Math.floor(seconds / MONTH)
-  const weeks = Math.floor(seconds / WEEK)
-  const days = Math.floor(seconds / DAY)
-  const hours = Math.floor(seconds / HOUR)
-  const minutes = Math.floor(seconds / MINUTE)
+  const seconds = Math.round(ms / 1000)
+  const years = Math.round(seconds / YEAR)
+  const months = Math.round(seconds / MONTH)
+  const weeks = Math.round(seconds / WEEK)
+  const days = Math.round(seconds / DAY)
+  const hours = Math.round(seconds / HOUR)
+  const minutes = Math.round(seconds / MINUTE)
 
-  if (years || months > 11) {
-    return String(Math.max(years, 1)) + " year" + ((years > 1) ? "s" : "")
+  if (months > 11) {
+    return String(years) + " year" + ((years > 1) ? "s" : "")
   }
 
-  if (months || weeks > 4) {
-    return String(Math.max(months, 1)) + " month" + ((months > 1) ? "s" : "")
+  if (weeks > 4) {
+    return String(months) + " month" + ((months > 1) ? "s" : "")
   }
 
-  if (weeks || days > 6) {
-    return String(Math.max(weeks, 1)) + " week" + ((weeks > 1) ? "s" : "")
+  if (days > 6) {
+    return String(weeks) + " week" + ((weeks > 1) ? "s" : "")
   }
 
-  if (days || hours > 23) {
-    return String(Math.max(days, 1)) + " day" + ((days > 1) ? "s" : "")
+  if (hours > 23) {
+    return String(days) + " day" + ((days > 1) ? "s" : "")
   }
 
-  if (hours || minutes > 59) {
-    return String(Math.max(hours, 1)) + " hour" + ((hours > 1) ? "s" : "")
+  if (minutes > 59) {
+    return String(hours) + " hour" + ((hours > 1) ? "s" : "")
   }
 
-  if (minutes || seconds > 59) {
-    return String(Math.max(minutes, 1)) + " minute" + ((minutes > 1) ? "s" : "")
+  if (seconds > 59) {
+    return String(minutes) + " minute" + ((minutes > 1) ? "s" : "")
   }
 
-  if (seconds || ms > 500) {
-    return String(Math.max(seconds, 1)) + " second" + ((seconds > 1) ? "s" : "")
+  if (ms > 999) {
+    return String(seconds) + " second" + ((seconds > 1) ? "s" : "")
   }
   return "now"
 }

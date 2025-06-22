@@ -63,11 +63,14 @@ export class RegistrationComponent implements OnInit {
       const challenge = queryParams.get("challenge")
 
       try {
+        this.spinnerService.show()
         await this.authService.interactionExists()
       } catch (_e) {
         // interaction session is missing, could not log in without it
         window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + "/api/cb",
           "register", inviteId, challenge))
+      } finally {
+        this.spinnerService.hide()
       }
 
       if (inviteId && challenge) {

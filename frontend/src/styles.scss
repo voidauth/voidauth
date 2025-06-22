@@ -58,6 +58,10 @@ mat-drawer-content {
   flex-grow: 1 !important;
 }
 
+.field-suffix {
+  margin-right: 8px;
+}
+
 mat-card.form-card {
   max-width: var(--form-max-width);
   width: 100%;
@@ -74,10 +78,6 @@ mat-card.form-card {
   
     mat-form-field {
       width: 100%;
-    }
-
-    .field-suffix {
-      margin-right: 8px;
     }
 
     mat-list {

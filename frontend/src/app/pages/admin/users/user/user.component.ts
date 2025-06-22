@@ -112,7 +112,7 @@ export class UserComponent {
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
       return g.toLowerCase().includes(value.toLowerCase())
-    })
+    }).slice(0, 5)
     if (this.unselectedGroups.length) {
       this.groupSelect.enable()
     } else {

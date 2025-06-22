@@ -18,8 +18,10 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
-        <a mat-icon-button [routerLink]="['/admin', 'user', row.id]"><mat-icon>edit</mat-icon></a>
-        <button mat-icon-button type="button" [disabled]="row.id === me?.id" (click)="delete(row.id)">
+        <a mat-icon-button [routerLink]="['/admin', 'user', row.id]" matTooltip="Edit">
+          <mat-icon>edit</mat-icon>
+        </a>
+        <button mat-icon-button type="button" [disabled]="row.id === me?.id" (click)="delete(row.id)" matTooltip="Delete">
           <mat-icon>delete_forever</mat-icon>
         </button>
       </td>

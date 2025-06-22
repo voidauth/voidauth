@@ -7,7 +7,7 @@ import { UserService } from "../../services/user.service"
 import { USERNAME_REGEX } from "@shared/constants"
 import type { UserDetails } from "@shared/api-response/UserDetails"
 import { ConfigService } from "../../services/config.service"
-import { PasswordResetComponent } from "../../components/password-reset/password-reset.component"
+import { PasswordSetComponent } from "../../components/password-reset/password-set.component"
 import { SpinnerService } from "../../services/spinner.service"
 
 @Component({
@@ -16,7 +16,7 @@ import { SpinnerService } from "../../services/spinner.service"
     ReactiveFormsModule,
     MaterialModule,
     ValidationErrorPipe,
-    PasswordResetComponent,
+    PasswordSetComponent,
   ],
   templateUrl: "./home.component.html",
   styleUrl: "./home.component.scss",

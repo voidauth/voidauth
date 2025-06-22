@@ -37,12 +37,12 @@
         @for (u of form.value.users; track u) {
           @if (form.controls.name.value === ADMIN_GROUP && (!form.controls.users.value || 2 > form.controls.users.value.length)) {
             <mat-list-item disabled>
-              <mat-icon matListItemIcon>cancel</mat-icon>
+              <mat-icon fontSet="material-icons-round" matListItemIcon>cancel</mat-icon>
               <div matListItemTitle>{{ u.username }}</div>
             </mat-list-item>
           } @else {
             <mat-list-item>
-              <mat-icon matListItemIcon class="clickable" (click)="removeUser(u.id)">cancel</mat-icon>
+              <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeUser(u.id)">cancel</mat-icon>
               <div matListItemTitle>{{ u.username }}</div>
             </mat-list-item>
           }

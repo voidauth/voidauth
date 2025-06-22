@@ -4,7 +4,7 @@ import { MaterialModule } from "../../material-module"
 import { AuthService } from "../../services/auth.service"
 import { SnackbarService } from "../../services/snackbar.service"
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
-import { PasswordResetComponent } from "../../components/password-reset/password-reset.component"
+import { PasswordSetComponent } from "../../components/password-reset/password-set.component"
 import { REDIRECT_PATHS } from "@shared/constants"
 import { HttpErrorResponse } from "@angular/common/http"
 import { SpinnerService } from "../../services/spinner.service"
@@ -14,7 +14,7 @@ import { SpinnerService } from "../../services/spinner.service"
   imports: [
     MaterialModule,
     ReactiveFormsModule,
-    PasswordResetComponent,
+    PasswordSetComponent,
   ],
   templateUrl: "./reset-password.component.html",
   styleUrl: "./reset-password.component.scss",

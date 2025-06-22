@@ -28,7 +28,7 @@ class Config {
 
   // Optional
   STORAGE_KEY_SECONDARY?: string
-  ZXCVBN_MIN = 3
+  ZXCVBN_MIN = 2
 
   // SMTP
   SMTP_HOST?: string

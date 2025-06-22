@@ -15,7 +15,7 @@
         <mat-label>Client Secret</mat-label>
         <input matInput type="text" formControlName="client_secret" />
         <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="generateSecret()">
-          <mat-icon matSuffix>autorenew</mat-icon>
+          <mat-icon fontSet="material-icons-round" matSuffix>autorenew</mat-icon>
         </button>
         @if (form.controls.client_secret.errors) {
           <mat-error>{{ form.controls.client_secret.errors | validationError }}</mat-error>
@@ -43,7 +43,7 @@
         <div mat-subheader>Redirect URLs:</div>
         @for (uri of form.value.redirect_uris; track uri) {
           <mat-list-item>
-            <mat-icon matListItemIcon class="clickable" (click)="removeRedirectUrl(uri)">cancel</mat-icon>
+            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeRedirectUrl(uri)">cancel</mat-icon>
             <div matListItemTitle>{{ uri }}</div>
           </mat-list-item>
         }

@@ -21,7 +21,7 @@ import type { UserDetails, UserWithoutPassword } from "@shared/api-response/User
 import { getInvitation, getInvitations } from "../db/invitations"
 import type { Invitation } from "@shared/db/Invitation"
 import type { InvitationUpsert } from "@shared/api-request/admin/InvitationUpsert"
-import { sendInvitation } from "../util/email"
+import { sendInvitation, sendPasswordReset } from "../util/email"
 import { generate } from "generate-password"
 import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
 import type { ProxyAuth } from "@shared/db/ProxyAuth"
@@ -29,6 +29,9 @@ import { formatWildcardDomain, isValidWildcardDomain } from "@shared/utils"
 import type { ProxyAuthResponse } from "@shared/api-response/admin/ProxyAuthResponse"
 import type { ProxyAuthUpsert } from "@shared/api-request/admin/ProxyAuthUpsert"
 import { getProxyAuth, getProxyAuths } from "../db/proxyAuth"
+import type { PasswordResetUser } from "@shared/api-response/admin/PasswordResetUser"
+import type { PasswordReset } from "@shared/db/PasswordReset"
+import type { PasswordResetCreate } from "@shared/api-request/admin/PasswordResetCreate"
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -723,6 +726,104 @@ adminRouter.post("/send_invitation/:id",
     }
 
     await sendInvitation(invitation, invitation.email)
+    res.send()
+  },
+)
+
+adminRouter.get("/passwordresets", async (_req, res) => {
+  const passwordResets: PasswordResetUser[] = await db().select(
+    db().ref("username").withSchema("user"),
+    db().ref("email").withSchema("user"),
+    db().ref("id").withSchema("password_reset"),
+    db().ref("userId").withSchema("password_reset"),
+    db().ref("challenge").withSchema("password_reset"),
+    db().ref("expiresAt").withSchema("password_reset"),
+    db().ref("createdAt").withSchema("password_reset"),
+  ).table<PasswordReset>("password_reset")
+    .innerJoin<User>("user", "user.id", "password_reset.userId")
+    .where("expiresAt", ">=", new Date())
+    .orderBy("expiresAt", "desc")
+  res.send(passwordResets)
+})
+
+adminRouter.post("/passwordReset",
+  ...validate<PasswordResetCreate>({
+    userId: uuidValidation,
+  }),
+  async (req: Request, res: Response) => {
+    await createTransaction()
+    try {
+      const { userId } = matchedData<PasswordResetCreate>(req, { includeOptionals: true })
+      const user = await getUserById(userId)
+
+      if (!user) {
+        res.sendStatus(404)
+        return
+      }
+
+      const passwordReset: PasswordReset = {
+        id: randomUUID(),
+        userId: user.id,
+        challenge: generate({
+          length: 32,
+          numbers: true,
+        }),
+        createdAt: new Date(),
+        expiresAt: createExpiration(TTLs.PASSWORD_RESET),
+      }
+      await db().table<PasswordReset>("password_reset").insert(passwordReset)
+      await commit()
+
+      const result: PasswordResetUser = { ...passwordReset, username: user.username, email: user.email }
+      res.send(result)
+    } catch (e) {
+      await rollback()
+      throw e
+    }
+  },
+)
+
+adminRouter.delete("/passwordreset/:id",
+  ...validate<{ id: string }>({
+    id: uuidValidation,
+  }),
+  async (req: Request, res: Response) => {
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+
+    const count = await db().table<PasswordReset>("password_reset").delete().where({ id })
+
+    if (!count) {
+      res.sendStatus(404)
+      return
+    }
+
+    res.send()
+  },
+)
+
+adminRouter.post("/send_passwordreset/:id",
+  ...validate<{ id: string }>({
+    id: uuidValidation,
+  }),
+  async (req: Request, res: Response) => {
+    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+    const reset = await db().select().table<PasswordReset>("password_reset").where({ id }).first()
+
+    if (!reset) {
+      res.sendStatus(404)
+      return
+    }
+
+    const user = await db().select().table<User>("user").where({ id: reset.userId }).first()
+
+    if (!user?.email) {
+      res.sendStatus(400)
+      return
+    }
+
+    const { passwordHash: _, ...userWithoutPassword } = user
+
+    await sendPasswordReset(reset, userWithoutPassword, user.email)
     res.send()
   },
 )

@@ -64,13 +64,13 @@
   </mat-card-header>
   <mat-card-content>
     <form [formGroup]="passwordForm">
-      <app-password-reset
+      <app-password-set
         style="width: 100%; margin-top: 0px"
         [oldPassword]="passwordForm.controls.oldPassword"
         [newPassword]="passwordForm.controls.newPassword"
         [confirmPassword]="passwordForm.controls.confirmPassword"
       >
-      </app-password-reset>
+      </app-password-set>
 
       <mat-card-actions>
         <button
