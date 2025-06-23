@@ -78,7 +78,7 @@ export const newPasswordValidation: ParamSchema<any> = {
   ...stringValidation,
   zxcvbn: {
     custom: (value: unknown) => {
-      return typeof value === "string" && zxcvbn(value).score >= appConfig.ZXCVBN_MIN
+      return typeof value === "string" && zxcvbn(value).score >= appConfig.PASSWORD_STRENGTH
     },
   },
 } as const

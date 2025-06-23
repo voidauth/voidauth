@@ -24,8 +24,9 @@ export const publicRouter = Router()
 
 publicRouter.get("/config", (_req, res) => {
   const configResponse: ConfigResponse = {
+    domain: appConfig.APP_DOMAIN,
     appName: appConfig.APP_TITLE,
-    zxcvbnMin: appConfig.ZXCVBN_MIN,
+    zxcvbnMin: appConfig.PASSWORD_STRENGTH,
     emailActive: SMTP_VERIFIED,
     emailVerification: appConfig.EMAIL_VERIFICATION,
     registration: appConfig.SIGNUP,

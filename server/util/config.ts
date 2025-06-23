@@ -28,7 +28,7 @@ class Config {
 
   // Optional
   STORAGE_KEY_SECONDARY?: string
-  ZXCVBN_MIN = 2
+  PASSWORD_STRENGTH = 2
 
   // SMTP
   SMTP_HOST?: string
@@ -46,7 +46,7 @@ function assignConfigValue(key: keyof Config, value: unknown) {
     case "APP_PORT":
     case "SMTP_PORT":
     case "DB_PORT":
-    case "ZXCVBN_MIN":
+    case "PASSWORD_STRENGTH":
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
 
@@ -130,9 +130,9 @@ if (appConfig.STORAGE_KEY.length < 32) {
   exit(1)
 }
 
-// check ZXCVBN_MIN is between 2 and 4
-if (appConfig.ZXCVBN_MIN < 0 || appConfig.ZXCVBN_MIN > 4) {
-  console.error("ZXCVBN_MIN must be between 0 and 4.")
+// check PASSWORD_STRENGTH is between 2 and 4
+if (appConfig.PASSWORD_STRENGTH < 0 || appConfig.PASSWORD_STRENGTH > 4) {
+  console.error("PASSWORD_STRENGTH must be between 0 and 4.")
   exit(1)
 }
 

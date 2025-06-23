@@ -12,6 +12,8 @@ import type { PasswordResetUser } from "@shared/api-response/admin/PasswordReset
 import { FormControl, ReactiveFormsModule } from "@angular/forms"
 import type { UserWithoutPassword } from "@shared/api-response/UserDetails"
 import { ValidationErrorPipe } from "../../../pipes/ValidationErrorPipe"
+import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
+import { ConfigService } from "../../../services/config.service"
 
 @Component({
   selector: "app-password-sets",
@@ -48,9 +50,12 @@ export class PasswordResetsComponent {
   selectableUsers: UserWithoutPassword[] = []
   userSelect = new FormControl<UserWithoutPassword | null>(null)
 
+  config?: ConfigResponse
+
   adminService = inject(AdminService)
   snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private configService = inject(ConfigService)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
@@ -60,6 +65,9 @@ export class PasswordResetsComponent {
         return a.username.localeCompare(b.username, undefined, { sensitivity: "base" })
       })
       this.userAutoFilter()
+
+      this.config = await this.configService.getConfig()
+
       this.dataSource.data = await this.adminService.passwordResets()
       this.dataSource.paginator = this.paginator
       this.dataSource.sort = this.sort
