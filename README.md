@@ -1,7 +1,7 @@
 # VoidAuth
 
 <p align="center">
-  <img src="./frontend/public/logo.png" width="150" title="VoidAuth" alt="VoidAuth logo">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/frontend/public/logo.png" width="150" title="VoidAuth" alt="VoidAuth logo">
 </p>
 
 VoidAuth is a Single Sign-On Provider that includes: User Management, Proxy Auth, and is an OIDC Provider. It is designed to make securing your applications and resources easy.
@@ -10,7 +10,7 @@ VoidAuth is a Single Sign-On Provider that includes: User Management, Proxy Auth
 Login Portal
 </P>
 <p align="center">
-  <img src="./docs/login_portal.png" width="200">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/login_portal.png" width="200">
 </p>
 
 ## Features
@@ -69,7 +69,7 @@ volumes:
 ```
 
 ## Customization
-
+### Environment Variables
 VoidAuth is configurable primarily by environment variable. The available environment variables and their defaults are listed in the table below:
 
 | Name                     | Default  | Description                                                                                                                                                                    | Required |
@@ -96,6 +96,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | SMTP_USER                |          | SMTP username used to sign into email provider; ex`user@example.com`                                                                                                           |          |
 | SMTP_PASS                |          | SMTP password used to sign into email provider                                                                                                                                 |          |
 
+### Config Directory
 Your own branding can be applied to the app by mounting the **/app/config** directory and adding or modifying the existing files.
 
 The logo and favicon of the web interface can be customized by placing your own **logo.png** and **favicon.png** in the mounted **/app/config/branding** directory.
@@ -106,7 +107,7 @@ The email templates for email verification, invitations, and password resets can
 
 ### OIDC
 
-When setting up OIDC Clients (Apps) you should follow the guide provided by the application. You will be able to set all the configuration values using the VoidAuth OIDC Clients admin page by creating a new OIDC Client. For example, a client app guide:
+When setting up OIDC Clients (Apps) you should follow the guide provided by the application. You will be able to set all the configuration values using the VoidAuth OIDC Clients admin page by creating a new OIDC Client. An example App OIDC documentation guide:
 
 ```
 client_id: "your-client-name"
@@ -117,9 +118,8 @@ response_types: "code"
 grant_types: "authorization_code"
 ```
 
-Which would be followed by filling out the Create OIDC Client form like this:
 <p align="center">
-  <img src="./docs/oidc_client.png" width="200">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/oidc_client.png" width="200">
 </p>
 
 ### ProxyAuth
