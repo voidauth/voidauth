@@ -73,7 +73,7 @@ jobs:
         uses: peter-evans/dockerhub-description@v4
         with:
           username: voidauth
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.DOCKER_IMAGE_NAME }}
           short-description: ${{ github.event.repository.description }}
           enable-url-completion: true
