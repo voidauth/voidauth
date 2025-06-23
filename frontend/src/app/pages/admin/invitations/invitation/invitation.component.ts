@@ -86,7 +86,7 @@ export class InvitationComponent {
         if (id) {
           this.id = id
           const invitation = await this.adminService.invitation(this.id)
-          this.formSet(invitation)
+          await this.formSet(invitation)
         }
 
         this.groups = (await this.adminService.groups()).map(g => g.name)
@@ -104,7 +104,7 @@ export class InvitationComponent {
     })
   }
 
-  formSet(invitation: InvitationDetails) {
+  async formSet(invitation: InvitationDetails) {
     this.form.reset({
       username: invitation.username ?? null,
       name: invitation.name ?? null,
@@ -113,7 +113,10 @@ export class InvitationComponent {
       emailVerified: true,
     })
     this.inviteEmail = invitation.email
-    this.inviteLink = this.adminService.getInviteLink(invitation.id, invitation.challenge)
+    if (!this.config) {
+      this.config = await this.configService.getConfig()
+    }
+    this.inviteLink = this.adminService.getInviteLink(this.config.domain, invitation.id, invitation.challenge)
   }
 
   groupAutoFilter(value: string = "") {
@@ -186,7 +189,7 @@ export class InvitationComponent {
       this.snackbarService.show(`Invitation ${this.id ? "updated" : "created"}.`)
 
       this.id = invitation.id
-      this.formSet(invitation)
+      await this.formSet(invitation)
       await this.router.navigate(["/admin/invitation", this.id], {
         replaceUrl: true,
       })

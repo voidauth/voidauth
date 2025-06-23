@@ -64,10 +64,12 @@ export class UpsertClientComponent implements OnInit {
     logo_uri: new FormControl<string | null>(null, [isValidURL]),
   })
 
+  pwdShow = false
+
   private adminService = inject(AdminService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
-  private snackbarService = inject(SnackbarService)
+  snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
 
   ngOnInit() {

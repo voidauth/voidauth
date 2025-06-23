@@ -26,14 +26,14 @@ export class AdminService {
   private configService = inject(ConfigService)
   private http = inject(HttpClient)
 
-  getInviteLink(id: string, challenge: string) {
+  getInviteLink(domain: string, id: string, challenge: string) {
     const query = `invite=${id}&challenge=${challenge}`
-    return `${this.configService.getCurrentHost()}/${REDIRECT_PATHS.INVITE}?${query}`
+    return `${domain}/${REDIRECT_PATHS.INVITE}?${query}`
   }
 
-  getPasswordResetLink(id: string, challenge: string) {
+  getPasswordResetLink(domain: string, id: string, challenge: string) {
     const query = `id=${id}&challenge=${challenge}`
-    return `${this.configService.getCurrentHost()}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`
+    return `${domain}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`
   }
 
   async clients() {

@@ -13,9 +13,31 @@
 
       <mat-form-field>
         <mat-label>Client Secret</mat-label>
-        <input matInput type="text" formControlName="client_secret" />
-        <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="generateSecret()">
+        <input #secret matInput [type]="pwdShow ? 'text' : 'password'" formControlName="client_secret" />
+        <button
+          class="field-suffix"
+          type="button"
+          [disabled]="!!secret.value"
+          mat-icon-button
+          matSuffix
+          (click)="$event.stopPropagation(); generateSecret()"
+        >
           <mat-icon fontSet="material-icons-round" matSuffix>autorenew</mat-icon>
+        </button>
+        <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="$event.stopPropagation(); pwdShow = !pwdShow">
+          <mat-icon fontSet="material-icons-round" matSuffix>{{ pwdShow ? "visibility" : "visibility_off" }}</mat-icon>
+        </button>
+        <button
+          class="field-suffix"
+          type="button"
+          mat-icon-button
+          matSuffix
+          matTooltip="Copy Secret"
+          [disabled]="!secret.value"
+          [cdkCopyToClipboard]="secret.value || ''"
+          (click)="snackbarService.show('Secret copied to clipboard.')"
+        >
+          <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
         </button>
         @if (form.controls.client_secret.errors) {
           <mat-error>{{ form.controls.client_secret.errors | validationError }}</mat-error>
