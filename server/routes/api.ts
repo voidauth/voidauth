@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express"
 import { router as interactionRouter } from "./interaction"
 import { provider } from "../oidc/provider"
-import { db } from "../db/db"
+import { commit, createTransaction, db } from "../db/db"
 import { getUserById, getUserByInput } from "../db/user"
 import { userRouter } from "./user"
 import type { Group, UserGroup } from "@shared/db/Group"
@@ -32,6 +32,17 @@ router.use((_req, _res, next) => {
   als.run({}, () => {
     next()
   })
+})
+
+// If method is post-put-patch-delete then use transaction
+router.use(async (req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method.toUpperCase())) {
+    await createTransaction()
+    res.on("finish", async () => {
+      await commit()
+    })
+  }
+  next()
 })
 
 // proxy auth cache

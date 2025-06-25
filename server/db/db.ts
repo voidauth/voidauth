@@ -45,7 +45,9 @@ export async function createTransaction() {
   if (!store) {
     throw new Error("Cannot create transaction outside of async context.")
   }
-  store.transaction = await _db.transaction()
+  if (!store.transaction) {
+    store.transaction = await _db.transaction()
+  }
 }
 
 export async function commit() {

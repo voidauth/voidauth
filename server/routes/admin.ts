@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express"
 import { validate, type TypedSchema } from "../util/validate"
-import { commit, createTransaction, db, rollback } from "../db/db"
+import { db } from "../db/db"
 import { matchedData } from "express-validator"
 import { isOIDCProviderError, provider } from "../oidc/provider"
 import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
@@ -370,44 +370,37 @@ adminRouter.patch("/user",
     "groups.*": stringValidation,
   }),
   async (req: Request, res: Response) => {
-    await createTransaction()
-    try {
-      const userUpdate = matchedData<UserUpdate>(req, { includeOptionals: true })
+    const userUpdate = matchedData<UserUpdate>(req, { includeOptionals: true })
 
-      const { groups: _, ...user } = userUpdate
-      const ucount = await db().table<User>("user").update(user).where({ id: userUpdate.id })
-      const groups: Group[] = await db().select().table<Group>("group").whereIn("name", userUpdate.groups)
-      const userGroups: UserGroup[] = groups.map((g) => {
-        return {
-          groupId: g.id,
-          userId: userUpdate.id,
-          createdBy: req.user.id,
-          updatedBy: req.user.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
-
-      if (userGroups[0]) {
-        await db().table<UserGroup>("user_group").insert(userGroups)
-          .onConflict(["groupId", "userId"]).merge(mergeKeys(userGroups[0]))
+    const { groups: _, ...user } = userUpdate
+    const ucount = await db().table<User>("user").update(user).where({ id: userUpdate.id })
+    const groups: Group[] = await db().select().table<Group>("group").whereIn("name", userUpdate.groups)
+    const userGroups: UserGroup[] = groups.map((g) => {
+      return {
+        groupId: g.id,
+        userId: userUpdate.id,
+        createdBy: req.user.id,
+        updatedBy: req.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
+    })
 
-      await db().table<UserGroup>("user_group").delete()
-        .where({ userId: userUpdate.id }).and
-        .whereNotIn("groupId", userGroups.map(g => g.groupId))
-
-      if (!ucount) {
-        res.sendStatus(404)
-        return
-      }
-
-      await commit()
-      res.send()
-    } catch (e) {
-      await rollback()
-      throw e
+    if (userGroups[0]) {
+      await db().table<UserGroup>("user_group").insert(userGroups)
+        .onConflict(["groupId", "userId"]).merge(mergeKeys(userGroups[0]))
     }
+
+    await db().table<UserGroup>("user_group").delete()
+      .where({ userId: userUpdate.id }).and
+      .whereNotIn("groupId", userGroups.map(g => g.groupId))
+
+    if (!ucount) {
+      res.sendStatus(404)
+      return
+    }
+
+    res.send()
   },
 )
 
@@ -625,67 +618,60 @@ adminRouter.post("/invitation",
     "groups.*": stringValidation,
   }),
   async (req: Request, res: Response) => {
-    await createTransaction()
-    try {
-      const invitationUpsert = matchedData<InvitationUpsert>(req, { includeOptionals: true })
-      const { groups: groupNames, ...invitationData } = invitationUpsert
+    const invitationUpsert = matchedData<InvitationUpsert>(req, { includeOptionals: true })
+    const { groups: groupNames, ...invitationData } = invitationUpsert
 
-      const id = invitationData.id ?? randomUUID()
+    const id = invitationData.id ?? randomUUID()
 
-      if (invitationData.id) {
-        // update
-        await db().table<Invitation>("invitation").update({
-          ...invitationData,
-          createdBy: req.user.id,
-          updatedBy: req.user.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }).where({ id: invitationData.id })
-      } else {
-        // insert
-        await db().table<Invitation>("invitation").insert({
-          ...invitationData,
-          id,
-          challenge: generate({
-            length: 32,
-            numbers: true,
-          }),
-          createdBy: req.user.id,
-          updatedBy: req.user.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          expiresAt: createExpiration(TTLs.INVITATION),
-        })
-      }
-
-      const groups: Group[] = await db().select().table<Group>("group").whereIn("name", groupNames)
-      const invitationGroups: InvitationGroup[] = groups.map((g) => {
-        return {
-          groupId: g.id,
-          invitationId: id,
-          createdBy: req.user.id,
-          updatedBy: req.user.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
+    if (invitationData.id) {
+      // update
+      await db().table<Invitation>("invitation").update({
+        ...invitationData,
+        createdBy: req.user.id,
+        updatedBy: req.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).where({ id: invitationData.id })
+    } else {
+      // insert
+      await db().table<Invitation>("invitation").insert({
+        ...invitationData,
+        id,
+        challenge: generate({
+          length: 32,
+          numbers: true,
+        }),
+        createdBy: req.user.id,
+        updatedBy: req.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        expiresAt: createExpiration(TTLs.INVITATION),
       })
-
-      if (invitationGroups[0]) {
-        await db().table<InvitationGroup>("invitation_group").insert(invitationGroups)
-          .onConflict(["groupId", "invitationId"]).merge(mergeKeys(invitationGroups[0]))
-      }
-
-      await db().table<InvitationGroup>("invitation_group").delete()
-        .where({ invitationId: id }).and
-        .whereNotIn("groupId", invitationGroups.map(g => g.groupId))
-
-      const invitation = await getInvitation(id)
-      await commit()
-      res.send(invitation)
-    } catch (e) {
-      await rollback()
-      throw e
     }
+
+    const groups: Group[] = await db().select().table<Group>("group").whereIn("name", groupNames)
+    const invitationGroups: InvitationGroup[] = groups.map((g) => {
+      return {
+        groupId: g.id,
+        invitationId: id,
+        createdBy: req.user.id,
+        updatedBy: req.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+
+    if (invitationGroups[0]) {
+      await db().table<InvitationGroup>("invitation_group").insert(invitationGroups)
+        .onConflict(["groupId", "invitationId"]).merge(mergeKeys(invitationGroups[0]))
+    }
+
+    await db().table<InvitationGroup>("invitation_group").delete()
+      .where({ invitationId: id }).and
+      .whereNotIn("groupId", invitationGroups.map(g => g.groupId))
+
+    const invitation = await getInvitation(id)
+    res.send(invitation)
   },
 )
 
@@ -751,35 +737,28 @@ adminRouter.post("/passwordReset",
     userId: uuidValidation,
   }),
   async (req: Request, res: Response) => {
-    await createTransaction()
-    try {
-      const { userId } = matchedData<PasswordResetCreate>(req, { includeOptionals: true })
-      const user = await getUserById(userId)
+    const { userId } = matchedData<PasswordResetCreate>(req, { includeOptionals: true })
+    const user = await getUserById(userId)
 
-      if (!user) {
-        res.sendStatus(404)
-        return
-      }
-
-      const passwordReset: PasswordReset = {
-        id: randomUUID(),
-        userId: user.id,
-        challenge: generate({
-          length: 32,
-          numbers: true,
-        }),
-        createdAt: new Date(),
-        expiresAt: createExpiration(TTLs.PASSWORD_RESET),
-      }
-      await db().table<PasswordReset>("password_reset").insert(passwordReset)
-      await commit()
-
-      const result: PasswordResetUser = { ...passwordReset, username: user.username, email: user.email }
-      res.send(result)
-    } catch (e) {
-      await rollback()
-      throw e
+    if (!user) {
+      res.sendStatus(404)
+      return
     }
+
+    const passwordReset: PasswordReset = {
+      id: randomUUID(),
+      userId: user.id,
+      challenge: generate({
+        length: 32,
+        numbers: true,
+      }),
+      createdAt: new Date(),
+      expiresAt: createExpiration(TTLs.PASSWORD_RESET),
+    }
+    await db().table<PasswordReset>("password_reset").insert(passwordReset)
+
+    const result: PasswordResetUser = { ...passwordReset, username: user.username, email: user.email }
+    res.send(result)
   },
 )
 

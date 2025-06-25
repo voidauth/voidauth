@@ -12,7 +12,7 @@ import { sendEmailVerification } from "../util/email"
 import { generate } from "generate-password"
 import type { EmailVerification } from "@shared/db/EmailVerification"
 import type { User } from "@shared/db/User"
-import { commit, createTransaction, db, rollback } from "../db/db"
+import { db } from "../db/db"
 import type { RegisterUser } from "@shared/api-request/RegisterUser"
 import * as argon2 from "argon2"
 import { randomUUID } from "crypto"
@@ -264,96 +264,88 @@ router.post("/register",
     },
   }),
   async (req: Request, res: Response) => {
-    await createTransaction()
-    try {
-      const registration = matchedData<RegisterUser>(req, { includeOptionals: true })
+    const registration = matchedData<RegisterUser>(req, { includeOptionals: true })
 
-      if (!await getInteractionDetails(req, res)) {
-        const action = registration.inviteId ? "Invite" : "Registration"
-        res.status(400).send({
-          message: `${action} page too old, refresh the page.`,
-        })
-        return
-      }
-
-      const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
-      const invitationValid = invitation && invitation.challenge === registration.challenge
-
-      if (!invitationValid && !appConfig.SIGNUP) {
-        res.sendStatus(400)
-        return
-      }
-
-      const passwordHash = await argon2.hash(registration.password)
-
-      const id = randomUUID()
-      const user: User = {
-        id: id,
-        username: invitation?.username || registration.username,
-        name: invitation?.name || registration.name,
-        email: invitation?.email || registration.email,
-        passwordHash,
-        approved: !!invitationValid, // invited users are approved by default
-        emailVerified: !!(invitation?.email || registration.email) && invitation?.emailVerified,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-
-      // check username and email not taken
-      const conflictingUser = await getUserByInput(user.username)
-        || (user.email && await getUserByInput(user.email))
-
-      if (conflictingUser) {
-        const message = conflictingUser.username === user.username
-          || conflictingUser.email === user.username
-          ? "Username taken."
-          : "Email taken."
-        res.status(409).send({ message: message })
-        return
-      }
-
-      // insert user into table
-      await db().table<User>("user").insert(user)
-
-      if (invitationValid) {
-        const inviteGroups = await db().select().table<InvitationGroup>("invitation_group")
-          .where({ invitationId: invitation.id })
-        const userGroups: UserGroup[] = inviteGroups.map((g) => {
-          return {
-            groupId: g.groupId,
-            userId: user.id,
-            createdBy: g.createdBy,
-            updatedBy: g.updatedBy,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }
-        })
-        await db().table<UserGroup>("user_group").insert(userGroups)
-        await db().table<Invitation>("invitation").delete().where({ id: invitation.id })
-      }
-
-      const { passwordHash: _passwordHash, ...userWithoutPassword } = user
-
-      const loginRedirect = await canUserLogin(userWithoutPassword)
-
-      await commit()
-
-      // See where we need to redirect the user to, depending on config
-      const redirect: Redirect = loginRedirect || {
-        location: await provider.interactionResult(req, res, {
-          login: {
-            accountId: user.id,
-            remember: false, // non-password logins are never remembered
-            amr: [],
-          },
-        }, { mergeWithLastSubmission: true }),
-      }
-
-      res.send(redirect)
-    } catch (e) {
-      await rollback()
-      throw e
+    if (!await getInteractionDetails(req, res)) {
+      const action = registration.inviteId ? "Invite" : "Registration"
+      res.status(400).send({
+        message: `${action} page too old, refresh the page.`,
+      })
+      return
     }
+
+    const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
+    const invitationValid = invitation && invitation.challenge === registration.challenge
+
+    if (!invitationValid && !appConfig.SIGNUP) {
+      res.sendStatus(400)
+      return
+    }
+
+    const passwordHash = await argon2.hash(registration.password)
+
+    const id = randomUUID()
+    const user: User = {
+      id: id,
+      username: invitation?.username || registration.username,
+      name: invitation?.name || registration.name,
+      email: invitation?.email || registration.email,
+      passwordHash,
+      approved: !!invitationValid, // invited users are approved by default
+      emailVerified: !!(invitation?.email || registration.email) && invitation?.emailVerified,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    // check username and email not taken
+    const conflictingUser = await getUserByInput(user.username)
+      || (user.email && await getUserByInput(user.email))
+
+    if (conflictingUser) {
+      const message = conflictingUser.username === user.username
+        || conflictingUser.email === user.username
+        ? "Username taken."
+        : "Email taken."
+      res.status(409).send({ message: message })
+      return
+    }
+
+    // insert user into table
+    await db().table<User>("user").insert(user)
+
+    if (invitationValid) {
+      const inviteGroups = await db().select().table<InvitationGroup>("invitation_group")
+        .where({ invitationId: invitation.id })
+      const userGroups: UserGroup[] = inviteGroups.map((g) => {
+        return {
+          groupId: g.groupId,
+          userId: user.id,
+          createdBy: g.createdBy,
+          updatedBy: g.updatedBy,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
+      await db().table<UserGroup>("user_group").insert(userGroups)
+      await db().table<Invitation>("invitation").delete().where({ id: invitation.id })
+    }
+
+    const { passwordHash: _passwordHash, ...userWithoutPassword } = user
+
+    const loginRedirect = await canUserLogin(userWithoutPassword)
+
+    // See where we need to redirect the user to, depending on config
+    const redirect: Redirect = loginRedirect || {
+      location: await provider.interactionResult(req, res, {
+        login: {
+          accountId: user.id,
+          remember: false, // non-password logins are never remembered
+          amr: [],
+        },
+      }, { mergeWithLastSubmission: true }),
+    }
+
+    res.send(redirect)
   },
 )
 
