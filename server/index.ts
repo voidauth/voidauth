@@ -102,9 +102,10 @@ app.use((_req, res) => {
 })
 
 // Last chance error handler
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use(async (err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err)
   res.sendStatus(500)
+  await rollback()
 })
 
 app.listen(appConfig.APP_PORT, () => {

@@ -7,7 +7,7 @@ import { validate } from "../util/validate"
 import { newPasswordValidation, stringValidation, uuidValidation } from "../util/validators"
 import { matchedData } from "express-validator"
 import { getUserById, getUserByInput } from "../db/user"
-import { commit, createTransaction, db, rollback } from "../db/db"
+import { db } from "../db/db"
 import { createExpiration } from "../db/util"
 import { TTLs } from "@shared/constants"
 import type { SendPasswordResetResponse } from "@shared/api-response/SendPasswordResetResponse"
@@ -90,15 +90,8 @@ publicRouter.post("/reset_password",
       return
     }
 
-    await createTransaction()
-    try {
-      await db().table<User>("user").update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
-      await db().table<PasswordReset>("password_reset").delete().where({ id: passwordReset.id })
-      await commit()
-      res.send()
-    } catch (e) {
-      await rollback()
-      throw e
-    }
+    await db().table<User>("user").update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
+    await db().table<PasswordReset>("password_reset").delete().where({ id: passwordReset.id })
+    res.send()
   },
 )
