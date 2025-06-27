@@ -137,8 +137,8 @@ You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains
 
 | Item               | Status |
 | -------------------| ------ |
-| Passkey Support    |        |
-| Integration Guides |        |
+| Passkey Support    | In Progress |
+| Docs |        |
 
 ## Disclaimer
 

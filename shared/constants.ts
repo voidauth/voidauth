@@ -33,13 +33,15 @@ export const TTLs = {
   PASSWORD_RESET: 2 * HOUR,
   INVITATION: 1 * WEEK,
   CONSENT: 1 * YEAR,
+  PASSKEY_REGISTRATION: 10 * MINUTE,
+  PASSKEY_AUTHN: 5 * MINUTE,
 
   // OIDC TTLs
   INTERACTION: 1 * HOUR,
   SESSION: 1 * YEAR,
   GRANT: 1 * YEAR,
 
-  // Should be longer than any OIDC TTLs
+  // Should be longer than or equal to any OIDC TTLs
   OIDC_JWK: 1 * YEAR,
   COOKIE_KEY: 1 * YEAR,
 } as const

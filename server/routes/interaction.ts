@@ -31,6 +31,9 @@ import type { Consent } from "@shared/db/Consent"
 import { type OIDCExtraParams, oidcLoginPath } from "@shared/oidc"
 import { getClient } from "../db/client"
 import type { InvitationGroup, UserGroup } from "@shared/db/Group"
+import { generateAuthenticationOptions, verifyAuthenticationResponse, type AuthenticationResponseJSON } from "@simplewebauthn/server"
+import { getAuthenticationOptions, getPasskey, saveAuthenticationOptions, updatePasskeyCounter } from "../db/passkey"
+import { rpID, rpOrigin } from "./passkey"
 
 export const router = Router()
 
@@ -182,6 +185,151 @@ router.post("/login",
           accountId: user.id,
           remember: remember,
           amr: ["pwd"],
+        },
+      },
+      { mergeWithLastSubmission: true }),
+    }
+
+    res.send(redir)
+  },
+)
+
+router.get("/passkey",
+  async (req: Request, res: Response) => {
+    const interaction = await getInteractionDetails(req, res)
+    if (!interaction) {
+      res.status(400).send({
+        message: "Login page too old, refresh the page.",
+      })
+      return
+    }
+    const { prompt: { name } } = interaction
+
+    if (name !== "login") {
+      res.sendStatus(400)
+      return
+    }
+
+    const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
+      rpID,
+      allowCredentials: [],
+    })
+
+    // (Pseudocode) Remember this challenge for this user
+    await saveAuthenticationOptions(interaction.uid, options)
+
+    res.send(options)
+    return
+  },
+)
+
+router.post("/passkey",
+  ...validate<AuthenticationResponseJSON>({
+    id: stringValidation,
+    rawId: stringValidation,
+    "response.clientDataJSON": stringValidation,
+    "response.authenticatorData": stringValidation,
+    "response.signature": stringValidation,
+    "response.userHandle": {
+      optional: true,
+      ...stringValidation,
+    },
+    authenticatorAttachment: {
+      optional: true,
+      ...stringValidation,
+    },
+    "clientExtensionResults.appid": {
+      optional: true,
+      isBoolean: true,
+    },
+    "clientExtensionResults.credProps.rk": {
+      optional: true,
+      isBoolean: true,
+    },
+    "clientExtensionResults.hmacCreateSecret": {
+      optional: true,
+      isBoolean: true,
+    },
+    type: stringValidation,
+  }),
+  async (req: Request, res: Response) => {
+    const interaction = await getInteractionDetails(req, res)
+    if (!interaction) {
+      res.status(400).send({
+        message: "Login page too old, refresh the page.",
+      })
+      return
+    }
+    const { prompt: { name } } = interaction
+
+    const body = matchedData<AuthenticationResponseJSON>(req, { includeOptionals: true })
+
+    if (name !== "login") {
+      res.sendStatus(400)
+      return
+    }
+
+    const authOptions = await getAuthenticationOptions(interaction.uid)
+
+    if (!authOptions) {
+      res.sendStatus(404)
+      return
+    }
+
+    const currentOptions = JSON.parse(authOptions.value) as PublicKeyCredentialRequestOptionsJSON
+
+    const passkey = await getPasskey(body.id)
+
+    if (!passkey) {
+      res.sendStatus(404)
+      return
+    }
+
+    let verification
+    try {
+      verification = await verifyAuthenticationResponse({
+        response: body,
+        expectedChallenge: currentOptions.challenge,
+        expectedOrigin: rpOrigin,
+        expectedRPID: rpID,
+        requireUserVerification: false,
+        credential: {
+          id: passkey.id,
+          publicKey: passkey.publicKey,
+          counter: passkey.counter,
+          transports: passkey.transports,
+        },
+      })
+    } catch (_error) {
+      res.sendStatus(401)
+      return
+    }
+
+    const { verified, authenticationInfo } = verification
+    if (!verified) {
+      res.sendStatus(400)
+      return
+    }
+
+    await updatePasskeyCounter(passkey.id, authenticationInfo.newCounter)
+
+    const user = await getUserById(passkey.userId)
+
+    // check user
+    if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    const { passwordHash, ...userWithoutPassword } = user
+
+    // check if email verification needed, if not log in
+    const redir = await canUserLogin(userWithoutPassword) || {
+      location: await provider.interactionResult(req, res, {
+        login: {
+          accountId: user.id,
+          remember: false,
+          amr: ["webauthn"],
         },
       },
       { mergeWithLastSubmission: true }),
