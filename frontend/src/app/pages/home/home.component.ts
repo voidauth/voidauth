@@ -4,7 +4,6 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angula
 import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
 import { SnackbarService } from "../../services/snackbar.service"
 import { UserService } from "../../services/user.service"
-import { USERNAME_REGEX } from "@shared/constants"
 import type { CurrentUserDetails } from "@shared/api-response/UserDetails"
 import { ConfigService } from "../../services/config.service"
 import { PasswordSetComponent } from "../../components/password-reset/password-set.component"
@@ -29,10 +28,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   public isPasskeySession: boolean = false
 
   public profileForm = new FormGroup({
-    username: new FormControl<string>({
-      value: "",
-      disabled: false,
-    }, [Validators.required, Validators.minLength(4), Validators.pattern(USERNAME_REGEX)]),
     name: new FormControl<string>({
       value: "",
       disabled: false,
@@ -99,7 +94,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.isPasskeySession = this.userService.passkeySession(this.user)
 
       this.profileForm.reset({
-        username: this.user.username,
         name: this.user.name ?? "",
       })
       this.emailForm.reset({
@@ -114,12 +108,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   async updateProfile() {
     try {
       this.spinnerService.show()
-      if (!this.profileForm.value.username) {
-        throw new Error("Username is required.")
-      }
 
       await this.userService.updateProfile({
-        username: this.profileForm.value.username,
         name: this.profileForm.value.name ?? undefined,
       })
       this.snackbarService.show("Profile updated.")

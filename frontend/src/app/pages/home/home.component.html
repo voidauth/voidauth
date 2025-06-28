@@ -8,10 +8,7 @@
     <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
       <mat-form-field>
         <mat-label>Username</mat-label>
-        <input matInput type="text" formControlName="username" />
-        @if (profileForm.controls.username.errors) {
-          <mat-error>{{ profileForm.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" }}</mat-error>
-        }
+        <input matInput type="text" [value]="user?.username ?? ''" readonly disabled />
       </mat-form-field>
 
       <mat-form-field>

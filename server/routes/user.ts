@@ -8,10 +8,7 @@ import type { UpdateEmail } from "@shared/api-request/UpdateEmail"
 import appConfig from "../util/config"
 import { createEmailVerification } from "./interaction"
 import type { UpdatePassword } from "@shared/api-request/UpdatePassword"
-import { checkLoggedIn, emailValidation, nameValidation,
-  newPasswordValidation,
-  stringValidation, usernameValidation } from "../util/validators"
-import { getUserByInput } from "../db/user"
+import { checkLoggedIn, emailValidation, nameValidation, newPasswordValidation, stringValidation } from "../util/validators"
 import type { User } from "@shared/db/User"
 
 export const userRouter = Router()
@@ -26,19 +23,11 @@ userRouter.get("/me",
 
 userRouter.patch("/profile",
   ...validate<UpdateProfile>({
-    username: usernameValidation,
     name: nameValidation,
   }),
   async (req: Request, res: Response) => {
     const user = req.user
     const profile = matchedData<UpdateProfile>(req, { includeOptionals: true })
-
-    // check username
-    const conflictingUser = await getUserByInput(profile.username)
-    if (conflictingUser && conflictingUser.id !== user.id) {
-      res.status(409).send({ message: "Username taken." })
-      return
-    }
 
     await db().table<User>("user").update(profile).where({ id: user.id })
 
