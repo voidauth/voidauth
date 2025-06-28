@@ -7,3 +7,8 @@ export type UserWithoutPassword = RemoveKeys<User, "passwordHash">
 export type UserDetails = UserWithoutPassword & {
   groups: Group["name"][]
 }
+
+// UserDetails and info about current session
+export type CurrentUserDetails = UserDetails & {
+  amr?: string[]
+}

@@ -1,14 +1,16 @@
-import { Component, inject, type OnInit } from "@angular/core"
+import { Component, inject, type OnDestroy, type OnInit } from "@angular/core"
 import { MaterialModule } from "../../material-module"
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
 import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
 import { SnackbarService } from "../../services/snackbar.service"
 import { UserService } from "../../services/user.service"
-import { USERNAME_REGEX } from "@shared/constants"
-import type { UserDetails } from "@shared/api-response/UserDetails"
+import type { CurrentUserDetails } from "@shared/api-response/UserDetails"
 import { ConfigService } from "../../services/config.service"
 import { PasswordSetComponent } from "../../components/password-reset/password-set.component"
 import { SpinnerService } from "../../services/spinner.service"
+import { PasskeyService, type PasskeySupport } from "../../services/passkey.service"
+import { startRegistration, WebAuthnAbortService, WebAuthnError } from "@simplewebauthn/browser"
+import { ActivatedRoute, Router } from "@angular/router"
 
 @Component({
   selector: "app-home",
@@ -21,16 +23,12 @@ import { SpinnerService } from "../../services/spinner.service"
   templateUrl: "./home.component.html",
   styleUrl: "./home.component.scss",
 })
-export class HomeComponent implements OnInit {
-  user?: UserDetails
-  public message?: string
-  public error?: string
+export class HomeComponent implements OnInit, OnDestroy {
+  user?: CurrentUserDetails
+  public passkeySupport?: PasskeySupport
+  public isPasskeySession: boolean = false
 
   public profileForm = new FormGroup({
-    username: new FormControl<string>({
-      value: "",
-      disabled: false,
-    }, [Validators.required, Validators.minLength(4), Validators.pattern(USERNAME_REGEX)]),
     name: new FormControl<string>({
       value: "",
       disabled: false,
@@ -69,13 +67,39 @@ export class HomeComponent implements OnInit {
     },
   })
 
+  private route = inject(ActivatedRoute)
+  private router = inject(Router)
   private configService = inject(ConfigService)
   private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  passkeyService = inject(PasskeyService)
 
   async ngOnInit() {
     await this.loadUser()
+
+    this.passkeySupport = await this.passkeyService.getPasskeySupport()
+
+    this.route.queryParamMap.subscribe(async (queryParams) => {
+      if (queryParams.get("action") === "passkey") {
+        if (!this.isPasskeySession
+          && this.passkeySupport?.enabled
+          && !this.passkeyService.localPasskeySeen()) {
+          // should try to automatically register a passkey
+          await this.registerPasskey(true)
+        }
+        void this.router.navigate([], {
+          queryParams: {
+            action: null,
+          },
+          queryParamsHandling: "merge",
+        })
+      }
+    })
+  }
+
+  ngOnDestroy(): void {
+    WebAuthnAbortService.cancelCeremony()
   }
 
   async loadUser() {
@@ -83,8 +107,9 @@ export class HomeComponent implements OnInit {
       this.spinnerService.show()
       this.user = await this.userService.getMyUser()
 
+      this.isPasskeySession = this.userService.passkeySession(this.user)
+
       this.profileForm.reset({
-        username: this.user.username,
         name: this.user.name ?? "",
       })
       this.emailForm.reset({
@@ -99,12 +124,8 @@ export class HomeComponent implements OnInit {
   async updateProfile() {
     try {
       this.spinnerService.show()
-      if (!this.profileForm.value.username) {
-        throw new Error("Username is required.")
-      }
 
       await this.userService.updateProfile({
-        username: this.profileForm.value.username,
         name: this.profileForm.value.name ?? undefined,
       })
       this.snackbarService.show("Profile updated.")
@@ -158,6 +179,23 @@ export class HomeComponent implements OnInit {
     } finally {
       await this.loadUser()
       this.spinnerService.hide()
+    }
+  }
+
+  async registerPasskey(auto: boolean) {
+    try {
+      const optionsJSON = await this.passkeyService.getRegistrationOptions()
+      const registration = await startRegistration({ optionsJSON, useAutoRegister: auto })
+      await this.passkeyService.sendRegistration(registration)
+    } catch (error) {
+      if (!auto) {
+        if (error instanceof WebAuthnError && error.name === "InvalidStateError") {
+          this.snackbarService.error("Passkey already registered.")
+        } else {
+          this.snackbarService.error("Could not register passkey.")
+        }
+      }
+      console.error(error)
     }
   }
 }

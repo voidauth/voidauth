@@ -135,10 +135,9 @@ You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains
 
 ## Roadmap
 
-| Item               | Status |
-| -------------------| ------ |
-| Passkey Support    |        |
-| Integration Guides |        |
+| Item  | Status |
+| ----- | ------ |
+| Docs  |        |
 
 ## Disclaimer
 
@@ -146,7 +145,9 @@ I am not a security researcher or expert, just a developer unsatisfied with the 
 
 ## Credits
 
-[node-oidc-provider](https://github.com/panva/node-oidc-provider) The core library of VoidAuth, handles OIDC Provider functionality
+[node-oidc-provider](https://github.com/panva/node-oidc-provider) Handles VoidAuth OIDC Provider functionality
+
+[SimpleWebAuthn](https://github.com/MasterKale/SimpleWebAuthn) Used by VoidAuth for webauthn/passkey support
 
 [Angular](https://angular.dev) Frontend web framework used by VoidAuth
 

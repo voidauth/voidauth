@@ -1,7 +1,6 @@
-import { Component, inject, type OnInit } from "@angular/core"
+import { Component, inject, type OnDestroy, type OnInit } from "@angular/core"
 import { AuthService } from "../../services/auth.service"
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
-
 import { Router, RouterLink } from "@angular/router"
 import { MaterialModule } from "../../material-module"
 import { HttpErrorResponse } from "@angular/common/http"
@@ -12,6 +11,9 @@ import { ConfigService } from "../../services/config.service"
 import { UserService } from "../../services/user.service"
 import { oidcLoginPath } from "@shared/oidc"
 import { SpinnerService } from "../../services/spinner.service"
+import { PasskeyService, type PasskeySupport } from "../../services/passkey.service"
+import { startAuthentication, WebAuthnAbortService } from "@simplewebauthn/browser"
+import { TextDividerComponent } from "../../components/text-divider/text-divider.component"
 
 @Component({
   selector: "app-login",
@@ -22,9 +24,10 @@ import { SpinnerService } from "../../services/spinner.service"
     MaterialModule,
     ValidationErrorPipe,
     RouterLink,
+    TextDividerComponent,
   ],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   public config?: ConfigResponse
 
   public form = new FormGroup({
@@ -45,6 +48,7 @@ export class LoginComponent implements OnInit {
   })
 
   public pwdShow: boolean = false
+  public passkeySupport?: PasskeySupport
 
   private authService = inject(AuthService)
   private userService = inject(UserService)
@@ -52,6 +56,7 @@ export class LoginComponent implements OnInit {
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  passkeyService = inject(PasskeyService)
 
   async ngOnInit() {
     this.configService.getConfig().then(c => this.config = c).catch((e: unknown) => {
@@ -60,6 +65,8 @@ export class LoginComponent implements OnInit {
 
     try {
       this.spinnerService.show()
+
+      this.passkeySupport = await this.passkeyService.getPasskeySupport()
 
       try {
         await this.userService.getMyUser()
@@ -81,6 +88,10 @@ export class LoginComponent implements OnInit {
     } finally {
       this.spinnerService.hide()
     }
+  }
+
+  ngOnDestroy(): void {
+    WebAuthnAbortService.cancelCeremony()
   }
 
   async login() {
@@ -116,6 +127,20 @@ export class LoginComponent implements OnInit {
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
+    }
+  }
+
+  async passkeyLogin(auto: boolean) {
+    try {
+      const optionsJSON = await this.passkeyService.getAuthOptions()
+      const auth = await startAuthentication({ optionsJSON, useBrowserAutofill: auto })
+      const redirect = await this.passkeyService.sendAuth(auth)
+      window.location.assign(redirect.location)
+    } catch (error) {
+      if (!auto) {
+        this.snackbarService.error("Could not login with passkey.")
+      }
+      console.error(error)
     }
   }
 }

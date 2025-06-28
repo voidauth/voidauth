@@ -8,10 +8,7 @@
     <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
       <mat-form-field>
         <mat-label>Username</mat-label>
-        <input matInput type="text" formControlName="username" />
-        @if (profileForm.controls.username.errors) {
-          <mat-error>{{ profileForm.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" }}</mat-error>
-        }
+        <input matInput type="text" [value]="user?.username ?? ''" readonly disabled />
       </mat-form-field>
 
       <mat-form-field>
@@ -85,5 +82,26 @@
     </form>
   </mat-card-content>
 </mat-card>
+
+@if (!isPasskeySession && passkeySupport?.enabled) {
+  <mat-divider class="divider"></mat-divider>
+
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title> Device </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form>
+        <mat-card-actions>
+          <button mat-flat-button type="button" (click)="registerPasskey(false)">
+            {{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}
+            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+          </button>
+        </mat-card-actions>
+      </form>
+    </mat-card-content>
+  </mat-card>
+}
 
 <span style="flex-grow: 1"></span>

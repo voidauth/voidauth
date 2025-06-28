@@ -9,6 +9,7 @@ import type { OIDCPayload } from "@shared/db/OIDCPayload"
 import appConfig from "../util/config"
 import { decryptString, encryptString, getCookieKeys, getJWKs } from "./key"
 import type { ClientMetadata } from "oidc-provider"
+import type { PasskeyAuthentication, PasskeyRegistration } from "@shared/db/Passkey"
 
 /**
  *
@@ -39,6 +40,8 @@ export async function clearAllExpiredEntries() {
   await db().delete().table<PasswordReset>("password_reset").where("expiresAt", "<", new Date())
   await db().delete().table<Invitation>("invitation").where("expiresAt", "<", new Date())
   await db().delete().table<OIDCPayload>("oidc_payloads").where("expiresAt", "<", new Date())
+  await db().delete().table<PasskeyRegistration>("passkey_registration").where("expiresAt", "<", new Date())
+  await db().delete().table<PasskeyAuthentication>("passkey_authentication").where("expiresAt", "<", new Date())
 }
 
 export type EncryptedTable = {

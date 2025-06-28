@@ -26,7 +26,7 @@
       <app-new-password-input style="width: 100%" [password]="form.controls.password" [(pwdShow)]="pwdShow"></app-new-password-input>
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid" type="submit">Register</button>
+        <button mat-flat-button [disabled]="form.invalid" type="submit">Sign Up</button>
         @if (!invitation) {
           <a mat-button routerLink="/login">Login</a>
         }
