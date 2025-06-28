@@ -10,6 +10,7 @@ import { PasswordSetComponent } from "../../components/password-reset/password-s
 import { SpinnerService } from "../../services/spinner.service"
 import { PasskeyService, type PasskeySupport } from "../../services/passkey.service"
 import { startRegistration, WebAuthnAbortService, WebAuthnError } from "@simplewebauthn/browser"
+import { ActivatedRoute, Router } from "@angular/router"
 
 @Component({
   selector: "app-home",
@@ -66,6 +67,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   })
 
+  private route = inject(ActivatedRoute)
+  private router = inject(Router)
   private configService = inject(ConfigService)
   private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
@@ -77,9 +80,22 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.passkeySupport = await this.passkeyService.getPasskeySupport()
 
-    if (!this.isPasskeySession && this.passkeySupport.enabled && !this.passkeyService.localPasskeySeen()) {
-      await this.registerPasskey(true)
-    }
+    this.route.queryParamMap.subscribe(async (queryParams) => {
+      if (queryParams.get("action") === "passkey") {
+        if (!this.isPasskeySession
+          && this.passkeySupport?.enabled
+          && !this.passkeyService.localPasskeySeen()) {
+          // should try to automatically register a passkey
+          await this.registerPasskey(true)
+        }
+        void this.router.navigate([], {
+          queryParams: {
+            action: null,
+          },
+          queryParamsHandling: "merge",
+        })
+      }
+    })
   }
 
   ngOnDestroy(): void {

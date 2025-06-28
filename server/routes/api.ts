@@ -95,7 +95,7 @@ router.use(async (req: Request, res, next) => {
   next()
 })
 
-router.get("/cb", (req, res) => {
+router.get("/cb", async (req, res) => {
   const { error, error_description, iss } = req.query
   if (error) {
     res.status(500).send({
@@ -106,7 +106,15 @@ router.get("/cb", (req, res) => {
     return
   }
 
-  res.redirect("/")
+  // Get session info, see if passkey was used to sign in
+  let query = ""
+  const ctx = provider.createContext(req, res)
+  const session = await provider.Session.get(ctx)
+  if (!session.amr?.includes("webauthn")) {
+    query += "?action=passkey"
+  }
+
+  res.redirect(`/${query}`)
 })
 
 router.use("/public", publicRouter)
