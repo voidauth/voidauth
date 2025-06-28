@@ -14,7 +14,7 @@ class Config {
   SIGNUP_REQUIRES_APPROVAL = true
   EMAIL_VERIFICATION = false
 
-  APP_COLOR = "#8864c4"
+  APP_COLOR = "#906bc7"
 
   // Database config
   DB_PASSWORD?: string // checked for validity

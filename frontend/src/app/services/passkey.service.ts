@@ -36,7 +36,7 @@ export class PasskeyService {
       const { os } = UAParser(navigator.userAgent)
       if (os.name == "Windows") {
         name = "Windows Hello"
-        icon = "face"
+        icon = "sentiment_satisfied"
       } else if (os.name == "iOS") {
         name = "Face ID"
         icon = "face"
