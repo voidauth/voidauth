@@ -2,7 +2,7 @@
 <mat-card class="form-card">
   <mat-card-content>
     <form autocomplete="off" [action]="host + '/oidc/session/end/confirm'" method="post">
-      <p>Do you want to log out{{ host ? " of " + host : "" }}?</p>
+      <p>Do you want to log out?</p>
       <input type="hidden" name="xsrf" [value]="secret" />
       <mat-card-actions>
         <button mat-flat-button autofocus="" [disabled]="!secret" type="submit" value="yes" name="logout">Yes</button>

@@ -4,14 +4,14 @@
     <form [formGroup]="form" (ngSubmit)="login()">
       <mat-form-field>
         <mat-label>Email or Username</mat-label>
-        <input matInput type="text" formControlName="email" />
+        <input matInput type="text" formControlName="email" autocomplete="username webauthn" />
         @if (form.controls.email.errors) {
           <mat-error>{{ form.controls.email.errors | validationError }}</mat-error>
         }
       </mat-form-field>
       <mat-form-field style="padding-right: 4px">
         <mat-label>Password</mat-label>
-        <input matInput [type]="pwdShow ? 'text' : 'password'" formControlName="password" />
+        <input matInput [type]="pwdShow ? 'text' : 'password'" formControlName="password" autocomplete="current-password webauthn" />
         <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="pwdShow = !pwdShow">
           <mat-icon fontSet="material-icons-round" matSuffix>{{ pwdShow ? "visibility" : "visibility_off" }}</mat-icon>
         </button>
@@ -19,13 +19,23 @@
           <mat-error>{{ form.controls.password.errors | validationError }}</mat-error>
         }
       </mat-form-field>
-      <a routerLink="/forgot_password" mat-button type="button" style="margin-top: 0px">Forgot Password</a>
+      <a routerLink="/forgot_password" mat-button type="button" style="margin-top: -6px">Forgot Password</a>
       <mat-checkbox formControlName="rememberMe">Remember Me</mat-checkbox>
 
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid" type="submit">Login</button>
+
+        @if (passkeySupport?.enabled) {
+          <app-text-divider text="or" disabled style="margin-top: 16px"></app-text-divider>
+          <button mat-flat-button type="button" (click)="passkeyLogin(false)">
+            {{ passkeySupport?.platformName ?? "Passkey" }}
+            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+          </button>
+        }
+
         @if (config?.registration) {
-          <a routerLink="/register" mat-button type="button">Register</a>
+          <app-text-divider text="or" disabled style="margin-top: 16px"></app-text-divider>
+          <a routerLink="/register" mat-button type="button">Sign Up</a>
         }
       </mat-card-actions>
     </form>

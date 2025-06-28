@@ -20,7 +20,7 @@ export async function up(knex: Knex): Promise<void> {
     })
     .createTable("passkey_authentication", (table) => {
       table.uuid("id").primary().notNullable()
-      table.uuid("interactionId").unique().notNullable()
+      table.text("interactionId").unique().notNullable()
       table.text("value").notNullable() // encrypted
       table.timestamp("expiresAt", { useTz: true }).notNullable()
     })

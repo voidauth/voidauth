@@ -2,15 +2,15 @@ import { Router, type Request, type Response } from "express"
 import appConfig from "../util/config"
 import { checkLoggedIn, stringValidation } from "../util/validators"
 import { generateRegistrationOptions, verifyRegistrationResponse, type RegistrationResponseJSON } from "@simplewebauthn/server"
-import { getRegistrationOptions, getUserPasskeys, savePasskey } from "../db/passkey"
+import { getRegistrationOptions, getUserPasskeys, savePasskey, saveRegistrationOptions } from "../db/passkey"
 import { validate } from "../util/validate"
 import type { Passkey } from "@shared/db/Passkey"
 import { matchedData } from "express-validator"
 
 const rpName = appConfig.APP_TITLE
 const appURL = URL.parse(appConfig.APP_DOMAIN) as URL
-export const rpID = appURL.hostname
-export const rpOrigin = `${appURL.protocol}${appURL.host}`
+export const passkeyRpId = appURL.hostname
+export const passkeyRpOrigin = `${appURL.protocol}//${appURL.host}`
 
 export const passkeyRouter = Router()
 
@@ -24,8 +24,9 @@ passkeyRouter.get("/registration",
 
     const options = await generateRegistrationOptions({
       rpName,
-      rpID,
+      rpID: passkeyRpId,
       userName: user.username,
+      userDisplayName: user.username,
       // Don't prompt users for additional information about the authenticator
       // (Recommended for smoother UX)
       attestationType: "none",
@@ -45,6 +46,8 @@ passkeyRouter.get("/registration",
         authenticatorAttachment: "platform",
       },
     })
+
+    await saveRegistrationOptions(user.id, options)
 
     res.send(options)
   },
@@ -113,9 +116,10 @@ passkeyRouter.post("/registration",
       verification = await verifyRegistrationResponse({
         response: body,
         expectedChallenge: currentOptions.challenge,
-        expectedOrigin: rpOrigin,
-        expectedRPID: rpID,
+        expectedOrigin: passkeyRpOrigin,
+        expectedRPID: passkeyRpId,
         requireUserVerification: false,
+        requireUserPresence: false,
       })
     } catch (error) {
       console.error(error)

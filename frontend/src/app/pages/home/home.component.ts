@@ -1,14 +1,16 @@
-import { Component, inject, type OnInit } from "@angular/core"
+import { Component, inject, type OnDestroy, type OnInit } from "@angular/core"
 import { MaterialModule } from "../../material-module"
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
 import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
 import { SnackbarService } from "../../services/snackbar.service"
 import { UserService } from "../../services/user.service"
 import { USERNAME_REGEX } from "@shared/constants"
-import type { UserDetails } from "@shared/api-response/UserDetails"
+import type { CurrentUserDetails } from "@shared/api-response/UserDetails"
 import { ConfigService } from "../../services/config.service"
 import { PasswordSetComponent } from "../../components/password-reset/password-set.component"
 import { SpinnerService } from "../../services/spinner.service"
+import { PasskeyService, type PasskeySupport } from "../../services/passkey.service"
+import { startRegistration, WebAuthnAbortService, WebAuthnError } from "@simplewebauthn/browser"
 
 @Component({
   selector: "app-home",
@@ -21,10 +23,10 @@ import { SpinnerService } from "../../services/spinner.service"
   templateUrl: "./home.component.html",
   styleUrl: "./home.component.scss",
 })
-export class HomeComponent implements OnInit {
-  user?: UserDetails
-  public message?: string
-  public error?: string
+export class HomeComponent implements OnInit, OnDestroy {
+  user?: CurrentUserDetails
+  public passkeySupport?: PasskeySupport
+  public isPasskeySession: boolean = false
 
   public profileForm = new FormGroup({
     username: new FormControl<string>({
@@ -73,15 +75,28 @@ export class HomeComponent implements OnInit {
   private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  passkeyService = inject(PasskeyService)
 
   async ngOnInit() {
     await this.loadUser()
+
+    this.passkeySupport = await this.passkeyService.getPasskeySupport()
+
+    if (!this.isPasskeySession && this.passkeySupport.enabled && !this.passkeyService.localPasskeySeen()) {
+      await this.registerPasskey(true)
+    }
+  }
+
+  ngOnDestroy(): void {
+    WebAuthnAbortService.cancelCeremony()
   }
 
   async loadUser() {
     try {
       this.spinnerService.show()
       this.user = await this.userService.getMyUser()
+
+      this.isPasskeySession = this.userService.passkeySession(this.user)
 
       this.profileForm.reset({
         username: this.user.username,
@@ -158,6 +173,23 @@ export class HomeComponent implements OnInit {
     } finally {
       await this.loadUser()
       this.spinnerService.hide()
+    }
+  }
+
+  async registerPasskey(auto: boolean) {
+    try {
+      const optionsJSON = await this.passkeyService.getRegistrationOptions()
+      const registration = await startRegistration({ optionsJSON, useAutoRegister: auto })
+      await this.passkeyService.sendRegistration(registration)
+    } catch (error) {
+      if (!auto) {
+        if (error instanceof WebAuthnError && error.name === "InvalidStateError") {
+          this.snackbarService.error("Passkey already registered.")
+        } else {
+          this.snackbarService.error("Could not register passkey.")
+        }
+      }
+      console.error(error)
     }
   }
 }

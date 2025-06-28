@@ -33,7 +33,7 @@ import { getClient } from "../db/client"
 import type { InvitationGroup, UserGroup } from "@shared/db/Group"
 import { generateAuthenticationOptions, verifyAuthenticationResponse, type AuthenticationResponseJSON } from "@simplewebauthn/server"
 import { getAuthenticationOptions, getPasskey, saveAuthenticationOptions, updatePasskeyCounter } from "../db/passkey"
-import { rpID, rpOrigin } from "./passkey"
+import { passkeyRpId, passkeyRpOrigin } from "./passkey"
 
 export const router = Router()
 
@@ -211,7 +211,7 @@ router.get("/passkey",
     }
 
     const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
-      rpID,
+      rpID: passkeyRpId,
       allowCredentials: [],
     })
 
@@ -290,8 +290,8 @@ router.post("/passkey",
       verification = await verifyAuthenticationResponse({
         response: body,
         expectedChallenge: currentOptions.challenge,
-        expectedOrigin: rpOrigin,
-        expectedRPID: rpID,
+        expectedOrigin: passkeyRpOrigin,
+        expectedRPID: passkeyRpId,
         requireUserVerification: false,
         credential: {
           id: passkey.id,

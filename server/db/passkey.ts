@@ -56,5 +56,5 @@ export async function getAuthenticationOptions(interactionId: string) {
 }
 
 export async function updatePasskeyCounter(id: string, counter: number) {
-  return await db().table<Passkey>("user").update({ counter }).where({ id })
+  return await db().table<Passkey>("passkey").update({ counter }).where({ id })
 }

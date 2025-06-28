@@ -6,17 +6,18 @@ import { getUserById } from "../db/user"
 import { userRouter } from "./user"
 import type { Group, UserGroup } from "@shared/db/Group"
 import { adminRouter } from "./admin"
-import type { UserDetails } from "@shared/api-response/UserDetails"
+import type { CurrentUserDetails } from "@shared/api-response/UserDetails"
 import { authRouter } from "./auth"
 import { als } from "../util/als"
 import { publicRouter } from "./public"
 import { proxyAuth } from "../util/proxyAuth"
+import { passkeyRouter } from "./passkey"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user: UserDetails
+      user: CurrentUserDetails
     }
   }
 }
@@ -85,6 +86,7 @@ router.use(async (req: Request, res, next) => {
           .map((g) => {
             return g.name
           }),
+        amr: session.amr,
       }
     }
   } catch (_e) {
@@ -116,6 +118,8 @@ router.use("/interaction", interactionRouter)
 router.use("/user", userRouter)
 
 router.use("/admin", adminRouter)
+
+router.use("/passkey", passkeyRouter)
 
 // API route was not found
 router.use((_req, res) => {
