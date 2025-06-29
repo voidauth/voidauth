@@ -60,7 +60,7 @@ export class UpsertClientComponent implements OnInit {
     token_endpoint_auth_method: new FormControl<ClientUpsert["token_endpoint_auth_method"]>("client_secret_basic"),
     response_types: new FormControl<ResponseType[]>(["code"]),
     grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(["authorization_code", "refresh_token"]),
-    skip_consent: new FormControl<boolean>(false),
+    skip_consent: new FormControl<boolean>(true),
     logo_uri: new FormControl<string | null>(null, [isValidURL]),
   })
 
@@ -87,7 +87,7 @@ export class UpsertClientComponent implements OnInit {
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? "client_secret_basic",
             response_types: client.response_types ?? ["code"],
             grant_types: client.grant_types ?? ["authorization_code", "refresh_token"],
-            skip_consent: client["skip_consent"] ?? false,
+            skip_consent: client["skip_consent"] ?? true,
             logo_uri: client.logo_uri,
           })
 
@@ -140,7 +140,10 @@ export class UpsertClientComponent implements OnInit {
       }
 
       this.snackbarService.show(`Client ${this.client_id ? "updated" : "created"}.`)
-      this.client_id = this.form.value.client_id ?? null
+      this.client_id = this.form.getRawValue().client_id
+      if (!this.client_id) {
+        throw new Error()
+      }
       await this.router.navigate(["/admin/client", this.client_id], {
         replaceUrl: true,
       })
@@ -188,6 +191,9 @@ export class UpsertClientComponent implements OnInit {
   }
 
   addRedirectUrl(value: string) {
+    if (this.form.controls.redirect_uris.value?.includes(value)) {
+      return
+    }
     this.form.controls.redirect_uris.setValue([value].concat(this.form.controls.redirect_uris.value ?? []).sort())
     this.form.controls.redirect_uris.markAsDirty()
   }
