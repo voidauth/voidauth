@@ -112,12 +112,12 @@ const configuration: Configuration = {
     long: {
       httpOnly: true,
       sameSite: "lax",
-      secure: URL.parse(appConfig.APP_DOMAIN)?.protocol === "https:",
+      secure: URL.parse(appConfig.APP_URL)?.protocol === "https:",
     },
     short: {
       httpOnly: true,
       sameSite: "lax",
-      secure: URL.parse(appConfig.APP_DOMAIN)?.protocol === "https:",
+      secure: URL.parse(appConfig.APP_URL)?.protocol === "https:",
     },
   },
   jwks: initialJwks,
@@ -130,7 +130,7 @@ const configuration: Configuration = {
         numbers: true,
       }),
       // any redirect will work, injected custom redirect_uri validator below
-      redirect_uris: [appConfig.APP_DOMAIN],
+      redirect_uris: [appConfig.APP_URL],
       response_modes: ["query"],
       // not actually used for oidc, just for logging in for
       // profile management and proxy auth
@@ -185,7 +185,7 @@ const configuration: Configuration = {
   adapter: KnexAdapter,
 }
 
-export const provider = new Provider(`${appConfig.APP_DOMAIN}/oidc`, configuration)
+export const provider = new Provider(`${appConfig.APP_URL}/oidc`, configuration)
 
 // allow any redirect_uri when using client auth_internal_client
 // this client is not used for actual oidc, only profile or admin management, or proxy auth

@@ -78,7 +78,7 @@ export async function sendEmailVerification(user: UserWithoutPassword, challenge
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
     name: user.name || user.username,
-    verification_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.VERIFY_EMAIL}/${user.id}/${challenge}`,
+    verification_url: `${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFY_EMAIL}/${user.id}/${challenge}`,
   })
 
   if (!subject || (!html && !text)) {
@@ -112,7 +112,7 @@ export async function sendPasswordReset(passwordReset: PasswordReset, user: User
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
     name: user.name || user.username,
-    reset_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`,
+    reset_url: `${appConfig.APP_URL}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`,
   })
 
   if (!subject || (!html && !text)) {
@@ -146,7 +146,7 @@ export async function sendInvitation(invitation: Invitation, email: string) {
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
     name: invitation.name || invitation.username,
-    invitation_url: `${appConfig.APP_DOMAIN}/${REDIRECT_PATHS.INVITE}?${query}`,
+    invitation_url: `${appConfig.APP_URL}/${REDIRECT_PATHS.INVITE}?${query}`,
   })
 
   if (!subject || (!html && !text)) {

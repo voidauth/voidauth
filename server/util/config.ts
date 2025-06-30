@@ -7,7 +7,7 @@ process.env.NODE_ENV ??= "production"
 // basic config for app
 class Config {
   APP_TITLE = "VoidAuth"
-  APP_DOMAIN = ""
+  APP_URL = ""
   APP_PORT = 3000
 
   SIGNUP = false
@@ -114,9 +114,9 @@ configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
 })
 
-// check APP_DOMAIN is set
-if (!appConfig.APP_DOMAIN || !URL.parse(appConfig.APP_DOMAIN)) {
-  console.error("APP_DOMAIN must be set and be a valid URL, starting with http(s)://")
+// check APP_URL is set
+if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
+  console.error("APP_URL must be set and be a valid URL, starting with http(s)://")
   exit(1)
 }
 

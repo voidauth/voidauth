@@ -8,7 +8,7 @@ import type { Passkey } from "@shared/db/Passkey"
 import { matchedData } from "express-validator"
 
 const rpName = appConfig.APP_TITLE
-const appURL = URL.parse(appConfig.APP_DOMAIN) as URL
+const appURL = URL.parse(appConfig.APP_URL) as URL
 export const passkeyRpId = appURL.hostname
 export const passkeyRpOrigin = `${appURL.protocol}//${appURL.host}`
 
