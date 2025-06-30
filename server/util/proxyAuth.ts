@@ -30,7 +30,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     const accountId = session?.accountId
     user = accountId ? await getUserById(accountId) : undefined
     if (!user) {
-      res.redirect(`${appConfig.APP_DOMAIN}${oidcLoginPath(url.href)}`)
+      res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
       return
     }
   } else if (authorizationHeader) {
@@ -46,7 +46,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     }
   } else {
     // flow missing, go to login
-    res.redirect(`${appConfig.APP_DOMAIN}${oidcLoginPath(url.href)}`)
+    res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
     return
   }
 

@@ -9,7 +9,7 @@ services:
       - "./config:/app/config"
     environment:
       # Required environment variables, set in .env file
-      APP_DOMAIN: ${APP_DOMAIN} # required
+      APP_URL: ${APP_URL} # required
       DB_HOST: voidauth-db # required
       DB_PASSWORD: ${DB_PASSWORD} # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service
       STORAGE_KEY: ${STORAGE_KEY} # required
