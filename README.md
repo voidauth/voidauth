@@ -1,14 +1,20 @@
 # VoidAuth
 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/voidauth/voidauth/release.yml) ![GitHub Release](https://img.shields.io/github/v/release/voidauth/voidauth?logo=github)
+![Docker Image Version](https://img.shields.io/docker/v/voidauth/voidauth?sort=semver&logo=docker)
+
+
+
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/frontend/public/logo.png" width="150" title="VoidAuth" alt="VoidAuth logo">
 </p>
 
-VoidAuth is a Single Sign-On Provider that includes: User Management, Proxy Auth, and is an OIDC Provider. It is designed to make securing your applications and resources easy.
-
 <p align="center">
-Login Portal
-</P>
+The Single Sign-On Provider that makes securing your applications and resources easy.
+</p>
+<br>
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/login_portal.png" width="200">
 </p>
@@ -19,11 +25,11 @@ Login Portal
 * OIDC Provider
 * Proxy ForwardAuth Domains
 * Invitations
+* Passkey Support
 * Password Reset with Email Address Verification
 * Custom Branding and CSS
-* Password Strength Rule
 
-VoidAuth is accessed through an easy to use web interface, meant to make user sign-in and domain management simple. The web app also has a configurable app title, logo, and theme color so you can make your sign-in page match your brand.
+VoidAuth is accessed through an easy to use web interface that makes user sign-in and domain management simple. The web app also has a configurable app title, logo, and theme color so you can make your sign-in page match your brand.
 
 ## Getting Started
 
@@ -64,7 +70,7 @@ volumes:
 
 | Item  | Status |
 | ----- | ------ |
-| Docs  |        |
+| Docs  | In Progress... |
 
 ## Disclaimer
 
