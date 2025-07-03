@@ -54,6 +54,41 @@ app.use(express.json({ limit: '1Mb' }))
 
 app.use('/api', router)
 
+// branding folder static assets
+if (!fs.existsSync(path.join('./config', 'branding'))) {
+  fs.mkdirSync(path.join('./config', 'branding'), {
+    recursive: true,
+  })
+}
+fs.cpSync(path.join('./theme', 'custom.css'), path.join('./config', 'branding', 'custom.css'), {
+  force: false,
+})
+// override favicon and logo requests
+app.get(/\/(logo|favicon)\.(svg|png)/, (req, res, next) => {
+  const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
+  const filename = req.path.slice(1)
+  if (brandingFiles.includes(filename)) {
+    res.sendFile(path.join('./config', 'branding', filename), {
+      root: './',
+    })
+    return
+  }
+
+  const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
+  const isBrandingFavicon = brandingFiles.includes('favicon.svg') || brandingFiles.includes('favicon.png')
+  // custom branding exists, do not allow defaults to be used
+  // the default logos are svg, do not attempt to serve others
+  if (isBrandingFavicon || isBrandingLogo || filename.endsWith('png')) {
+    res.sendStatus(404)
+    return
+  }
+
+  next()
+})
+app.use(express.static(path.join('./config', 'branding'), {
+  fallthrough: true,
+}))
+
 // theme folder static assets
 if (!fs.existsSync('./theme')) {
   fs.mkdirSync('./theme', {
@@ -64,23 +99,9 @@ app.use(express.static('./theme', {
   fallthrough: true,
 }))
 
-// branding folder static assets
-if (!fs.existsSync(path.join('./config', 'branding'))) {
-  fs.mkdirSync(path.join('./config', 'branding'), {
-    recursive: true,
-  })
-}
-fs.cpSync(path.join('./theme', 'custom.css'), path.join('./config', 'branding', 'custom.css'), {
-  force: false,
-})
-app.use(express.static(path.join('./config', 'branding'), {
-  fallthrough: true,
-}))
-
 // override index.html return, inject app title
 app.get('/index.html', (_req, res) => {
-  const index = fs.readFileSync(path.join(FE_ROOT, './index.html'))
-    .toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
+  const index = modifyIndex()
   res.send(index)
 })
 
@@ -91,8 +112,7 @@ app.use(express.static(FE_ROOT, {
 
 // Unresolved GET requests should return frontend
 app.get(/(.*)/, (_req, res) => {
-  const index = fs.readFileSync(path.join(FE_ROOT, './index.html'))
-    .toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
+  const index = modifyIndex()
   res.send(index)
 })
 
@@ -111,6 +131,36 @@ app.use(async (err: Error, _req: Request, res: Response, _next: NextFunction) =>
 app.listen(appConfig.APP_PORT, () => {
   console.log(`Listening on port: ${String(appConfig.APP_PORT)}`)
 })
+
+function modifyIndex() {
+  // add APP_TITLE
+  let index = fs.readFileSync(path.join(FE_ROOT, './index.html')).toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
+
+  // dynamically replace favicon and logo depending on whats available in config/branding
+  const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
+
+  if (!brandingFiles.includes('favicon.svg')) {
+    if (brandingFiles.includes('favicon.png')) {
+      index = index.replaceAll('favicon.svg', 'favicon.png')
+    } else if (brandingFiles.includes('logo.svg')) {
+      index = index.replaceAll('favicon.svg', 'logo.svg')
+    } else if (brandingFiles.includes('logo.png')) {
+      index = index.replaceAll('favicon.svg', 'logo.png')
+    }
+  }
+
+  if (!brandingFiles.includes('logo.svg')) {
+    if (brandingFiles.includes('logo.png')) {
+      index = index.replaceAll('logo.svg', 'logo.png')
+    } else if (brandingFiles.includes('favicon.svg')) {
+      index = index.replaceAll('logo.svg', 'favicon.svg')
+    } else if (brandingFiles.includes('favicon.png')) {
+      index = index.replaceAll('logo.svg', 'favicon.png')
+    }
+  }
+
+  return index
+}
 
 // interval to delete expired db entries and keep keys up to date
 let previousJwks = initialJwks

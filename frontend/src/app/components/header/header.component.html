@@ -1,6 +1,18 @@
 <mat-toolbar>
   <a class="header-logo" routerLink="/">
-    <img src="logo.png" />
+    <img
+      #logo
+      src="logo.svg"
+      (error)="
+        logo.src.includes('logo.svg')
+          ? (logo.src = 'logo.png')
+          : logo.src.includes('logo.png')
+            ? (logo.src = 'favicon.svg')
+            : logo.src.includes('favicon.svg')
+              ? (logo.src = 'favicon.png')
+              : null
+      "
+    />
   </a>
 
   <span class="example-spacer"></span>
