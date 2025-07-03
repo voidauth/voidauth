@@ -1,4 +1,4 @@
-import type { Audit } from "./Audit"
+import type { Audit } from './Audit'
 
 export type ProxyAuth = Audit & {
   id: string

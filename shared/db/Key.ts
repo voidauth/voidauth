@@ -1,6 +1,6 @@
-import type { valueof } from "../utils"
-import { KEY_TYPES } from "../constants"
-import type { JWK } from "oidc-provider"
+import type { valueof } from '../utils'
+import { KEY_TYPES } from '../constants'
+import type { JWK } from 'oidc-provider'
 
 export type Key = {
   id: string
@@ -25,21 +25,21 @@ export function parseEncrypedData(data: string): EncryptedData | null {
 }
 
 function isEncryptionMetadata(metadata: unknown): metadata is EncryptionMetadata {
-  return typeof metadata === "object"
+  return typeof metadata === 'object'
     && metadata !== null
-    && "alg" in metadata
+    && 'alg' in metadata
 }
 
 export function isEncryptedData(data: unknown): data is EncryptedData {
-  return typeof data === "object"
+  return typeof data === 'object'
     && data !== null
-    && "value" in data
-    && "metadata" in data
+    && 'value' in data
+    && 'metadata' in data
     && isEncryptionMetadata(data.metadata)
 }
 
 export function isJWK(jwk: unknown): jwk is JWK {
-  return typeof jwk === "object"
+  return typeof jwk === 'object'
     && jwk !== null
-    && Object.prototype.hasOwnProperty.call(jwk, "kid")
+    && Object.prototype.hasOwnProperty.call(jwk, 'kid')
 }

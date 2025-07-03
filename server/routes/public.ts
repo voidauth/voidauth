@@ -1,28 +1,28 @@
-import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
-import { Router, type Request, type Response } from "express"
-import appConfig from "../util/config"
-import { sendPasswordReset, SMTP_VERIFIED } from "../util/email"
-import type { PasswordReset } from "@shared/db/PasswordReset"
-import { validate } from "../util/validate"
-import { newPasswordValidation, stringValidation, uuidValidation } from "../util/validators"
-import { matchedData } from "express-validator"
-import { getUserById, getUserByInput } from "../db/user"
-import { db } from "../db/db"
-import { createExpiration } from "../db/util"
-import { TTLs } from "@shared/constants"
-import type { SendPasswordResetResponse } from "@shared/api-response/SendPasswordResetResponse"
-import { randomUUID } from "crypto"
-import type { ResetPassword } from "@shared/api-request/ResetPassword"
-import type { User } from "@shared/db/User"
-import * as argon2 from "argon2"
-import { generate } from "generate-password"
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { Router, type Request, type Response } from 'express'
+import appConfig from '../util/config'
+import { sendPasswordReset, SMTP_VERIFIED } from '../util/email'
+import type { PasswordReset } from '@shared/db/PasswordReset'
+import { validate } from '../util/validate'
+import { newPasswordValidation, stringValidation, uuidValidation } from '../util/validators'
+import { matchedData } from 'express-validator'
+import { getUserById, getUserByInput } from '../db/user'
+import { db } from '../db/db'
+import { createExpiration } from '../db/util'
+import { TTLs } from '@shared/constants'
+import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
+import { randomUUID } from 'crypto'
+import type { ResetPassword } from '@shared/api-request/ResetPassword'
+import type { User } from '@shared/db/User'
+import * as argon2 from 'argon2'
+import { generate } from 'generate-password'
 
 /**
  * routes that do not require any auth
  */
 export const publicRouter = Router()
 
-publicRouter.get("/config", (_req, res) => {
+publicRouter.get('/config', (_req, res) => {
   const configResponse: ConfigResponse = {
     domain: appConfig.APP_URL,
     appName: appConfig.APP_TITLE,
@@ -35,7 +35,7 @@ publicRouter.get("/config", (_req, res) => {
   res.send(configResponse)
 })
 
-publicRouter.post("/send_password_reset",
+publicRouter.post('/send_password_reset',
   ...validate<{ input: string }>({
     input: stringValidation,
   }),
@@ -58,7 +58,7 @@ publicRouter.post("/send_password_reset",
       createdAt: new Date(),
       expiresAt: createExpiration(TTLs.PASSWORD_RESET),
     }
-    await db().table<PasswordReset>("password_reset").insert(passwordReset)
+    await db().table<PasswordReset>('password_reset').insert(passwordReset)
 
     // If possible, send email
     const email = user.email
@@ -73,7 +73,7 @@ publicRouter.post("/send_password_reset",
   },
 )
 
-publicRouter.post("/reset_password",
+publicRouter.post('/reset_password',
   ...validate<ResetPassword>({
     userId: uuidValidation,
     challenge: stringValidation,
@@ -82,16 +82,16 @@ publicRouter.post("/reset_password",
   async (req: Request, res: Response) => {
     const { userId, challenge, newPassword } = matchedData<ResetPassword>(req, { includeOptionals: true })
     const user = await getUserById(userId)
-    const passwordReset = await db().select().table<PasswordReset>("password_reset")
-      .where({ userId, challenge }).andWhere("expiresAt", ">=", new Date()).first()
+    const passwordReset = await db().select().table<PasswordReset>('password_reset')
+      .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()
 
     if (!user || !passwordReset) {
       res.sendStatus(400)
       return
     }
 
-    await db().table<User>("user").update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
-    await db().table<PasswordReset>("password_reset").delete().where({ id: passwordReset.id })
+    await db().table<User>('user').update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
+    await db().table<PasswordReset>('password_reset').delete().where({ id: passwordReset.id })
     res.send()
   },
 )

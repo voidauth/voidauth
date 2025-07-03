@@ -1,3 +1,3 @@
-import type { User } from "@shared/db/User"
+import type { User } from '@shared/db/User'
 
-export type UpdateEmail = Pick<User, "email">
+export type UpdateEmail = Pick<User, 'email'>

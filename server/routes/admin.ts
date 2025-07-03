@@ -1,37 +1,37 @@
-import { Router, type Request, type Response } from "express"
-import { validate, type TypedSchema } from "../util/validate"
-import { db } from "../db/db"
-import { matchedData } from "express-validator"
-import { isOIDCProviderError, provider } from "../oidc/provider"
-import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from "@shared/api-request/admin/ClientUpsert"
-import type { User } from "@shared/db/User"
-import { randomUUID } from "crypto"
+import { Router, type Request, type Response } from 'express'
+import { validate, type TypedSchema } from '../util/validate'
+import { db } from '../db/db'
+import { matchedData } from 'express-validator'
+import { isOIDCProviderError, provider } from '../oidc/provider'
+import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
+import type { User } from '@shared/db/User'
+import { randomUUID } from 'crypto'
 import {
   checkAdmin, checkLoggedIn, emailValidation,
   nameValidation, stringValidation, usernameValidation, uuidValidation,
-} from "../util/validators"
-import { getClient, getClients, removeClient, upsertClient } from "../db/client"
-import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from "@shared/db/Group"
-import type { GroupUpsert } from "@shared/api-request/admin/GroupUpsert"
-import { ADMIN_GROUP, TTLs } from "@shared/constants"
-import type { UserUpdate } from "@shared/api-request/admin/UserUpdate"
-import { getUserById, getUsers } from "../db/user"
-import { createExpiration, mergeKeys } from "../db/util"
-import type { UserDetails, UserWithoutPassword } from "@shared/api-response/UserDetails"
-import { getInvitation, getInvitations } from "../db/invitations"
-import type { Invitation } from "@shared/db/Invitation"
-import type { InvitationUpsert } from "@shared/api-request/admin/InvitationUpsert"
-import { sendInvitation, sendPasswordReset } from "../util/email"
-import { generate } from "generate-password"
-import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
-import type { ProxyAuth } from "@shared/db/ProxyAuth"
-import { formatWildcardDomain, isValidWildcardDomain } from "@shared/utils"
-import type { ProxyAuthResponse } from "@shared/api-response/admin/ProxyAuthResponse"
-import type { ProxyAuthUpsert } from "@shared/api-request/admin/ProxyAuthUpsert"
-import { getProxyAuth, getProxyAuths } from "../db/proxyAuth"
-import type { PasswordResetUser } from "@shared/api-response/admin/PasswordResetUser"
-import type { PasswordReset } from "@shared/db/PasswordReset"
-import type { PasswordResetCreate } from "@shared/api-request/admin/PasswordResetCreate"
+} from '../util/validators'
+import { getClient, getClients, removeClient, upsertClient } from '../db/client'
+import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
+import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
+import { ADMIN_GROUP, TTLs } from '@shared/constants'
+import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
+import { getUserById, getUsers } from '../db/user'
+import { createExpiration, mergeKeys } from '../db/util'
+import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
+import { getInvitation, getInvitations } from '../db/invitations'
+import type { Invitation } from '@shared/db/Invitation'
+import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
+import { sendInvitation, sendPasswordReset } from '../util/email'
+import { generate } from 'generate-password'
+import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
+import type { ProxyAuth } from '@shared/db/ProxyAuth'
+import { formatWildcardDomain, isValidWildcardDomain } from '@shared/utils'
+import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
+import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
+import { getProxyAuth, getProxyAuths } from '../db/proxyAuth'
+import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
+import type { PasswordReset } from '@shared/db/PasswordReset'
+import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -45,10 +45,10 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   redirect_uris: {
     isArray: true,
   },
-  "redirect_uris.*": {
+  'redirect_uris.*': {
     isURL: {
       options: {
-        protocols: ["http", "https"],
+        protocols: ['http', 'https'],
         require_tld: false,
         require_protocol: true,
       },
@@ -70,7 +70,7 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   response_types: {
     isArray: true,
   },
-  "response_types.*": {
+  'response_types.*': {
     ...stringValidation,
     isIn: {
       options: [RESPONSE_TYPES],
@@ -79,7 +79,7 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   grant_types: {
     isArray: true,
   },
-  "grant_types.*": {
+  'grant_types.*': {
     ...stringValidation,
     isIn: {
       options: [GRANT_TYPES],
@@ -98,7 +98,7 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     optional: true,
     isURL: {
       options: {
-        protocols: ["http", "https"],
+        protocols: ['http', 'https'],
         require_tld: false,
         require_protocol: true,
       },
@@ -111,12 +111,12 @@ export const adminRouter = Router()
 
 adminRouter.use(checkLoggedIn, checkAdmin)
 
-adminRouter.get("/clients", async (_req, res) => {
+adminRouter.get('/clients', async (_req, res) => {
   const clients = await getClients()
   res.send(clients)
 })
 
-adminRouter.get("/client/:client_id",
+adminRouter.get('/client/:client_id',
   ...validate<{ client_id: string }>({
     client_id: stringValidation,
   }), async (req: Request, res: Response) => {
@@ -135,7 +135,7 @@ adminRouter.get("/client/:client_id",
  * POST must always create a new client and PATCH must update an existing client
  */
 
-adminRouter.post("/client",
+adminRouter.post('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req: Request, res: Response) => {
     const clientMetadata = matchedData<ClientUpsert>(req, { includeOptionals: true })
@@ -155,7 +155,7 @@ adminRouter.post("/client",
   },
 )
 
-adminRouter.patch("/client",
+adminRouter.patch('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req: Request, res: Response) => {
     const clientMetadata = matchedData<ClientUpsert>(req, { includeOptionals: true })
@@ -175,7 +175,7 @@ adminRouter.patch("/client",
   },
 )
 
-adminRouter.delete("/client/:client_id",
+adminRouter.delete('/client/:client_id',
   ...validate<{ client_id: string }>({
     client_id: stringValidation,
   }), async (req: Request, res: Response) => {
@@ -190,12 +190,12 @@ adminRouter.delete("/client/:client_id",
   },
 )
 
-adminRouter.get("/proxyauths", async (_req, res) => {
+adminRouter.get('/proxyauths', async (_req, res) => {
   const proxyauths = await getProxyAuths()
   res.send(proxyauths)
 })
 
-adminRouter.get("/proxyauth/:id",
+adminRouter.get('/proxyauth/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
@@ -210,22 +210,22 @@ adminRouter.get("/proxyauth/:id",
 
     const response: ProxyAuthResponse = {
       ...proxyauth,
-      groups: (await db().select("name")
-        .table<Group>("group")
-        .innerJoin<ProxyAuthGroup>("proxy_auth_group", "proxy_auth_group.groupId", "group.id")
-        .where({ proxyAuthId: proxyauth.id }).orderBy("id", "asc")).map(v => v.name),
+      groups: (await db().select('name')
+        .table<Group>('group')
+        .innerJoin<ProxyAuthGroup>('proxy_auth_group', 'proxy_auth_group.groupId', 'group.id')
+        .where({ proxyAuthId: proxyauth.id }).orderBy('id', 'asc')).map(v => v.name),
     }
 
     res.send(response)
   },
 )
 
-adminRouter.post("/proxyAuth",
+adminRouter.post('/proxyAuth',
   ...validate<ProxyAuthUpsert>({
     id: {
       optional: {
         options: {
-          values: "null",
+          values: 'null',
         },
       },
       ...uuidValidation,
@@ -234,7 +234,7 @@ adminRouter.post("/proxyAuth",
       ...stringValidation,
       valid: {
         custom: (d: unknown) => {
-          if (typeof d !== "string") {
+          if (typeof d !== 'string') {
             return false
           }
           return isValidWildcardDomain(d)
@@ -249,15 +249,15 @@ adminRouter.post("/proxyAuth",
     groups: {
       isArray: true,
     },
-    "groups.*": stringValidation,
+    'groups.*': stringValidation,
   }),
   async (req: Request, res: Response) => {
     const { id, domain, groups } = matchedData<ProxyAuthUpsert>(req, { includeOptionals: true })
 
     // Check for domain conflict
     const conflicting = await db().select()
-      .table<ProxyAuth>("proxy_auth")
-      .whereRaw("lower(\"domain\") = lower(?)", [domain])
+      .table<ProxyAuth>('proxy_auth')
+      .whereRaw('lower("domain") = lower(?)', [domain])
       .first()
     if (conflicting && conflicting.id !== id) {
       res.sendStatus(409)
@@ -275,9 +275,9 @@ adminRouter.post("/proxyAuth",
       updatedAt: new Date(),
     }
 
-    await db().table<ProxyAuth>("proxy_auth").insert(proxyAuth).onConflict(["id"]).merge(mergeKeys(proxyAuth))
+    await db().table<ProxyAuth>('proxy_auth').insert(proxyAuth).onConflict(['id']).merge(mergeKeys(proxyAuth))
 
-    const proxyAuthGroups: ProxyAuthGroup[] = (await db().select().table<Group>("group").whereIn("name", groups)).map((g) => {
+    const proxyAuthGroups: ProxyAuthGroup[] = (await db().select().table<Group>('group').whereIn('name', groups)).map((g) => {
       return {
         proxyAuthId: proxyAuthId,
         groupId: g.id,
@@ -289,37 +289,37 @@ adminRouter.post("/proxyAuth",
     })
 
     if (proxyAuthGroups[0]) {
-      await db().table<ProxyAuthGroup>("proxy_auth_group").insert(proxyAuthGroups)
-        .onConflict(["groupId", "proxyAuthId"]).merge(mergeKeys(proxyAuthGroups[0]))
+      await db().table<ProxyAuthGroup>('proxy_auth_group').insert(proxyAuthGroups)
+        .onConflict(['groupId', 'proxyAuthId']).merge(mergeKeys(proxyAuthGroups[0]))
     }
 
-    await db().table<ProxyAuthGroup>("proxy_auth_group").delete()
+    await db().table<ProxyAuthGroup>('proxy_auth_group').delete()
       .where({ proxyAuthId: proxyAuthId }).and
-      .whereNotIn("groupId", proxyAuthGroups.map(g => g.groupId))
+      .whereNotIn('groupId', proxyAuthGroups.map(g => g.groupId))
 
     res.send(await getProxyAuth(proxyAuthId))
   },
 )
 
-adminRouter.delete("/proxyauth/:id",
+adminRouter.delete('/proxyauth/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
     const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
 
-    await db().table<ProxyAuth>("proxy_auth").delete().where({ id })
+    await db().table<ProxyAuth>('proxy_auth').delete().where({ id })
 
     res.send()
   },
 )
 
-adminRouter.get("/users", async (_req, res) => {
+adminRouter.get('/users', async (_req, res) => {
   const users: UserWithoutPassword[] = await getUsers()
   res.send(users)
 })
 
-adminRouter.get("/user/:id",
+adminRouter.get('/user/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
@@ -331,10 +331,10 @@ adminRouter.get("/user/:id",
       return
     }
 
-    const groups = await db().select("name")
-      .table<Group>("group")
-      .innerJoin<UserGroup>("user_group", "user_group.groupId", "group.id").where({ userId: id })
-      .orderBy("name", "asc")
+    const groups = await db().select('name')
+      .table<Group>('group')
+      .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: id })
+      .orderBy('name', 'asc')
     const { passwordHash, ...userWithoutPassword } = user
     const userResponse: UserDetails = { ...userWithoutPassword, groups: groups.map(g => g.name) }
 
@@ -342,7 +342,7 @@ adminRouter.get("/user/:id",
   },
 )
 
-adminRouter.patch("/user",
+adminRouter.patch('/user',
   ...validate<UserUpdate>({
     id: uuidValidation,
     username: usernameValidation,
@@ -353,7 +353,7 @@ adminRouter.patch("/user",
       },
       optional: {
         options: {
-          values: "null",
+          values: 'null',
         },
       },
       ...emailValidation,
@@ -367,14 +367,14 @@ adminRouter.patch("/user",
     groups: {
       isArray: true,
     },
-    "groups.*": stringValidation,
+    'groups.*': stringValidation,
   }),
   async (req: Request, res: Response) => {
     const userUpdate = matchedData<UserUpdate>(req, { includeOptionals: true })
 
     const { groups: _, ...user } = userUpdate
-    const ucount = await db().table<User>("user").update(user).where({ id: userUpdate.id })
-    const groups: Group[] = await db().select().table<Group>("group").whereIn("name", userUpdate.groups)
+    const ucount = await db().table<User>('user').update(user).where({ id: userUpdate.id })
+    const groups: Group[] = await db().select().table<Group>('group').whereIn('name', userUpdate.groups)
     const userGroups: UserGroup[] = groups.map((g) => {
       return {
         groupId: g.id,
@@ -387,13 +387,13 @@ adminRouter.patch("/user",
     })
 
     if (userGroups[0]) {
-      await db().table<UserGroup>("user_group").insert(userGroups)
-        .onConflict(["groupId", "userId"]).merge(mergeKeys(userGroups[0]))
+      await db().table<UserGroup>('user_group').insert(userGroups)
+        .onConflict(['groupId', 'userId']).merge(mergeKeys(userGroups[0]))
     }
 
-    await db().table<UserGroup>("user_group").delete()
+    await db().table<UserGroup>('user_group').delete()
       .where({ userId: userUpdate.id }).and
-      .whereNotIn("groupId", userGroups.map(g => g.groupId))
+      .whereNotIn('groupId', userGroups.map(g => g.groupId))
 
     if (!ucount) {
       res.sendStatus(404)
@@ -404,7 +404,7 @@ adminRouter.patch("/user",
   },
 )
 
-adminRouter.delete("/user/:id",
+adminRouter.delete('/user/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
@@ -416,7 +416,7 @@ adminRouter.delete("/user/:id",
       return
     }
 
-    const count = await db().table<User>("user").delete().where({ id })
+    const count = await db().table<User>('user').delete().where({ id })
 
     if (!count) {
       res.sendStatus(404)
@@ -427,18 +427,18 @@ adminRouter.delete("/user/:id",
   },
 )
 
-adminRouter.get("/groups", async (_req, res) => {
-  const groups = await db().select().table<Group>("group").orderBy("id", "asc")
+adminRouter.get('/groups', async (_req, res) => {
+  const groups = await db().select().table<Group>('group').orderBy('id', 'asc')
   res.send(groups)
 })
 
-adminRouter.get("/group/:id",
+adminRouter.get('/group/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
     const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
-    const group = await db().select().table<Group>("group").where({ id }).first()
+    const group = await db().select().table<Group>('group').where({ id }).first()
 
     if (!group) {
       res.sendStatus(404)
@@ -447,22 +447,22 @@ adminRouter.get("/group/:id",
 
     const groupWithUsers: GroupUsers = {
       ...group,
-      users: await db().select("id", "username")
-        .table<User>("user")
-        .innerJoin<UserGroup>("user_group", "user_group.userId", "user.id")
-        .where({ groupId: group.id }).orderBy("id", "asc"),
+      users: await db().select('id', 'username')
+        .table<User>('user')
+        .innerJoin<UserGroup>('user_group', 'user_group.userId', 'user.id')
+        .where({ groupId: group.id }).orderBy('id', 'asc'),
     }
 
     res.send(groupWithUsers)
   },
 )
 
-adminRouter.post("/group",
+adminRouter.post('/group',
   ...validate<GroupUpsert>({
     id: {
       optional: {
         options: {
-          values: "null",
+          values: 'null',
         },
       },
       ...uuidValidation,
@@ -471,11 +471,11 @@ adminRouter.post("/group",
     users: {
       isArray: true,
     },
-    "users.*.id": uuidValidation,
-    "users.*.username": { // we aren't going to use this
+    'users.*.id': uuidValidation,
+    'users.*.username': { // we aren't going to use this
       optional: {
         options: {
-          values: "falsy",
+          values: 'falsy',
         },
       },
     },
@@ -485,8 +485,8 @@ adminRouter.post("/group",
 
     // Check for name conflict
     const conflictingGroup = await db().select()
-      .table<Group>("group")
-      .whereRaw("lower(\"name\") = lower(?)", [name])
+      .table<Group>('group')
+      .whereRaw('lower("name") = lower(?)', [name])
       .first()
     if (conflictingGroup && conflictingGroup.id !== id) {
       res.sendStatus(409)
@@ -506,7 +506,7 @@ adminRouter.post("/group",
         updatedAt: new Date(),
       }
 
-      await db().table<Group>("group").insert(group).onConflict(["id"]).merge(mergeKeys(group))
+      await db().table<Group>('group').insert(group).onConflict(['id']).merge(mergeKeys(group))
     } else {
       // If this IS the ADMIN_GROUP, there should always be at least one user
       if (!users.length) {
@@ -527,44 +527,44 @@ adminRouter.post("/group",
     })
 
     if (userGroups[0]) {
-      await db().table<UserGroup>("user_group").insert(userGroups)
-        .onConflict(["groupId", "userId"]).merge(mergeKeys(userGroups[0]))
+      await db().table<UserGroup>('user_group').insert(userGroups)
+        .onConflict(['groupId', 'userId']).merge(mergeKeys(userGroups[0]))
     }
 
-    await db().table<UserGroup>("user_group").delete()
+    await db().table<UserGroup>('user_group').delete()
       .where({ groupId: groupId }).and
-      .whereNotIn("userId", userGroups.map(g => g.userId))
+      .whereNotIn('userId', userGroups.map(g => g.userId))
 
     res.send({ id: groupId })
   },
 )
 
-adminRouter.delete("/group/:id",
+adminRouter.delete('/group/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
     const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
 
-    const group = await db().select().table<Group>("group").where({ id }).first()
+    const group = await db().select().table<Group>('group').where({ id }).first()
     // Do not delete the admin group
     if (group?.name.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
       res.sendStatus(400)
       return
     }
 
-    await db().table<Group>("group").delete().where({ id })
+    await db().table<Group>('group').delete().where({ id })
 
     res.send()
   },
 )
 
-adminRouter.get("/invitations", async (_req, res) => {
+adminRouter.get('/invitations', async (_req, res) => {
   const invitations: Invitation[] = await getInvitations()
   res.send(invitations)
 })
 
-adminRouter.get("/invitation/:id",
+adminRouter.get('/invitation/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
@@ -579,12 +579,12 @@ adminRouter.get("/invitation/:id",
   },
 )
 
-adminRouter.post("/invitation",
+adminRouter.post('/invitation',
   ...validate<InvitationUpsert>({
     id: {
       optional: {
         options: {
-          values: "null",
+          values: 'null',
         },
       },
       ...uuidValidation,
@@ -595,7 +595,7 @@ adminRouter.post("/invitation",
       },
       optional: {
         options: {
-          values: "null",
+          values: 'null',
         },
       },
       ...usernameValidation,
@@ -607,7 +607,7 @@ adminRouter.post("/invitation",
       },
       optional: {
         options: {
-          values: "null",
+          values: 'null',
         },
       },
       ...emailValidation,
@@ -615,7 +615,7 @@ adminRouter.post("/invitation",
     groups: {
       isArray: true,
     },
-    "groups.*": stringValidation,
+    'groups.*': stringValidation,
   }),
   async (req: Request, res: Response) => {
     const invitationUpsert = matchedData<InvitationUpsert>(req, { includeOptionals: true })
@@ -625,7 +625,7 @@ adminRouter.post("/invitation",
 
     if (invitationData.id) {
       // update
-      await db().table<Invitation>("invitation").update({
+      await db().table<Invitation>('invitation').update({
         ...invitationData,
         createdBy: req.user.id,
         updatedBy: req.user.id,
@@ -634,7 +634,7 @@ adminRouter.post("/invitation",
       }).where({ id: invitationData.id })
     } else {
       // insert
-      await db().table<Invitation>("invitation").insert({
+      await db().table<Invitation>('invitation').insert({
         ...invitationData,
         id,
         challenge: generate({
@@ -649,7 +649,7 @@ adminRouter.post("/invitation",
       })
     }
 
-    const groups: Group[] = await db().select().table<Group>("group").whereIn("name", groupNames)
+    const groups: Group[] = await db().select().table<Group>('group').whereIn('name', groupNames)
     const invitationGroups: InvitationGroup[] = groups.map((g) => {
       return {
         groupId: g.id,
@@ -662,27 +662,27 @@ adminRouter.post("/invitation",
     })
 
     if (invitationGroups[0]) {
-      await db().table<InvitationGroup>("invitation_group").insert(invitationGroups)
-        .onConflict(["groupId", "invitationId"]).merge(mergeKeys(invitationGroups[0]))
+      await db().table<InvitationGroup>('invitation_group').insert(invitationGroups)
+        .onConflict(['groupId', 'invitationId']).merge(mergeKeys(invitationGroups[0]))
     }
 
-    await db().table<InvitationGroup>("invitation_group").delete()
+    await db().table<InvitationGroup>('invitation_group').delete()
       .where({ invitationId: id }).and
-      .whereNotIn("groupId", invitationGroups.map(g => g.groupId))
+      .whereNotIn('groupId', invitationGroups.map(g => g.groupId))
 
     const invitation = await getInvitation(id)
     res.send(invitation)
   },
 )
 
-adminRouter.delete("/invitation/:id",
+adminRouter.delete('/invitation/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
     const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
 
-    const count = await db().table<Invitation>("invitation").delete().where({ id })
+    const count = await db().table<Invitation>('invitation').delete().where({ id })
 
     if (!count) {
       res.sendStatus(404)
@@ -693,7 +693,7 @@ adminRouter.delete("/invitation/:id",
   },
 )
 
-adminRouter.post("/send_invitation/:id",
+adminRouter.post('/send_invitation/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
@@ -716,23 +716,23 @@ adminRouter.post("/send_invitation/:id",
   },
 )
 
-adminRouter.get("/passwordresets", async (_req, res) => {
+adminRouter.get('/passwordresets', async (_req, res) => {
   const passwordResets: PasswordResetUser[] = await db().select(
-    db().ref("username").withSchema("user"),
-    db().ref("email").withSchema("user"),
-    db().ref("id").withSchema("password_reset"),
-    db().ref("userId").withSchema("password_reset"),
-    db().ref("challenge").withSchema("password_reset"),
-    db().ref("expiresAt").withSchema("password_reset"),
-    db().ref("createdAt").withSchema("password_reset"),
-  ).table<PasswordReset>("password_reset")
-    .innerJoin<User>("user", "user.id", "password_reset.userId")
-    .where("expiresAt", ">=", new Date())
-    .orderBy("expiresAt", "desc")
+    db().ref('username').withSchema('user'),
+    db().ref('email').withSchema('user'),
+    db().ref('id').withSchema('password_reset'),
+    db().ref('userId').withSchema('password_reset'),
+    db().ref('challenge').withSchema('password_reset'),
+    db().ref('expiresAt').withSchema('password_reset'),
+    db().ref('createdAt').withSchema('password_reset'),
+  ).table<PasswordReset>('password_reset')
+    .innerJoin<User>('user', 'user.id', 'password_reset.userId')
+    .where('expiresAt', '>=', new Date())
+    .orderBy('expiresAt', 'desc')
   res.send(passwordResets)
 })
 
-adminRouter.post("/passwordReset",
+adminRouter.post('/passwordReset',
   ...validate<PasswordResetCreate>({
     userId: uuidValidation,
   }),
@@ -755,21 +755,21 @@ adminRouter.post("/passwordReset",
       createdAt: new Date(),
       expiresAt: createExpiration(TTLs.PASSWORD_RESET),
     }
-    await db().table<PasswordReset>("password_reset").insert(passwordReset)
+    await db().table<PasswordReset>('password_reset').insert(passwordReset)
 
     const result: PasswordResetUser = { ...passwordReset, username: user.username, email: user.email }
     res.send(result)
   },
 )
 
-adminRouter.delete("/passwordreset/:id",
+adminRouter.delete('/passwordreset/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
     const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
 
-    const count = await db().table<PasswordReset>("password_reset").delete().where({ id })
+    const count = await db().table<PasswordReset>('password_reset').delete().where({ id })
 
     if (!count) {
       res.sendStatus(404)
@@ -780,20 +780,20 @@ adminRouter.delete("/passwordreset/:id",
   },
 )
 
-adminRouter.post("/send_passwordreset/:id",
+adminRouter.post('/send_passwordreset/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
   async (req: Request, res: Response) => {
     const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
-    const reset = await db().select().table<PasswordReset>("password_reset").where({ id }).first()
+    const reset = await db().select().table<PasswordReset>('password_reset').where({ id }).first()
 
     if (!reset) {
       res.sendStatus(404)
       return
     }
 
-    const user = await db().select().table<User>("user").where({ id: reset.userId }).first()
+    const user = await db().select().table<User>('user').where({ id: reset.userId }).first()
 
     if (!user?.email) {
       res.sendStatus(400)

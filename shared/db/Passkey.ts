@@ -1,9 +1,9 @@
-import type { User } from "./User"
+import type { User } from './User'
 
 export type Passkey = {
   id: string
   publicKey: Uint8Array
-  userId: User["id"]
+  userId: User['id']
   webAuthnUserID: string
   counter: number
   deviceType: string

@@ -1,10 +1,10 @@
-import { HttpClient } from "@angular/common/http"
-import { Injectable } from "@angular/core"
-import { firstValueFrom } from "rxjs"
-import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
+import { HttpClient } from '@angular/common/http'
+import { Injectable } from '@angular/core'
+import { firstValueFrom } from 'rxjs'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class ConfigService {
   constructor(private http: HttpClient) { }
@@ -22,11 +22,11 @@ export class ConfigService {
   }
 
   async getConfig() {
-    return firstValueFrom(this.http.get<ConfigResponse>("/api/public/config"))
+    return firstValueFrom(this.http.get<ConfigResponse>('/api/public/config'))
   }
 
   async getOIDCWellknown() {
-    return firstValueFrom(this.http.get<WellknownConfig>("/oidc/.well-known/openid-configuration"))
+    return firstValueFrom(this.http.get<WellknownConfig>('/oidc/.well-known/openid-configuration'))
   }
 }
 

@@ -1,20 +1,20 @@
-import type { Client, ClientMetadata, Provider } from "oidc-provider"
-import { db } from "./db"
-import { provider } from "../oidc/provider"
-import add from "oidc-provider/lib/helpers/add_client"
-import type { OIDCPayload, PayloadType } from "@shared/db/OIDCPayload"
-import { decryptString } from "./key"
-import appConfig from "../util/config"
+import type { Client, ClientMetadata, Provider } from 'oidc-provider'
+import { db } from './db'
+import { provider } from '../oidc/provider'
+import add from 'oidc-provider/lib/helpers/add_client'
+import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
+import { decryptString } from './key'
+import appConfig from '../util/config'
 
-const clientType: PayloadType = "Client"
+const clientType: PayloadType = 'Client'
 
 // When getting list of clients, do not error on un-decryptable client_secret, just don't include it
 export async function getClients() {
   const clients = (await db()
     .select()
-    .table<OIDCPayload>("oidc_payloads")
+    .table<OIDCPayload>('oidc_payloads')
     .where({ type: clientType })
-    .orderBy("id", "asc"))
+    .orderBy('id', 'asc'))
     .reduce<ClientMetadata[]>((p, r) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const c: ClientMetadata = JSON.parse(r.payload)

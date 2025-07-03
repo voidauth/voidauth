@@ -1,9 +1,9 @@
-import { inject } from "@angular/core"
-import { type CanActivateFn } from "@angular/router"
-import { UserService } from "../services/user.service"
-import { oidcLoginPath } from "@shared/oidc"
-import { ConfigService } from "../services/config.service"
-import { SpinnerService } from "../services/spinner.service"
+import { inject } from '@angular/core'
+import { type CanActivateFn } from '@angular/router'
+import { UserService } from '../services/user.service'
+import { oidcLoginPath } from '@shared/oidc'
+import { ConfigService } from '../services/config.service'
+import { SpinnerService } from '../services/spinner.service'
 
 export const isAdminGuard: CanActivateFn = async (_route, _state) => {
   const userService = inject(UserService)
@@ -18,7 +18,7 @@ export const isAdminGuard: CanActivateFn = async (_route, _state) => {
     }
   } catch (_e) {
     // user isn't logged in
-    window.location.assign(oidcLoginPath(configService.getCurrentHost() + "/api/cb"))
+    window.location.assign(oidcLoginPath(configService.getCurrentHost() + '/api/cb'))
     return false
   } finally {
     spinnerService.hide()

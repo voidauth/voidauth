@@ -1,21 +1,21 @@
-import { Component, inject, type OnInit } from "@angular/core"
-import { RouterLink, RouterOutlet } from "@angular/router"
-import { HeaderComponent } from "./components/header/header.component"
-import { MaterialModule } from "./material-module"
-import { UserService } from "./services/user.service"
-import type { UserDetails } from "@shared/api-response/UserDetails"
-import { SpinnerService } from "./services/spinner.service"
+import { Component, inject, type OnInit } from '@angular/core'
+import { RouterLink, RouterOutlet } from '@angular/router'
+import { HeaderComponent } from './components/header/header.component'
+import { MaterialModule } from './material-module'
+import { UserService } from './services/user.service'
+import type { UserDetails } from '@shared/api-response/UserDetails'
+import { SpinnerService } from './services/spinner.service'
 
 @Component({
-  selector: "app-root",
+  selector: 'app-root',
   imports: [
     RouterOutlet,
     MaterialModule,
     HeaderComponent,
     RouterLink,
   ],
-  templateUrl: "./app.component.html",
-  styleUrl: "./app.component.scss",
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   user?: UserDetails

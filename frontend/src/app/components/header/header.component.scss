@@ -6,8 +6,18 @@ mat-toolbar {
   background-color: color-mix(in oklab, var(--mat-sys-surface) 90%, #000 10%);
 }
 
-.header-logo img {
-  padding: 4px;
+.header-logo {
+  display: block;
+  height: 100%;
+  width: 100%;
+
+  img {
+    padding: 4px;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: left;
+  }
 }
 
 .left-actions > * {

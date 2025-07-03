@@ -1,27 +1,27 @@
-import { Component, inject, type OnDestroy, type OnInit } from "@angular/core"
-import { MaterialModule } from "../../material-module"
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
-import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
-import { SnackbarService } from "../../services/snackbar.service"
-import { UserService } from "../../services/user.service"
-import type { CurrentUserDetails } from "@shared/api-response/UserDetails"
-import { ConfigService } from "../../services/config.service"
-import { PasswordSetComponent } from "../../components/password-reset/password-set.component"
-import { SpinnerService } from "../../services/spinner.service"
-import { PasskeyService, type PasskeySupport } from "../../services/passkey.service"
-import { startRegistration, WebAuthnAbortService, WebAuthnError } from "@simplewebauthn/browser"
-import { ActivatedRoute, Router } from "@angular/router"
+import { Component, inject, type OnDestroy, type OnInit } from '@angular/core'
+import { MaterialModule } from '../../material-module'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
+import { SnackbarService } from '../../services/snackbar.service'
+import { UserService } from '../../services/user.service'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import { ConfigService } from '../../services/config.service'
+import { PasswordSetComponent } from '../../components/password-reset/password-set.component'
+import { SpinnerService } from '../../services/spinner.service'
+import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
+import { startRegistration, WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
+import { ActivatedRoute, Router } from '@angular/router'
 
 @Component({
-  selector: "app-home",
+  selector: 'app-home',
   imports: [
     ReactiveFormsModule,
     MaterialModule,
     ValidationErrorPipe,
     PasswordSetComponent,
   ],
-  templateUrl: "./home.component.html",
-  styleUrl: "./home.component.scss",
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnInit, OnDestroy {
   user?: CurrentUserDetails
@@ -30,39 +30,39 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   public profileForm = new FormGroup({
     name: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.minLength(4)]),
   })
 
   public emailForm = new FormGroup({
     email: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required, Validators.email]),
   })
 
   public passwordForm = new FormGroup({
     oldPassword: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required]),
     newPassword: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required]),
     confirmPassword: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required]),
   }, {
     validators: (g) => {
-      const passAreEqual = g.get("newPassword")?.value === g.get("confirmPassword")?.value
+      const passAreEqual = g.get('newPassword')?.value === g.get('confirmPassword')?.value
       if (!passAreEqual) {
-        g.get("confirmPassword")?.setErrors({ notEqual: "Must equal Password" })
-        return { notEqual: "Passwords do not match" }
+        g.get('confirmPassword')?.setErrors({ notEqual: 'Must equal Password' })
+        return { notEqual: 'Passwords do not match' }
       }
-      g.get("confirmPassword")?.setErrors(null)
+      g.get('confirmPassword')?.setErrors(null)
       return null
     },
   })
@@ -81,7 +81,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.passkeySupport = await this.passkeyService.getPasskeySupport()
 
     this.route.queryParamMap.subscribe(async (queryParams) => {
-      if (queryParams.get("action") === "passkey") {
+      if (queryParams.get('action') === 'passkey') {
         if (!this.isPasskeySession
           && this.passkeySupport?.enabled
           && !this.passkeyService.localPasskeySeen()) {
@@ -92,7 +92,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           queryParams: {
             action: null,
           },
-          queryParamsHandling: "merge",
+          queryParamsHandling: 'merge',
         })
       }
     })
@@ -110,7 +110,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.isPasskeySession = this.userService.passkeySession(this.user)
 
       this.profileForm.reset({
-        name: this.user.name ?? "",
+        name: this.user.name ?? '',
       })
       this.emailForm.reset({
         email: this.user.email,
@@ -128,9 +128,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       await this.userService.updateProfile({
         name: this.profileForm.value.name ?? undefined,
       })
-      this.snackbarService.show("Profile updated.")
+      this.snackbarService.show('Profile updated.')
     } catch (_e) {
-      this.snackbarService.error("Could not update profile.")
+      this.snackbarService.error('Could not update profile.')
     } finally {
       await this.loadUser()
       this.spinnerService.hide()
@@ -142,17 +142,17 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.spinnerService.show()
       const { oldPassword, newPassword } = this.passwordForm.value
       if (!oldPassword || !newPassword) {
-        throw new Error("Password missing.")
+        throw new Error('Password missing.')
       }
 
       await this.userService.updatePassword({
         oldPassword: oldPassword,
         newPassword: newPassword,
       })
-      this.snackbarService.show("Password updated.")
+      this.snackbarService.show('Password updated.')
       await this.loadUser()
     } catch (_e) {
-      this.snackbarService.error("Could not update password.")
+      this.snackbarService.error('Could not update password.')
     } finally {
       this.spinnerService.hide()
     }
@@ -163,19 +163,19 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.spinnerService.show()
       const email = this.emailForm.value.email
       if (!email) {
-        throw new Error("Email missing.")
+        throw new Error('Email missing.')
       }
       await this.userService.updateEmail({
         email: email,
       })
       // if email verification enabled, indicate that in message
       if ((await this.configService.getConfig()).emailVerification) {
-        this.snackbarService.show("Verification email sent.")
+        this.snackbarService.show('Verification email sent.')
       } else {
-        this.snackbarService.show("Email updated.")
+        this.snackbarService.show('Email updated.')
       }
     } catch (_e) {
-      this.snackbarService.error("Could not update email.")
+      this.snackbarService.error('Could not update email.')
     } finally {
       await this.loadUser()
       this.spinnerService.hide()
@@ -189,10 +189,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       await this.passkeyService.sendRegistration(registration)
     } catch (error) {
       if (!auto) {
-        if (error instanceof WebAuthnError && error.name === "InvalidStateError") {
-          this.snackbarService.error("Passkey already registered.")
+        if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+          this.snackbarService.error('Passkey already registered.')
         } else {
-          this.snackbarService.error("Could not register passkey.")
+          this.snackbarService.error('Could not register passkey.')
         }
       }
       console.error(error)
