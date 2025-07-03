@@ -1,19 +1,19 @@
-import { Component, input } from "@angular/core"
-import { ReactiveFormsModule, FormControl } from "@angular/forms"
-import { MaterialModule } from "../../material-module"
-import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
-import { NewPasswordInputComponent } from "../new-password-input/new-password-input.component"
+import { Component, input } from '@angular/core'
+import { ReactiveFormsModule, FormControl } from '@angular/forms'
+import { MaterialModule } from '../../material-module'
+import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
+import { NewPasswordInputComponent } from '../new-password-input/new-password-input.component'
 
 @Component({
-  selector: "app-password-set",
+  selector: 'app-password-set',
   imports: [
     ReactiveFormsModule,
     MaterialModule,
     ValidationErrorPipe,
     NewPasswordInputComponent,
   ],
-  templateUrl: "./password-set.component.html",
-  styleUrl: "./password-set.component.scss",
+  templateUrl: './password-set.component.html',
+  styleUrl: './password-set.component.scss',
 })
 export class PasswordSetComponent {
   oldPassword = input<FormControl<string | null>>()

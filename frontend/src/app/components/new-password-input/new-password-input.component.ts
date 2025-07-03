@@ -1,26 +1,26 @@
-import { Component, inject, input, model, type OnInit } from "@angular/core"
-import { ReactiveFormsModule, type FormControl } from "@angular/forms"
-import { zxcvbnOptions, zxcvbn } from "@zxcvbn-ts/core"
-import { debounceTime, map } from "rxjs"
-import { MaterialModule } from "../../material-module"
-import { ConfigService } from "../../services/config.service"
+import { Component, inject, input, model, type OnInit } from '@angular/core'
+import { ReactiveFormsModule, type FormControl } from '@angular/forms'
+import { zxcvbnOptions, zxcvbn } from '@zxcvbn-ts/core'
+import { debounceTime, map } from 'rxjs'
+import { MaterialModule } from '../../material-module'
+import { ConfigService } from '../../services/config.service'
 
 @Component({
-  selector: "app-new-password-input",
+  selector: 'app-new-password-input',
   imports: [
     ReactiveFormsModule,
     MaterialModule,
   ],
-  templateUrl: "./new-password-input.component.html",
-  styleUrl: "./new-password-input.component.scss",
+  templateUrl: './new-password-input.component.html',
+  styleUrl: './new-password-input.component.scss',
 })
 export class NewPasswordInputComponent implements OnInit {
   password = input.required<FormControl<string | null>>()
   pwdShow = model<boolean>(false)
 
   score: number = 0
-  message: string = "Lets make a strong password 😊"
-  meterColor: string = ""
+  message: string = 'Lets make a strong password 😊'
+  meterColor: string = ''
 
   minScore = 3
 
@@ -36,7 +36,7 @@ export class NewPasswordInputComponent implements OnInit {
 
     this.password().valueChanges.pipe(map((value) => {
       const c = this.password()
-      c.setErrors({ ...c.errors, strength: { min: this.minScore, current: "pending" } })
+      c.setErrors({ ...c.errors, strength: { min: this.minScore, current: 'pending' } })
       return value
     }), debounceTime(500)).subscribe((v) => {
       if (!v) {
@@ -46,23 +46,23 @@ export class NewPasswordInputComponent implements OnInit {
       }
 
       if (this.score === 0) {
-        this.message = "lets make a strong password 😊"
-        this.meterColor = ""
+        this.message = 'lets make a strong password 😊'
+        this.meterColor = ''
       } else if (this.score === 1) {
-        this.message = "very weak!! 💀"
-        this.meterColor = "red"
+        this.message = 'very weak!! 💀'
+        this.meterColor = 'red'
       } else if (this.score === 2) {
-        this.message = "too weak! ❌"
-        this.meterColor = "orange"
+        this.message = 'too weak! ❌'
+        this.meterColor = 'orange'
       } else if (this.score === 3) {
-        this.message = "ok, but could be better... 😐"
-        this.meterColor = "yellow"
+        this.message = 'ok, but could be better... 😐'
+        this.meterColor = 'yellow'
       } else if (this.score === 4) {
-        this.message = `good${this.minScore > 4 ? ", a bit more" : ""}! 👍`
-        this.meterColor = "green"
+        this.message = `good${this.minScore > 4 ? ', a bit more' : ''}! 👍`
+        this.meterColor = 'green'
       } else if (this.score === 5) {
-        this.message = "legendary strength! 💪"
-        this.meterColor = "legendary"
+        this.message = 'legendary strength! 💪'
+        this.meterColor = 'legendary'
       }
 
       const c = this.password()
@@ -78,8 +78,8 @@ export class NewPasswordInputComponent implements OnInit {
   }
 
   async loadOptions() {
-    const zxcvbnCommonPackage = await import("@zxcvbn-ts/language-common")
-    const zxcvbnEnPackage = await import("@zxcvbn-ts/language-en")
+    const zxcvbnCommonPackage = await import('@zxcvbn-ts/language-common')
+    const zxcvbnEnPackage = await import('@zxcvbn-ts/language-en')
 
     return {
       // recommended

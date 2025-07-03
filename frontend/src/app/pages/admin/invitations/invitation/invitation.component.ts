@@ -1,30 +1,30 @@
-import { CommonModule } from "@angular/common"
-import { Component, inject } from "@angular/core"
-import { ReactiveFormsModule, FormControl, FormGroup, Validators } from "@angular/forms"
-import type { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
-import { ActivatedRoute, Router } from "@angular/router"
-import { USERNAME_REGEX } from "@shared/constants"
-import { MaterialModule } from "../../../../material-module"
-import { ValidationErrorPipe } from "../../../../pipes/ValidationErrorPipe"
-import { AdminService } from "../../../../services/admin.service"
-import { SnackbarService } from "../../../../services/snackbar.service"
-import type { TypedFormGroup } from "../../clients/upsert-client/upsert-client.component"
-import type { InvitationUpsert } from "@shared/api-request/admin/InvitationUpsert"
-import type { InvitationDetails } from "@shared/api-response/InvitationDetails"
-import { ConfigService } from "../../../../services/config.service"
-import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
-import { SpinnerService } from "../../../../services/spinner.service"
+import { CommonModule } from '@angular/common'
+import { Component, inject } from '@angular/core'
+import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
+import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
+import { ActivatedRoute, Router } from '@angular/router'
+import { USERNAME_REGEX } from '@shared/constants'
+import { MaterialModule } from '../../../../material-module'
+import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
+import { AdminService } from '../../../../services/admin.service'
+import { SnackbarService } from '../../../../services/snackbar.service'
+import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
+import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
+import { ConfigService } from '../../../../services/config.service'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { SpinnerService } from '../../../../services/spinner.service'
 
 @Component({
-  selector: "app-invitation",
+  selector: 'app-invitation',
   imports: [
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
   ],
-  templateUrl: "./invitation.component.html",
-  styleUrl: "./invitation.component.scss",
+  templateUrl: './invitation.component.html',
+  styleUrl: './invitation.component.scss',
 })
 export class InvitationComponent {
   public id: string | null = null
@@ -34,14 +34,14 @@ export class InvitationComponent {
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
   groupSelect = new FormControl<string>({
-    value: "",
+    value: '',
     disabled: false,
   }, [])
 
   public inviteLink?: string
   public inviteEmail?: string | null
 
-  public form = new FormGroup<TypedFormGroup<Omit<InvitationUpsert, "id">>>({
+  public form = new FormGroup<TypedFormGroup<Omit<InvitationUpsert, 'id'>>>({
     username: new FormControl<string | null>({
       value: null,
       disabled: false,
@@ -60,9 +60,9 @@ export class InvitationComponent {
       disabled: false,
     }, []),
   }, [(c) => {
-    const f = c as FormGroup<TypedFormGroup<Omit<InvitationUpsert, "id">>>
+    const f = c as FormGroup<TypedFormGroup<Omit<InvitationUpsert, 'id'>>>
     if (!f.controls.email.value && !f.controls.username.value) {
-      return { usernameOrEmail: "Username or Email are required." }
+      return { usernameOrEmail: 'Username or Email are required.' }
     }
     return null
   }])
@@ -79,7 +79,7 @@ export class InvitationComponent {
       try {
         this.spinnerService.show()
 
-        const id = params.get("id")
+        const id = params.get('id')
 
         this.config = await this.configService.getConfig()
 
@@ -97,7 +97,7 @@ export class InvitationComponent {
         })
       } catch (e) {
         console.error(e)
-        this.snackbarService.error("Error loading invitation.")
+        this.snackbarService.error('Error loading invitation.')
       } finally {
         this.spinnerService.hide()
       }
@@ -119,7 +119,7 @@ export class InvitationComponent {
     this.inviteLink = this.adminService.getInviteLink(this.config.domain, invitation.id, invitation.challenge)
   }
 
-  groupAutoFilter(value: string = "") {
+  groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.groups.filter((g) => {
       return !this.form.controls.groups.value?.includes(g)
     })
@@ -163,14 +163,14 @@ export class InvitationComponent {
       this.spinnerService.show()
 
       if (!this.id) {
-        throw new Error("Invite ID missing.")
+        throw new Error('Invite ID missing.')
       }
 
       await this.adminService.sendInvitation(this.id)
       this.snackbarService.show(`Invite sent to ${String(this.inviteEmail)}.`)
     } catch (e) {
       console.error(e)
-      this.snackbarService.error("Could not send invitation.")
+      this.snackbarService.error('Could not send invitation.')
     } finally {
       this.spinnerService.hide()
     }
@@ -186,16 +186,16 @@ export class InvitationComponent {
         emailVerified: this.form.controls.emailVerified.enabled && this.form.controls.emailVerified.value,
       })
 
-      this.snackbarService.show(`Invitation ${this.id ? "updated" : "created"}.`)
+      this.snackbarService.show(`Invitation ${this.id ? 'updated' : 'created'}.`)
 
       this.id = invitation.id
       await this.formSet(invitation)
-      await this.router.navigate(["/admin/invitation", this.id], {
+      await this.router.navigate(['/admin/invitation', this.id], {
         replaceUrl: true,
       })
     } catch (e) {
       console.error(e)
-      this.snackbarService.error(`Could not ${this.id ? "update" : "create"} invitation.`)
+      this.snackbarService.error(`Could not ${this.id ? 'update' : 'create'} invitation.`)
     } finally {
       this.spinnerService.hide()
     }
@@ -209,10 +209,10 @@ export class InvitationComponent {
         await this.adminService.deleteInvitation(this.id)
       }
 
-      this.snackbarService.show("Invitation deleted.")
-      await this.router.navigate(["/admin/invitations"])
+      this.snackbarService.show('Invitation deleted.')
+      await this.router.navigate(['/admin/invitations'])
     } catch (_e) {
-      this.snackbarService.error("Could not delete invitation.")
+      this.snackbarService.error('Could not delete invitation.')
     } finally {
       this.spinnerService.hide()
     }

@@ -1,11 +1,11 @@
-import { Router, type Request, type Response } from "express"
-import appConfig from "../util/config"
-import { checkLoggedIn, stringValidation } from "../util/validators"
-import { generateRegistrationOptions, verifyRegistrationResponse, type RegistrationResponseJSON } from "@simplewebauthn/server"
-import { getRegistrationOptions, getUserPasskeys, savePasskey, saveRegistrationOptions } from "../db/passkey"
-import { validate } from "../util/validate"
-import type { Passkey } from "@shared/db/Passkey"
-import { matchedData } from "express-validator"
+import { Router, type Request, type Response } from 'express'
+import appConfig from '../util/config'
+import { checkLoggedIn, stringValidation } from '../util/validators'
+import { generateRegistrationOptions, verifyRegistrationResponse, type RegistrationResponseJSON } from '@simplewebauthn/server'
+import { getRegistrationOptions, getUserPasskeys, savePasskey, saveRegistrationOptions } from '../db/passkey'
+import { validate } from '../util/validate'
+import type { Passkey } from '@shared/db/Passkey'
+import { matchedData } from 'express-validator'
 
 const rpName = appConfig.APP_TITLE
 const appURL = URL.parse(appConfig.APP_URL) as URL
@@ -17,7 +17,7 @@ export const passkeyRouter = Router()
 // Must be logged in to register a passkey
 passkeyRouter.use(checkLoggedIn)
 
-passkeyRouter.get("/registration",
+passkeyRouter.get('/registration',
   async (req: Request, res: Response) => {
     const user = req.user
     const userPasskeys = await getUserPasskeys(user.id)
@@ -29,21 +29,21 @@ passkeyRouter.get("/registration",
       userDisplayName: user.username,
       // Don't prompt users for additional information about the authenticator
       // (Recommended for smoother UX)
-      attestationType: "none",
+      attestationType: 'none',
       // Prevent users from re-registering existing authenticators
       excludeCredentials: userPasskeys.map(passkey => ({
         id: passkey.id,
         // Optional
         transports: passkey.transports,
       })),
-      preferredAuthenticatorType: "localDevice",
+      preferredAuthenticatorType: 'localDevice',
       // See "Guiding use of authenticators via authenticatorSelection" below
       authenticatorSelection: {
         // Defaults
-        residentKey: "required",
-        userVerification: "preferred",
+        residentKey: 'required',
+        userVerification: 'preferred',
         // Optional
-        authenticatorAttachment: "platform",
+        authenticatorAttachment: 'platform',
       },
     })
 
@@ -53,29 +53,29 @@ passkeyRouter.get("/registration",
   },
 )
 
-passkeyRouter.post("/registration",
+passkeyRouter.post('/registration',
   ...validate<RegistrationResponseJSON>({
     id: stringValidation,
     rawId: stringValidation,
-    "response.clientDataJSON": stringValidation,
-    "response.attestationObject": stringValidation,
-    "response.authenticatorData": {
+    'response.clientDataJSON': stringValidation,
+    'response.attestationObject': stringValidation,
+    'response.authenticatorData': {
       optional: true,
       ...stringValidation,
     },
-    "response.transports": {
+    'response.transports': {
       optional: true,
       isArray: true,
     },
-    "response.transports.*": {
+    'response.transports.*': {
       optional: true,
       ...stringValidation,
     },
-    "response.publicKeyAlgorithm": {
+    'response.publicKeyAlgorithm': {
       optional: true,
       isNumeric: true,
     },
-    "response.publicKey": {
+    'response.publicKey': {
       optional: true,
       ...stringValidation,
     },
@@ -83,15 +83,15 @@ passkeyRouter.post("/registration",
       optional: true,
       ...stringValidation,
     },
-    "clientExtensionResults.appid": {
+    'clientExtensionResults.appid': {
       optional: true,
       isBoolean: true,
     },
-    "clientExtensionResults.credProps.rk": {
+    'clientExtensionResults.credProps.rk': {
       optional: true,
       isBoolean: true,
     },
-    "clientExtensionResults.hmacCreateSecret": {
+    'clientExtensionResults.hmacCreateSecret': {
       optional: true,
       isBoolean: true,
     },
@@ -151,7 +151,7 @@ passkeyRouter.post("/registration",
       // The number of times the authenticator has been used on this site so far
       counter: credential.counter,
       // How the browser can talk with this credential's authenticator
-      transports: credential.transports?.join(","),
+      transports: credential.transports?.join(','),
       // Whether the passkey is single-device or multi-device
       deviceType: credentialDeviceType,
       // Whether the passkey has been backed up in some way

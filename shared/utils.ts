@@ -9,14 +9,14 @@ export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefin
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 
 function urlFromWildcardDomain(input: string) {
-  const url = URL.parse(`http://${input.replaceAll(/\*+/g, "*").replaceAll("*", "__wildcard__")}`)
+  const url = URL.parse(`http://${input.replaceAll(/\*+/g, '*').replaceAll('*', '__wildcard__')}`)
   if (!url) {
     return null
   }
   return {
-    hostname: url.hostname.replaceAll("__wildcard__", "*"),
-    pathname: url.pathname.replaceAll("__wildcard__", "*"),
-    href: url.href.replaceAll("__wildcard__", "*"),
+    hostname: url.hostname.replaceAll('__wildcard__', '*'),
+    pathname: url.pathname.replaceAll('__wildcard__', '*'),
+    href: url.href.replaceAll('__wildcard__', '*'),
     search: url.search,
     hash: url.hash,
     password: url.password,
@@ -40,8 +40,8 @@ export function formatWildcardDomain(input: string) {
   const url = urlFromWildcardDomain(input) as URL
   const hostname = url.hostname
   let pathname = url.pathname
-  if (!pathname.endsWith("*") && pathname.endsWith("/")) {
-    pathname += "*"
+  if (!pathname.endsWith('*') && pathname.endsWith('/')) {
+    pathname += '*'
   }
   return `${hostname}${pathname}`
 }
@@ -58,8 +58,8 @@ export function sortWildcardDomains(ad: string, bd: string) {
   const bh = b.hostname
 
   // Check if one domain has more subdomains
-  const aSubs = ah.split(".").filter(s => !!s).reverse()
-  const bSubs = bh.split(".").filter(s => !!s).reverse()
+  const aSubs = ah.split('.').filter(s => !!s).reverse()
+  const bSubs = bh.split('.').filter(s => !!s).reverse()
   const subResult = sortWildcardParts(aSubs, bSubs)
   if (subResult) {
     return subResult
@@ -70,8 +70,8 @@ export function sortWildcardDomains(ad: string, bd: string) {
   const bp = b.pathname
 
   // Check if one path has more subpaths
-  const aPaths = ap.split("/").filter(s => !!s)
-  const bPaths = bp.split("/").filter(s => !!s)
+  const aPaths = ap.split('/').filter(s => !!s)
+  const bPaths = bp.split('/').filter(s => !!s)
   const pathResult = sortWildcardParts(aPaths, bPaths)
   if (pathResult) {
     return pathResult
@@ -87,8 +87,8 @@ function sortWildcardParts(aParts: string[], bParts: string[]) {
   }
 
   // Check if one parts has wildcard and if so in what part
-  const aWildParts = aParts.filter(sd => sd.includes("*"))
-  const bWildParts = bParts.filter(sd => sd.includes("*"))
+  const aWildParts = aParts.filter(sd => sd.includes('*'))
+  const bWildParts = bParts.filter(sd => sd.includes('*'))
   if (aWildParts.length || bWildParts.length) {
     // there are wildcards in the parts
     // check if one has more, if so it is LESS specific
@@ -102,8 +102,8 @@ function sortWildcardParts(aParts: string[], bParts: string[]) {
       // or more wildcards in a part
       const aPart = aParts[i] as string
       const bPart = bParts[i] as string
-      const aPartWildCount = aPart.match(new RegExp("\\*", "g"))?.length ?? 0
-      const bPartWildCount = bPart.match(new RegExp("\\*", "g"))?.length ?? 0
+      const aPartWildCount = aPart.match(new RegExp('\\*', 'g'))?.length ?? 0
+      const bPartWildCount = bPart.match(new RegExp('\\*', 'g'))?.length ?? 0
       if (aPartWildCount || bPartWildCount) {
         // This part has wildcard(s)
         // check if one has more, if so it is MORE specific

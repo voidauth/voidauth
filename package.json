@@ -3,7 +3,7 @@
   "main": "server/index.ts",
   "type": "module",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "start": "concurrently \"npm run server:watch\" \"npm run frontend:watch\"",
@@ -23,15 +23,15 @@
     ]
   },
   "dependencies": {
-    "@angular/cli": "^20.0.2",
-    "@angular/material": "^20.0.3",
+    "@angular/cli": "^20.0.5",
+    "@angular/material": "^20.0.5",
     "@simplewebauthn/server": "^13.1.1",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
     "argon2": "^0.43.0",
     "express": "^5.1.0",
-    "express-rate-limit": "^7.5.0",
+    "express-rate-limit": "^7.5.1",
     "express-validator": "^7.2.1",
     "generate-password": "^1.7.1",
     "helmet": "^8.1.0",
@@ -40,9 +40,9 @@
     "keygrip": "^1.1.0",
     "knex": "^3.1.0",
     "matcher": "^5.0.0",
-    "nodemailer": "^7.0.3",
-    "oidc-provider": "^9.1.3",
-    "pg": "^8.16.0",
+    "nodemailer": "^7.0.4",
+    "oidc-provider": "^9.2.0",
+    "pg": "^8.16.3",
     "psl": "^1.15.0",
     "pug": "^3.0.3",
     "sass": "^1.89.2",
@@ -51,18 +51,18 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
-    "@stylistic/eslint-plugin": "^4.4.1",
+    "@stylistic/eslint-plugin": "^5.1.0",
     "@types/express": "^5.0.3",
-    "@types/node": "^22.15.31",
+    "@types/node": "^24.0.10",
     "@types/nodemailer": "^6.4.17",
-    "@types/oidc-provider": "^9.1.0",
+    "@types/oidc-provider": "^9.1.1",
     "@types/psl": "^1.1.3",
     "@types/pug": "^2.0.10",
-    "concurrently": "^9.1.2",
-    "eslint": "^9.29.0",
-    "lint-staged": "^16.1.0",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.30.1",
+    "lint-staged": "^16.1.2",
     "nodemon": "^3.1.10",
-    "prettier": "^3.5.3",
-    "typescript-eslint": "^8.34.0"
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.35.1"
   }
 }

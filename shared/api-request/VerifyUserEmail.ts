@@ -1,3 +1,3 @@
-import type { EmailVerification } from "../db/EmailVerification.js"
+import type { EmailVerification } from '../db/EmailVerification.js'
 
-export type VerifyUserEmail = Pick<EmailVerification, "challenge" | "userId">
+export type VerifyUserEmail = Pick<EmailVerification, 'challenge' | 'userId'>

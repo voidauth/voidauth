@@ -1,23 +1,23 @@
-import { CommonModule } from "@angular/common"
-import { Component, inject, type OnInit } from "@angular/core"
-import { ActivatedRoute } from "@angular/router"
-import { AuthService } from "../../../services/auth.service"
-import { HttpErrorResponse } from "@angular/common/http"
-import { MaterialModule } from "../../../material-module"
-import { SnackbarService } from "../../../services/snackbar.service"
-import { SpinnerService } from "../../../services/spinner.service"
+import { CommonModule } from '@angular/common'
+import { Component, inject, type OnInit } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
+import { AuthService } from '../../../services/auth.service'
+import { HttpErrorResponse } from '@angular/common/http'
+import { MaterialModule } from '../../../material-module'
+import { SnackbarService } from '../../../services/snackbar.service'
+import { SpinnerService } from '../../../services/spinner.service'
 
 @Component({
-  selector: "app-verify",
+  selector: 'app-verify',
   imports: [
     CommonModule,
     MaterialModule,
   ],
-  templateUrl: "./verify.component.html",
-  styleUrl: "./verify.component.scss",
+  templateUrl: './verify.component.html',
+  styleUrl: './verify.component.scss',
 })
 export class VerifyComponent implements OnInit {
-  title: string = "Verifying Email..."
+  title: string = 'Verifying Email...'
   userid?: string
 
   private activatedRoute = inject(ActivatedRoute)
@@ -29,15 +29,15 @@ export class VerifyComponent implements OnInit {
     const params = this.activatedRoute.snapshot.paramMap
 
     try {
-      this.title = "Verifying Email..."
+      this.title = 'Verifying Email...'
 
       this.spinnerService.show()
 
-      const id = params.get("id")
-      const challenge = params.get("challenge")
+      const id = params.get('id')
+      const challenge = params.get('challenge')
 
       if (!id || !challenge) {
-        throw new Error("Invalid Verification.")
+        throw new Error('Invalid Verification.')
       }
 
       this.userid = id
@@ -61,20 +61,20 @@ export class VerifyComponent implements OnInit {
         error ||= (e as Error).message
       }
 
-      error ||= "Something went wrong."
+      error ||= 'Something went wrong.'
       this.snackbarService.error(error)
-      this.title = "Email Could Not Be Verified :("
+      this.title = 'Email Could Not Be Verified :('
     } finally {
       this.spinnerService.hide()
     }
   }
 
   public async sendVerification() {
-    this.title = "Sending New Verification..."
+    this.title = 'Sending New Verification...'
     try {
       this.spinnerService.show()
       if (!this.userid) {
-        throw new Error("Missing User ID.")
+        throw new Error('Missing User ID.')
       }
       await this.authService.sendEmailVerification({ id: this.userid })
     } catch (e) {
@@ -87,8 +87,8 @@ export class VerifyComponent implements OnInit {
         error ||= (e as Error).message
       }
 
-      error ||= "Something went wrong."
-      this.title = "Email Verification Could Not Be Sent :("
+      error ||= 'Something went wrong.'
+      this.title = 'Email Verification Could Not Be Sent :('
       this.snackbarService.error(error)
     } finally {
       this.spinnerService.hide()

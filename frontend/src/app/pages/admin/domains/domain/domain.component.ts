@@ -1,28 +1,28 @@
-import { Component, inject } from "@angular/core"
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
-import type { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
-import { ActivatedRoute, Router } from "@angular/router"
-import { AdminService } from "../../../../services/admin.service"
-import { SnackbarService } from "../../../../services/snackbar.service"
-import { SpinnerService } from "../../../../services/spinner.service"
-import type { TypedFormGroup } from "../../clients/upsert-client/upsert-client.component"
-import type { ProxyAuthUpsert } from "@shared/api-request/admin/ProxyAuthUpsert"
-import { CommonModule } from "@angular/common"
-import { MaterialModule } from "../../../../material-module"
-import { ValidationErrorPipe } from "../../../../pipes/ValidationErrorPipe"
-import { isValidWildcardDomain } from "@shared/utils"
-import type { ProxyAuthResponse } from "@shared/api-response/admin/ProxyAuthResponse"
+import { Component, inject } from '@angular/core'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
+import { ActivatedRoute, Router } from '@angular/router'
+import { AdminService } from '../../../../services/admin.service'
+import { SnackbarService } from '../../../../services/snackbar.service'
+import { SpinnerService } from '../../../../services/spinner.service'
+import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
+import { CommonModule } from '@angular/common'
+import { MaterialModule } from '../../../../material-module'
+import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
+import { isValidWildcardDomain } from '@shared/utils'
+import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 
 @Component({
-  selector: "app-domain",
+  selector: 'app-domain',
   imports: [
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
   ],
-  templateUrl: "./domain.component.html",
-  styleUrl: "./domain.component.scss",
+  templateUrl: './domain.component.html',
+  styleUrl: './domain.component.scss',
 })
 export class DomainComponent {
   public id: string | null = null
@@ -31,17 +31,17 @@ export class DomainComponent {
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
   groupSelect = new FormControl<string>({
-    value: "",
+    value: '',
     disabled: false,
   }, [])
 
-  public form = new FormGroup<TypedFormGroup<Omit<ProxyAuthUpsert, "id">>>({
+  public form = new FormGroup<TypedFormGroup<Omit<ProxyAuthUpsert, 'id'>>>({
     domain: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required, (c) => {
       if (!isValidWildcardDomain(c.value as string)) {
-        return { invalid: "Must be a valid domain with optional path, supports wildcard (*)" }
+        return { invalid: 'Must be a valid domain with optional path, supports wildcard (*)' }
       }
       return null
     }]),
@@ -61,7 +61,7 @@ export class DomainComponent {
     this.route.paramMap.subscribe(async (params) => {
       try {
         this.spinnerService.show()
-        const id = params.get("id")
+        const id = params.get('id')
 
         if (id) {
           this.id = id
@@ -73,7 +73,7 @@ export class DomainComponent {
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
-        this.snackbarService.error("Error loading ProxyAuth domain.")
+        this.snackbarService.error('Error loading ProxyAuth domain.')
       } finally {
         this.spinnerService.hide()
       }
@@ -84,7 +84,7 @@ export class DomainComponent {
     this.form.reset({ domain: proxyAuth.domain, groups: proxyAuth.groups })
   }
 
-  groupAutoFilter(value: string = "") {
+  groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.groups.filter((g) => {
       return !this.form.controls.groups.value?.includes(g)
     })
@@ -119,15 +119,15 @@ export class DomainComponent {
     try {
       this.spinnerService.show()
       const response = await this.adminService.upsertProxyAuth({ ...this.form.getRawValue(), id: this.id })
-      this.snackbarService.show(`Domain ${this.id ? "updated" : "created"}.`)
+      this.snackbarService.show(`Domain ${this.id ? 'updated' : 'created'}.`)
 
       this.id = response.id
       this.resetForm(response)
-      await this.router.navigate(["/admin/domain", this.id], {
+      await this.router.navigate(['/admin/domain', this.id], {
         replaceUrl: true,
       })
     } catch (_e) {
-      this.snackbarService.error(`Could not ${this.id ? "update" : "create"} domain.`)
+      this.snackbarService.error(`Could not ${this.id ? 'update' : 'create'} domain.`)
     } finally {
       this.spinnerService.hide()
     }
@@ -141,10 +141,10 @@ export class DomainComponent {
         await this.adminService.deleteProxyAuth(this.id)
       }
 
-      this.snackbarService.show("Domain deleted.")
-      await this.router.navigate(["/admin/domains"])
+      this.snackbarService.show('Domain deleted.')
+      await this.router.navigate(['/admin/domains'])
     } catch (_e) {
-      this.snackbarService.error("Could not delete domain.")
+      this.snackbarService.error('Could not delete domain.')
     } finally {
       this.spinnerService.hide()
     }

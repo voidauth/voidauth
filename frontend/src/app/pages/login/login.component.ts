@@ -1,24 +1,24 @@
-import { Component, inject, type OnDestroy, type OnInit } from "@angular/core"
-import { AuthService } from "../../services/auth.service"
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
-import { Router, RouterLink } from "@angular/router"
-import { MaterialModule } from "../../material-module"
-import { HttpErrorResponse } from "@angular/common/http"
-import { ValidationErrorPipe } from "../../pipes/ValidationErrorPipe"
-import { SnackbarService } from "../../services/snackbar.service"
-import type { ConfigResponse } from "@shared/api-response/ConfigResponse"
-import { ConfigService } from "../../services/config.service"
-import { UserService } from "../../services/user.service"
-import { oidcLoginPath } from "@shared/oidc"
-import { SpinnerService } from "../../services/spinner.service"
-import { PasskeyService, type PasskeySupport } from "../../services/passkey.service"
-import { startAuthentication, WebAuthnAbortService } from "@simplewebauthn/browser"
-import { TextDividerComponent } from "../../components/text-divider/text-divider.component"
+import { Component, inject, type OnDestroy, type OnInit } from '@angular/core'
+import { AuthService } from '../../services/auth.service'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { Router, RouterLink } from '@angular/router'
+import { MaterialModule } from '../../material-module'
+import { HttpErrorResponse } from '@angular/common/http'
+import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
+import { SnackbarService } from '../../services/snackbar.service'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { ConfigService } from '../../services/config.service'
+import { UserService } from '../../services/user.service'
+import { oidcLoginPath } from '@shared/oidc'
+import { SpinnerService } from '../../services/spinner.service'
+import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
+import { startAuthentication, WebAuthnAbortService } from '@simplewebauthn/browser'
+import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 
 @Component({
-  selector: "app-login",
-  templateUrl: "./login.component.html",
-  styleUrls: ["./login.component.scss"],
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
   imports: [
     ReactiveFormsModule,
     MaterialModule,
@@ -32,12 +32,12 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   public form = new FormGroup({
     email: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required]),
 
     password: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required]),
 
@@ -71,7 +71,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       try {
         await this.userService.getMyUser()
         // The user is already logged in
-        await this.router.navigate(["/"], {
+        await this.router.navigate(['/'], {
           replaceUrl: true,
         })
         return
@@ -83,7 +83,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         await this.authService.interactionExists()
       } catch (_e) {
         // interaction session is missing, could not log in without it
-        window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + "/api/cb"))
+        window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + '/api/cb'))
       }
     } finally {
       this.spinnerService.hide()
@@ -99,7 +99,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.spinnerService.show()
     try {
       if (!email || !password) {
-        throw new Error("Invalid email or password")
+        throw new Error('Invalid email or password')
       }
 
       const redirect = await this.authService.login({ input: email, password, remember: !!remember })
@@ -112,9 +112,9 @@ export class LoginComponent implements OnInit, OnDestroy {
         const status = e.status
 
         if (status === 401) {
-          shownError = "Invalid username or password."
+          shownError = 'Invalid username or password.'
         } else if (status === 404) {
-          shownError = "User not found."
+          shownError = 'User not found.'
         }
 
         shownError ??= e.error?.message
@@ -123,7 +123,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       }
 
       console.error(e)
-      shownError ??= "Something went wrong."
+      shownError ??= 'Something went wrong.'
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
@@ -138,7 +138,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       window.location.assign(redirect.location)
     } catch (error) {
       if (!auto) {
-        this.snackbarService.error("Could not login with passkey.")
+        this.snackbarService.error('Could not login with passkey.')
       }
       console.error(error)
     }

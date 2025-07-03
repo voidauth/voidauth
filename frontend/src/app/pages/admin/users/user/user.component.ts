@@ -1,29 +1,29 @@
-import { CommonModule } from "@angular/common"
-import { Component, inject } from "@angular/core"
-import { ReactiveFormsModule, FormControl, FormGroup, Validators } from "@angular/forms"
-import { ActivatedRoute, Router } from "@angular/router"
-import { MaterialModule } from "../../../../material-module"
-import { ValidationErrorPipe } from "../../../../pipes/ValidationErrorPipe"
-import { AdminService } from "../../../../services/admin.service"
-import { SnackbarService } from "../../../../services/snackbar.service"
-import type { TypedFormGroup } from "../../clients/upsert-client/upsert-client.component"
-import type { UserUpdate } from "@shared/api-request/admin/UserUpdate"
-import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
-import { USERNAME_REGEX } from "@shared/constants"
-import type { UserDetails } from "@shared/api-response/UserDetails"
-import { UserService } from "../../../../services/user.service"
-import { SpinnerService } from "../../../../services/spinner.service"
+import { CommonModule } from '@angular/common'
+import { Component, inject } from '@angular/core'
+import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
+import { ActivatedRoute, Router } from '@angular/router'
+import { MaterialModule } from '../../../../material-module'
+import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
+import { AdminService } from '../../../../services/admin.service'
+import { SnackbarService } from '../../../../services/snackbar.service'
+import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
+import { USERNAME_REGEX } from '@shared/constants'
+import type { UserDetails } from '@shared/api-response/UserDetails'
+import { UserService } from '../../../../services/user.service'
+import { SpinnerService } from '../../../../services/spinner.service'
 
 @Component({
-  selector: "app-user",
+  selector: 'app-user',
   imports: [
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
   ],
-  templateUrl: "./user.component.html",
-  styleUrl: "./user.component.scss",
+  templateUrl: './user.component.html',
+  styleUrl: './user.component.scss',
 })
 export class UserComponent {
   public me?: UserDetails
@@ -33,17 +33,17 @@ export class UserComponent {
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
   groupSelect = new FormControl<string>({
-    value: "",
+    value: '',
     disabled: false,
   }, [])
 
-  public form = new FormGroup<TypedFormGroup<Omit<UserUpdate, "id">>>({
+  public form = new FormGroup<TypedFormGroup<Omit<UserUpdate, 'id'>>>({
     username: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required, Validators.minLength(4), Validators.pattern(USERNAME_REGEX)]),
     email: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.email]),
     name: new FormControl<string | null>({
@@ -78,10 +78,10 @@ export class UserComponent {
 
         this.me = await this.userService.getMyUser()
 
-        this.id = params.get("id")
+        this.id = params.get('id')
 
         if (!this.id) {
-          throw new Error("User ID missing.")
+          throw new Error('User ID missing.')
         }
 
         const user = await this.adminService.user(this.id)
@@ -89,7 +89,7 @@ export class UserComponent {
         this.form.reset({
           username: user.username,
           name: user.name ?? null,
-          email: user.email ?? "",
+          email: user.email ?? '',
           emailVerified: user.emailVerified ?? false,
           approved: user.approved ?? false,
           groups: user.groups,
@@ -99,14 +99,14 @@ export class UserComponent {
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
-        this.snackbarService.error("Error loading user.")
+        this.snackbarService.error('Error loading user.')
       } finally {
         this.spinnerService.hide()
       }
     })
   }
 
-  groupAutoFilter(value: string = "") {
+  groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.groups.filter((g) => {
       return !this.form.controls.groups.value?.includes(g)
     })
@@ -142,9 +142,9 @@ export class UserComponent {
       this.spinnerService.show()
 
       await this.adminService.updateUser({ ...this.form.getRawValue(), id: this.id })
-      this.snackbarService.show("User updated.")
+      this.snackbarService.show('User updated.')
     } catch (_e) {
-      this.snackbarService.error("Could not update user.")
+      this.snackbarService.error('Could not update user.')
     } finally {
       this.spinnerService.hide()
     }
@@ -158,10 +158,10 @@ export class UserComponent {
         await this.adminService.deleteUser(this.id)
       }
 
-      this.snackbarService.show("User deleted.")
-      await this.router.navigate(["/admin/users"])
+      this.snackbarService.show('User deleted.')
+      await this.router.navigate(['/admin/users'])
     } catch (_e) {
-      this.snackbarService.error("Could not delete user.")
+      this.snackbarService.error('Could not delete user.')
     } finally {
       this.spinnerService.hide()
     }

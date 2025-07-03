@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextFunction, Request, Response } from "express"
-import { checkSchema, validationResult, type ParamSchema } from "express-validator"
+import type { NextFunction, Request, Response } from 'express'
+import { checkSchema, validationResult, type ParamSchema } from 'express-validator'
 
 type IsGenericKey<T> = string extends T ? true : number extends T ? true : false
 
@@ -30,16 +30,12 @@ type DotNotation<T> = any extends T
   : T extends (infer U)[]
     ? U extends object
       ? `*.${DotNotation<U>}`
-      : "*"
+      : '*'
     : T extends object
       ? { [K in keyof ExcludeGenericKeys<T>]-?: (
           Required<T>[K] extends object
             ? Required<T>[K] extends (infer _V)[]
-              // eslint-disable-next-line @stylistic/indent-binary-ops
-              ? `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
-              |
-              // eslint-disable-next-line @stylistic/indent-binary-ops
-              `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
+              ? (`${IsOptionalKey<T, K> extends false ? K : `${K}?`}` | `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`)
               : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
             : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
         ) }[keyof ExcludeGenericKeys<T>]
@@ -63,7 +59,7 @@ export function validate<T extends object = any>(schema: TypedSchema<T> | TypedS
   const schemas: TypedSchema<T>[] = (schema instanceof Array ? schema : [schema])
   return [
     ...schemas.map((s) => {
-      return checkSchema(s, ["body", "params", "query"])
+      return checkSchema(s, ['body', 'params', 'query'])
     }),
     handleValidatorError,
   ]

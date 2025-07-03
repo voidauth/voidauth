@@ -1,29 +1,29 @@
-import { CommonModule } from "@angular/common"
-import { Component, inject } from "@angular/core"
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
-import { MaterialModule } from "../../../../material-module"
-import { ValidationErrorPipe } from "../../../../pipes/ValidationErrorPipe"
-import { AdminService } from "../../../../services/admin.service"
-import { ActivatedRoute, Router } from "@angular/router"
-import { SnackbarService } from "../../../../services/snackbar.service"
-import type { TypedFormGroup } from "../../clients/upsert-client/upsert-client.component"
-import type { GroupUpsert } from "@shared/api-request/admin/GroupUpsert"
-import type { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete"
-import type { UserWithoutPassword } from "@shared/api-response/UserDetails"
-import type { GroupUsers } from "@shared/api-response/admin/GroupUsers"
-import { ADMIN_GROUP } from "@shared/constants"
-import { SpinnerService } from "../../../../services/spinner.service"
+import { CommonModule } from '@angular/common'
+import { Component, inject } from '@angular/core'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { MaterialModule } from '../../../../material-module'
+import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
+import { AdminService } from '../../../../services/admin.service'
+import { ActivatedRoute, Router } from '@angular/router'
+import { SnackbarService } from '../../../../services/snackbar.service'
+import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
+import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
+import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
+import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
+import { ADMIN_GROUP } from '@shared/constants'
+import { SpinnerService } from '../../../../services/spinner.service'
 
 @Component({
-  selector: "app-group",
+  selector: 'app-group',
   imports: [
     CommonModule,
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
   ],
-  templateUrl: "./group.component.html",
-  styleUrl: "./group.component.scss",
+  templateUrl: './group.component.html',
+  styleUrl: './group.component.scss',
 })
 export class GroupComponent {
   ADMIN_GROUP = ADMIN_GROUP
@@ -35,12 +35,12 @@ export class GroupComponent {
   public selectableUsers: UserWithoutPassword[] = []
   userSelect = new FormControl<UserWithoutPassword | null>(null)
 
-  public form = new FormGroup<TypedFormGroup<Omit<GroupUpsert, "id">>>({
+  public form = new FormGroup<TypedFormGroup<Omit<GroupUpsert, 'id'>>>({
     name: new FormControl<string>({
-      value: "",
+      value: '',
       disabled: false,
     }, [Validators.required]),
-    users: new FormControl<GroupUsers["users"]>([], []),
+    users: new FormControl<GroupUsers['users']>([], []),
   })
 
   private adminService = inject(AdminService)
@@ -53,7 +53,7 @@ export class GroupComponent {
     this.route.paramMap.subscribe(async (params) => {
       try {
         this.spinnerService.show()
-        const id = params.get("id")
+        const id = params.get('id')
 
         if (id) {
           this.id = id
@@ -74,14 +74,14 @@ export class GroupComponent {
         }
       } catch (e) {
         console.error(e)
-        this.snackbarService.error("Error loading group.")
+        this.snackbarService.error('Error loading group.')
       } finally {
         this.spinnerService.hide()
       }
     })
   }
 
-  userAutoFilter(value: string = "") {
+  userAutoFilter(value: string = '') {
     this.unselectedUsers = this.users.filter((u) => {
       return !this.form.controls.users.value?.find(gu => u.id === gu.id)
     })
@@ -121,14 +121,14 @@ export class GroupComponent {
     try {
       this.spinnerService.show()
       const group = await this.adminService.upsertGroup({ ...this.form.getRawValue(), id: this.id })
-      this.snackbarService.show(`Group ${this.id ? "updated" : "created"}.`)
+      this.snackbarService.show(`Group ${this.id ? 'updated' : 'created'}.`)
 
       this.id = group.id
-      await this.router.navigate(["/admin/group", this.id], {
+      await this.router.navigate(['/admin/group', this.id], {
         replaceUrl: true,
       })
     } catch (_e) {
-      this.snackbarService.error(`Could not ${this.id ? "update" : "create"} group.`)
+      this.snackbarService.error(`Could not ${this.id ? 'update' : 'create'} group.`)
     } finally {
       this.spinnerService.hide()
     }
@@ -142,10 +142,10 @@ export class GroupComponent {
         await this.adminService.deleteGroup(this.id)
       }
 
-      this.snackbarService.show("Group deleted.")
-      await this.router.navigate(["/admin/groups"])
+      this.snackbarService.show('Group deleted.')
+      await this.router.navigate(['/admin/groups'])
     } catch (_e) {
-      this.snackbarService.error("Could not delete group.")
+      this.snackbarService.error('Could not delete group.')
     } finally {
       this.spinnerService.hide()
     }

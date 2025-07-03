@@ -1,15 +1,15 @@
-import { Router, type Request, type Response } from "express"
-import { validate } from "../util/validate"
-import { matchedData } from "express-validator"
-import { getUserById } from "../db/user"
-import appConfig from "../util/config"
-import { stringValidation, uuidValidation } from "../util/validators"
-import { createEmailVerification } from "./interaction"
-import { getInvitation } from "../db/invitations"
+import { Router, type Request, type Response } from 'express'
+import { validate } from '../util/validate'
+import { matchedData } from 'express-validator'
+import { getUserById } from '../db/user'
+import appConfig from '../util/config'
+import { stringValidation, uuidValidation } from '../util/validators'
+import { createEmailVerification } from './interaction'
+import { getInvitation } from '../db/invitations'
 
 export const authRouter = Router()
 
-authRouter.post("/send_verify_email",
+authRouter.post('/send_verify_email',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
@@ -29,7 +29,7 @@ authRouter.post("/send_verify_email",
 
     const sent = await createEmailVerification(user)
     if (!sent) {
-      res.status(400).send({ message: "Verification Email could not be sent." })
+      res.status(400).send({ message: 'Verification Email could not be sent.' })
       return
     }
 
@@ -38,7 +38,7 @@ authRouter.post("/send_verify_email",
   },
 )
 
-authRouter.get("/invitation/:id/:challenge",
+authRouter.get('/invitation/:id/:challenge',
   ...validate<{ id: string, challenge: string }>({
     id: stringValidation,
     challenge: stringValidation,

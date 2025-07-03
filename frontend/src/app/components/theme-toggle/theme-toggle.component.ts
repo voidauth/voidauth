@@ -1,15 +1,15 @@
-import { Component, inject } from "@angular/core"
-import { ThemeService, type ThemeMode } from "../../services/theme.service"
-import { MaterialModule } from "../../material-module"
+import { Component, inject } from '@angular/core'
+import { ThemeService, type ThemeMode } from '../../services/theme.service'
+import { MaterialModule } from '../../material-module'
 
 @Component({
-  selector: "app-theme-toggle",
+  selector: 'app-theme-toggle',
   imports: [MaterialModule],
-  templateUrl: "./theme-toggle.component.html",
-  styleUrl: "./theme-toggle.component.scss",
+  templateUrl: './theme-toggle.component.html',
+  styleUrl: './theme-toggle.component.scss',
 })
 export class ThemeToggleComponent {
-  public themeMode: ThemeMode = "system"
+  public themeMode: ThemeMode = 'system'
 
   themeService = inject(ThemeService)
 
