@@ -413,8 +413,8 @@ router.post('/register',
   }),
   async (req: Request, res: Response) => {
     const registration = matchedData<RegisterUser>(req, { includeOptionals: true })
-
-    if (!await getInteractionDetails(req, res)) {
+    const interaction = await getInteractionDetails(req, res)
+    if (!interaction) {
       const action = registration.inviteId ? 'Invite' : 'Registration'
       res.status(400).send({
         message: `${action} page too old, refresh the page.`,
@@ -464,18 +464,28 @@ router.post('/register',
     if (invitationValid) {
       const inviteGroups = await db().select().table<InvitationGroup>('invitation_group')
         .where({ invitationId: invitation.id })
-      const userGroups: UserGroup[] = inviteGroups.map((g) => {
-        return {
-          groupId: g.groupId,
-          userId: user.id,
-          createdBy: g.createdBy,
-          updatedBy: g.updatedBy,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
-      await db().table<UserGroup>('user_group').insert(userGroups)
+
+      if (inviteGroups.length) {
+        const userGroups: UserGroup[] = inviteGroups.map((g) => {
+          return {
+            groupId: g.groupId,
+            userId: user.id,
+            createdBy: g.createdBy,
+            updatedBy: g.updatedBy,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }
+        })
+        await db().table<UserGroup>('user_group').insert(userGroups)
+      }
+
       await db().table<Invitation>('invitation').delete().where({ id: invitation.id })
+
+      const invRedir = invitation.redirect
+      if (invRedir) {
+        interaction.params.redirect_uri = invRedir
+        await interaction.save(TTLs.INTERACTION)
+      }
     }
 
     const { passwordHash: _passwordHash, ...userWithoutPassword } = user

@@ -78,6 +78,8 @@ I am not a security researcher or expert, just a developer unsatisfied with the 
 
 ## Credits
 
+This project would not be possible without the incredible work of others including but not limited to:
+
 [node-oidc-provider](https://github.com/panva/node-oidc-provider) Handles VoidAuth OIDC Provider functionality
 
 [SimpleWebAuthn](https://github.com/MasterKale/SimpleWebAuthn) Used by VoidAuth for webauthn/passkey support
