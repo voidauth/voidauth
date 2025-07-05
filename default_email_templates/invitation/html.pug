@@ -2,8 +2,7 @@ div(style='font-family:monospace;font-weight:bold;margin:2rem;')
   h1(align='center') You Are Invited To
   h2(align='center') #{app_title}
   br
-  p(align='center')
-    | #{name}, please accept your invitation by clicking the button below:
+  p(align='center') #{name ? name+', ' : ''}please accept your invitation by clicking the button below:
   br
   div(align='center')
     a(style=`background-color:${primary_color};color:${primary_contrast_color};text-decoration:none;padding:1rem;border-radius:100px;` href=`${invitation_url}`)

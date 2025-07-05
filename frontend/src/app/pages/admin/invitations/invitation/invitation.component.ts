@@ -14,6 +14,8 @@ import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import { ConfigService } from '../../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { SpinnerService } from '../../../../services/spinner.service'
+import { isValidURL } from '../../../../validators/validators'
+import * as psl from 'psl'
 
 @Component({
   selector: 'app-invitation',
@@ -54,6 +56,7 @@ export class InvitationComponent {
       value: null,
       disabled: false,
     }, [Validators.minLength(4)]),
+    redirect: new FormControl<string | null>(null, [isValidURL]),
     emailVerified: new FormControl<boolean>(true),
     groups: new FormControl<string[]>({
       value: [],
@@ -110,7 +113,8 @@ export class InvitationComponent {
       name: invitation.name ?? null,
       email: invitation.email ?? null,
       groups: invitation.groups,
-      emailVerified: true,
+      emailVerified: invitation.emailVerified ?? true,
+      redirect: invitation.redirect ?? psl.get(this.config?.domain || '') ?? null,
     })
     this.inviteEmail = invitation.email
     if (!this.config) {

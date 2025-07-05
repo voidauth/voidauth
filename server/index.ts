@@ -149,16 +149,6 @@ function modifyIndex() {
     }
   }
 
-  if (!brandingFiles.includes('logo.svg')) {
-    if (brandingFiles.includes('logo.png')) {
-      index = index.replaceAll('logo.svg', 'logo.png')
-    } else if (brandingFiles.includes('favicon.svg')) {
-      index = index.replaceAll('logo.svg', 'favicon.svg')
-    } else if (brandingFiles.includes('favicon.png')) {
-      index = index.replaceAll('logo.svg', 'favicon.png')
-    }
-  }
-
   return index
 }
 

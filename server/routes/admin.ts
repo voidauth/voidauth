@@ -612,6 +612,24 @@ adminRouter.post('/invitation',
       },
       ...emailValidation,
     },
+    redirect: {
+      default: {
+        options: null,
+      },
+      optional: {
+        options: {
+          values: 'null',
+        },
+      },
+      ...stringValidation,
+      isURL: {
+        options: {
+          protocols: ['http', 'https'],
+          require_tld: false,
+          require_protocol: true,
+        },
+      },
+    },
     groups: {
       isArray: true,
     },
