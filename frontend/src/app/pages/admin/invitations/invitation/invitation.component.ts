@@ -54,7 +54,7 @@ export class InvitationComponent {
       value: null,
       disabled: false,
     }, [Validators.minLength(4)]),
-    emailVerified: new FormControl<boolean>(true),
+    emailVerified: new FormControl<boolean>({ value: true, disabled: true }),
     groups: new FormControl<string[]>({
       value: [],
       disabled: false,
@@ -183,7 +183,6 @@ export class InvitationComponent {
       const invitation = await this.adminService.upsertInvitation({
         ...this.form.getRawValue(),
         id: this.id,
-        emailVerified: this.form.controls.emailVerified.enabled && this.form.controls.emailVerified.value,
       })
 
       this.snackbarService.show(`Invitation ${this.id ? 'updated' : 'created'}.`)
