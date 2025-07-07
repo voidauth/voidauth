@@ -67,7 +67,7 @@ const configuration: Configuration = {
   ttl: {
     Session: TTLs.SESSION,
     Grant: TTLs.GRANT,
-    Interaction: TTLs.SESSION,
+    Interaction: TTLs.INTERACTION,
     // Below copied from node-oidc-provider, if omitted it will complain
     // Even though these seem like sensible defaults
     AccessToken: function AccessTokenTTL(_ctx, token, _client) {

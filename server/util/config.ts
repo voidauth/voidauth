@@ -29,6 +29,7 @@ class Config {
   // Optional
   STORAGE_KEY_SECONDARY?: string
   PASSWORD_STRENGTH = 2
+  DEFAULT_REDIRECT?: string
 
   // SMTP
   SMTP_HOST?: string
@@ -60,6 +61,7 @@ function assignConfigValue(key: keyof Config, value: unknown) {
 
     // non default variables
     case 'STORAGE_KEY_SECONDARY':
+    case 'DEFAULT_REDIRECT':
     case 'DB_HOST':
     case 'DB_PASSWORD':
     case 'SMTP_HOST':
@@ -117,6 +119,12 @@ configKeys.forEach((key: keyof Config) => {
 // check APP_URL is set
 if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
   console.error('APP_URL must be set and be a valid URL, starting with http(s)://')
+  exit(1)
+}
+
+// check DEFAULT_REDIRECT is valid if set
+if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
+  console.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
   exit(1)
 }
 

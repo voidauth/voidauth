@@ -47,15 +47,6 @@
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
-        <mat-label>Redirect</mat-label>
-        <input matInput type="text" formControlName="redirect" />
-        <mat-hint>Where the user will be redirected after successfully accepting the invitation.</mat-hint>
-        @if (form.controls.redirect.errors) {
-          <mat-error>{{ form.controls.redirect.errors | validationError }}</mat-error>
-        }
-      </mat-form-field>
-
-      <mat-form-field>
         <mat-label>Username</mat-label>
         <input matInput type="text" formControlName="username" />
         @if (form.controls.username.errors) {
