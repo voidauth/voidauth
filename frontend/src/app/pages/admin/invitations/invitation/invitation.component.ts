@@ -87,6 +87,7 @@ export class InvitationComponent {
           this.id = id
           const invitation = await this.adminService.invitation(this.id)
           await this.formSet(invitation)
+          this.setEmailVerifiedState()
         }
 
         this.groups = (await this.adminService.groups()).map(g => g.name)
