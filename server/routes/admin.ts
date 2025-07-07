@@ -612,6 +612,9 @@ adminRouter.post('/invitation',
       },
       ...emailValidation,
     },
+    emailVerified: {
+      isBoolean: true,
+    },
     groups: {
       isArray: true,
     },
