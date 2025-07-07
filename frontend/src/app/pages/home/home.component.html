@@ -1,4 +1,25 @@
 <h1>Settings</h1>
+@if (!isPasskeySession && passkeySupport?.enabled) {
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title> Device </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form>
+        <mat-card-actions>
+          <button mat-flat-button type="button" (click)="registerPasskey(false)">
+            {{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}
+            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+          </button>
+        </mat-card-actions>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-divider class="divider"></mat-divider>
+}
+
 <mat-card class="form-card">
   <mat-card-header>
     <mat-card-title> Change Profile </mat-card-title>
@@ -82,26 +103,5 @@
     </form>
   </mat-card-content>
 </mat-card>
-
-@if (!isPasskeySession && passkeySupport?.enabled) {
-  <mat-divider class="divider"></mat-divider>
-
-  <mat-card class="form-card">
-    <mat-card-header>
-      <mat-card-title> Device </mat-card-title>
-    </mat-card-header>
-
-    <mat-card-content>
-      <form>
-        <mat-card-actions>
-          <button mat-flat-button type="button" (click)="registerPasskey(false)">
-            {{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}
-            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
-          </button>
-        </mat-card-actions>
-      </form>
-    </mat-card-content>
-  </mat-card>
-}
 
 <span style="flex-grow: 1"></span>

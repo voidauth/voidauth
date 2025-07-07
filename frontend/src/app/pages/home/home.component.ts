@@ -183,10 +183,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   async registerPasskey(auto: boolean) {
+    this.spinnerService.show()
     try {
       const optionsJSON = await this.passkeyService.getRegistrationOptions()
       const registration = await startRegistration({ optionsJSON, useAutoRegister: auto })
       await this.passkeyService.sendRegistration(registration)
+      await this.loadUser()
     } catch (error) {
       if (!auto) {
         if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
@@ -196,6 +198,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       }
       console.error(error)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }

@@ -67,8 +67,7 @@ export class RegistrationComponent implements OnInit {
         await this.authService.interactionExists()
       } catch (_e) {
         // interaction session is missing, could not log in without it
-        window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + '/api/cb',
-          'register', inviteId, challenge))
+        window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + '/api/cb', 'register', inviteId, challenge))
       } finally {
         this.spinnerService.hide()
       }

@@ -6,6 +6,8 @@ import { getRegistrationOptions, getUserPasskeys, savePasskey, saveRegistrationO
 import { validate } from '../util/validate'
 import type { Passkey } from '@shared/db/Passkey'
 import { matchedData } from 'express-validator'
+import { provider } from '../oidc/provider'
+import { TTLs } from '@shared/constants'
 
 const rpName = appConfig.APP_TITLE
 const appURL = URL.parse(appConfig.APP_URL) as URL
@@ -161,6 +163,20 @@ passkeyRouter.post('/registration',
     // (Pseudocode) Save the authenticator info so that we can
     // get it by user ID later
     await savePasskey(newPasskey)
+
+    // Try to add webauthn to session amr
+    try {
+      const ctx = provider.createContext(req, res)
+      const session = await provider.Session.get(ctx)
+      const amr = session.amr ?? []
+      if (!amr.includes('webauthn')) {
+        amr.push('webauthn')
+      }
+      session.amr = amr
+      await session.save(TTLs.SESSION)
+    } catch (e) {
+      console.error(e)
+    }
 
     res.send()
   },

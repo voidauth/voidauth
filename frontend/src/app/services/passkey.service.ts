@@ -1,9 +1,11 @@
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
-import { browserSupportsWebAuthn, platformAuthenticatorIsAvailable, type AuthenticationResponseJSON,
+import {
+  browserSupportsWebAuthn, platformAuthenticatorIsAvailable, WebAuthnError, type AuthenticationResponseJSON,
   type PublicKeyCredentialCreationOptionsJSON,
-  type PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser'
+  type PublicKeyCredentialRequestOptionsJSON,
+} from '@simplewebauthn/browser'
 import type { Redirect } from '@shared/api-response/Redirect'
 import { UAParser } from 'ua-parser-js'
 
@@ -58,9 +60,16 @@ export class PasskeyService {
   }
 
   async sendRegistration(reg: unknown) {
-    const result = firstValueFrom(this.http.post<null>('/api/passkey/registration', reg))
-    localStorage.setItem('passkey_seen', 'true')
-    return result
+    try {
+      const result = await firstValueFrom(this.http.post<null>('/api/passkey/registration', reg))
+      localStorage.setItem('passkey_seen', 'true')
+      return result
+    } catch (error) {
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        localStorage.setItem('passkey_seen', 'true')
+      }
+      throw error
+    }
   }
 
   async getAuthOptions() {

@@ -481,9 +481,10 @@ router.post('/register',
 
       await db().table<Invitation>('invitation').delete().where({ id: invitation.id })
 
-      const invRedir = invitation.redirect
-      if (invRedir) {
-        interaction.params.redirect_uri = invRedir
+      // Accepted Invitation should redirect to DEFAULT_REDIRECT if set
+      const defaultRedirect = appConfig.DEFAULT_REDIRECT
+      if (defaultRedirect) {
+        interaction.params.redirect_uri = defaultRedirect
         await interaction.save(TTLs.INTERACTION)
       }
     }
@@ -515,7 +516,8 @@ router.post('/verify_email',
   async (req: Request, res: Response) => {
     const { userId, challenge } = matchedData<VerifyUserEmail>(req, { includeOptionals: true })
 
-    if (!await getInteractionDetails(req, res)) {
+    const interaction = await getInteractionDetails(req, res)
+    if (!interaction) {
       const redir: Redirect = {
         location: oidcLoginPath(appConfig.APP_URL + '/api/cb', 'verify_email', userId, challenge),
       }
@@ -546,6 +548,13 @@ router.post('/verify_email',
       email: emailVerification.email,
     })
     await db().delete().table<EmailVerification>('email_verification').where(emailVerification)
+
+    // Email verification should redirect to DEFAULT_REDIRECT if set
+    const defaultRedirect = appConfig.DEFAULT_REDIRECT
+    if (defaultRedirect) {
+      interaction.params.redirect_uri = defaultRedirect
+      await interaction.save(TTLs.INTERACTION)
+    }
 
     // finish login step, get redirect url to resume interaction
     // If a uid was found, finish the interaction.
