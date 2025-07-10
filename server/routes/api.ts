@@ -1,7 +1,7 @@
 import { Router, type Request } from 'express'
 import { router as interactionRouter } from './interaction'
 import { provider } from '../oidc/provider'
-import { commit, createTransaction, db } from '../db/db'
+import { commit, transaction, db, rollback } from '../db/db'
 import { getUserById } from '../db/user'
 import { userRouter } from './user'
 import type { Group, UserGroup } from '@shared/db/Group'
@@ -33,9 +33,13 @@ router.use((_req, _res, next) => {
 // If method is post-put-patch-delete then use transaction
 router.use(async (req, res, next) => {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method.toUpperCase())) {
-    await createTransaction()
+    await transaction()
     res.on('finish', async () => {
-      await commit()
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        await commit()
+      } else {
+        await rollback()
+      }
     })
   }
   next()

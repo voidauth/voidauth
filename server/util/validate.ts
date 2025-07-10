@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextFunction, Request, Response } from 'express'
-import { checkSchema, validationResult, type ParamSchema } from 'express-validator'
+import { checkSchema, validationResult, type CustomSanitizer, type CustomValidator, type ParamSchema } from 'express-validator'
+import type { ExtensionValidatorSchemaOptions } from 'express-validator/lib/middlewares/schema'
 
 type IsGenericKey<T> = string extends T ? true : number extends T ? true : false
 
@@ -50,9 +51,13 @@ type WasOptionalKey<T extends string> = T extends `${infer _A}?${infer _B}`
 type FixOptionalKey<T extends string> = T extends `${infer A}?${infer B}` ? FixOptionalKey<`${A}${B}`> : T
 
 export type TypedSchema<T extends object> = {
-  [K in DotNotation<T> as WasOptionalKey<K> extends false ? K : never]: ParamSchema<any>
+  [K in DotNotation<T> as WasOptionalKey<K> extends false ? K : never]: ParamSchema
+    | { [k: string]: (Exclude<ExtensionValidatorSchemaOptions, boolean> | { custom: CustomValidator })
+      | { customSanitizer: CustomSanitizer } }
 } & {
-  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ParamSchema<any>
+  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ParamSchema
+    | { [k: string]: (Exclude<ExtensionValidatorSchemaOptions, boolean> | { custom: CustomValidator })
+      | { customSanitizer: CustomSanitizer } }
 }
 
 export function validate<T extends object = any>(schema: TypedSchema<T> | TypedSchema<T>[]) {

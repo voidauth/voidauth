@@ -40,7 +40,7 @@ if (migrations.length) {
   console.log(`Ran Migrations: ${migrations.join(', ')}`)
 }
 
-export async function createTransaction() {
+export async function transaction() {
   const store = getAsyncStore()
   if (!store) {
     throw new Error('Cannot create transaction outside of async context.')

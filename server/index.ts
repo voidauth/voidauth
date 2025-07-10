@@ -11,7 +11,7 @@ import { getCookieKeys, getJWKs, makeKeysValid } from './db/key'
 import { randomInt } from 'node:crypto'
 import initialize from 'oidc-provider/lib/helpers/initialize_keystore'
 import { clearAllExpiredEntries, updateEncryptedTables } from './db/util'
-import { createTransaction, commit, rollback } from './db/db'
+import { transaction, commit, rollback } from './db/db'
 import { als } from './util/als'
 import { rateLimit } from 'express-rate-limit'
 
@@ -122,10 +122,9 @@ app.use((_req, res) => {
 })
 
 // Last chance error handler
-app.use(async (err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err)
   res.sendStatus(500)
-  await rollback()
 })
 
 app.listen(appConfig.APP_PORT, () => {
@@ -157,7 +156,7 @@ let previousJwks = initialJwks
 setInterval(async () => {
   // Do initial key setup and cleanup
   await als.run({}, async () => {
-    await createTransaction()
+    await transaction()
     try {
       // Remove all expired data from db
       await clearAllExpiredEntries()
