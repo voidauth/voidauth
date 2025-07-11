@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextFunction, Request, Response } from 'express'
-import { checkSchema, validationResult, type CustomSanitizer, type CustomValidator, type ParamSchema } from 'express-validator'
+import { checkSchema, matchedData, validationResult, type CustomSanitizer, type CustomValidator, type ParamSchema } from 'express-validator'
 import type { ExtensionValidatorSchemaOptions } from 'express-validator/lib/middlewares/schema'
 
 type IsGenericKey<T> = string extends T ? true : number extends T ? true : false
@@ -77,4 +77,9 @@ function handleValidatorError(req: Request, res: Response, next: NextFunction) {
   } else {
     next()
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+export function validatorData<T extends object = Record<string, any>>(req: Request) {
+  return matchedData<T>(req, { includeOptionals: true, onlyValidData: true })
 }

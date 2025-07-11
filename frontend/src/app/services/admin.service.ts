@@ -104,6 +104,10 @@ export class AdminService {
     return firstValueFrom(this.http.delete<null>(`/api/admin/user/${id}`))
   }
 
+  async approveUsers(ids: string[]) {
+    return firstValueFrom(this.http.patch<null>('/api/admin/users/approve', { users: ids }))
+  }
+
   async invitations() {
     return firstValueFrom(this.http.get<Invitation[]>('/api/admin/invitations'))
   }

@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router'
 import { UserService } from '../../../services/user.service'
 import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
 import { SpinnerService } from '../../../services/spinner.service'
+import type { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox'
 
 @Component({
   selector: 'app-users',
@@ -53,7 +54,9 @@ export class UsersComponent {
     },
   ]
 
-  displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
+  displayedColumns = ['multi'].concat(this.columns.map(c => c.columnDef)).concat(['actions'])
+
+  selected: { id: string, source: MatCheckbox }[] = []
 
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
@@ -68,6 +71,11 @@ export class UsersComponent {
       this.dataSource.data = await this.adminService.users()
       this.dataSource.paginator = this.paginator
       this.dataSource.sort = this.sort
+
+      this.paginator.page.subscribe((_p) => {
+        this.selected.forEach(s => s.source.checked = false)
+        this.selected = []
+      })
     } finally {
       this.spinnerService.hide()
     }
@@ -81,6 +89,34 @@ export class UsersComponent {
       this.snackbarService.show('User was deleted.')
     } catch (_e) {
       this.snackbarService.error('Could not delete user.')
+    } finally {
+      this.spinnerService.hide()
+    }
+  }
+
+  select(id: string, event: MatCheckboxChange) {
+    if (event.checked) {
+      this.selected.push({ id, source: event.source })
+    } else {
+      this.selected = this.selected.filter(u => u.id !== id)
+    }
+  }
+
+  async approveSelected() {
+    try {
+      this.spinnerService.show()
+      await this.adminService.approveUsers(this.selected.map(s => s.id))
+      this.dataSource.data.forEach((u) => {
+        if (this.selected.find(s => s.id === u.id)) {
+          u.approved = true
+        }
+      })
+      this.selected.forEach(s => s.source.checked = false)
+      this.selected = []
+
+      this.snackbarService.show('User(s) were approved.')
+    } catch (_e) {
+      this.snackbarService.error('Could not approve user(s).')
     } finally {
       this.spinnerService.hide()
     }
