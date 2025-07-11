@@ -9,7 +9,7 @@
       matSuffix
       [matTooltip]="label() + ' Endpoint'"
       [cdkCopyToClipboard]="val"
-      (click)="snackbarService.show(label() + ' copied to clipboard.')"
+      (click)="snackbarService.message(label() + ' copied to clipboard.')"
     >
       <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
     </button>
