@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express'
-import { validate, type TypedSchema } from '../util/validate'
+import { validate, validatorData, type TypedSchema } from '../util/validate'
 import { db } from '../db/db'
 import { matchedData } from 'express-validator'
 import { isOIDCProviderError, provider } from '../oidc/provider'
@@ -423,6 +423,29 @@ adminRouter.delete('/user/:id',
       return
     }
 
+    res.send()
+  },
+)
+
+adminRouter.patch('/users/approve',
+  ...validate<{ users: string[] }>({
+    users: {
+      isArray: true,
+    },
+    'users.*': {
+      ...uuidValidation,
+    },
+  }),
+  async (req: Request, res: Response) => {
+    const { users } = validatorData<{ users: string[] }>(req)
+
+    if (!users.length) {
+      // nothing to do
+      res.send()
+      return
+    }
+
+    await db().table<User>('user').update({ approved: true }).whereIn('id', users)
     res.send()
   },
 )

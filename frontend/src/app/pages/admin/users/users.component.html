@@ -1,5 +1,17 @@
 <div class="container">
+  <button mat-flat-button [disabled]="!selected.length" style="align-self: end" (click)="approveSelected()">
+    Approve
+    <mat-icon>check</mat-icon>
+  </button>
+
   <table mat-table [dataSource]="dataSource" matSort>
+    <ng-container matColumnDef="multi">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let row" class="multi">
+        <mat-checkbox (change)="select(row.id, $event)"></mat-checkbox>
+      </td>
+    </ng-container>
+
     @for (column of columns; track column) {
       <ng-container [matColumnDef]="column.columnDef">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
