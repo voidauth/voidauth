@@ -14,6 +14,8 @@ import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import { ValidationErrorPipe } from '../../../pipes/ValidationErrorPipe'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-password-sets',
@@ -56,6 +58,7 @@ export class PasswordResetsComponent {
   snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private configService = inject(ConfigService)
+  private dialog = inject(MatDialog)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
@@ -87,7 +90,7 @@ export class PasswordResetsComponent {
       const reset = await this.adminService.createPasswordReset({ userId: user.id })
       const data = [reset].concat(this.dataSource.data)
       this.dataSource.data = this.dataSource.sortData(data, this.sort)
-      this.snackbarService.show('Password reset link was deleted.')
+      this.snackbarService.message('Password reset link was deleted.')
     } catch (_e) {
       this.snackbarService.error('Could not create password reset link.')
     } finally {
@@ -95,17 +98,31 @@ export class PasswordResetsComponent {
     }
   }
 
-  async delete(id: string) {
-    try {
-      this.spinnerService.show()
-      await this.adminService.deletePasswordReset(id)
-      this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
-      this.snackbarService.show('Password reset link was deleted.')
-    } catch (_e) {
-      this.snackbarService.error('Could not delete password reset link.')
-    } finally {
-      this.spinnerService.hide()
-    }
+  delete(id: string) {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete this password reset link?`,
+        header: 'Delete',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Password reset link delete cancelled.')
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.adminService.deletePasswordReset(id)
+        this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
+        this.snackbarService.message('Password reset link was deleted.')
+      } catch (_e) {
+        this.snackbarService.error('Could not delete password reset link.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 
   userAutoFilter(value: string = '') {
@@ -127,7 +144,7 @@ export class PasswordResetsComponent {
       }
       this.spinnerService.show()
       await this.adminService.sendPasswordReset(reset.id)
-      this.snackbarService.show(`Password reset link sent to ${reset.email}.`)
+      this.snackbarService.message(`Password reset link sent to ${reset.email}.`)
     } catch (_e) {
       this.snackbarService.error('Could not send password reset link.')
     } finally {

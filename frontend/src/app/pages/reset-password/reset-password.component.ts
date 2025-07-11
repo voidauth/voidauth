@@ -78,7 +78,7 @@ export class ResetPasswordComponent {
         challenge: this.challenge,
         newPassword: this.passwordForm.controls.newPassword.value,
       })
-      this.snackbarService.show('Password Reset Complete.')
+      this.snackbarService.message('Password Reset Complete.')
       await this.router.navigate([REDIRECT_PATHS.LOGIN])
     } catch (e) {
       console.error(e)

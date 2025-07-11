@@ -49,7 +49,7 @@ export class ForgotPasswordComponent implements OnInit {
       const result = await this.authService.sendPasswordReset(input)
       this.emailSent = result.emailSent
 
-      this.snackbarService.show(this.emailSent ? 'Password reset link sent.' : 'Password reset link created, but could not be sent.')
+      this.snackbarService.message(this.emailSent ? 'Password reset link sent.' : 'Password reset link created, but could not be sent.')
     } catch (e) {
       let shownError: string | null = null
 

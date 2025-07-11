@@ -13,7 +13,7 @@
             matSuffix
             matTooltip="Copy Invite Link"
             [cdkCopyToClipboard]="inviteLink || ''"
-            (click)="snackbarService.show('Invite link copied to clipboard.')"
+            (click)="snackbarService.message('Invite link copied to clipboard.')"
           >
             <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
           </button>

@@ -6,13 +6,15 @@ import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { USERNAME_REGEX } from '@shared/constants'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../../../services/user.service'
 import { SpinnerService } from '../../../../services/spinner.service'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-user',
@@ -37,7 +39,7 @@ export class UserComponent {
     disabled: false,
   }, [])
 
-  public form = new FormGroup<TypedFormGroup<Omit<UserUpdate, 'id'>>>({
+  public form = new FormGroup<TypedControls<Omit<UserUpdate, 'id'>>>({
     username: new FormControl<string>({
       value: '',
       disabled: false,
@@ -70,6 +72,7 @@ export class UserComponent {
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
@@ -142,7 +145,7 @@ export class UserComponent {
       this.spinnerService.show()
 
       await this.adminService.updateUser({ ...this.form.getRawValue(), id: this.id })
-      this.snackbarService.show('User updated.')
+      this.snackbarService.message('User updated.')
     } catch (_e) {
       this.snackbarService.error('Could not update user.')
     } finally {
@@ -150,20 +153,33 @@ export class UserComponent {
     }
   }
 
-  async remove() {
-    try {
-      this.spinnerService.show()
+  remove() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete this user?`,
+        header: 'Delete',
+      },
+    })
 
-      if (this.id) {
-        await this.adminService.deleteUser(this.id)
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('User delete cancelled.')
+        return
       }
+      try {
+        this.spinnerService.show()
 
-      this.snackbarService.show('User deleted.')
-      await this.router.navigate(['/admin/users'])
-    } catch (_e) {
-      this.snackbarService.error('Could not delete user.')
-    } finally {
-      this.spinnerService.hide()
-    }
+        if (this.id) {
+          await this.adminService.deleteUser(this.id)
+        }
+
+        this.snackbarService.message('User deleted.')
+        await this.router.navigate(['/admin/users'])
+      } catch (_e) {
+        this.snackbarService.error('Could not delete user.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 }

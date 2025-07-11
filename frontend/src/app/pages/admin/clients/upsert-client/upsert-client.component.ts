@@ -14,8 +14,10 @@ import type { itemIn } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.component'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 
-export type TypedFormGroup<T> = {
+export type TypedControls<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
 }
 
@@ -53,7 +55,7 @@ export class UpsertClientComponent implements OnInit {
 
   responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>([])
 
-  form = new FormGroup<TypedFormGroup<ClientUpsert>>({
+  form = new FormGroup<TypedControls<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
     redirect_uris: new FormControl<string[]>([], [Validators.required, Validators.minLength(1)]),
     client_secret: new FormControl<string>('', [Validators.required, Validators.minLength(4)]),
@@ -71,6 +73,7 @@ export class UpsertClientComponent implements OnInit {
   private router = inject(Router)
   snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
@@ -139,7 +142,7 @@ export class UpsertClientComponent implements OnInit {
         await this.adminService.addClient(this.form.getRawValue())
       }
 
-      this.snackbarService.show(`Client ${this.client_id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(`Client ${this.client_id ? 'updated' : 'created'}.`)
       this.client_id = this.form.getRawValue().client_id
       if (!this.client_id) {
         throw new Error()
@@ -164,21 +167,35 @@ export class UpsertClientComponent implements OnInit {
     }
   }
 
-  async deleteClient() {
-    try {
-      this.spinnerService.show()
+  deleteClient() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete this client?`,
+        header: 'Delete',
+      },
+    })
 
-      if (this.client_id) {
-        await this.adminService.deleteClient(this.client_id)
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Client delete cancelled.')
+        return
       }
 
-      this.snackbarService.show('Client deleted.')
-      await this.router.navigate(['/admin/clients'])
-    } catch (_e) {
-      this.snackbarService.error('Could not delete client.')
-    } finally {
-      this.spinnerService.hide()
-    }
+      try {
+        this.spinnerService.show()
+
+        if (this.client_id) {
+          await this.adminService.deleteClient(this.client_id)
+        }
+
+        this.snackbarService.message('Client deleted.')
+        await this.router.navigate(['/admin/clients'])
+      } catch (_e) {
+        this.snackbarService.error('Could not delete client.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 
   generateSecret() {

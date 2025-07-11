@@ -35,10 +35,10 @@ router.use(async (req, res, next) => {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method.toUpperCase())) {
     await transaction()
     res.on('finish', async () => {
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        await commit()
-      } else {
+      if (res.statusCode >= 500 && res.statusCode < 600) {
         await rollback()
+      } else {
+        await commit()
       }
     })
   }

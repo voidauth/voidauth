@@ -8,9 +8,9 @@ export class SnackbarService {
   private snackBar = inject(MatSnackBar)
 
   private messageDuration = 6
-  private errorDuration = 30
+  private errorDuration = 15
 
-  show(message: string) {
+  message(message: string) {
     this.snackBar.open(message, 'Ok', {
       duration: this.messageDuration * 1000,
     })
