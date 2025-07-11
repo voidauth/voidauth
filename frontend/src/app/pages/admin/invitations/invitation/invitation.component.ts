@@ -8,12 +8,14 @@ import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import { ConfigService } from '../../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { SpinnerService } from '../../../../services/spinner.service'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-invitation',
@@ -41,7 +43,7 @@ export class InvitationComponent {
   public inviteLink?: string
   public inviteEmail?: string | null
 
-  public form = new FormGroup<TypedFormGroup<Omit<InvitationUpsert, 'id'>>>({
+  public form = new FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>({
     username: new FormControl<string | null>({
       value: null,
       disabled: false,
@@ -60,7 +62,7 @@ export class InvitationComponent {
       disabled: false,
     }, []),
   }, [(c) => {
-    const f = c as FormGroup<TypedFormGroup<Omit<InvitationUpsert, 'id'>>>
+    const f = c as FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
     if (!f.controls.email.value && !f.controls.username.value) {
       return { usernameOrEmail: 'Username or Email are required.' }
     }
@@ -73,6 +75,7 @@ export class InvitationComponent {
   private router = inject(Router)
   public snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
@@ -168,7 +171,7 @@ export class InvitationComponent {
       }
 
       await this.adminService.sendInvitation(this.id)
-      this.snackbarService.show(`Invite sent to ${String(this.inviteEmail)}.`)
+      this.snackbarService.message(`Invite sent to ${String(this.inviteEmail)}.`)
     } catch (e) {
       console.error(e)
       this.snackbarService.error('Could not send invitation.')
@@ -186,7 +189,7 @@ export class InvitationComponent {
         id: this.id,
       })
 
-      this.snackbarService.show(`Invitation ${this.id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(`Invitation ${this.id ? 'updated' : 'created'}.`)
 
       this.id = invitation.id
       await this.formSet(invitation)
@@ -201,20 +204,33 @@ export class InvitationComponent {
     }
   }
 
-  async remove() {
-    try {
-      this.spinnerService.show()
+  remove() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete this invitation?`,
+        header: 'Delete',
+      },
+    })
 
-      if (this.id) {
-        await this.adminService.deleteInvitation(this.id)
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Invitation delete cancelled.')
+        return
       }
+      try {
+        this.spinnerService.show()
 
-      this.snackbarService.show('Invitation deleted.')
-      await this.router.navigate(['/admin/invitations'])
-    } catch (_e) {
-      this.snackbarService.error('Could not delete invitation.')
-    } finally {
-      this.spinnerService.hide()
-    }
+        if (this.id) {
+          await this.adminService.deleteInvitation(this.id)
+        }
+
+        this.snackbarService.message('Invitation deleted.')
+        await this.router.navigate(['/admin/invitations'])
+      } catch (_e) {
+        this.snackbarService.error('Could not delete invitation.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 }

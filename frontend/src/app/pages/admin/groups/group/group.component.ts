@@ -6,13 +6,15 @@ import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { AdminService } from '../../../../services/admin.service'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import { ADMIN_GROUP } from '@shared/constants'
 import { SpinnerService } from '../../../../services/spinner.service'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-group',
@@ -35,7 +37,7 @@ export class GroupComponent {
   public selectableUsers: UserWithoutPassword[] = []
   userSelect = new FormControl<UserWithoutPassword | null>(null)
 
-  public form = new FormGroup<TypedFormGroup<Omit<GroupUpsert, 'id'>>>({
+  public form = new FormGroup<TypedControls<Omit<GroupUpsert, 'id'>>>({
     name: new FormControl<string>({
       value: '',
       disabled: false,
@@ -48,6 +50,7 @@ export class GroupComponent {
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
@@ -121,7 +124,7 @@ export class GroupComponent {
     try {
       this.spinnerService.show()
       const group = await this.adminService.upsertGroup({ ...this.form.getRawValue(), id: this.id })
-      this.snackbarService.show(`Group ${this.id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(`Group ${this.id ? 'updated' : 'created'}.`)
 
       this.id = group.id
       await this.router.navigate(['/admin/group', this.id], {
@@ -134,20 +137,33 @@ export class GroupComponent {
     }
   }
 
-  async remove() {
-    try {
-      this.spinnerService.show()
+  remove() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete this group?`,
+        header: 'Delete',
+      },
+    })
 
-      if (this.id) {
-        await this.adminService.deleteGroup(this.id)
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Group delete cancelled.')
+        return
       }
+      try {
+        this.spinnerService.show()
 
-      this.snackbarService.show('Group deleted.')
-      await this.router.navigate(['/admin/groups'])
-    } catch (_e) {
-      this.snackbarService.error('Could not delete group.')
-    } finally {
-      this.spinnerService.hide()
-    }
+        if (this.id) {
+          await this.adminService.deleteGroup(this.id)
+        }
+
+        this.snackbarService.message('Group deleted.')
+        await this.router.navigate(['/admin/groups'])
+      } catch (_e) {
+        this.snackbarService.error('Could not delete group.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 }

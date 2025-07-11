@@ -9,6 +9,8 @@ import { RouterLink } from '@angular/router'
 import { MaterialModule } from '../../../material-module'
 import type { Invitation } from '@shared/db/Invitation'
 import { SpinnerService } from '../../../services/spinner.service'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-invitations',
@@ -48,6 +50,7 @@ export class InvitationsComponent {
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
@@ -61,17 +64,32 @@ export class InvitationsComponent {
     }
   }
 
-  async delete(id: string) {
-    try {
-      this.spinnerService.show()
-      await this.adminService.deleteInvitation(id)
-      this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
-      this.snackbarService.show('Invitation was deleted.')
-    } catch (_e) {
-      this.snackbarService.error('Could not delete invitation.')
-    } finally {
-      this.spinnerService.hide()
-    }
+  delete(id: string) {
+    const invite = this.dataSource.data.find(i => i.id === id)
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to remove invitation for '${invite?.username ?? invite?.email ?? id}'?`,
+        header: 'Delete',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Invitation delete cancelled.')
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.adminService.deleteInvitation(id)
+        this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
+        this.snackbarService.message('Invitation was deleted.')
+      } catch (_e) {
+        this.snackbarService.error('Could not delete invitation.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 }
 

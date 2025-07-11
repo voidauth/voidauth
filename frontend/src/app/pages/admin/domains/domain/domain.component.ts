@@ -5,13 +5,15 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import { SpinnerService } from '../../../../services/spinner.service'
-import type { TypedFormGroup } from '../../clients/upsert-client/upsert-client.component'
+import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { isValidWildcardDomain } from '@shared/utils'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-domain',
@@ -35,7 +37,7 @@ export class DomainComponent {
     disabled: false,
   }, [])
 
-  public form = new FormGroup<TypedFormGroup<Omit<ProxyAuthUpsert, 'id'>>>({
+  public form = new FormGroup<TypedControls<Omit<ProxyAuthUpsert, 'id'>>>({
     domain: new FormControl<string>({
       value: '',
       disabled: false,
@@ -56,6 +58,7 @@ export class DomainComponent {
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
@@ -119,7 +122,7 @@ export class DomainComponent {
     try {
       this.spinnerService.show()
       const response = await this.adminService.upsertProxyAuth({ ...this.form.getRawValue(), id: this.id })
-      this.snackbarService.show(`Domain ${this.id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(`Domain ${this.id ? 'updated' : 'created'}.`)
 
       this.id = response.id
       this.resetForm(response)
@@ -133,20 +136,34 @@ export class DomainComponent {
     }
   }
 
-  async remove() {
-    try {
-      this.spinnerService.show()
+  remove() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete this domain?`,
+        header: 'Delete',
+      },
+    })
 
-      if (this.id) {
-        await this.adminService.deleteProxyAuth(this.id)
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Domain delete cancelled.')
+        return
       }
 
-      this.snackbarService.show('Domain deleted.')
-      await this.router.navigate(['/admin/domains'])
-    } catch (_e) {
-      this.snackbarService.error('Could not delete domain.')
-    } finally {
-      this.spinnerService.hide()
-    }
+      try {
+        this.spinnerService.show()
+
+        if (this.id) {
+          await this.adminService.deleteProxyAuth(this.id)
+        }
+
+        this.snackbarService.message('Domain deleted.')
+        await this.router.navigate(['/admin/domains'])
+      } catch (_e) {
+        this.snackbarService.error('Could not delete domain.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 }

@@ -10,6 +10,8 @@ import type { TableColumn } from '../clients/clients.component'
 import { RouterLink } from '@angular/router'
 import { MaterialModule } from '../../../material-module'
 import { sortWildcardDomains } from '@shared/utils'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-domains',
@@ -43,6 +45,7 @@ export class DomainsComponent {
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
 
   async ngAfterViewInit() {
     try {
@@ -75,16 +78,31 @@ export class DomainsComponent {
     this.dataSource.data = this.dataSource.data.splice(0)
   }
 
-  async delete(proxyauth_id: string) {
-    try {
-      this.spinnerService.show()
-      await this.adminService.deleteProxyAuth(proxyauth_id)
-      this.dataSource.data = this.dataSource.data.filter(c => c.id !== proxyauth_id)
-      this.snackbarService.show('Domain was deleted.')
-    } catch (_e) {
-      this.snackbarService.error('Could not delete domain.')
-    } finally {
-      this.spinnerService.hide()
-    }
+  delete(proxyauth_id: string) {
+    const domain = this.dataSource.data.find(d => d.id === proxyauth_id)
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to remove domain '${domain?.domain ?? proxyauth_id}'?`,
+        header: 'Delete',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Domain delete cancelled.')
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.adminService.deleteProxyAuth(proxyauth_id)
+        this.dataSource.data = this.dataSource.data.filter(c => c.id !== proxyauth_id)
+        this.snackbarService.message('Domain was deleted.')
+      } catch (_e) {
+        this.snackbarService.error('Could not delete domain.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 }

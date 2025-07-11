@@ -1,0 +1,8 @@
+@if (data.header) {
+  <h2 mat-dialog-title>{{ data.header }}</h2>
+}
+<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close>Cancel</button>
+  <button matButton [mat-dialog-close]="true" cdkFocusInitial>Confirm</button>
+</mat-dialog-actions>

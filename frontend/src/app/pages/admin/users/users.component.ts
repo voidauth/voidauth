@@ -11,6 +11,8 @@ import { UserService } from '../../../services/user.service'
 import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
 import { SpinnerService } from '../../../services/spinner.service'
 import type { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-users',
@@ -62,6 +64,7 @@ export class UsersComponent {
   private snackbarService = inject(SnackbarService)
   private userService = inject(UserService)
   private spinnerService = inject(SpinnerService)
+  readonly dialog = inject(MatDialog)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
@@ -81,17 +84,31 @@ export class UsersComponent {
     }
   }
 
-  async delete(id: string) {
-    try {
-      this.spinnerService.show()
-      await this.adminService.deleteUser(id)
-      this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
-      this.snackbarService.show('User was deleted.')
-    } catch (_e) {
-      this.snackbarService.error('Could not delete user.')
-    } finally {
-      this.spinnerService.hide()
-    }
+  delete(id: string) {
+    const user = this.dataSource.data.find(u => u.id === id)
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to remove user '${user?.username ?? id}'?`,
+        header: 'Delete',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('User delete cancelled.')
+        return
+      }
+      try {
+        this.spinnerService.show()
+        await this.adminService.deleteUser(id)
+        this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
+        this.snackbarService.message('User was deleted.')
+      } catch (_e) {
+        this.snackbarService.error('Could not delete user.')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 
   select(id: string, event: MatCheckboxChange) {
@@ -102,23 +119,36 @@ export class UsersComponent {
     }
   }
 
-  async approveSelected() {
-    try {
-      this.spinnerService.show()
-      await this.adminService.approveUsers(this.selected.map(s => s.id))
-      this.dataSource.data.forEach((u) => {
-        if (this.selected.find(s => s.id === u.id)) {
-          u.approved = true
-        }
-      })
-      this.selected.forEach(s => s.source.checked = false)
-      this.selected = []
+  approveSelected() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to approve ${String(this.selected.length)} user(s)?`,
+        header: 'Approval',
+      },
+    })
 
-      this.snackbarService.show('User(s) were approved.')
-    } catch (_e) {
-      this.snackbarService.error('Could not approve user(s).')
-    } finally {
-      this.spinnerService.hide()
-    }
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Approval Cancelled.')
+        return
+      }
+      try {
+        this.spinnerService.show()
+        await this.adminService.approveUsers(this.selected.map(s => s.id))
+        this.dataSource.data.forEach((u) => {
+          if (this.selected.find(s => s.id === u.id)) {
+            u.approved = true
+          }
+        })
+        this.selected.forEach(s => s.source.checked = false)
+        this.selected = []
+
+        this.snackbarService.message('User(s) were approved.')
+      } catch (_e) {
+        this.snackbarService.error('Could not approve user(s).')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
   }
 }

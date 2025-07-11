@@ -128,7 +128,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       await this.userService.updateProfile({
         name: this.profileForm.value.name ?? undefined,
       })
-      this.snackbarService.show('Profile updated.')
+      this.snackbarService.message('Profile updated.')
     } catch (_e) {
       this.snackbarService.error('Could not update profile.')
     } finally {
@@ -149,7 +149,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         oldPassword: oldPassword,
         newPassword: newPassword,
       })
-      this.snackbarService.show('Password updated.')
+      this.snackbarService.message('Password updated.')
       await this.loadUser()
     } catch (_e) {
       this.snackbarService.error('Could not update password.')
@@ -170,9 +170,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       })
       // if email verification enabled, indicate that in message
       if ((await this.configService.getConfig()).emailVerification) {
-        this.snackbarService.show('Verification email sent.')
+        this.snackbarService.message('Verification email sent.')
       } else {
-        this.snackbarService.show('Email updated.')
+        this.snackbarService.message('Email updated.')
       }
     } catch (_e) {
       this.snackbarService.error('Could not update email.')

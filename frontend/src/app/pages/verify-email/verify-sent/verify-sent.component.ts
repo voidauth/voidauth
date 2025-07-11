@@ -48,7 +48,7 @@ export class VerifySentComponent implements OnInit {
         },
         queryParamsHandling: 'merge',
       })
-      this.snackbarService.show('Verification Email Re-Sent.')
+      this.snackbarService.message('Verification Email Re-Sent.')
     } catch (e) {
       console.error(e)
       let error: string | null = null
