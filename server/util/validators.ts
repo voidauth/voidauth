@@ -4,7 +4,6 @@ import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import appConfig from './config'
-import type { ParamSchema } from 'express-validator'
 
 const options = {
   // recommended
@@ -37,7 +36,7 @@ export function checkAdmin(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-export const optionalNull: ParamSchema = {
+export const optionalNull = {
   optional: {
     options: {
       values: 'null',
@@ -45,9 +44,9 @@ export const optionalNull: ParamSchema = {
   },
 } as const
 
-export const stringValidation: ParamSchema = { isString: true, stripLow: true, trim: true } as const
-export const uuidValidation: ParamSchema = { ...stringValidation, isUUID: true } as const
-export const emailValidation: ParamSchema = {
+export const stringValidation = { isString: true, stripLow: true, trim: true } as const
+export const uuidValidation = { ...stringValidation, isUUID: true } as const
+export const emailValidation = {
   isEmail: {
     options: {
       require_tld: false,
@@ -55,12 +54,12 @@ export const emailValidation: ParamSchema = {
   }, normalizeEmail: true, trim: true,
 } as const
 
-export const usernameValidation: ParamSchema = {
+export const usernameValidation = {
   ...stringValidation,
   matches: { options: USERNAME_REGEX },
 } as const
 
-export const nameValidation: ParamSchema = {
+export const nameValidation = {
   default: {
     options: null,
   },
@@ -73,8 +72,7 @@ export const nameValidation: ParamSchema = {
   matches: { options: /^[\w\s]{4,64}$/ },
 } as const
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const newPasswordValidation: ParamSchema<any> = {
+export const newPasswordValidation = {
   ...stringValidation,
   zxcvbn: {
     custom: (value: unknown) => {

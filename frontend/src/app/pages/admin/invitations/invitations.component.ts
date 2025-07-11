@@ -37,11 +37,6 @@ export class InvitationsComponent {
       cell: element => element.email ?? '-',
     },
     {
-      columnDef: 'name',
-      header: 'Name',
-      cell: element => element.name ?? '-',
-    },
-    {
       columnDef: 'expiresAt',
       header: 'Expires In',
       cell: element => humanDuration(new Date(element.expiresAt).getTime() - new Date().getTime()),

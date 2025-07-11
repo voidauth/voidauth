@@ -1,6 +1,6 @@
 import { parseEncrypedData, type Key } from '@shared/db/Key'
 import appConfig from '../util/config'
-import { commit, createTransaction, db, rollback } from './db'
+import { commit, transaction, db, rollback } from './db'
 import { KEY_TYPES, TTLs } from '@shared/constants'
 import { createExpiration, pastHalfExpired, updateEncryptedTables } from './util'
 import { als } from '../util/als'
@@ -178,7 +178,7 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
 
 // Do initial key setup and cleanup
 await als.run({}, async () => {
-  await createTransaction()
+  await transaction()
   try {
     await updateEncryptedTables(true)
     await makeKeysValid()
