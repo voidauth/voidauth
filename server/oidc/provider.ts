@@ -196,7 +196,7 @@ provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
   // @ts-expect-error ctx actually is a static getter on Provider
   const ctx = Provider.ctx as KoaContextWithOIDC | undefined
   if (ctx?.oidc.params?.client_id === 'auth_internal_client') {
-    return true
+    return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(URL.parse(appConfig.APP_URL)?.hostname ?? '')
   }
   return redirectUriAllowed.call(this, redirectUri)
 }
