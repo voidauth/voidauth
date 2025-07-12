@@ -19,21 +19,29 @@ The Single Sign-On Provider that makes securing your applications and resources 
   <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/login_portal.png" width="200">
 </p>
 
-## Features
+## What is VoidAuth
+VoidAuth is an open-source authentication platform designed to simplify user management and securing access.
 
-* User Management
-* OIDC Provider
-* Proxy ForwardAuth Domains
-* Invitations
-* Passkey Support
-* Password Reset with Email Address Verification
-* Custom Branding and CSS
+Key Features:
 
-VoidAuth is accessed through an easy to use web interface that makes user sign-in and domain management simple. The web app also has a configurable app title, logo, and theme color so you can make your sign-in page match your brand.
+- 🙋‍♂️ User Management
+- 🌐 OpenID Connect (OIDC) Provider
+- 🔀 Proxy ForwardAuth Domains
+- 📧 User Registration and Invitations
+- 🔑 Passkey Support
+- 🔐 Secure Password Reset with Email Verification
+- 🎨 Custom Branding Options
+
+### Why Choose VoidAuth?
+
+- Simplicity. An intuitive web interface makes user sign-in and domain management a breeze.
+- Flexibility. Easily customize your login page with your own logo, app title, and theme colors.
+- Modern Authentication. Support for cutting-edge authentication methods like passkeys.
+- Self-Hosted. Take complete control of your authentication.
 
 ## Getting Started
 
-Please see the [wiki](https://github.com/voidauth/voidauth/wiki/Getting-Started) for documentation, a quick start docker compose.yml might look like this:
+Getting started with VoidAuth is straightforward. With just a few lines of Docker Compose you can have a powerful SSO solution up and running.
 ``` yaml
 services:
   # ---------------------------------
@@ -65,12 +73,15 @@ volumes:
   config:
   db:
 ```
+> [!IMPORTANT]
+> Please see the [wiki](https://github.com/voidauth/voidauth/wiki/Getting-Started) for configuration options.
 
 ## Roadmap
 
 | Item  | Status |
 | ----- | ------ |
 | Docs  | In Progress... |
+| Internationalization | |
 
 ## Disclaimer
 
