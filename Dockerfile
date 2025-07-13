@@ -22,9 +22,6 @@ FROM node:lts-alpine AS serve
 # Create app directory
 WORKDIR /app
 
-# Copy web files from builder
-COPY --from=build /app/frontend/dist ./frontend/dist
-
 # Copy server package json files
 COPY ./package*.json ./
 
@@ -39,6 +36,9 @@ COPY ./tsconfig.json ./
 COPY ./migrations ./migrations
 COPY ./server ./server
 COPY ./shared ./shared
+
+# Copy web files from builder
+COPY --from=build /app/frontend/dist ./frontend/dist
 
 VOLUME ["/app/config"]
 EXPOSE 3000
