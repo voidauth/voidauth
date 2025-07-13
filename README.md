@@ -1,9 +1,10 @@
 # VoidAuth
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/voidauth/voidauth/release.yml) ![GitHub Release](https://img.shields.io/github/v/release/voidauth/voidauth?logo=github)
-![Docker Image Version](https://img.shields.io/docker/v/voidauth/voidauth?sort=semver&logo=docker)
-
-
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/voidauth/voidauth/release.yml)
+![GitHub License](https://img.shields.io/github/license/voidauth/voidauth)
+![GitHub Release](https://img.shields.io/github/v/release/voidauth/voidauth?logo=github)
+![Docker Image Version](https://img.shields.io/docker/v/voidauth/voidauth?sort=semver&logo=docker&logoColor=white)
+![Docker Pulls](https://img.shields.io/docker/pulls/voidauth/voidauth?logo=docker&logoColor=white)
 
 
 <p align="center">
