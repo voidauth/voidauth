@@ -2,6 +2,7 @@ services:
   voidauth: 
     build:
       context: .
+      target: serve
     image: voidauth/voidauth:latest
     env_file:
       - ".env"
