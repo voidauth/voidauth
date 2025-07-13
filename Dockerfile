@@ -43,3 +43,10 @@ COPY ./shared ./shared
 VOLUME ["/app/config"]
 EXPOSE 3000
 CMD [ "npm", "run", "start:server" ]
+
+# Basic Typescript Checking
+FROM serve AS test
+
+RUN npm ci
+
+RUN npx tsc

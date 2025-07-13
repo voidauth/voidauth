@@ -1,5 +1,7 @@
 services:
   voidauth: 
+    build:
+      context: .
     image: voidauth/voidauth:latest
     env_file:
       - ".env"

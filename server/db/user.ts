@@ -115,7 +115,7 @@ await als.run({}, async () => {
 
     console.log('')
     console.log('')
-    console.log('The following is the default Admin username and password,')
+    console.log('The following is the initial Admin username and password, use to create your own user.')
     console.log('These will not be shown again.')
     console.log('')
     console.log(initialAdminUser.username)

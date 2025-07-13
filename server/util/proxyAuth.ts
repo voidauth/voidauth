@@ -25,7 +25,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
   let user: User | UserWithoutPassword | undefined
 
   if (sessionId) {
-    // Cookie auth flow
+    // Check for invalid session
     const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
     const accountId = session?.accountId
     user = accountId ? await getUserById(accountId) : undefined
@@ -45,7 +45,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
       return
     }
   } else {
-    // flow missing, go to login
+    // User not logged in, redirect to login
     res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
     return
   }
