@@ -1,6 +1,6 @@
 import knex from 'knex'
 import appConfig from '../util/config'
-import { getAsyncStore } from '../util/als'
+import { als } from '../util/als'
 import { generate } from 'generate-password'
 import { exit } from 'process'
 
@@ -41,7 +41,7 @@ if (migrations.length) {
 }
 
 export async function transaction() {
-  const store = getAsyncStore()
+  const store = als.getStore()
   if (!store) {
     throw new Error('Cannot create transaction outside of async context.')
   }
@@ -51,15 +51,15 @@ export async function transaction() {
 }
 
 export async function commit() {
-  await getAsyncStore()?.transaction?.commit()
-  delete getAsyncStore()?.transaction
+  await als.getStore()?.transaction?.commit()
+  delete als.getStore()?.transaction
 }
 
 export async function rollback() {
-  await getAsyncStore()?.transaction?.rollback()
-  delete getAsyncStore()?.transaction
+  await als.getStore()?.transaction?.rollback()
+  delete als.getStore()?.transaction
 }
 
 export function db() {
-  return getAsyncStore()?.transaction ?? _db
+  return als.getStore()?.transaction ?? _db
 }
