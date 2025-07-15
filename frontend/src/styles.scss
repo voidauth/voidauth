@@ -66,6 +66,12 @@ mat-card.form-card {
   max-width: var(--form-max-width);
   width: 100%;
 
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
   form {
     display: flex;
     flex-direction: column;

@@ -80,7 +80,6 @@ await als.run({}, async () => {
       id: randomUUID(),
       username: ADMIN_USER,
       name: 'Auth Admin',
-      email: 'admin@localhost',
       passwordHash: await argon2.hash(password),
       emailVerified: true,
       approved: true,

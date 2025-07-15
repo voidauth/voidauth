@@ -5,4 +5,5 @@ export type ConfigResponse = {
   emailActive: boolean
   emailVerification: boolean
   registration: boolean
+  contactEmail?: string
 }

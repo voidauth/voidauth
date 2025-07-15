@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service'
 import { SnackbarService } from '../../services/snackbar.service'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../services/spinner.service'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Component({
   selector: 'app-forgot-password',
@@ -19,7 +20,7 @@ import { SpinnerService } from '../../services/spinner.service'
   styleUrl: './forgot-password.component.scss',
 })
 export class ForgotPasswordComponent implements OnInit {
-  emailActive: boolean = false
+  config?: ConfigResponse
   emailSent: boolean = false
 
   public form = new FormGroup({
@@ -35,7 +36,7 @@ export class ForgotPasswordComponent implements OnInit {
   spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
-    this.emailActive = (await this.configService.getConfig()).emailActive
+    this.config = await this.configService.getConfig()
   }
 
   async send() {

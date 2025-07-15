@@ -6,6 +6,8 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { MaterialModule } from '../../../material-module'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
+import { ConfigService } from '../../../services/config.service'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Component({
   selector: 'app-verify',
@@ -19,11 +21,13 @@ import { SpinnerService } from '../../../services/spinner.service'
 export class VerifyComponent implements OnInit {
   title: string = 'Verifying Email...'
   userid?: string
+  config?: ConfigResponse
 
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private configService = inject(ConfigService)
 
   async ngOnInit() {
     const params = this.activatedRoute.snapshot.paramMap
@@ -32,6 +36,8 @@ export class VerifyComponent implements OnInit {
       this.title = 'Verifying Email...'
 
       this.spinnerService.show()
+
+      this.config = await this.configService.getConfig()
 
       const id = params.get('id')
       const challenge = params.get('challenge')

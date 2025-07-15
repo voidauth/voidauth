@@ -8,6 +8,8 @@ import { PasswordSetComponent } from '../../components/password-reset/password-s
 import { REDIRECT_PATHS } from '@shared/constants'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../services/spinner.service'
+import { ConfigService } from '../../services/config.service'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Component({
   selector: 'app-reset-password',
@@ -22,6 +24,7 @@ import { SpinnerService } from '../../services/spinner.service'
 export class ResetPasswordComponent {
   userid?: string
   challenge?: string
+  config?: ConfigResponse
 
   public passwordForm = new FormGroup({
     newPassword: new FormControl<string>({
@@ -49,8 +52,9 @@ export class ResetPasswordComponent {
   private snackbarService = inject(SnackbarService)
   private router = inject(Router)
   private spinnerService = inject(SpinnerService)
+  private configService = inject(ConfigService)
 
-  ngOnInit() {
+  async ngOnInit() {
     const params = this.activatedRoute.snapshot.queryParamMap
 
     const id = params.get('id')
@@ -63,6 +67,13 @@ export class ResetPasswordComponent {
 
     this.userid = id
     this.challenge = challenge
+
+    try {
+      this.spinnerService.show()
+      this.config = await this.configService.getConfig()
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   async send() {

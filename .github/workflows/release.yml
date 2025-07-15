@@ -68,6 +68,7 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           push: true
+          target: serve
 
       - name: Docker Hub Description Update
         uses: peter-evans/dockerhub-description@v4

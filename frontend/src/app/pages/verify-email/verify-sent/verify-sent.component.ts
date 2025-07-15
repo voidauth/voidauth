@@ -5,6 +5,8 @@ import { AuthService } from '../../../services/auth.service'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { ConfigService } from '../../../services/config.service'
 
 @Component({
   selector: 'app-verify-sent',
@@ -18,14 +20,16 @@ import { SpinnerService } from '../../../services/spinner.service'
 export class VerifySentComponent implements OnInit {
   sent: boolean = false
   userId: string | null = null
+  config?: ConfigResponse
 
   private router = inject(Router)
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private configService = inject(ConfigService)
 
-  ngOnInit() {
+  async ngOnInit() {
     this.activatedRoute.queryParamMap.subscribe((queryParams) => {
       this.sent = queryParams.get('sent') === 'true'
     })
@@ -33,6 +37,13 @@ export class VerifySentComponent implements OnInit {
     this.activatedRoute.paramMap.subscribe((paramMap) => {
       this.userId = paramMap.get('id')
     })
+
+    try {
+      this.spinnerService.show()
+      this.config = await this.configService.getConfig()
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   public async sendVerification() {

@@ -30,6 +30,7 @@ publicRouter.get('/config', (_req, res) => {
     emailActive: SMTP_VERIFIED,
     emailVerification: appConfig.EMAIL_VERIFICATION,
     registration: appConfig.SIGNUP,
+    contactEmail: appConfig.CONTACT_EMAIL,
   }
 
   res.send(configResponse)

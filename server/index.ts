@@ -140,11 +140,17 @@ function modifyIndex() {
 
   if (!brandingFiles.includes('favicon.svg')) {
     if (brandingFiles.includes('favicon.png')) {
-      index = index.replaceAll('favicon.svg', 'favicon.png')
+      index = index.replaceAll(
+        '<link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">',
+        '<link rel="icon" href="/favicon.png" type="image/png">')
     } else if (brandingFiles.includes('logo.svg')) {
-      index = index.replaceAll('favicon.svg', 'logo.svg')
+      index = index.replaceAll(
+        '<link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">',
+        '<link rel="icon" href="/logo.svg" sizes="any" type="image/svg+xml">')
     } else if (brandingFiles.includes('logo.png')) {
-      index = index.replaceAll('favicon.svg', 'logo.png')
+      index = index.replaceAll(
+        '<link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">',
+        '<link rel="icon" href="/logo.png" type="image/png">')
     }
   }
 

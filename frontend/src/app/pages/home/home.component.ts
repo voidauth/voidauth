@@ -11,6 +11,7 @@ import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { startRegistration, WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
 import { ActivatedRoute, Router } from '@angular/router'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Component({
   selector: 'app-home',
@@ -27,6 +28,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   user?: CurrentUserDetails
   public passkeySupport?: PasskeySupport
   public isPasskeySession: boolean = false
+  config?: ConfigResponse
 
   public profileForm = new FormGroup({
     name: new FormControl<string>({
@@ -79,6 +81,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     await this.loadUser()
 
     this.passkeySupport = await this.passkeyService.getPasskeySupport()
+    this.config = await this.configService.getConfig()
 
     this.route.queryParamMap.subscribe(async (queryParams) => {
       if (queryParams.get('action') === 'passkey') {
@@ -169,7 +172,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         email: email,
       })
       // if email verification enabled, indicate that in message
-      if ((await this.configService.getConfig()).emailVerification) {
+      if (this.config?.emailVerification) {
         this.snackbarService.message('Verification email sent.')
       } else {
         this.snackbarService.message('Email updated.')

@@ -43,9 +43,9 @@ passkeyRouter.get('/registration',
       authenticatorSelection: {
         // Defaults
         residentKey: 'required',
-        userVerification: 'preferred',
+        userVerification: 'discouraged',
         // Optional
-        authenticatorAttachment: 'platform',
+        // authenticatorAttachment: 'platform',
       },
     })
 
