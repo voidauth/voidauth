@@ -16,7 +16,7 @@ import { db } from '../db/db'
 import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
-import { REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import type { Interaction } from 'oidc-provider'
 import { emailValidation, nameValidation,
   newPasswordValidation,
@@ -30,7 +30,7 @@ import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
 import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
 import { getClient } from '../db/client'
-import type { InvitationGroup, UserGroup } from '@shared/db/Group'
+import type { Group, InvitationGroup, UserGroup } from '@shared/db/Group'
 import { generateAuthenticationOptions, verifyAuthenticationResponse, type AuthenticationResponseJSON } from '@simplewebauthn/server'
 import { getAuthenticationOptions, getPasskey, saveAuthenticationOptions, updatePasskeyCounter } from '../db/passkey'
 import { passkeyRpId, passkeyRpOrigin } from './passkey'
@@ -644,6 +644,19 @@ function isUserUnapproved(user: UserWithoutPassword) {
 async function isUserEmailUnverified(user: UserWithoutPassword) {
   let verificationSent = false
   if (appConfig.EMAIL_VERIFICATION && !user.emailVerified) {
+    // check if user is an admin
+    // admins should not be prevented from logging in by an unverified email
+    const groups = (await db().select()
+      .table<UserGroup>('user_group')
+      .innerJoin<Group>('group', 'user_group.groupId', 'group.id')
+      .where({ userId: user.id }).orderBy('name', 'asc'))
+      .map((g) => {
+        return g.name
+      })
+    if (groups.includes(ADMIN_GROUP)) {
+      return
+    }
+
     if (!await getEmailVerification(user.id)) {
       verificationSent = await createEmailVerification(user, null)
     }

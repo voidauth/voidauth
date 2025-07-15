@@ -12,6 +12,7 @@ import { ConfigService } from '../../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
 import { NewPasswordInputComponent } from '../../components/new-password-input/new-password-input.component'
 import { SpinnerService } from '../../services/spinner.service'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
@@ -50,6 +51,7 @@ export class RegistrationComponent implements OnInit {
   public invitation?: InvitationDetails
 
   public pwdShow: boolean = false
+  config?: ConfigResponse
 
   private snackbarService = inject(SnackbarService)
   private authService = inject(AuthService)
@@ -65,9 +67,11 @@ export class RegistrationComponent implements OnInit {
       try {
         this.spinnerService.show()
         await this.authService.interactionExists()
+        this.config = await this.configService.getConfig()
       } catch (_e) {
         // interaction session is missing, could not log in without it
         window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + '/api/cb', 'register', inviteId, challenge))
+        return
       } finally {
         this.spinnerService.hide()
       }
@@ -101,7 +105,7 @@ export class RegistrationComponent implements OnInit {
 
         try {
           this.spinnerService.show()
-          if ((await this.configService.getConfig()).emailVerification) {
+          if (this.config.emailVerification) {
             this.form.controls.email.addValidators(Validators.required)
           }
         } finally {

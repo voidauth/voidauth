@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "concurrently \"npm run server:watch\" \"npm run frontend:watch\"",
-    "start:server": "tsx --env-file-if-exists=.env server/index.ts",
+    "start:server": "tsx server/index.ts",
     "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && tsx --env-file-if-exists=.env server/index.ts\"",
     "frontend:watch": "cd frontend && npm run watch",
     "postinstall": "husky",

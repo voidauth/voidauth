@@ -30,6 +30,7 @@ class Config {
   STORAGE_KEY_SECONDARY?: string
   PASSWORD_STRENGTH = 2
   DEFAULT_REDIRECT?: string
+  CONTACT_EMAIL?: string
 
   // SMTP
   SMTP_HOST?: string
@@ -62,6 +63,7 @@ function assignConfigValue(key: keyof Config, value: unknown) {
     // non default variables
     case 'STORAGE_KEY_SECONDARY':
     case 'DEFAULT_REDIRECT':
+    case 'CONTACT_EMAIL':
     case 'DB_HOST':
     case 'DB_PASSWORD':
     case 'SMTP_HOST':

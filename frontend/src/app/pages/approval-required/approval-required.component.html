@@ -1,5 +1,12 @@
+<h1>Approval Required</h1>
+<mat-card class="form-card">
+  <mat-card-content>
+    <p>You need administrator approval before you can log in. Please wait or contact an Admin for help.</p>
+  </mat-card-content>
+</mat-card>
+
 <span style="flex-grow: 1"></span>
-<h1>Admin Approval Required</h1>
-<span style="flex-grow: 1"></span>
-<p>You need administrator approval before you can log in. Please wait or contact an Admin for help.</p>
-<span style="flex-grow: 1"></span>
+
+@if (config?.contactEmail; as contactEmail) {
+  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">Contact Us</a>
+}
