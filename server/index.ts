@@ -14,6 +14,7 @@ import { clearAllExpiredEntries, updateEncryptedTables } from './db/util'
 import { transaction, commit, rollback } from './db/db'
 import { als } from './util/als'
 import { rateLimit } from 'express-rate-limit'
+import { sendAdminNotifications } from './util/email'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -198,7 +199,14 @@ setInterval(async () => {
       await commit()
     } catch (e) {
       await rollback()
-      throw e
+      console.error(e)
+    }
+
+    // Send admin notification emails
+    try {
+      await sendAdminNotifications()
+    } catch (e) {
+      console.error(e)
     }
   })
-}, ((9 * 60) + randomInt(2 * 60)) * 1000)
+}, ((8 * 60) + randomInt(2 * 60)) * 1000)

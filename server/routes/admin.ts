@@ -373,7 +373,7 @@ adminRouter.patch('/user',
     const userUpdate = matchedData<UserUpdate>(req, { includeOptionals: true })
 
     const { groups: _, ...user } = userUpdate
-    const ucount = await db().table<User>('user').update(user).where({ id: userUpdate.id })
+    const ucount = await db().table<User>('user').update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
     const groups: Group[] = await db().select().table<Group>('group').whereIn('name', userUpdate.groups)
     const userGroups: UserGroup[] = groups.map((g) => {
       return {
@@ -653,9 +653,7 @@ adminRouter.post('/invitation',
       // update
       await db().table<Invitation>('invitation').update({
         ...invitationData,
-        createdBy: req.user.id,
         updatedBy: req.user.id,
-        createdAt: new Date(),
         updatedAt: new Date(),
       }).where({ id: invitationData.id })
     } else {
@@ -758,7 +756,7 @@ adminRouter.get('/passwordresets', async (_req, res) => {
   res.send(passwordResets)
 })
 
-adminRouter.post('/passwordReset',
+adminRouter.post('/passwordreset',
   ...validate<PasswordResetCreate>({
     userId: uuidValidation,
   }),

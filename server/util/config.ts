@@ -31,6 +31,7 @@ class Config {
   PASSWORD_STRENGTH = 2
   DEFAULT_REDIRECT?: string
   CONTACT_EMAIL?: string
+  ADMIN_EMAILS?: number
 
   // SMTP
   SMTP_HOST?: string
@@ -50,6 +51,10 @@ function assignConfigValue(key: keyof Config, value: unknown) {
     case 'DB_PORT':
     case 'PASSWORD_STRENGTH':
       appConfig[key] = posInt(value) ?? appConfig[key]
+      break
+
+    case 'ADMIN_EMAILS':
+      appConfig[key] = stringDuration(value) ?? (booleanString(value) ? 3600 : null) ?? appConfig[key]
       break
 
     // booleans
@@ -109,6 +114,59 @@ function booleanString(value: unknown): boolean | null {
   }
 
   return null
+}
+
+function stringDuration(durationStr: unknown) {
+  if (typeof durationStr !== 'string') {
+    return
+  }
+
+  // Mapping of time units to their equivalent in seconds
+  const unitMap = {
+    // Singular and plural forms
+    minute: 60,
+    hour: 3600,
+    day: 86400,
+    week: 604800,
+    month: 2592000, // Approximating a month as 30 days
+    year: 31536000, // Approximating a year as 365 days
+
+    daily: 86400,
+  } as const
+
+  // Normalize the input string
+  const normalized = durationStr.toLowerCase().trim()
+
+  // Check for direct frequency matches
+  if (Object.keys(unitMap).includes(normalized)) {
+    return unitMap[normalized as keyof typeof unitMap]
+  }
+
+  // Parse numeric durations with units
+  const matchNumeric = normalized.match(/(\d+)\s*(minute|hour|day|week|month|year)s?/)
+  if (matchNumeric) {
+    const [, numberStr, unit] = matchNumeric
+    if (numberStr && unit) {
+      const number = parseInt(numberStr, 10)
+
+      if (Object.keys(unitMap).includes(unit)) {
+        return number * unitMap[unit as keyof typeof unitMap]
+      }
+    }
+  }
+
+  // Parse unit durations directly, or ending with 'ly'
+  const matchDirect = normalized.match(/(minute|hour|week|month|year)ly?/)
+  if (matchDirect) {
+    const [, unit] = matchDirect
+    if (unit) {
+      if (Object.keys(unitMap).includes(unit)) {
+        return unitMap[unit as keyof typeof unitMap]
+      }
+    }
+  }
+
+  return
 }
 
 const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
