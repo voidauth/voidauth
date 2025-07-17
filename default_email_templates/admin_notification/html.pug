@@ -1,0 +1,19 @@
+div(style='font-family:monospace;font-weight:bold;margin:2rem;')
+  h1(align='center') Admin Notifications
+  h2(align='center') #{app_title}
+  br
+  p(align='center') As an administrator of #{app_title} you have the following new notifications at #{app_url}
+  br
+  p(align='center') 
+    if users.length > 1
+      | There are #{users.length} user accounts that await approval or deletion. 
+    else
+      | There is a user account, #{users[0]}, that awaits approval or deletion.
+  br
+  div(align='center')
+    a(style=`background-color:${primary_color};color:${primary_contrast_color};text-decoration:none;padding:1rem;border-radius:100px;` href=`${users_url}`)
+      | Users
+  br
+  p(align='center' style='margin-top: 1rem;') Or, paste the following link into your browser:
+  div(align='center')
+    a(href=`${users_url}`) #{users_url}

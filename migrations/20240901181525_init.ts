@@ -8,7 +8,8 @@ export async function up(knex: Knex): Promise<void> {
       table.text('value').notNullable() // encrypted
       table.timestamp('expiresAt', { useTz: true }).notNullable()
 
-      table.check('type in (\'oidc_jwk\', \'cookie_key\')')
+      // eslint-disable-next-line @stylistic/quotes
+      table.check("type in ('oidc_jwk', 'cookie_key')")
     })
     .createTable('flag', (table) => {
       table.text('name').primary().notNullable()

@@ -440,7 +440,7 @@ router.post('/register',
       email: invitation?.email || registration.email,
       passwordHash,
       approved: !!invitationValid, // invited users are approved by default
-      emailVerified: !!invitation?.email && invitation.emailVerified,
+      emailVerified: !!invitation?.email && !!invitation.emailVerified,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -629,6 +629,19 @@ async function applyConsent(interactionDetails: Interaction) {
 }
 
 async function canUserLogin(user: UserWithoutPassword) {
+  // check if user is an admin
+  // admins should not be prevented from logging in by an unverified email or not being approved
+  const groups = (await db().select()
+    .table<UserGroup>('user_group')
+    .innerJoin<Group>('group', 'user_group.groupId', 'group.id')
+    .where({ userId: user.id }).orderBy('name', 'asc'))
+    .map((g) => {
+      return g.name
+    })
+  if (groups.includes(ADMIN_GROUP)) {
+    return
+  }
+
   return isUserUnapproved(user) || await isUserEmailUnverified(user)
 }
 
@@ -644,19 +657,6 @@ function isUserUnapproved(user: UserWithoutPassword) {
 async function isUserEmailUnverified(user: UserWithoutPassword) {
   let verificationSent = false
   if (appConfig.EMAIL_VERIFICATION && !user.emailVerified) {
-    // check if user is an admin
-    // admins should not be prevented from logging in by an unverified email
-    const groups = (await db().select()
-      .table<UserGroup>('user_group')
-      .innerJoin<Group>('group', 'user_group.groupId', 'group.id')
-      .where({ userId: user.id }).orderBy('name', 'asc'))
-      .map((g) => {
-        return g.name
-      })
-    if (groups.includes(ADMIN_GROUP)) {
-      return
-    }
-
     if (!await getEmailVerification(user.id)) {
       verificationSent = await createEmailVerification(user, null)
     }
