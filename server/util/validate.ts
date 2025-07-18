@@ -50,14 +50,14 @@ type WasOptionalKey<T extends string> = T extends `${infer _A}?${infer _B}`
 
 type FixOptionalKey<T extends string> = T extends `${infer A}?${infer B}` ? FixOptionalKey<`${A}${B}`> : T
 
+export type SchemaValues = ParamSchema
+  | { [k: string]: (Exclude<ExtensionValidatorSchemaOptions, boolean> | { custom: CustomValidator })
+    | { customSanitizer: CustomSanitizer } }
+
 export type TypedSchema<T extends object> = {
-  [K in DotNotation<T> as WasOptionalKey<K> extends false ? K : never]: ParamSchema
-    | { [k: string]: (Exclude<ExtensionValidatorSchemaOptions, boolean> | { custom: CustomValidator })
-      | { customSanitizer: CustomSanitizer } }
+  [K in DotNotation<T> as WasOptionalKey<K> extends false ? K : never]: SchemaValues
 } & {
-  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: ParamSchema
-    | { [k: string]: (Exclude<ExtensionValidatorSchemaOptions, boolean> | { custom: CustomValidator })
-      | { customSanitizer: CustomSanitizer } }
+  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: SchemaValues
 }
 
 export function validate<T extends object = any>(schema: TypedSchema<T> | TypedSchema<T>[]) {
