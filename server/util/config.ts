@@ -54,7 +54,7 @@ function assignConfigValue(key: keyof Config, value: unknown) {
       break
 
     case 'ADMIN_EMAILS':
-      appConfig[key] = stringDuration(value) ?? (booleanString(value) ? 3600 : null) ?? appConfig[key]
+      appConfig[key] = stringDuration(value) ?? (booleanString(value) === false ? null : 3600) ?? appConfig[key]
       break
 
     // booleans

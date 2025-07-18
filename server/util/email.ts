@@ -212,14 +212,8 @@ export async function sendInvitation(invitation: Invitation, email: string) {
 }
 
 export async function sendAdminNotifications() {
-  if (!appConfig.ADMIN_EMAILS) {
+  if (!appConfig.ADMIN_EMAILS || !appConfig.SMTP_FROM || !SMTP_VERIFIED) {
     return
-  }
-  if (!appConfig.SMTP_FROM) {
-    throw new Error('Email cannot be sent without valid SMTP_FROM config value.')
-  }
-  if (!SMTP_VERIFIED) {
-    throw new Error('SMTP transport could not be validated.')
   }
 
   const adminUsers: User[] = await db().select<User[]>('user.*').table<User>('user')
