@@ -74,8 +74,8 @@ volumes:
   config:
   db:
 ```
-> [!IMPORTANT]
-> Please see the [wiki](https://github.com/voidauth/voidauth/wiki/Getting-Started) for configuration options.
+
+Please see the [wiki](https://github.com/voidauth/voidauth/wiki/Getting-Started) for configuration options.
 
 ## Roadmap
 
