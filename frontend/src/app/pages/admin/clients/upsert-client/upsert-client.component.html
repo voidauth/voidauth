@@ -87,9 +87,9 @@
           }
         </mat-select>
         @if (form.controls.application_type.value === "web") {
-          <mat-hint>'web' allows 'http://' URLs, but not other arbitrary protocols</mat-hint>
+          <mat-hint>'web' allows 'https://' and 'http://' URLs</mat-hint>
         } @else if (form.controls.application_type.value === "native") {
-          <mat-hint>'native' allows arbitrary protocols for URLs, but not 'http://'</mat-hint>
+          <mat-hint>'native' allows arbitrary protocols for URLs, except insecure 'http://'</mat-hint>
         }
         @if (form.controls.application_type.errors) {
           <mat-error>{{ form.controls.application_type.errors | validationError }}</mat-error>
