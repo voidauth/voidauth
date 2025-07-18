@@ -17,4 +17,5 @@ export type ClientUpsert = Required<Pick<ClientMetadata,
   | 'response_types'
   | 'grant_types'
   | 'logo_uri'
-  | 'skip_consent'>>
+  | 'skip_consent'
+  | 'application_type'>>

@@ -1,13 +1,13 @@
 <span style="display: block">
   <mat-expansion-panel>
     <mat-expansion-panel-header>
-      <mat-panel-title>OIDC Info</mat-panel-title>
-      <mat-panel-description>For setting up OIDC Clients</mat-panel-description>
+      <mat-panel-title>OIDC Endpoints for Clients</mat-panel-title>
     </mat-expansion-panel-header>
     <app-copy-field [value]="currentHost + '/oidc'" label="OIDC Endpoint"></app-copy-field>
     <app-copy-field [value]="currentHost + '/oidc/.well-known/openid-configuration'" label="Well-Known Endpoint"></app-copy-field>
     <app-copy-field [value]="oidcConfig?.authorization_endpoint" label="Authorization Endpoint"></app-copy-field>
     <app-copy-field [value]="oidcConfig?.token_endpoint" label="Token Endpoint"></app-copy-field>
+    <app-copy-field [value]="oidcConfig?.userinfo_endpoint" label="UserInfo Endpoint"></app-copy-field>
     <mat-action-row>
       <a mat-button target="_blank" href="/oidc/.well-known/openid-configuration">All Info</a>
     </mat-action-row>

@@ -1,6 +1,6 @@
 import type { AbstractControl } from '@angular/forms'
 
-export function isValidURL(control: AbstractControl) {
+export function isValidWebURL(control: AbstractControl) {
   try {
     if (typeof control.value === 'string' && control.value) {
       const value = control.value
@@ -15,6 +15,20 @@ export function isValidURL(control: AbstractControl) {
           isValidUrl: 'Invalid URL protocol, must be http(s)',
         }
       }
+    }
+    return null
+  } catch (_e) {
+    return {
+      isValidUrl: 'Must be a valid web URL.',
+    }
+  }
+}
+
+export function isValidURL(control: AbstractControl) {
+  try {
+    if (typeof control.value === 'string' && control.value) {
+      const value = control.value
+      new URL(value)
     }
     return null
   } catch (_e) {

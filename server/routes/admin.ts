@@ -46,11 +46,9 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     isArray: true,
   },
   'redirect_uris.*': {
-    isURL: {
-      options: {
-        protocols: ['http', 'https'],
-        require_tld: false,
-        require_protocol: true,
+    isValidURL: {
+      custom: (input) => {
+        return typeof input === 'string' && URL.parse(input)
       },
     },
     trim: true,
@@ -64,6 +62,10 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     },
   },
   token_endpoint_auth_method: {
+    optional: true,
+    ...stringValidation,
+  },
+  application_type: {
     optional: true,
     ...stringValidation,
   },

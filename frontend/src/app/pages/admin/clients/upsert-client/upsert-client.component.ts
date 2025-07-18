@@ -6,7 +6,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import { isValidURL } from '../../../../validators/validators'
+import { isValidURL, isValidWebURL } from '../../../../validators/validators'
 import { generate } from 'generate-password-browser'
 import { GRANT_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
@@ -42,6 +42,11 @@ export class UpsertClientComponent implements OnInit {
     'none',
   ]
 
+  public applicationTypes: ClientUpsert['application_type'][] = [
+    'web',
+    'native',
+  ]
+
   public uniqueResponseTypes = UNIQUE_RESPONSE_TYPES
 
   public grantTypes = GRANT_TYPES
@@ -62,8 +67,9 @@ export class UpsertClientComponent implements OnInit {
     token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_basic'),
     response_types: new FormControl<ResponseType[]>(['code']),
     grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(['authorization_code', 'refresh_token']),
+    application_type: new FormControl<ClientUpsert['application_type']>('web'),
     skip_consent: new FormControl<boolean>(true),
-    logo_uri: new FormControl<string | null>(null, [isValidURL]),
+    logo_uri: new FormControl<string | null>(null, [isValidWebURL]),
   })
 
   pwdShow = false
@@ -90,6 +96,7 @@ export class UpsertClientComponent implements OnInit {
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_basic',
             response_types: client.response_types ?? ['code'],
             grant_types: client.grant_types ?? ['authorization_code', 'refresh_token'],
+            application_type: client.application_type ?? 'web',
             skip_consent: client['skip_consent'] ?? true,
             logo_uri: client.logo_uri,
           })
