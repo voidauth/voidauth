@@ -73,7 +73,7 @@ jobs:
       - name: Docker Hub Description Update
         uses: peter-evans/dockerhub-description@v4
         with:
-          username: voidauth
+          username: notquitenothing
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.DOCKER_IMAGE_NAME }}
           short-description: ${{ github.event.repository.description }}
