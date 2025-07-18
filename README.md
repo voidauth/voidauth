@@ -21,7 +21,7 @@ The Single Sign-On Provider that makes securing your applications and resources 
 </p>
 
 ## What is VoidAuth
-VoidAuth is an open-source authentication platform designed to simplify user management and securing access.
+VoidAuth is an open-source authentication platform designed to simplify user management and securing access to your self-hosted applications and resources.
 
 Key Features:
 
@@ -35,14 +35,14 @@ Key Features:
 
 ### Why Choose VoidAuth?
 
-- Simplicity. An intuitive web interface makes user sign-in and domain management a breeze.
+- Simplicity. An intuitive web interface for end-users and administrators.
 - Flexibility. Easily customize your login page with your own logo, app title, and theme colors.
-- Modern Authentication. Support for cutting-edge authentication methods like passkeys.
+- Modern Authentication. Support for cutting-edge authentication methods like passkeys, password complexity rules.
 - Self-Hosted. Take complete control of your authentication.
 
 ## Getting Started
 
-Getting started with VoidAuth is straightforward. With just a few lines of Docker Compose you can have a powerful SSO solution up and running.
+Getting started with VoidAuth is straightforward, with just a few lines of Docker Compose you can have it up and running.
 ``` yaml
 services:
   # ---------------------------------
