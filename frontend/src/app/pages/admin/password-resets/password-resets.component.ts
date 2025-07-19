@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core'
+import { Component, inject, viewChild } from '@angular/core'
 import { MaterialModule } from '../../../material-module'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
@@ -30,8 +30,8 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 export class PasswordResetsComponent {
   dataSource: MatTableDataSource<PasswordResetUser> = new MatTableDataSource()
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator
-  @ViewChild(MatSort) sort!: MatSort
+  readonly paginator = viewChild.required(MatPaginator)
+  readonly sort = viewChild.required(MatSort)
 
   columns: TableColumn<PasswordResetUser>[] = [
     {
@@ -72,8 +72,8 @@ export class PasswordResetsComponent {
       this.config = await this.configService.getConfig()
 
       this.dataSource.data = await this.adminService.passwordResets()
-      this.dataSource.paginator = this.paginator
-      this.dataSource.sort = this.sort
+      this.dataSource.paginator = this.paginator()
+      this.dataSource.sort = this.sort()
     } finally {
       this.spinnerService.hide()
     }
@@ -89,7 +89,7 @@ export class PasswordResetsComponent {
 
       const reset = await this.adminService.createPasswordReset({ userId: user.id })
       const data = [reset].concat(this.dataSource.data)
-      this.dataSource.data = this.dataSource.sortData(data, this.sort)
+      this.dataSource.data = this.dataSource.sortData(data, this.sort())
       this.snackbarService.message('Password reset link was deleted.')
     } catch (_e) {
       this.snackbarService.error('Could not create password reset link.')

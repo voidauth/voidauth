@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core'
+import { Component, inject, viewChild } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -24,8 +24,8 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 export class InvitationsComponent {
   dataSource: MatTableDataSource<Invitation> = new MatTableDataSource()
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator
-  @ViewChild(MatSort) sort!: MatSort
+  readonly paginator = viewChild.required(MatPaginator)
+  readonly sort = viewChild.required(MatSort)
 
   columns: TableColumn<Invitation>[] = [
     {
@@ -57,8 +57,8 @@ export class InvitationsComponent {
     try {
       this.spinnerService.show()
       this.dataSource.data = await this.adminService.invitations()
-      this.dataSource.paginator = this.paginator
-      this.dataSource.sort = this.sort
+      this.dataSource.paginator = this.paginator()
+      this.dataSource.sort = this.sort()
     } finally {
       this.spinnerService.hide()
     }

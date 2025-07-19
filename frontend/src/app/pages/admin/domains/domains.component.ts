@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core'
+import { Component, inject, viewChild } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { type Sort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -25,7 +25,7 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 export class DomainsComponent {
   dataSource: MatTableDataSource<ProxyAuthResponse> = new MatTableDataSource()
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator
+  readonly paginator = viewChild.required(MatPaginator)
 
   columns: TableColumn<ProxyAuthResponse>[] = [
     {
@@ -52,7 +52,7 @@ export class DomainsComponent {
       // Assign the data to the data source for the table to render
       this.spinnerService.show()
       this.dataSource.data = await this.adminService.proxyAuths()
-      this.dataSource.paginator = this.paginator
+      this.dataSource.paginator = this.paginator()
     } finally {
       this.spinnerService.hide()
     }
