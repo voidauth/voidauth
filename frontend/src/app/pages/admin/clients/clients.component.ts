@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild, type AfterViewInit } from '@angular/core'
+import { Component, inject, type AfterViewInit, viewChild } from '@angular/core'
 import { AdminService } from '../../../services/admin.service'
 import { MaterialModule } from '../../../material-module'
 import type { ClientMetadata } from 'oidc-provider'
@@ -32,8 +32,8 @@ export type TableColumn<T> = {
 export class ClientsComponent implements AfterViewInit {
   dataSource: MatTableDataSource<ClientMetadata> = new MatTableDataSource()
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator
-  @ViewChild(MatSort) sort!: MatSort
+  readonly paginator = viewChild.required(MatPaginator)
+  readonly sort = viewChild.required(MatSort)
 
   columns: TableColumn<ClientMetadata>[] = [
     {
@@ -60,8 +60,8 @@ export class ClientsComponent implements AfterViewInit {
       // Assign the data to the data source for the table to render
       this.spinnerService.show()
       this.dataSource.data = await this.adminService.clients()
-      this.dataSource.paginator = this.paginator
-      this.dataSource.sort = this.sort
+      this.dataSource.paginator = this.paginator()
+      this.dataSource.sort = this.sort()
     } finally {
       this.spinnerService.hide()
     }

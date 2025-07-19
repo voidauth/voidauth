@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import type { UpdateProfile } from '@shared/api-request/UpdateProfile'
 import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
@@ -11,7 +11,7 @@ import { ADMIN_GROUP } from '@shared/constants'
   providedIn: 'root',
 })
 export class UserService {
-  constructor(private http: HttpClient) { }
+  private http = inject(HttpClient)
 
   async getMyUser() {
     return firstValueFrom(this.http.get<CurrentUserDetails>('/api/user/me'))

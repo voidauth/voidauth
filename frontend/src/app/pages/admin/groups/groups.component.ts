@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core'
+import { Component, inject, viewChild } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -25,8 +25,8 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 export class GroupsComponent {
   dataSource: MatTableDataSource<Group> = new MatTableDataSource()
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator
-  @ViewChild(MatSort) sort!: MatSort
+  readonly paginator = viewChild.required(MatPaginator)
+  readonly sort = viewChild.required(MatSort)
 
   columns: TableColumn<Group>[] = [
     {
@@ -50,8 +50,8 @@ export class GroupsComponent {
       // Assign the data to the data source for the table to render
       this.spinnerService.show()
       this.dataSource.data = await this.adminService.groups()
-      this.dataSource.paginator = this.paginator
-      this.dataSource.sort = this.sort
+      this.dataSource.paginator = this.paginator()
+      this.dataSource.sort = this.sort()
     } finally {
       this.spinnerService.hide()
     }

@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core'
+import { Component, inject, viewChild } from '@angular/core'
 import { MaterialModule } from '../../../material-module'
 import { MatTableDataSource } from '@angular/material/table'
 import { MatPaginator } from '@angular/material/paginator'
@@ -28,8 +28,8 @@ export class UsersComponent {
 
   dataSource: MatTableDataSource<UserWithoutPassword> = new MatTableDataSource()
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator
-  @ViewChild(MatSort) sort!: MatSort
+  readonly paginator = viewChild.required(MatPaginator)
+  readonly sort = viewChild.required(MatSort)
 
   columns: TableColumn<UserWithoutPassword>[] = [
     {
@@ -72,10 +72,10 @@ export class UsersComponent {
       this.spinnerService.show()
       this.me = await this.userService.getMyUser()
       this.dataSource.data = await this.adminService.users()
-      this.dataSource.paginator = this.paginator
-      this.dataSource.sort = this.sort
+      this.dataSource.paginator = this.paginator()
+      this.dataSource.sort = this.sort()
 
-      this.paginator.page.subscribe((_p) => {
+      this.paginator().page.subscribe((_p) => {
         this.selected.forEach(s => s.source.checked = false)
         this.selected = []
       })

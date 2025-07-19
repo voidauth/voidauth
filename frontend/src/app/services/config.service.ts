@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
@@ -7,7 +7,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
   providedIn: 'root',
 })
 export class ConfigService {
-  constructor(private http: HttpClient) { }
+  private http = inject(HttpClient)
 
   getCurrentHost() {
     const currentUri = new URL(window.location.href)
