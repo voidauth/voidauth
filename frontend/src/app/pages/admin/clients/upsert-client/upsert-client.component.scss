@@ -4,3 +4,11 @@ mat-divider {
   min-width: calc(var(--form-min-width) * 0.8);
   max-width: calc(var(--form-max-width) * 0.8);
 }
+
+:host .client-secret ::ng-deep .mat-mdc-form-field-icon-suffix {
+  min-width: 130px;
+
+  .field-suffix {
+    margin-right: 0px;
+  }
+}
