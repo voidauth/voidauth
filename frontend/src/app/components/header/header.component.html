@@ -10,7 +10,9 @@
             ? (logo.src = 'favicon.svg')
             : logo.src.includes('favicon.svg')
               ? (logo.src = 'favicon.png')
-              : null
+              : logo.src.includes('favicon.png')
+                ? (logo.src = 'apple-touch-icon.png')
+                : null
       "
     />
   </a>

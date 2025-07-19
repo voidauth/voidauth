@@ -65,7 +65,7 @@ fs.cpSync(path.join('./theme', 'custom.css'), path.join('./config', 'branding', 
   force: false,
 })
 // override favicon and logo requests
-app.get(/\/(logo|favicon)\.(svg|png)/, (req, res, next) => {
+app.get(/\/(logo|favicon|apple-touch-icon)\.(svg|png)/, (req, res, next) => {
   const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
   const filename = req.path.slice(1)
   if (brandingFiles.includes(filename)) {
@@ -77,9 +77,9 @@ app.get(/\/(logo|favicon)\.(svg|png)/, (req, res, next) => {
 
   const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
   const isBrandingFavicon = brandingFiles.includes('favicon.svg') || brandingFiles.includes('favicon.png')
+  const isBrandingTouch = brandingFiles.includes('apple-touch-icon.png')
   // custom branding exists, do not allow defaults to be used
-  // the default logos are svg, do not attempt to serve others
-  if (isBrandingFavicon || isBrandingLogo || filename.endsWith('png')) {
+  if (isBrandingFavicon || isBrandingLogo || isBrandingTouch) {
     res.sendStatus(404)
     return
   }
@@ -138,21 +138,27 @@ function modifyIndex() {
 
   // dynamically replace favicon and logo depending on whats available in config/branding
   const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
+  const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
+  const isBrandingFavicon = brandingFiles.includes('favicon.svg') || brandingFiles.includes('favicon.png')
+  const isBrandingTouch = brandingFiles.includes('apple-touch-icon.png')
+  const isBranding = isBrandingLogo || isBrandingFavicon || isBrandingTouch
 
+  const faviconRgx = /<link[^>]*rel="icon"[^>]*>/g
   if (!brandingFiles.includes('favicon.svg')) {
     if (brandingFiles.includes('favicon.png')) {
-      index = index.replaceAll(
-        '<link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">',
-        '<link rel="icon" href="/favicon.png" type="image/png">')
+      index = index.replaceAll(faviconRgx, '<link rel="icon" href="/favicon.png" type="image/png"/>')
     } else if (brandingFiles.includes('logo.svg')) {
-      index = index.replaceAll(
-        '<link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">',
-        '<link rel="icon" href="/logo.svg" sizes="any" type="image/svg+xml">')
+      index = index.replaceAll(faviconRgx, '<link rel="icon" href="/logo.svg" sizes="any" type="image/svg+xml"/>')
     } else if (brandingFiles.includes('logo.png')) {
-      index = index.replaceAll(
-        '<link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">',
-        '<link rel="icon" href="/logo.png" type="image/png">')
+      index = index.replaceAll(faviconRgx, '<link rel="icon" href="/logo.png" type="image/png"/>')
+    } else if (brandingFiles.includes('apple-touch-icon.png')) {
+      index = index.replaceAll(faviconRgx, '<link rel="icon" href="/apple-touch-icon.png" type="image/png"/>')
     }
+  }
+
+  if (isBranding && !isBrandingTouch) {
+    // If there is branding, but no branding touch icon, remove apple-touch-icon line
+    index = index.replaceAll(/<link[^>]*rel="apple-touch-icon"[^>]*>/g, '')
   }
 
   return index
