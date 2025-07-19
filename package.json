@@ -23,25 +23,25 @@
     ]
   },
   "dependencies": {
-    "@angular/cli": "^20.1.0",
-    "@angular/material": "^20.1.0",
+    "@angular/cli": "^20.1.1",
+    "@angular/material": "^20.1.2",
     "@simplewebauthn/server": "^13.1.2",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
-    "argon2": "^0.43.0",
+    "argon2": "^0.43.1",
     "express": "^5.1.0",
-    "express-rate-limit": "^7.5.1",
+    "express-rate-limit": "^8.0.1",
     "express-validator": "^7.2.1",
     "generate-password": "^1.7.1",
     "helmet": "^8.1.0",
     "husky": "^9.1.7",
-    "jose": "^6.0.11",
+    "jose": "^6.0.12",
     "keygrip": "^1.1.0",
     "knex": "^3.1.0",
     "matcher": "^5.0.0",
     "nodemailer": "^7.0.5",
-    "oidc-provider": "^9.2.0",
+    "oidc-provider": "^9.4.0",
     "pg": "^8.16.3",
     "psl": "^1.15.0",
     "pug": "^3.0.3",
@@ -51,9 +51,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
-    "@stylistic/eslint-plugin": "^5.1.0",
+    "@stylistic/eslint-plugin": "^5.2.0",
     "@types/express": "^5.0.3",
-    "@types/node": "^22.16.3",
+    "@types/node": "^22.16.4",
     "@types/nodemailer": "^6.4.17",
     "@types/oidc-provider": "^9.1.1",
     "@types/psl": "^1.1.3",
@@ -63,6 +63,6 @@
     "lint-staged": "^16.1.2",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.37.0"
   }
 }
