@@ -119,11 +119,11 @@ The email templates for email verification, invitations, and password resets can
 > <img width="260" src="https://github.com/user-attachments/assets/66152d9b-b041-4374-91ec-4363ab1cb064" />
 
 ### Authentication
-To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [[OIDC Setup|OIDC-Setup]] guide. If the application does not support OIDC or you want to secure a domain or resource you should follow the [[ProxyAuth and Trusted Header SSO Setup|ProxyAuth-and-Trusted-Header-SSO-Setup]] guide.
+To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. If the application does not support OIDC or you want to secure a domain or resource you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) guide.
 
 ## Experimental
 > [!WARNING]
 > The following configurations are not well supported or tested, but may cover additional use-cases.
 ### Multi-Domain Protection
-You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net` 
+You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net` 
 

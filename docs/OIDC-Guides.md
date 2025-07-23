@@ -6,7 +6,7 @@ In the guides below, there may be omitted options when those options are set to 
 > Placeholders are used for common settings, like **your-client-id**, **your-client-secret**, **example.com**, and **Copy from VoidAuth OIDC Info**. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC Client Create pages.
 
 > [!CAUTION]
-> Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. VoidAuth provides a generation option in the Client Secret field and an option to copy it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
+> Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. VoidAuth provides options to generate the Client Secret field and to copy it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
 
 ## Immich
 In Immich:

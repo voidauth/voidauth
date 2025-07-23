@@ -18,4 +18,4 @@ Would be filled out in VoidAuth as follows:
 > At the top of the OIDC Clients pages there is a drop-down panel with info about the VoidAuth OIDC Provider that your Client application will probably need during its OIDC setup.
 
 > [!IMPORTANT]
-> The OIDC Client page starts with sensible defaults, but you must follow the application OIDC setup guide parameters exactly or it is likely your OIDC integration will not work. You can see setup guides for some applications on the [OIDC Guides](https://github.com/voidauth/voidauth/wiki/OIDC-Guides) page.
+> The OIDC Client page starts with sensible defaults, but you must follow the application OIDC setup guide parameters exactly or it is likely your OIDC integration will not work. You can see setup guides for some applications on the [OIDC Guides](OIDC-Guides.md) page.
