@@ -17,7 +17,7 @@ The Single Sign-On Provider that makes securing your applications and resources 
 <br>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/login_portal.png" width="200">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/login_portal.png" width="200">
 </p>
 
 ## What is VoidAuth
@@ -75,14 +75,7 @@ volumes:
   db:
 ```
 
-Please see the [wiki](https://github.com/voidauth/voidauth/wiki/Getting-Started) for configuration options.
-
-## Roadmap
-
-| Item  | Status |
-| ----- | ------ |
-| Docs  | In Progress... |
-| Internationalization | |
+Please see the [Getting Started](https://github.com/voidauth/voidauth/wiki/Getting-Started) page for details and configuration options.
 
 ## Disclaimer
 
