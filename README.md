@@ -75,7 +75,7 @@ volumes:
   db:
 ```
 
-Please see the [Getting Started](https://github.com/voidauth/voidauth/wiki/Getting-Started) page for details and configuration options.
+Please see the [Getting Started](https://voidauth.app/#/Getting-Started) page for details and configuration options.
 
 ## Disclaimer
 
