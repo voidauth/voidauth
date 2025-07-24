@@ -17,7 +17,7 @@ The Single Sign-On Provider that makes securing your applications and resources 
 <br>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/login_portal.png" width="200">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/2f8c15db-28fd-4b0e-a266-1dddd9cf9e3a.png" width="240">
 </p>
 
 ## What is VoidAuth

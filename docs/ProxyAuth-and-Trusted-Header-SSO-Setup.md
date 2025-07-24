@@ -6,7 +6,7 @@ ProxyAuth Domains are protected through a collaboration between your reverse-pro
 You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains page.
 
 <p align=center>
-<img align=center src="https://github.com/user-attachments/assets/b774693a-6ef2-4d15-b193-dbc1a8388f3a" width="300" />
+<img align=center src="/public/screenshots/b774693a-6ef2-4d15-b193-dbc1a8388f3a.png" width="300" />
 </p>
 
 > [!CAUTION]
@@ -15,7 +15,7 @@ You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains
 When a user navigates to a protected domain, their access will be checked against all ProxyAuth Domains from **most specific** to **least specific**. In the example below, a user with only the group **users** would **not** have access to **app.example.com/admin/user_accounts** but would have access to **app.example.com/home**. They would likewise not have access to **secret.example.com**.
 
 <p align=center>
-<img align=center src="https://github.com/user-attachments/assets/3f0b0afc-5bcf-436c-8def-f45e68adb019" width="800" />
+<img align=center src="/public/screenshots/3f0b0afc-5bcf-436c-8def-f45e68adb019.png" width="800" />
 </p>
 
 When creating ProxyAuth Domains, remember that the trailing "**/**" and separators like "**.**" **ARE CHECKED**. Access to ***.example.com** would not give access to **example.com**, they must be added seperately.

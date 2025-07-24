@@ -12,7 +12,7 @@ grant_types: "authorization_code"
 ```
 Would be filled out in VoidAuth as follows:
 
-<img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/oidc_client.png" width="300">
+<img src="/public/screenshots/oidc_client.png" width="300">
 
 > [!IMPORTANT]
 > At the top of the OIDC Clients pages there is a drop-down panel with info about the VoidAuth OIDC Provider that your Client application will probably need during its OIDC setup.

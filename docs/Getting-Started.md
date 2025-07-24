@@ -116,7 +116,7 @@ The email templates for email verification, invitations, and password resets can
 > [!IMPORTANT]
 > There are enough branding options between environment variables like **APP_TITLE**, **APP_COLOR**, and config directory customization to remove any end-user reference to VoidAuth branding. You can make it your own! Below is an example of some theming changes and light mode enabled:
 >
-> <img width="260" src="https://github.com/user-attachments/assets/66152d9b-b041-4374-91ec-4363ab1cb064" />
+> <img width="260" src="/public/screenshots/66152d9b-b041-4374-91ec-4363ab1cb064.png" />
 
 ### Authentication
 To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. If the application does not support OIDC or you want to secure a domain or resource you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) guide.
