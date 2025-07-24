@@ -4,7 +4,7 @@
 Users are directed to the login portal if they are not already signed into VoidAuth and they either visit the **APP_URL** directly or are redirected there through the **OIDC Client** or **Proxy Auth** flows. VoidAuth supports password login, as well as passkey login (Face ID, Windows Hello, etc). There is also a "Forgot Password" option, which will redirect to the [Forgot Password](#forgot-password) page. The "Remember Me" checkbox will attempt to make the user session last through device restarts for up to one year, as long as the user signs in with their password instead of any other method.
 
 <p align=center>
-<img align=center src="https://github.com/user-attachments/assets/2f8c15db-28fd-4b0e-a266-1dddd9cf9e3a" width="300" />
+<img align=center src="/public/screenshots/2f8c15db-28fd-4b0e-a266-1dddd9cf9e3a.png" width="300" />
 </p>
 
 ## Sign Up
