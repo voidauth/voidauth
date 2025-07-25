@@ -25,13 +25,13 @@ VoidAuth is an open-source authentication platform designed to simplify user man
 
 Key Features:
 
-- 🙋‍♂️ User Management
-- 🌐 OpenID Connect (OIDC) Provider
-- 🔀 Proxy ForwardAuth Domains
-- 📧 User Registration and Invitations
-- 🔑 Passkey Support
-- 🔐 Secure Password Reset with Email Verification
-- 🎨 Custom Branding Options
+- User Management
+- OpenID Connect (OIDC) Provider
+- Proxy ForwardAuth Domains
+- User Registration and Invitations
+- Passkey Support
+- Secure Password Reset with Email Verification
+- Custom Branding Options
 
 ### Why Choose VoidAuth?
 
