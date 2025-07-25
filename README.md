@@ -35,10 +35,10 @@ Key Features:
 
 ### Why Choose VoidAuth?
 
-- Simplicity. An intuitive web interface for end-users and administrators.
-- Flexibility. Easily customize your login page with your own logo, app title, and theme colors.
-- Modern Authentication. Support for cutting-edge authentication methods like passkeys, password complexity rules.
-- Self-Hosted. Take complete control of your authentication.
+- Simplicity: An intuitive web interface for end-users and administrators.
+- Flexibility: Easily customize your login page with your own logo, app title, and theme colors.
+- Modern: Support for authentication methods like passkeys.
+- Self-Hosted: Take control!
 
 ## Getting Started
 
