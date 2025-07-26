@@ -2,11 +2,16 @@
 <mat-card class="form-card">
   <mat-card-content>
     <form autocomplete="off" [action]="host + '/oidc/session/end/confirm'" method="post">
+      <!-- TODO: Display client name/id if provided -->
       <p>Do you want to log out?</p>
       <input type="hidden" name="xsrf" [value]="secret" />
       <mat-card-actions>
         <button mat-flat-button autofocus="" [disabled]="!secret" type="submit" value="yes" name="logout">Yes</button>
-        <button mat-button [disabled]="!secret" type="submit">No</button>
+        @if (history.length) {
+          <button mat-button [disabled]="!secret" type="button" (click)="history.back()">Back</button>
+        } @else {
+          <button mat-button [disabled]="!secret" type="submit">No</button>
+        }
       </mat-card-actions>
     </form>
   </mat-card-content>

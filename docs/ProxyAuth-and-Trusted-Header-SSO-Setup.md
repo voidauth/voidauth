@@ -23,16 +23,16 @@ When creating ProxyAuth Domains, remember that the trailing "**/**" and separato
 > [!IMPORTANT]
 > You can set up a wildcard ProxyAuth Domain **\*/\*** which will cover any domain not specifically listed in your ProxyAuth Domain settings. Special care should be taken to make sure such a domain has a restrictive group assigned like **owners** or **admins**.
 
-### ProxyAuth and Trusted Header SSO Details
+### ProxyAuth and Trusted Header SSO
 
 ProxyAuth Domains perform multiple steps to determine whether a request should be granted or denied. The following actions happen in VoidAuth during process:
 
 1. Check for Authorization Header Basic Auth, and if so identify the user by username and password in the header. If the user is not found respond with a 401 status code and the WWW-Authenticate response header set.
-2. Check if the request has a valid user Session Cookie, if not then redirect to the login page.
-3. Find which ProxyAuth Domain matches the request host and path. If there is none found respond with a 403 Forbidden status code.
+2. If the request did not have an Authorization Header, check if the request has a valid user Session Cookie and if not then redirect to the login page.
+3. If a user was found, determine which ProxyAuth Domain matches the request host and path. If there is none found respond with a 403 Forbidden status code.
 3. If the user has a security group which would grant access to the ProxyAuth Domain or if the ProxyAuth Domain has no groups, grant access to the resource. If not, respond with a 403 Forbidden status code.
 
-If a request is allowed, the following headers will be set on the response which enabled Trusted Header SSO on certain selfhosted applications:
+If a request is allowed, the following headers will be set on the response which enabled Trusted Header SSO on certain self-hosted applications:
 * Remote-User
 * Remote-Email
 * Remote-Name
