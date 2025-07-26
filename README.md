@@ -21,24 +21,35 @@ The Single Sign-On Provider that makes securing your applications and resources 
 </p>
 
 ## What is VoidAuth
-VoidAuth is an open-source authentication platform designed to simplify user management and securing access to your self-hosted applications and resources.
+
+VoidAuth is an open-source authentication platform that streamlines user management and access control for self-hosted applications. Centered on OpenID Connect (OIDC) integration, it also offers first class support for Proxy ForwardAuth (ProxyAuth) to provide a full authentication solution. Combined with a focus on an intuitive end-user and administrator web interface, VoidAuth provides a seamless and professional authentication experience.
 
 Key Features:
 
 - User Management
 - OpenID Connect (OIDC) Provider
 - Proxy ForwardAuth Domains
-- User Registration and Invitations
+- User Self-Registration and Invitations
+- Custom Branding Options (Logo, Title, Theme Color, Email Templates)
 - Passkey Support
 - Secure Password Reset with Email Verification
-- Custom Branding Options
+- Encryption-At-Rest
 
-### Why Choose VoidAuth?
+## User Profile Settings
 
-- Simplicity: An intuitive web interface for end-users and administrators.
-- Flexibility: Easily customize your login page with your own logo, app title, and theme colors.
-- Modern: Support for authentication methods like passkeys.
-- Self-Hosted: Take control!
+The default page for users logging into VoidAuth, on the Profile Settings page a user can manage their profile, password, email, and passkey settings.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/091a0122-75d7-44d0-9c97-e395c945cf4f.png" width="240">
+</p>
+
+## Admin Panel
+
+Administrators can access the Admin Panel in the sidebar menu, where they can manage the authentication settings of the VoidAuth instance.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/admin_panel.png" width="600">
+</p>
 
 ## Getting Started
 
@@ -59,7 +70,7 @@ services:
       APP_URL: # required
       STORAGE_KEY: # required
       DB_PASSWORD: # required
-      DB_HOST: voidauth-db # required, should probably be the same as the db service name
+      DB_HOST: voidauth-db # required
     depends_on:
       - voidauth-db
 
@@ -75,11 +86,17 @@ volumes:
   db:
 ```
 
+After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`
+
 Please see the [Getting Started](https://voidauth.app/#/Getting-Started) page for details and configuration options.
+
+## Support
+
+Issues, Suggestions, and Feature Requests should be added as [Issues](https://github.com/voidauth/voidauth/issues) of the appropriate type. For Help and Support, Q&A, or anything else; open a [Discussion](https://github.com/orgs/voidauth/discussions). This project is actively monitored, I will likely respond quickly.
 
 ## Disclaimer
 
-I am not a security researcher or expert, just a developer unsatisfied with the difficult onboarding process of existing selfhosted auth solutions. Use at your own risk.
+I am not a security researcher or expert, just a developer unsatisfied with the difficult onboarding process of existing self-hosted auth solutions. Use at your own risk.
 
 ## Credits
 
@@ -93,4 +110,4 @@ This project would not be possible without the incredible work of others includi
 
 [authelia](https://www.authelia.com/) An amazing project and heavy inspiration, VoidAuth aims to be less feature-complete but more user friendly
 
-[lldap](https://github.com/lldap/lldap) Inspiration for user management, a very good selfhosted ldap service
+[lldap](https://github.com/lldap/lldap) Inspiration for user management, a very good self-hosted ldap service
