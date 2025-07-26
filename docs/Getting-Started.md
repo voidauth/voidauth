@@ -99,7 +99,7 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 #### Misc.
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| PASSWORD_STRENGTH | 2 | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | ✅ |
+| PASSWORD_STRENGTH | 3 | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | ✅ |
 | ADMIN_EMAILS | hourly | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. If set to 'false', admin notification emails are disabled. | | | 
 
 > [!IMPORTANT]
