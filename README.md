@@ -22,18 +22,18 @@ The Single Sign-On Provider that makes securing your applications and resources 
 
 ## What is VoidAuth
 
-VoidAuth is an open-source authentication platform that streamlines user management and access control for self-hosted applications. Centered on OpenID Connect (OIDC) integration, it also offers first class support for Proxy ForwardAuth (ProxyAuth) to provide a full authentication solution. Combined with a focus on an intuitive end-user and administrator web interface, VoidAuth provides a seamless and professional authentication experience.
+VoidAuth is an open-source authentication platform that streamlines user management and access control for self-hosted applications. Centered on OpenID Connect (OIDC) integration, it also offers first class support for Proxy ForwardAuth (ProxyAuth). With a focus on an intuitive end-user and administrator web interface, VoidAuth provides a seamless and professional authentication experience, try it today!
 
 Key Features:
 
-- User Management
-- OpenID Connect (OIDC) Provider
-- Proxy ForwardAuth Domains
-- User Self-Registration and Invitations
-- Custom Branding Options (Logo, Title, Theme Color, Email Templates)
-- Passkey Support
-- Secure Password Reset with Email Verification
-- Encryption-At-Rest
+- 👤 User Management
+- 🌐 OpenID Connect (OIDC) Provider
+- 🔄 Proxy ForwardAuth Domains
+- 📨 User Self-Registration and Invitations
+- 🎨 Custom Branding Options (Logo, Title, Theme Color, Email Templates)
+- 🔑 Passkey Support
+- 📧 Secure Password Reset with Email Verification
+- 🔒 Encryption-At-Rest
 
 ## User Profile Settings
 
