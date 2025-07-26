@@ -99,7 +99,7 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 #### Misc.
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| PASSWORD_STRENGTH | 3 | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | ✅ |
+| PASSWORD_STRENGTH | 3 | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | |
 | ADMIN_EMAILS | hourly | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. If set to 'false', admin notification emails are disabled. | | | 
 
 > [!IMPORTANT]
@@ -110,7 +110,7 @@ Your own branding can be applied to the app by mounting the **/app/config** dire
 
 The logo and favicon of the web interface can be customized by placing your own **logo.svg**/**logo.png** and **favicon.svg**/**favicon.png** in the mounted **/app/config/branding** directory. You can also add an **apple-touch-icon.png** file to **/app/config/branding**.
 
-The email templates for email verification, invitations, and password resets can be changed by modifying the files in the **/app/config/email_templates** directory. The files are [pug](https://pugjs.org/api/getting-started.html) template format and text, which should be updated together when changed. To reset your changes to the email templates, just delete (or move) your **/app/config/email_templates** directory and it will be regenerated.
+The email templates for email verification, invitations, and password resets can be changed by modifying the files in the **/app/config/email_templates** directory. The files are [pug](https://pugjs.org/api/getting-started.html) template format and text, which should be updated together when changed. To reset your changes to the email templates, just delete (or move) your **/app/config/email_templates** directory and it will be regenerated on app restart.
 
 ### Customization
 > [!IMPORTANT]
@@ -125,5 +125,5 @@ To start setting up protected applications, there are two options available. If 
 > [!WARNING]
 > The following configurations are not well supported or tested, but may cover additional use-cases.
 ### Multi-Domain Protection
-You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net` 
+You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC clients, ProxyAuth Domains, etc.
 
