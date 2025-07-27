@@ -55,7 +55,7 @@ const configuration: Configuration = {
       },
       postLogoutSuccessSource: (ctx) => {
         // TODO: custom logout success page?
-        ctx.redirect('/')
+        ctx.redirect(appConfig.DEFAULT_REDIRECT || '/')
       },
     },
   },
