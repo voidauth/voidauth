@@ -9,13 +9,6 @@ mat-toolbar {
 .header-logo {
   display: block;
   height: 100%;
-
-  img {
-    padding: 4px;
-    height: 100%;
-    object-fit: contain;
-    object-position: left;
-  }
 }
 
 .left-actions > * {
