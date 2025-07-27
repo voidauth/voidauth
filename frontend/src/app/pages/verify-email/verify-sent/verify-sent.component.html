@@ -1,12 +1,14 @@
 <h1>{{ sent ? "Verification Email Sent" : "Email Verification Required" }}</h1>
 <mat-card class="form-card">
   <mat-card-content>
-    <button mat-button (click)="sendVerification()">
-      {{ sent ? "Send Again" : "Send Verification Email" }}
-    </button>
-    @if (sent) {
-      <a mat-flat-button routerLink="/">Login</a>
-    }
+    <mat-card-actions>
+      <button mat-button (click)="sendVerification()">
+        {{ sent ? "Send Again" : "Send Verification Email" }}
+      </button>
+      @if (sent) {
+        <a mat-flat-button routerLink="/">Login</a>
+      }
+    </mat-card-actions>
   </mat-card-content>
 </mat-card>
 

@@ -21,7 +21,7 @@ import type { UserDetails, UserWithoutPassword } from '@shared/api-response/User
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import { sendApproved, sendInvitation, sendPasswordReset } from '../util/email'
+import { sendApproved, sendInvitation, sendPasswordReset, SMTP_VERIFIED } from '../util/email'
 import { generate } from 'generate-password'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
@@ -216,7 +216,7 @@ adminRouter.get('/proxyauth/:id',
       groups: (await db().select('name')
         .table<Group>('group')
         .innerJoin<ProxyAuthGroup>('proxy_auth_group', 'proxy_auth_group.groupId', 'group.id')
-        .where({ proxyAuthId: proxyauth.id }).orderBy('id', 'asc')).map(v => v.name),
+        .where({ proxyAuthId: proxyauth.id }).orderBy('name', 'asc')).map(v => v.name),
     }
 
     res.send(response)
@@ -409,12 +409,16 @@ adminRouter.patch('/user',
       return
     }
 
-    if (!existingUser.approved && userUpdate.approved && userUpdate.email) {
+    if (!existingUser.approved && userUpdate.approved && userUpdate.email && SMTP_VERIFIED) {
       const userApprovedEmail = await db().table<EmailLog>('email_log')
         .where({ type: 'approved', toUser: userUpdate.id }).first()
       if (!userApprovedEmail) {
         // Only sent approved email to users that have never received one before
-        await sendApproved(userUpdate, userUpdate.email)
+        try {
+          await sendApproved(userUpdate, userUpdate.email)
+        } catch (e) {
+          console.error(e)
+        }
       }
     }
 
@@ -471,8 +475,12 @@ adminRouter.patch('/users/approve',
 
     for (const user of usersWithEmail) {
       // Only sent approved email to users that have never received one before
-      if (user.email && !userApprovedSent.some(e => e.toUser === user.id)) {
-        await sendApproved(user, user.email)
+      if (user.email && SMTP_VERIFIED && !userApprovedSent.some(e => e.toUser === user.id)) {
+        try {
+          await sendApproved(user, user.email)
+        } catch (e) {
+          console.error(e)
+        }
       }
     }
 
@@ -481,7 +489,7 @@ adminRouter.patch('/users/approve',
 )
 
 adminRouter.get('/groups', async (_req, res) => {
-  const groups = await db().select().table<Group>('group').orderBy('id', 'asc')
+  const groups = await db().select().table<Group>('group').orderBy('createdAt', 'asc')
   res.send(groups)
 })
 
@@ -503,7 +511,7 @@ adminRouter.get('/group/:id',
       users: await db().select('id', 'username')
         .table<User>('user')
         .innerJoin<UserGroup>('user_group', 'user_group.userId', 'user.id')
-        .where({ groupId: group.id }).orderBy('id', 'asc'),
+        .where({ groupId: group.id }).orderBy('name', 'asc'),
     }
 
     res.send(groupWithUsers)

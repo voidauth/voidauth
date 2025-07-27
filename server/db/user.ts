@@ -11,7 +11,7 @@ import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
 
 export async function getUsers(): Promise<UserWithoutPassword[]> {
-  return (await db().table<User>('user').select().orderBy('id', 'asc')).map((user) => {
+  return (await db().table<User>('user').select().orderBy('createdAt', 'desc')).map((user) => {
     const { passwordHash, ...u } = user
     return u
   })
