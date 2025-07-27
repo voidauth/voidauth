@@ -21,7 +21,7 @@ import type { UserDetails, UserWithoutPassword } from '@shared/api-response/User
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import { sendInvitation, sendPasswordReset } from '../util/email'
+import { sendApproved, sendInvitation, sendPasswordReset } from '../util/email'
 import { generate } from 'generate-password'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
@@ -32,6 +32,7 @@ import { getProxyAuth, getProxyAuths } from '../db/proxyAuth'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
+import type { EmailLog } from '@shared/db/EmailLog'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -374,6 +375,12 @@ adminRouter.patch('/user',
   async (req: Request, res: Response) => {
     const userUpdate = matchedData<UserUpdate>(req, { includeOptionals: true })
 
+    const existingUser = await db().table<User>('user').where({ id: userUpdate.id }).first()
+    if (!existingUser) {
+      res.sendStatus(404)
+      return
+    }
+
     const { groups: _, ...user } = userUpdate
     const ucount = await db().table<User>('user').update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
     const groups: Group[] = await db().select().table<Group>('group').whereIn('name', userUpdate.groups)
@@ -400,6 +407,15 @@ adminRouter.patch('/user',
     if (!ucount) {
       res.sendStatus(404)
       return
+    }
+
+    if (!existingUser.approved && userUpdate.approved && userUpdate.email) {
+      const userApprovedEmail = await db().table<EmailLog>('email_log')
+        .where({ type: 'approved', toUser: userUpdate.id }).first()
+      if (!userApprovedEmail) {
+        // Only sent approved email to users that have never received one before
+        await sendApproved(userUpdate, userUpdate.email)
+      }
     }
 
     res.send()
@@ -448,6 +464,18 @@ adminRouter.patch('/users/approve',
     }
 
     await db().table<User>('user').update({ approved: true }).whereIn('id', users)
+
+    const usersWithEmail = await db().select('id', 'email', 'name', 'username').table<User>('user').whereIn('id', users)
+    const userApprovedSent = await db().select().table<EmailLog>('email_log').where({ type: 'approved' })
+      .and.whereIn('toUser', users)
+
+    for (const user of usersWithEmail) {
+      // Only sent approved email to users that have never received one before
+      if (user.email && !userApprovedSent.some(e => e.toUser === user.id)) {
+        await sendApproved(user, user.email)
+      }
+    }
+
     res.send()
   },
 )
