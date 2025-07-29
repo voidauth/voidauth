@@ -8,17 +8,20 @@ import { SnackbarService } from '../../../services/snackbar.service'
 import type { TableColumn } from '../clients/clients.component'
 import { RouterLink } from '@angular/router'
 import { UserService } from '../../../services/user.service'
-import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
+import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { SpinnerService } from '../../../services/spinner.service'
 import type { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
+import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { debounceTime, distinctUntilChanged } from 'rxjs'
 
 @Component({
   selector: 'app-users',
   imports: [
     MaterialModule,
     RouterLink,
+    ReactiveFormsModule,
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
@@ -26,12 +29,12 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 export class UsersComponent {
   public me?: UserDetails
 
-  dataSource: MatTableDataSource<UserWithoutPassword> = new MatTableDataSource()
+  dataSource: MatTableDataSource<UserWithAdminIndicator> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
   readonly sort = viewChild.required(MatSort)
 
-  columns: TableColumn<UserWithoutPassword>[] = [
+  columns: TableColumn<UserWithAdminIndicator>[] = [
     {
       columnDef: 'username',
       header: 'Username',
@@ -56,9 +59,12 @@ export class UsersComponent {
     },
   ]
 
-  displayedColumns = ['multi'].concat(this.columns.map(c => c.columnDef)).concat(['actions'])
+  displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
 
+  selectEnabled = false
   selected: { id: string, source: MatCheckbox }[] = []
+
+  search = new FormControl<string>('')
 
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
@@ -82,6 +88,33 @@ export class UsersComponent {
     } finally {
       this.spinnerService.hide()
     }
+
+    this.search.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+    ).subscribe((searchTerm) => {
+      this.spinnerService.show()
+      this.adminService.users(searchTerm).then((users) => {
+        this.dataSource.data = users
+        this.selected.forEach(s => s.source.checked = false)
+        this.selected = []
+      }).catch((e: unknown) => {
+        console.error(e)
+      }).finally(() => {
+        this.spinnerService.hide()
+      })
+    })
+  }
+
+  toggleSelectEnabled() {
+    this.selectEnabled = !this.selectEnabled
+    if (this.selectEnabled) {
+      this.displayedColumns = ['multi'].concat(this.displayedColumns)
+    } else {
+      this.displayedColumns = this.displayedColumns.filter(c => c !== 'multi')
+    }
+    this.selected.forEach(s => s.source.checked = false)
+    this.selected = []
   }
 
   delete(id: string) {
@@ -143,6 +176,8 @@ export class UsersComponent {
         this.selected.forEach(s => s.source.checked = false)
         this.selected = []
 
+        this.toggleSelectEnabled()
+
         this.snackbarService.message('User(s) were approved.')
       } catch (_e) {
         this.snackbarService.error('Could not approve user(s).')
@@ -150,5 +185,41 @@ export class UsersComponent {
         this.spinnerService.hide()
       }
     })
+  }
+
+  deleteSelected() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete ${String(this.selected.length)} user(s)?`,
+        header: 'Delete',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.error('Delete Cancelled.')
+        return
+      }
+      try {
+        this.spinnerService.show()
+        await this.adminService.deleteUsers(this.selected.map(s => s.id))
+        this.dataSource.data = this.dataSource.data.filter(u => !this.selected.some(s => s.id === u.id))
+        this.selected.forEach(s => s.source.checked = false)
+        this.selected = []
+
+        this.toggleSelectEnabled()
+
+        this.snackbarService.message('User(s) were deleted.')
+      } catch (_e) {
+        this.snackbarService.error('Could not delete user(s).')
+      } finally {
+        this.spinnerService.hide()
+      }
+    })
+  }
+
+  currentUserSelected(): boolean {
+    const me = this.me
+    return !!me && this.selected.some(s => s.id === me.id)
   }
 }

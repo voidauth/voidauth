@@ -1,11 +1,10 @@
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { Router, type Request, type Response } from 'express'
+import { Router } from 'express'
 import appConfig from '../util/config'
 import { sendPasswordReset, SMTP_VERIFIED } from '../util/email'
 import type { PasswordReset } from '@shared/db/PasswordReset'
-import { validate } from '../util/validate'
+import { validate, validatorData } from '../util/validate'
 import { newPasswordValidation, stringValidation, uuidValidation } from '../util/validators'
-import { matchedData } from 'express-validator'
 import { getUserById, getUserByInput } from '../db/user'
 import { db } from '../db/db'
 import { createExpiration } from '../db/util'
@@ -41,8 +40,8 @@ publicRouter.post('/send_password_reset',
   ...validate<{ input: string }>({
     input: stringValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { input } = matchedData<{ input: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { input } = validatorData<{ input: string }>(req)
     const user = await getUserByInput(input)
 
     if (!user) {
@@ -81,8 +80,8 @@ publicRouter.post('/reset_password',
     challenge: stringValidation,
     newPassword: newPasswordValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { userId, challenge, newPassword } = matchedData<ResetPassword>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { userId, challenge, newPassword } = validatorData<ResetPassword>(req)
     const user = await getUserById(userId)
     const passwordReset = await db().select().table<PasswordReset>('password_reset')
       .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()

@@ -2,8 +2,7 @@ import { Router, type Request, type Response } from 'express'
 import { provider } from '../oidc/provider'
 import { getUserById, getUserByInput } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
-import { matchedData } from 'express-validator'
-import { validate } from '../util/validate'
+import { validate, validatorData } from '../util/validate'
 import type { Redirect } from '@shared/api-response/Redirect'
 import type { LoginUser } from '@shared/api-request/LoginUser'
 import appConfig from '../util/config'
@@ -18,9 +17,8 @@ import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
 import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import type { Interaction } from 'oidc-provider'
-import { emailValidation, nameValidation,
+import { andUnlessNull, emailValidation, nameValidation,
   newPasswordValidation,
-  optionalNull,
   stringValidation, usernameValidation, uuidValidation } from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { createExpiration } from '../db/util'
@@ -120,7 +118,7 @@ router.get('/', async (req, res) => {
 })
 
 router.get('/:uid/detail',
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.sendStatus(400)
@@ -149,9 +147,12 @@ router.post('/login',
       toLowerCase: true,
     },
     password: stringValidation,
-    remember: { isBoolean: true },
+    remember: {
+      optional: true,
+      isBoolean: true,
+    },
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.status(400).send({
@@ -161,7 +162,7 @@ router.post('/login',
     }
     const { prompt: { name } } = interaction
 
-    const { input, password, remember } = matchedData<LoginUser>(req, { includeOptionals: true })
+    const { input, password, remember } = validatorData<LoginUser>(req)
 
     if (name !== 'login') {
       res.sendStatus(400)
@@ -195,7 +196,7 @@ router.post('/login',
 )
 
 router.get('/passkey',
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.status(400).send({
@@ -252,7 +253,7 @@ router.post('/passkey',
     },
     type: stringValidation,
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.status(400).send({
@@ -262,7 +263,7 @@ router.post('/passkey',
     }
     const { prompt: { name } } = interaction
 
-    const body = matchedData<AuthenticationResponseJSON>(req, { includeOptionals: true })
+    const body = validatorData<AuthenticationResponseJSON>(req)
 
     if (name !== 'login') {
       res.sendStatus(400)
@@ -343,14 +344,14 @@ router.post('/:uid/confirm/',
   ...validate<{ uid: string }>({
     uid: stringValidation,
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const {
       uid,
       prompt,
       params,
       session,
     } = await provider.interactionDetails(req, res)
-    const { uid: uidParam } = matchedData<{ uid: string }>(req, { includeOptionals: true })
+    const { uid: uidParam } = validatorData<{ uid: string }>(req)
 
     if (uid !== uidParam) {
       res.status(400).send({ message: 'Consent form is no longer valid.' })
@@ -378,7 +379,7 @@ router.post('/register',
       default: {
         options: null,
       },
-      ...optionalNull,
+      ...andUnlessNull,
       ...usernameValidation,
     },
     name: nameValidation,
@@ -386,33 +387,24 @@ router.post('/register',
       default: {
         options: null,
       },
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...andUnlessNull,
       ...emailValidation,
     },
     password: newPasswordValidation,
     inviteId: {
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...andUnlessNull,
       ...stringValidation,
     },
     challenge: {
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...andUnlessNull,
       ...stringValidation,
     },
   }),
-  async (req: Request, res: Response) => {
-    const registration = matchedData<RegisterUser>(req, { includeOptionals: true })
+  async (req, res) => {
+    const registration = validatorData<RegisterUser>(req)
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       const action = registration.inviteId ? 'Invite' : 'Registration'
@@ -513,8 +505,8 @@ router.post('/verify_email',
     userId: uuidValidation,
     challenge: stringValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { userId, challenge } = matchedData<VerifyUserEmail>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { userId, challenge } = validatorData<VerifyUserEmail>(req)
 
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {

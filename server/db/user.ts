@@ -1,7 +1,7 @@
 import type { Account, AccountClaims, KoaContextWithOIDC } from 'oidc-provider'
 import { db } from './db'
 import type { UserGroup, Group } from '@shared/db/Group'
-import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
+import type { UserDetails, UserWithAdminIndicator, UserWithoutPassword } from '@shared/api-response/UserDetails'
 import type { User } from '@shared/db/User'
 import { ADMIN_USER, ADMIN_GROUP } from '@shared/constants'
 import { randomUUID } from 'crypto'
@@ -10,10 +10,29 @@ import { als } from '../util/als'
 import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
 
-export async function getUsers(): Promise<UserWithoutPassword[]> {
-  return (await db().table<User>('user').select().orderBy('createdAt', 'desc')).map((user) => {
-    const { passwordHash, ...u } = user
-    return u
+export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
+  return (await db().table<User>('user').select<(User & { isAdmin: number })[]>('user.*', db().raw(`
+      CASE 
+        WHEN EXISTS (
+          SELECT 1 
+          FROM "user_group" ug 
+          JOIN "group" g ON ug."groupId" = g."id"
+          WHERE ug."userId" = "user"."id" AND g.name = ?
+        ) 
+        THEN 1 
+        ELSE 0 
+      END as "isAdmin"
+    `, [ADMIN_GROUP])).where((w) => {
+    if (searchTerm) {
+      w.whereRaw('lower("username") like lower(?)', [`%${searchTerm}%`])
+      w.orWhereRaw('lower("email") like lower(?)', [`%${searchTerm}%`])
+    }
+  }).orderBy('createdAt', 'desc')).map((user) => {
+    const { passwordHash, isAdmin, ...u } = user
+    return {
+      ...u,
+      isAdmin: !!isAdmin,
+    }
   })
 }
 

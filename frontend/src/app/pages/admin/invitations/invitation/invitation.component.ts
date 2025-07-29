@@ -114,7 +114,7 @@ export class InvitationComponent {
       name: invitation.name ?? null,
       email: invitation.email ?? null,
       groups: invitation.groups,
-      emailVerified: invitation.emailVerified ?? true,
+      emailVerified: invitation.emailVerified,
     })
     this.inviteEmail = invitation.email
     if (!this.config) {

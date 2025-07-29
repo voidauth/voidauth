@@ -36,9 +36,11 @@ body.light {
 }
 
 .error-snackbar {
-  @include mat.snack-bar-overrides((container-color: var(--mat-sys-error-container),
-      supporting-text-color: var(--mat-sys-on-error-container),
-      button-color: var(--mat-sys-on-error-container)));
+  @include mat.snack-bar-overrides((
+    container-color: var(--mat-sys-error-container),
+    supporting-text-color: var(--mat-sys-on-error-container),
+    button-color: var(--mat-sys-on-error-container)
+  ));
 }
 
 .container {
@@ -56,6 +58,21 @@ mat-drawer-content {
 
 .field-suffix {
   margin-right: 8px;
+}
+
+.multi-select-actions {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+  padding: 8px;
+
+  > * {
+    margin-left: 12px;
+  }
+}
+
+.cdk-overlay-dark-backdrop {
+  background: rgba(0,0,0,.90);
 }
 
 mat-card.form-card {

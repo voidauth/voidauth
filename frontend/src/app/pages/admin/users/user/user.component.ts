@@ -93,8 +93,8 @@ export class UserComponent {
           username: user.username,
           name: user.name ?? null,
           email: user.email ?? '',
-          emailVerified: user.emailVerified ?? false,
-          approved: user.approved ?? false,
+          emailVerified: user.emailVerified,
+          approved: user.approved,
           groups: user.groups,
         })
 

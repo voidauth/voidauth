@@ -215,7 +215,7 @@ provider.on('session.saved', (session) => {
   const expires = new Date((ctx.oidc.session?.exp ?? 0) * 1000 || createExpiration(TTLs.SESSION))
   ctx.cookies.set('x-voidauth-session-uid', sessionCookie, {
     httpOnly: true,
-    sameSite: ctx.request.secure ? 'none' : 'lax', // browsers will not accept "none" with insecure cookies
+    sameSite: 'lax',
     secure: ctx.request.secure,
     expires,
     domain: domain ?? undefined,
@@ -232,7 +232,7 @@ provider.on('session.destroyed', (_session) => {
   const domain = psl.get(ctx.request.hostname)
   ctx.cookies.set('x-voidauth-session-uid', '', {
     httpOnly: true,
-    sameSite: ctx.request.secure ? 'none' : 'lax',
+    sameSite: 'lax',
     secure: ctx.request.secure,
     maxAge: 0,
     domain: domain ?? undefined,
