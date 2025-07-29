@@ -96,6 +96,7 @@ export class UsersComponent {
       this.spinnerService.show()
       this.adminService.users(searchTerm).then((users) => {
         this.dataSource.data = users
+        this.selected = []
       }).catch((e: unknown) => {
         console.error(e)
       }).finally(() => {
