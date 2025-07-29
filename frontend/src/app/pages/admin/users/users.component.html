@@ -1,12 +1,16 @@
 <div class="container">
   <div class="multi-select-actions">
     @if (this.selectEnabled) {
-      <button mat-icon-button (click)="toggleSelectEnabled()">
-        <mat-icon>cancel</mat-icon>
+      <button mat-button [disabled]="!selected.length || currentUserSelected()" (click)="deleteSelected()">
+        Delete
+        <mat-icon>delete_forever</mat-icon>
       </button>
       <button mat-flat-button [disabled]="!selected.length" (click)="approveSelected()">
         Approve
         <mat-icon>check</mat-icon>
+      </button>
+      <button mat-icon-button (click)="toggleSelectEnabled()">
+        <mat-icon>cancel</mat-icon>
       </button>
     } @else {
       <button mat-flat-button (click)="toggleSelectEnabled()">

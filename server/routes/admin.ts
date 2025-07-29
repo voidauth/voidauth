@@ -17,7 +17,7 @@ import { ADMIN_GROUP, TTLs } from '@shared/constants'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
-import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
+import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
@@ -331,7 +331,7 @@ adminRouter.get('/users{/:searchTerm}',
   }),
   async (req, res) => {
     const { searchTerm } = validatorData<{ searchTerm?: string }>(req)
-    const users: UserWithoutPassword[] = await getUsers(searchTerm)
+    const users: UserWithAdminIndicator[] = await getUsers(searchTerm)
     res.send(users)
   },
 )
@@ -493,6 +493,43 @@ adminRouter.patch('/users/approve',
           console.error(e)
         }
       }
+    }
+
+    res.send()
+  },
+)
+
+adminRouter.post('/users/delete',
+  ...validate<{ users: string[] }>({
+    users: {
+      isArray: true,
+    },
+    'users.*': {
+      ...uuidValidation,
+    },
+  }),
+  async (req, res) => {
+    const { users } = validatorData<{ users: string[] }>(req)
+
+    if (!users.length) {
+      // nothing to do
+      res.send()
+      return
+    }
+
+    // Don't delete yourself
+    if (users.some(id => id === req.user.id)) {
+      res.sendStatus(400)
+      return
+    }
+
+    await db().table<User>('user').update({ approved: true }).whereIn('id', users)
+
+    const count = await db().table<User>('user').delete().whereIn('id', users)
+
+    if (!count) {
+      res.sendStatus(404)
+      return
     }
 
     res.send()

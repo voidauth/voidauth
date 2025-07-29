@@ -36,9 +36,11 @@ body.light {
 }
 
 .error-snackbar {
-  @include mat.snack-bar-overrides((container-color: var(--mat-sys-error-container),
-      supporting-text-color: var(--mat-sys-on-error-container),
-      button-color: var(--mat-sys-on-error-container)));
+  @include mat.snack-bar-overrides((
+    container-color: var(--mat-sys-error-container),
+    supporting-text-color: var(--mat-sys-on-error-container),
+    button-color: var(--mat-sys-on-error-container)
+  ));
 }
 
 .container {
@@ -65,7 +67,7 @@ mat-drawer-content {
   padding: 8px;
 
   > * {
-    margin-left: 8px;
+    margin-left: 12px;
   }
 }
 
