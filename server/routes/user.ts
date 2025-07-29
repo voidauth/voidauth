@@ -1,7 +1,7 @@
-import { Router, type Request, type Response } from 'express'
-import { validate } from '../util/validate'
+import { Router } from 'express'
+import { validate, validatorData } from '../util/validate'
 import type { UpdateProfile } from '@shared/api-request/UpdateProfile'
-import { matchedData } from 'express-validator'
+
 import { db } from '../db/db'
 import * as argon2 from 'argon2'
 import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
@@ -25,9 +25,9 @@ userRouter.patch('/profile',
   ...validate<UpdateProfile>({
     name: nameValidation,
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const user = req.user
-    const profile = matchedData<UpdateProfile>(req, { includeOptionals: true })
+    const profile = validatorData<UpdateProfile>(req)
 
     await db().table<User>('user').update(profile).where({ id: user.id })
 
@@ -39,10 +39,10 @@ userRouter.patch('/email',
   ...validate<UpdateEmail>({
     email: emailValidation,
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const user = req.user
 
-    const { email } = matchedData<UpdateEmail>(req, { includeOptionals: true })
+    const { email } = validatorData<UpdateEmail>(req)
 
     if (appConfig.EMAIL_VERIFICATION && email) {
       await createEmailVerification(user, email)
@@ -59,9 +59,9 @@ userRouter.patch('/password',
     oldPassword: stringValidation,
     newPassword: newPasswordValidation,
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const user = req.user
-    const { oldPassword, newPassword } = matchedData<UpdatePassword>(req, { includeOptionals: true })
+    const { oldPassword, newPassword } = validatorData<UpdatePassword>(req)
 
     const passwordHash = (await db().select('passwordHash')
       .table<User>('user')

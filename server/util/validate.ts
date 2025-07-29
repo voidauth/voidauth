@@ -37,7 +37,7 @@ type DotNotation<T> = any extends T
           Required<T>[K] extends object
             ? Required<T>[K] extends (infer _V)[]
               ? (`${IsOptionalKey<T, K> extends false ? K : `${K}?`}` | `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`)
-              : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
+              : `${K}?` | `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
             : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
         ) }[keyof ExcludeGenericKeys<T>]
       : never
@@ -57,7 +57,7 @@ export type SchemaValues = ParamSchema
 export type TypedSchema<T extends object> = {
   [K in DotNotation<T> as WasOptionalKey<K> extends false ? K : never]: SchemaValues
 } & {
-  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: SchemaValues
+  [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: SchemaValues & { optional: ParamSchema['optional'] }
 }
 
 export function validate<T extends object = any>(schema: TypedSchema<T> | TypedSchema<T>[]) {
@@ -65,7 +65,7 @@ export function validate<T extends object = any>(schema: TypedSchema<T> | TypedS
   return [
     ...schemas.map((s) => {
       return checkSchema(s, ['body', 'params', 'query'])
-    }),
+    }).flat(),
     handleValidatorError,
   ]
 }
@@ -81,5 +81,5 @@ function handleValidatorError(req: Request, res: Response, next: NextFunction) {
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function validatorData<T extends object = Record<string, any>>(req: Request) {
-  return matchedData<T>(req, { includeOptionals: true, onlyValidData: true })
+  return matchedData<T>(req, { includeOptionals: false, onlyValidData: true })
 }

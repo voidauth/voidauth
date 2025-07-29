@@ -1,11 +1,10 @@
-import { Router, type Request, type Response } from 'express'
+import { Router } from 'express'
 import appConfig from '../util/config'
 import { checkLoggedIn, stringValidation } from '../util/validators'
 import { generateRegistrationOptions, verifyRegistrationResponse, type RegistrationResponseJSON } from '@simplewebauthn/server'
 import { getRegistrationOptions, getUserPasskeys, savePasskey, saveRegistrationOptions } from '../db/passkey'
-import { validate } from '../util/validate'
+import { validate, validatorData } from '../util/validate'
 import type { Passkey } from '@shared/db/Passkey'
-import { matchedData } from 'express-validator'
 import { provider } from '../oidc/provider'
 import { TTLs } from '@shared/constants'
 
@@ -20,7 +19,7 @@ export const passkeyRouter = Router()
 passkeyRouter.use(checkLoggedIn)
 
 passkeyRouter.get('/registration',
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const user = req.user
     const userPasskeys = await getUserPasskeys(user.id)
 
@@ -99,8 +98,8 @@ passkeyRouter.post('/registration',
     },
     type: stringValidation,
   }),
-  async (req: Request, res: Response) => {
-    const body = matchedData<RegistrationResponseJSON>(req, { includeOptionals: true })
+  async (req, res) => {
+    const body = validatorData<RegistrationResponseJSON>(req)
 
     // Retrieve the logged-in user
     const user = req.user

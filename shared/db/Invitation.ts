@@ -6,6 +6,6 @@ export type Invitation = Audit & {
   username?: string | null
   email?: string | null
   name?: string | null
-  emailVerified?: boolean
+  emailVerified: boolean
   expiresAt: Date
 }

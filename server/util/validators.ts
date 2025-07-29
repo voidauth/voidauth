@@ -4,7 +4,6 @@ import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import appConfig from './config'
-import type { SchemaValues } from './validate'
 
 const options = {
   // recommended
@@ -37,17 +36,16 @@ export function checkAdmin(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-export const optionalNull: SchemaValues = {
-  optional: {
-    options: {
-      values: 'null',
-    },
+export const andUnlessNull = {
+  andUnlessNull: {
+    if: (value: unknown) => value !== null,
+    custom: () => true,
   },
-} as const
+}
 
-export const stringValidation: SchemaValues = { isString: true, stripLow: true, trim: true } as const
-export const uuidValidation: SchemaValues = { ...stringValidation, isUUID: true } as const
-export const emailValidation: SchemaValues = {
+export const stringValidation = { isString: true, stripLow: true, trim: true } as const
+export const uuidValidation = { ...stringValidation, isUUID: true } as const
+export const emailValidation = {
   isEmail: {
     options: {
       require_tld: false,
@@ -73,11 +71,8 @@ export const nameValidation = {
   default: {
     options: null,
   },
-  optional: {
-    options: {
-      values: 'null',
-    },
-  },
+  optional: true,
+  ...andUnlessNull,
   ...stringValidation,
   matches: { options: /^[\w\s]{4,64}$/ },
 } as const

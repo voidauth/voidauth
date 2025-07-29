@@ -10,8 +10,13 @@ import { als } from '../util/als'
 import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
 
-export async function getUsers(): Promise<UserWithoutPassword[]> {
-  return (await db().table<User>('user').select().orderBy('createdAt', 'desc')).map((user) => {
+export async function getUsers(searchTerm?: string): Promise<UserWithoutPassword[]> {
+  return (await db().table<User>('user').select().where((w) => {
+    if (searchTerm) {
+      w.whereRaw('lower("username") like lower(?)', [`%${searchTerm}%`])
+      w.orWhereRaw('lower("email") like lower(?)', [`%${searchTerm}%`])
+    }
+  }).orderBy('createdAt', 'desc')).map((user) => {
     const { passwordHash, ...u } = user
     return u
   })

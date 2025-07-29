@@ -13,12 +13,15 @@ import { SpinnerService } from '../../../services/spinner.service'
 import type { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
+import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { debounceTime, distinctUntilChanged } from 'rxjs'
 
 @Component({
   selector: 'app-users',
   imports: [
     MaterialModule,
     RouterLink,
+    ReactiveFormsModule,
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
@@ -60,6 +63,8 @@ export class UsersComponent {
 
   selected: { id: string, source: MatCheckbox }[] = []
 
+  search = new FormControl<string>('')
+
   private adminService = inject(AdminService)
   private snackbarService = inject(SnackbarService)
   private userService = inject(UserService)
@@ -82,6 +87,18 @@ export class UsersComponent {
     } finally {
       this.spinnerService.hide()
     }
+
+    this.search.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+    ).subscribe((searchTerm) => {
+      console.log(searchTerm)
+      this.adminService.users(searchTerm).then((users) => {
+        this.dataSource.data = users
+      }).catch((e: unknown) => {
+        console.error(e)
+      })
+    })
   }
 
   delete(id: string) {

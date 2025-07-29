@@ -4,6 +4,11 @@
     <mat-icon>check</mat-icon>
   </button>
 
+  <mat-form-field>
+    <mat-label>Search</mat-label>
+    <input matInput type="text" [formControl]="search" />
+  </mat-form-field>
+
   <table mat-table [dataSource]="dataSource" matSort>
     <ng-container matColumnDef="multi">
       <th mat-header-cell *matHeaderCellDef></th>

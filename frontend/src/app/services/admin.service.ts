@@ -88,8 +88,8 @@ export class AdminService {
     return firstValueFrom(this.http.delete<null>(`/api/admin/group/${id}`))
   }
 
-  async users() {
-    return firstValueFrom(this.http.get<UserWithoutPassword[]>('/api/admin/users'))
+  async users(searchTerm?: string | null) {
+    return firstValueFrom(this.http.get<UserWithoutPassword[]>(`/api/admin/users${searchTerm ? '/' + searchTerm : ''}`))
   }
 
   async user(id: string) {
