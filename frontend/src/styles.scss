@@ -58,6 +58,21 @@ mat-drawer-content {
   margin-right: 8px;
 }
 
+.multi-select-actions {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+  padding: 8px;
+
+  > * {
+    margin-left: 8px;
+  }
+}
+
+.cdk-overlay-dark-backdrop {
+  background: rgba(0,0,0,.90);
+}
+
 mat-card.form-card {
   max-width: var(--form-max-width);
   width: 100%;

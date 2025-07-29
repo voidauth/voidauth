@@ -59,8 +59,9 @@ export class UsersComponent {
     },
   ]
 
-  displayedColumns = ['multi'].concat(this.columns.map(c => c.columnDef)).concat(['actions'])
+  displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
 
+  selectEnabled = false
   selected: { id: string, source: MatCheckbox }[] = []
 
   search = new FormControl<string>('')
@@ -92,13 +93,25 @@ export class UsersComponent {
       debounceTime(500),
       distinctUntilChanged(),
     ).subscribe((searchTerm) => {
-      console.log(searchTerm)
+      this.spinnerService.show()
       this.adminService.users(searchTerm).then((users) => {
         this.dataSource.data = users
       }).catch((e: unknown) => {
         console.error(e)
+      }).finally(() => {
+        this.spinnerService.hide()
       })
     })
+  }
+
+  toggleSelectEnabled() {
+    this.selectEnabled = !this.selectEnabled
+    if (this.selectEnabled) {
+      this.displayedColumns = ['multi'].concat(this.displayedColumns)
+    } else {
+      this.displayedColumns = this.displayedColumns.filter(c => c !== 'multi')
+    }
+    this.selected = []
   }
 
   delete(id: string) {

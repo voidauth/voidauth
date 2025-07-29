@@ -544,6 +544,9 @@ adminRouter.post('/group',
       isArray: true,
     },
     'users.*.id': uuidValidation,
+    'users.*.username': {
+      optional: true, // we don't use this
+    },
   }),
   async (req, res) => {
     const { id, name, users } = validatorData<GroupUpsert>(req)

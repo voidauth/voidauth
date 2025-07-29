@@ -1,12 +1,25 @@
 <div class="container">
-  <button mat-flat-button [disabled]="!selected.length" style="align-self: end" (click)="approveSelected()">
-    Approve
-    <mat-icon>check</mat-icon>
-  </button>
+  <div class="multi-select-actions">
+    @if (this.selectEnabled) {
+      <button mat-icon-button (click)="toggleSelectEnabled()">
+        <mat-icon>cancel</mat-icon>
+      </button>
+      <button mat-flat-button [disabled]="!selected.length" (click)="approveSelected()">
+        Approve
+        <mat-icon>check</mat-icon>
+      </button>
+    } @else {
+      <button mat-flat-button (click)="toggleSelectEnabled()">
+        Select
+        <mat-icon>check</mat-icon>
+      </button>
+    }
+  </div>
 
   <mat-form-field>
     <mat-label>Search</mat-label>
     <input matInput type="text" [formControl]="search" />
+    <button class="field-suffix" mat-icon-button matSuffix (click)="search.setValue('')"><mat-icon>cancel</mat-icon></button>
   </mat-form-field>
 
   <table mat-table [dataSource]="dataSource" matSort>
