@@ -173,6 +173,8 @@ export class UsersComponent {
         this.selected.forEach(s => s.source.checked = false)
         this.selected = []
 
+        this.toggleSelectEnabled()
+
         this.snackbarService.message('User(s) were approved.')
       } catch (_e) {
         this.snackbarService.error('Could not approve user(s).')
