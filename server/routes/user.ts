@@ -10,6 +10,7 @@ import { createEmailVerification } from './interaction'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 import { checkLoggedIn, emailValidation, nameValidation, newPasswordValidation, stringValidation } from '../util/validators'
 import type { User } from '@shared/db/User'
+import { checkPasswordHash } from '../db/user'
 
 export const userRouter = Router()
 
@@ -63,11 +64,7 @@ userRouter.patch('/password',
     const user = req.user
     const { oldPassword, newPassword } = validatorData<UpdatePassword>(req)
 
-    const passwordHash = (await db().select('passwordHash')
-      .table<User>('user')
-      .where({ id: user.id }).first())?.passwordHash
-
-    if (!passwordHash || !(await argon2.verify(passwordHash, oldPassword))) {
+    if (!await checkPasswordHash(user.id, oldPassword)) {
       res.sendStatus(403)
       return
     }

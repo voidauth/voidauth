@@ -1,7 +1,7 @@
 import type { Account, AccountClaims, KoaContextWithOIDC } from 'oidc-provider'
 import { db } from './db'
 import type { UserGroup, Group } from '@shared/db/Group'
-import type { UserDetails, UserWithAdminIndicator, UserWithoutPassword } from '@shared/api-response/UserDetails'
+import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import type { User } from '@shared/db/User'
 import { ADMIN_USER, ADMIN_GROUP } from '@shared/constants'
 import { randomUUID } from 'crypto'
@@ -36,27 +36,46 @@ export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndica
   })
 }
 
-export async function getUserById(id: string): Promise<UserWithoutPassword | undefined> {
+export async function getUserById(id: string): Promise<UserDetails | undefined> {
   const user = await db().table<User>('user').select().where({ id }).first()
 
   if (!user) {
     return undefined
   }
 
+  const groups = (await db().select('name')
+    .table<Group>('group')
+    .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: user.id })
+    .orderBy('name', 'asc')).map(g => g.name)
+
   const { passwordHash, ...userWithoutPassword } = user
-  return userWithoutPassword
+  return { ...userWithoutPassword, groups }
 }
 
-export async function getUserByInput(input: string) {
-  return await db().table<User>('user').select()
+export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
+  const user = await db().table<User>('user').select()
     .whereRaw('lower("username") = lower(?) or lower("email") = lower(?)', [input, input]).first()
+
+  if (!user) {
+    return undefined
+  }
+
+  const groups = (await db().select('name')
+    .table<Group>('group')
+    .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: user.id })
+    .orderBy('name', 'asc')).map(g => g.name)
+
+  const { passwordHash, ...userWithoutPassword } = user
+  return { ...userWithoutPassword, groups }
+}
+
+export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
+  const user = await db().select().table<User>('user').where({ id: userId }).first()
+  return !!user && await argon2.verify(user.passwordHash, password)
 }
 
 export async function findAccount(_: KoaContextWithOIDC | null, id: string): Promise<Account | undefined> {
   const user = await getUserById(id)
-  const groups = await db().select('name')
-    .table<Group>('group')
-    .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: id })
   if (!user) {
     return undefined
   }
@@ -77,7 +96,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
       }
 
       if (scope.includes('groups')) {
-        accountClaims.groups = groups.map(g => g.name)
+        accountClaims.groups = user.groups
       }
 
       return accountClaims

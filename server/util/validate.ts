@@ -37,7 +37,7 @@ type DotNotation<T> = any extends T
           Required<T>[K] extends object
             ? Required<T>[K] extends (infer _V)[]
               ? (`${IsOptionalKey<T, K> extends false ? K : `${K}?`}` | `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`)
-              : `${K}?` | `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
+              : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
             : `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
         ) }[keyof ExcludeGenericKeys<T>]
       : never

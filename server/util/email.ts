@@ -5,7 +5,6 @@ import pug from 'pug'
 import appConfig from './config'
 import type SMTPTransport from 'nodemailer/lib/smtp-transport'
 import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
-import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import type { Invitation } from '@shared/db/Invitation'
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import { PRIMARY_CONTRAST_COLOR, PRIMARY_COLOR } from './theme'
@@ -13,6 +12,7 @@ import { db } from '../db/db'
 import type { EmailLog } from '@shared/db/EmailLog'
 import { randomUUID } from 'node:crypto'
 import type { User } from '@shared/db/User'
+import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 
 export let SMTP_VERIFIED = false
 const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
@@ -212,7 +212,7 @@ export async function sendInvitation(invitation: Invitation, email: string) {
   await db().table<EmailLog>('email_log').insert(emailLog)
 }
 
-export async function sendApproved(user: { username: string, name?: string | null, id: string }, email: string) {
+export async function sendApproved(user: Pick<User, 'id' | 'username' | 'name'>, email: string) {
   if (!appConfig.SMTP_FROM) {
     throw new Error('Email cannot be sent without valid SMTP_FROM config value.')
   }
@@ -267,7 +267,7 @@ export async function sendAdminNotifications() {
     .innerJoin('user_group', 'user_group.userId', 'user.id')
     .innerJoin('group', 'group.id', 'user_group.groupId')
     .where('group.name', ADMIN_GROUP).and.whereNotNull('email')
-    .andWhereNot({ email: 'admin@localhost' })
+    .andWhereNot({ email: 'admin@localhost' }) // handle historic default admin email
 
   if (!adminUsers.length) {
     return
