@@ -65,8 +65,7 @@ publicRouter.post('/send_password_reset',
     const email = user.email
     const result: SendPasswordResetResponse = { emailSent: false }
     if (email && SMTP_VERIFIED) {
-      const { passwordHash, ...userWithoutPassword } = user
-      await sendPasswordReset(passwordReset, userWithoutPassword, email)
+      await sendPasswordReset(passwordReset, user, email)
       result.emailSent = true
     }
 

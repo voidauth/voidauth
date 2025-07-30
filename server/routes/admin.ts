@@ -17,7 +17,7 @@ import { ADMIN_GROUP, TTLs } from '@shared/constants'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
-import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
+import type { UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
@@ -348,14 +348,7 @@ adminRouter.get('/user/:id',
       return
     }
 
-    const groups = await db().select('name')
-      .table<Group>('group')
-      .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: id })
-      .orderBy('name', 'asc')
-    const { passwordHash, ...userWithoutPassword } = user
-    const userResponse: UserDetails = { ...userWithoutPassword, groups: groups.map(g => g.name) }
-
-    res.send(userResponse)
+    res.send(user)
   },
 )
 
@@ -893,16 +886,14 @@ adminRouter.post('/send_passwordreset/:id',
       return
     }
 
-    const user = await db().select().table<User>('user').where({ id: reset.userId }).first()
+    const user = await getUserById(reset.userId)
 
     if (!user?.email) {
       res.sendStatus(400)
       return
     }
 
-    const { passwordHash: _, ...userWithoutPassword } = user
-
-    await sendPasswordReset(reset, userWithoutPassword, user.email)
+    await sendPasswordReset(reset, user, user.email)
     res.send()
   },
 )

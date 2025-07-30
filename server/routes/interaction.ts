@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { provider } from '../oidc/provider'
-import { getUserById, getUserByInput } from '../db/user'
+import { checkPasswordHash, getUserById, getUserByInput } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
 import { validate, validatorData } from '../util/validate'
 import type { Redirect } from '@shared/api-response/Redirect'
@@ -15,23 +15,24 @@ import { db } from '../db/db'
 import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
-import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { REDIRECT_PATHS, TTLs } from '@shared/constants'
 import type { Interaction } from 'oidc-provider'
 import { andUnlessNull, emailValidation, nameValidation,
   newPasswordValidation,
   stringValidation, usernameValidation, uuidValidation } from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { createExpiration } from '../db/util'
-import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
 import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
 import { getClient } from '../db/client'
-import type { Group, InvitationGroup, UserGroup } from '@shared/db/Group'
+import type { InvitationGroup, UserGroup } from '@shared/db/Group'
 import { generateAuthenticationOptions, verifyAuthenticationResponse, type AuthenticationResponseJSON } from '@simplewebauthn/server'
 import { getAuthenticationOptions, getPasskey, saveAuthenticationOptions, updatePasskeyCounter } from '../db/passkey'
 import { passkeyRpId, passkeyRpOrigin } from './passkey'
+import type { UserDetails } from '@shared/api-response/UserDetails'
+import { userBlocked } from '../util/proxyAuth'
 
 export const router = Router()
 
@@ -170,17 +171,19 @@ router.post('/login',
     }
 
     const user = await getUserByInput(input)
-
-    // check user password
-    if (!user || !await argon2.verify(user.passwordHash, password)) {
+    if (!user) {
       res.sendStatus(401)
       return
     }
 
-    const { passwordHash, ...userWithoutPassword } = user
+    // check user password
+    if (!await checkPasswordHash(user.id, password)) {
+      res.sendStatus(401)
+      return
+    }
 
     // check if email verification needed, if not log in
-    const redir = await canUserLogin(userWithoutPassword) || {
+    const redir = await canUserLogin(user) || {
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -322,10 +325,8 @@ router.post('/passkey',
       return
     }
 
-    const { passwordHash, ...userWithoutPassword } = user
-
     // check if email verification needed, if not log in
-    const redir = await canUserLogin(userWithoutPassword) || {
+    const redir = await canUserLogin(user) || {
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -481,9 +482,12 @@ router.post('/register',
       }
     }
 
-    const { passwordHash: _passwordHash, ...userWithoutPassword } = user
+    const createdUser = await getUserById(user.id)
+    if (!createdUser) {
+      throw Error('User was not created during registration when it already should have been.')
+    }
 
-    const loginRedirect = await canUserLogin(userWithoutPassword)
+    const loginRedirect = await canUserLogin(createdUser)
 
     // See where we need to redirect the user to, depending on config
     const redirect: Redirect = loginRedirect || {
@@ -620,25 +624,12 @@ async function applyConsent(interactionDetails: Interaction) {
   return grantId
 }
 
-async function canUserLogin(user: UserWithoutPassword) {
-  // check if user is an admin
-  // admins should not be prevented from logging in by an unverified email or not being approved
-  const groups = (await db().select()
-    .table<UserGroup>('user_group')
-    .innerJoin<Group>('group', 'user_group.groupId', 'group.id')
-    .where({ userId: user.id }).orderBy('name', 'asc'))
-    .map((g) => {
-      return g.name
-    })
-  if (groups.includes(ADMIN_GROUP)) {
-    return
-  }
-
+async function canUserLogin(user: UserDetails) {
   return isUserUnapproved(user) || await isUserEmailUnverified(user)
 }
 
-function isUserUnapproved(user: UserWithoutPassword) {
-  if (appConfig.SIGNUP_REQUIRES_APPROVAL && !user.approved) {
+function isUserUnapproved(user: UserDetails) {
+  if (userBlocked(user)) {
     const redirect: Redirect = {
       location: `/${REDIRECT_PATHS.APPROVAL_REQUIRED}`,
     }
@@ -646,7 +637,7 @@ function isUserUnapproved(user: UserWithoutPassword) {
   }
 }
 
-async function isUserEmailUnverified(user: UserWithoutPassword) {
+async function isUserEmailUnverified(user: UserDetails) {
   let verificationSent = false
   if (appConfig.EMAIL_VERIFICATION && !user.emailVerified) {
     if (!await getEmailVerification(user.id)) {
@@ -661,7 +652,7 @@ async function isUserEmailUnverified(user: UserWithoutPassword) {
 }
 
 export async function createEmailVerification(
-  user: UserWithoutPassword,
+  user: UserDetails,
   email?: string | null) {
   // Do not create an email verification for an unapproved user
   if (isUserUnapproved(user)) {
