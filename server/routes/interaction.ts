@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { provider } from '../oidc/provider'
-import { checkPasswordHash, getUserById, getUserByInput } from '../db/user'
+import { checkPasswordHash, getUserById, getUserByInput, isUnapproved, isUnverified } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
 import { validate, validatorData } from '../util/validate'
 import type { Redirect } from '@shared/api-response/Redirect'
@@ -16,8 +16,8 @@ import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
 import { REDIRECT_PATHS, TTLs } from '@shared/constants'
-import type { Interaction } from 'oidc-provider'
-import { andUnlessNull, emailValidation, nameValidation,
+import { type Interaction, type Session } from 'oidc-provider'
+import { unlessNull, emailValidation, nameValidation,
   newPasswordValidation,
   stringValidation, usernameValidation, uuidValidation } from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
@@ -32,7 +32,6 @@ import { generateAuthenticationOptions, verifyAuthenticationResponse, type Authe
 import { getAuthenticationOptions, getPasskey, saveAuthenticationOptions, updatePasskeyCounter } from '../db/passkey'
 import { passkeyRpId, passkeyRpOrigin } from './passkey'
 import type { UserDetails } from '@shared/api-response/UserDetails'
-import { userBlocked } from '../util/proxyAuth'
 
 export const router = Router()
 
@@ -51,9 +50,23 @@ router.get('/', async (req, res) => {
     res.redirect('/')
     return
   }
-  const { uid, prompt, params, session } = interaction
+  const { uid, prompt, params } = interaction
 
+  // if we get here and user is blocked, remove the session and restart the flow
+  const ctx = provider.createContext(req, res)
+  const session = await provider.Session.get(ctx) as Session | undefined
   const accountId = session?.accountId
+  if (accountId) {
+    const user = await getUserById(accountId)
+    if (user) {
+      const redir = await userNeedsRedirect(user)
+      if (redir) {
+        await session.destroy()
+        res.redirect(redir.location)
+        return
+      }
+    }
+  }
 
   if (prompt.name === 'login') {
     // Determine which 'login' type page to redirect to
@@ -182,8 +195,8 @@ router.post('/login',
       return
     }
 
-    // check if email verification needed, if not log in
-    const redir = await canUserLogin(user) || {
+    // check if email verification or approval needed, if not log in
+    const redir = await userNeedsRedirect(user) || {
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -326,7 +339,7 @@ router.post('/passkey',
     }
 
     // check if email verification needed, if not log in
-    const redir = await canUserLogin(user) || {
+    const redir = await userNeedsRedirect(user) || {
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -380,7 +393,7 @@ router.post('/register',
       default: {
         options: null,
       },
-      ...andUnlessNull,
+      ...unlessNull,
       ...usernameValidation,
     },
     name: nameValidation,
@@ -389,18 +402,18 @@ router.post('/register',
         options: null,
       },
       optional: true,
-      ...andUnlessNull,
+      ...unlessNull,
       ...emailValidation,
     },
     password: newPasswordValidation,
     inviteId: {
       optional: true,
-      ...andUnlessNull,
+      ...unlessNull,
       ...stringValidation,
     },
     challenge: {
       optional: true,
-      ...andUnlessNull,
+      ...unlessNull,
       ...stringValidation,
     },
   }),
@@ -487,7 +500,7 @@ router.post('/register',
       throw Error('User was not created during registration when it already should have been.')
     }
 
-    const loginRedirect = await canUserLogin(createdUser)
+    const loginRedirect = await userNeedsRedirect(createdUser)
 
     // See where we need to redirect the user to, depending on config
     const redirect: Redirect = loginRedirect || {
@@ -624,12 +637,12 @@ async function applyConsent(interactionDetails: Interaction) {
   return grantId
 }
 
-async function canUserLogin(user: UserDetails) {
+async function userNeedsRedirect(user: UserDetails) {
   return isUserUnapproved(user) || await isUserEmailUnverified(user)
 }
 
 function isUserUnapproved(user: UserDetails) {
-  if (userBlocked(user)) {
+  if (isUnapproved(user)) {
     const redirect: Redirect = {
       location: `/${REDIRECT_PATHS.APPROVAL_REQUIRED}`,
     }
@@ -639,7 +652,7 @@ function isUserUnapproved(user: UserDetails) {
 
 async function isUserEmailUnverified(user: UserDetails) {
   let verificationSent = false
-  if (appConfig.EMAIL_VERIFICATION && !user.emailVerified) {
+  if (isUnverified(user)) {
     if (!await getEmailVerification(user.id)) {
       verificationSent = await createEmailVerification(user, null)
     }

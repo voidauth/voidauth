@@ -9,22 +9,7 @@ type ExcludeGenericKeys<T> = {
   [K in keyof T as IsGenericKey<K> extends true ? never : K]: T[K];
 }
 
-// type OnlyGenericKeys<T> = {
-//   [K in keyof T as IsGenericKey<K> extends false ? never : K]: T[K];
-// };
-
 type IsOptionalKey<T, K extends keyof T> = T extends Record<K, T[K]> ? false : true
-
-// type DotNotation<T> = any extends T ? never : T extends (infer U)[]
-//   ? ('*' | `${`*.${DotNotation<U>}`}`)
-//   : T extends object
-//   ? { [K in keyof ExcludeGenericKeys<T>]-?:
-//     `${IsOptionalKey<T, K> extends false ? K : `${K}?`}`
-//     |
-//     `${IsOptionalKey<T, K> extends false ? K : `${K}?`}${`.${DotNotation<T[K]>}`}`
-
-//   }[keyof ExcludeGenericKeys<T>]
-//   : never;
 
 type DotNotation<T> = any extends T
   ? never

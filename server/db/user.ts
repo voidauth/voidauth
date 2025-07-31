@@ -9,6 +9,7 @@ import { generate } from 'generate-password'
 import { als } from '../util/als'
 import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
+import appConfig from '../util/config'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>('user').select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -72,6 +73,18 @@ export async function getUserByInput(input: string): Promise<UserDetails | undef
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
   const user = await db().select().table<User>('user').where({ id: userId }).first()
   return !!user && await argon2.verify(user.passwordHash, password)
+}
+
+export function isAdmin(user: Pick<UserDetails, 'groups'>) {
+  return user.groups.includes(ADMIN_GROUP)
+}
+
+export function isUnapproved(user: Pick<UserDetails, 'approved' | 'groups'>) {
+  return !isAdmin(user) && appConfig.SIGNUP_REQUIRES_APPROVAL && !user.approved
+}
+
+export function isUnverified(user: Pick<UserDetails, 'email' | 'emailVerified' | 'groups'>) {
+  return !isAdmin(user) && appConfig.EMAIL_VERIFICATION && (!user.email || !user.emailVerified)
 }
 
 export async function findAccount(_: KoaContextWithOIDC | null, id: string): Promise<Account | undefined> {
