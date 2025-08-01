@@ -14,6 +14,7 @@ export const isAdminGuard: CanActivateFn = async (_route, _state) => {
     spinnerService.show()
     const user = await userService.getMyUser()
     if (!userService.userIsAdmin(user)) {
+      window.location.assign('/')
       return false
     }
   } catch (_e) {

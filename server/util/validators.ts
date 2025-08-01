@@ -1,9 +1,10 @@
-import { ADMIN_GROUP, USERNAME_REGEX } from '@shared/constants'
+import { USERNAME_REGEX } from '@shared/constants'
 import type { NextFunction, Request, Response } from 'express'
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import appConfig from './config'
+import { isAdmin } from '../db/user'
 
 const options = {
   // recommended
@@ -29,15 +30,15 @@ export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
 }
 
 export function checkAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.user.groups.some(g => g === ADMIN_GROUP)) {
+  if (!isAdmin(req.user)) {
     res.sendStatus(403)
     return
   }
   next()
 }
 
-export const andUnlessNull = {
-  andUnlessNull: {
+export const unlessNull = {
+  UnlessNull: {
     if: (value: unknown) => value !== null,
     custom: () => true,
   },
@@ -72,7 +73,7 @@ export const nameValidation = {
     options: null,
   },
   optional: true,
-  ...andUnlessNull,
+  ...unlessNull,
   ...stringValidation,
   matches: { options: /^[\w\s]{4,64}$/ },
 } as const

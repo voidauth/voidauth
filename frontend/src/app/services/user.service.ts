@@ -17,7 +17,7 @@ export class UserService {
     return firstValueFrom(this.http.get<CurrentUserDetails>('/api/user/me'))
   }
 
-  userIsAdmin(user: UserDetails) {
+  userIsAdmin(user: Pick<UserDetails, 'groups'>) {
     return user.groups.some(g => g === ADMIN_GROUP)
   }
 

@@ -2,19 +2,14 @@ import { oidcLoginPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { isMatch } from 'matcher'
 import { getProxyAuths } from '../db/proxyAuth'
-import { checkPasswordHash, getUserById, getUserByInput } from '../db/user'
+import { checkPasswordHash, getUserById, getUserByInput, isUnapproved, isUnverified } from '../db/user'
 import { provider } from '../oidc/provider'
 import appConfig from './config'
-import { ADMIN_GROUP } from '@shared/constants'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 
 // proxy auth cache
 let proxyAuthCache: { domain: string, groups: string[] }[] = []
 let proxyAuthCacheExpires: number = 0
-
-export function userBlocked(user: { approved: boolean, groups: string[] }): boolean {
-  return appConfig.SIGNUP_REQUIRES_APPROVAL && !user.approved && !user.groups.includes(ADMIN_GROUP)
-}
 
 // proxy auth common
 export async function proxyAuth(url: URL, req: Request, res: Response) {
@@ -31,7 +26,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     const accountId = session?.accountId
     user = accountId ? await getUserById(accountId) : undefined
 
-    if (!user || userBlocked(user)) {
+    if (!user || isUnapproved(user) || isUnverified(user)) {
       res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
       return
     }
@@ -41,7 +36,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     const [, base64Credentials] = authorizationHeader.split(' ')
     const [username, password] = base64Credentials ? Buffer.from(base64Credentials, 'base64').toString().split(':') : []
     user = username ? await getUserByInput(username) : undefined
-    if (!user || !password || userBlocked(user) || !await checkPasswordHash(user.id, password)) {
+    if (!user || !password || isUnapproved(user) || isUnverified(user) || !await checkPasswordHash(user.id, password)) {
       res.setHeader('WWW-Authenticate', `Basic realm="${formattedUrl}"`)
       res.sendStatus(401)
       return

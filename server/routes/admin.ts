@@ -6,7 +6,7 @@ import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from '@shared/api-requ
 import type { User } from '@shared/db/User'
 import { randomUUID } from 'crypto'
 import {
-  andUnlessNull,
+  unlessNull,
   checkAdmin, checkLoggedIn, emailValidation,
   nameValidation, stringValidation, usernameValidation, uuidValidation,
 } from '../util/validators'
@@ -362,7 +362,7 @@ adminRouter.patch('/user',
         options: null,
       },
       optional: true,
-      ...andUnlessNull,
+      ...unlessNull,
       ...emailValidation,
     },
     emailVerified: {
@@ -692,7 +692,7 @@ adminRouter.post('/invitation',
         options: null,
       },
       optional: true,
-      ...andUnlessNull,
+      ...unlessNull,
       ...usernameValidation,
     },
     name: nameValidation,
@@ -701,7 +701,7 @@ adminRouter.post('/invitation',
         options: null,
       },
       optional: true,
-      ...andUnlessNull,
+      ...unlessNull,
       ...emailValidation,
     },
     emailVerified: {

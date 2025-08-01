@@ -2,14 +2,14 @@ import { Router, type Request } from 'express'
 import { router as interactionRouter } from './interaction'
 import { provider } from '../oidc/provider'
 import { commit, transaction, rollback } from '../db/db'
-import { getUserById } from '../db/user'
+import { getUserById, isUnapproved, isUnverified } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
 import { als } from '../util/als'
 import { publicRouter } from './public'
-import { proxyAuth, userBlocked } from '../util/proxyAuth'
+import { proxyAuth } from '../util/proxyAuth'
 import { passkeyRouter } from './passkey'
 
 declare global {
@@ -79,7 +79,7 @@ router.use(async (req: Request, res, next) => {
 
     const user = await getUserById(session.accountId)
 
-    if (user && !userBlocked(user)) {
+    if (user && !isUnapproved(user) && !isUnverified(user)) {
       req.user = {
         ...user,
         amr: session.amr,
