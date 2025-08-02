@@ -15,6 +15,9 @@ import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import type { User } from '@shared/db/User'
 import * as argon2 from 'argon2'
 import { generate } from 'generate-password'
+import { createPasskey, createPasskeyRegistrationOptions, getRegistrationInfo, passkeyRegistrationValidator } from './passkey'
+import { getUserPasskeys } from '../db/passkey'
+import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 
 /**
  * routes that do not require any auth
@@ -92,6 +95,64 @@ publicRouter.post('/reset_password',
 
     await db().table<User>('user').update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
     await db().table<PasswordReset>('password_reset').delete().where({ id: passwordReset.id })
+    res.send()
+  },
+)
+
+publicRouter.post('/reset_password/passkey/start',
+  ...validate<Omit<ResetPassword, 'newPassword'>>({
+    userId: uuidValidation,
+    challenge: stringValidation,
+  }),
+  async (req, res) => {
+    const { userId, challenge } = validatorData<Omit<ResetPassword, 'newPassword'>>(req)
+    const user = await getUserById(userId)
+    const passwordReset = await db().select().table<PasswordReset>('password_reset')
+      .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()
+
+    if (!user || !passwordReset) {
+      res.sendStatus(400)
+      return
+    }
+
+    const userPasskeys = await getUserPasskeys(user.id)
+
+    const options = await createPasskeyRegistrationOptions(user.id, user.username, userPasskeys)
+
+    res.send(options)
+  },
+)
+
+publicRouter.post('/reset_password/passkey/end',
+  ...validate<Omit<ResetPassword, 'newPassword'> & RegistrationResponseJSON>({
+    userId: uuidValidation,
+    challenge: stringValidation,
+    ...passkeyRegistrationValidator,
+  }),
+  async (req, res) => {
+    const body = validatorData<Omit<ResetPassword, 'newPassword'> & RegistrationResponseJSON>(req)
+    const { userId, challenge } = body
+    const user = await getUserById(userId)
+    const passwordReset = await db().select().table<PasswordReset>('password_reset')
+      .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()
+
+    if (!user || !passwordReset) {
+      res.sendStatus(400)
+      return
+    }
+
+    await db().table<PasswordReset>('password_reset').delete().where({ id: passwordReset.id })
+
+    const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
+
+    const { verified, registrationInfo } = verification
+    if (!verified || !registrationInfo) {
+      res.sendStatus(400)
+      return
+    }
+
+    await createPasskey(user.id, registrationInfo, currentOptions)
+
     res.send()
   },
 )

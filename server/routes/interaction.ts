@@ -11,7 +11,7 @@ import { sendEmailVerification } from '../util/email'
 import { generate } from 'generate-password'
 import type { EmailVerification } from '@shared/db/EmailVerification'
 import type { User } from '@shared/db/User'
-import { commit, db, transaction } from '../db/db'
+import { db } from '../db/db'
 import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
@@ -29,22 +29,21 @@ import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
 import { getClient } from '../db/client'
 import type { InvitationGroup, UserGroup } from '@shared/db/Group'
 import { generateAuthenticationOptions,
-  generateRegistrationOptions,
   verifyAuthenticationResponse,
-  verifyRegistrationResponse,
   type AuthenticationResponseJSON,
   type RegistrationResponseJSON } from '@simplewebauthn/server'
-import { deleteAuthenticationOptions, deleteRegistrationOptions, getAuthenticationOptions,
+import { deleteAuthenticationOptions, getAuthenticationOptions,
   getPasskey,
-  getRegistrationOptions,
   saveAuthenticationOptions,
-  savePasskey,
-  saveRegistrationOptions,
   updatePasskeyCounter } from '../db/passkey'
-import { passkeyRegistrationValidator, passkeyRpId, passkeyRpOrigin, passkeyRpName } from './passkey'
+import { passkeyRegistrationValidator,
+  passkeyRpId,
+  passkeyRpOrigin,
+  createPasskeyRegistrationOptions,
+  getRegistrationInfo,
+  createPasskey } from './passkey'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { getEmailVerification } from '../db/emailVerification'
-import type { Passkey } from '@shared/db/Passkey'
 
 const registerUserValidator = {
   username: {
@@ -253,7 +252,7 @@ router.post('/login',
   },
 )
 
-router.post('/passkey',
+router.post('/passkey/start',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
@@ -282,7 +281,7 @@ router.post('/passkey',
   },
 )
 
-router.post('/passkey',
+router.post('/passkey/end',
   ...validate<AuthenticationResponseJSON>({
     id: stringValidation,
     rawId: stringValidation,
@@ -569,25 +568,7 @@ router.post('/register/passkey/start',
       return
     }
 
-    const options = await generateRegistrationOptions({
-      rpName: passkeyRpName,
-      rpID: passkeyRpId,
-      userName: '', // should be set on FE
-      // Don't prompt users for additional information about the authenticator
-      // (Recommended for smoother UX)
-      attestationType: 'none',
-      preferredAuthenticatorType: 'localDevice',
-      // See "Guiding use of authenticators via authenticatorSelection" below
-      authenticatorSelection: {
-        // Defaults
-        residentKey: 'required',
-        userVerification: 'preferred',
-        // Optional
-        // authenticatorAttachment: 'platform',
-      },
-    })
-
-    await saveRegistrationOptions(options, interaction.uid)
+    const options = await createPasskeyRegistrationOptions(interaction.uid)
 
     res.send(options)
   },
@@ -618,29 +599,7 @@ router.post('/register/passkey/end',
       return
     }
 
-    // Make sure a valid passkey registration exists
-    const regOptions = await getRegistrationOptions(interaction.uid)
-    if (!regOptions) {
-      res.sendStatus(400)
-      return
-    }
-
-    // Lock in the registration delete, even if we have errors later
-    // Prevents replay attacks
-    await deleteRegistrationOptions(regOptions.id)
-    await commit()
-    await transaction()
-
-    const currentOptions = JSON.parse(regOptions.value) as PublicKeyCredentialCreationOptionsJSON
-
-    const verification = await verifyRegistrationResponse({
-      response: registration,
-      expectedChallenge: currentOptions.challenge,
-      expectedOrigin: passkeyRpOrigin,
-      expectedRPID: passkeyRpId,
-      requireUserVerification: false,
-      requireUserPresence: false,
-    })
+    const { verification, currentOptions } = await getRegistrationInfo(interaction.uid, registration)
 
     const { verified, registrationInfo } = verification
     if (!verified || !registrationInfo) {
@@ -709,34 +668,7 @@ router.post('/register/passkey/end',
       throw Error('User was not created during registration when it already should have been.')
     }
 
-    const {
-      credential,
-      credentialDeviceType,
-      credentialBackedUp,
-    } = registrationInfo
-
-    const newPasskey: Passkey = {
-      // `user` here is from Step 2
-      userId: createdUser.id,
-      // Created by `generateRegistrationOptions()` in Step 1
-      webAuthnUserID: currentOptions.user.id,
-      // A unique identifier for the credential
-      id: credential.id,
-      // The public key bytes, used for subsequent authentication signature verification
-      publicKey: credential.publicKey,
-      // The number of times the authenticator has been used on this site so far
-      counter: credential.counter,
-      // How the browser can talk with this credential's authenticator
-      transports: credential.transports?.join(','),
-      // Whether the passkey is single-device or multi-device
-      deviceType: credentialDeviceType,
-      // Whether the passkey has been backed up in some way
-      backedUp: credentialBackedUp,
-    }
-
-    // (Pseudocode) Save the authenticator info so that we can
-    // get it by user ID later
-    await savePasskey(newPasskey)
+    await createPasskey(createdUser.id, registrationInfo, currentOptions)
 
     const loginRedirect = await userNeedsRedirect(createdUser)
 

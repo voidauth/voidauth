@@ -78,13 +78,13 @@
 <!-- password change form -->
 <mat-card class="form-card">
   <mat-card-header>
-    <mat-card-title> Change Password </mat-card-title>
+    <mat-card-title> {{ user?.hasPassword ? "Change " : "Set " }} Password </mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <form [formGroup]="passwordForm">
       <app-password-set
         style="width: 100%; margin-top: 0px"
-        [oldPassword]="passwordForm.controls.oldPassword"
+        [oldPassword]="user?.hasPassword ? passwordForm.controls.oldPassword : undefined"
         [newPassword]="passwordForm.controls.newPassword"
         [confirmPassword]="passwordForm.controls.confirmPassword"
       >

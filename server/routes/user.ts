@@ -8,7 +8,7 @@ import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
-import { checkLoggedIn, emailValidation, nameValidation, newPasswordValidation, stringValidation } from '../util/validators'
+import { checkLoggedIn, emailValidation, nameValidation, newPasswordValidation, stringValidation, unlessNull } from '../util/validators'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
 
@@ -57,14 +57,18 @@ userRouter.patch('/email',
 
 userRouter.patch('/password',
   ...validate<UpdatePassword>({
-    oldPassword: stringValidation,
+    oldPassword: {
+      optional: true,
+      ...unlessNull,
+      ...stringValidation,
+    },
     newPassword: newPasswordValidation,
   }),
   async (req, res) => {
     const user = req.user
     const { oldPassword, newPassword } = validatorData<UpdatePassword>(req)
 
-    if (!await checkPasswordHash(user.id, oldPassword)) {
+    if (user.hasPassword && (!oldPassword || !await checkPasswordHash(user.id, oldPassword))) {
       res.sendStatus(403)
       return
     }

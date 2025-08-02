@@ -75,6 +75,23 @@ export class AuthService {
   }
 
   async resetPassword(body: ResetPassword) {
-    return firstValueFrom(this.http.post<SendPasswordResetResponse>('/api/public/reset_password', body))
+    return firstValueFrom(this.http.post<null>('/api/public/reset_password', body))
+  }
+
+  async resetPasswordPasskeyStart(body: Omit<ResetPassword, 'newPassword'>) {
+    return firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>('/api/public/reset_password/passkey/start', body))
+  }
+
+  async resetPasswordPasskeyEnd(body: Omit<ResetPassword, 'newPassword'> & RegistrationResponseJSON) {
+    try {
+      const result = await firstValueFrom(this.http.post<null>('/api/public/reset_password/passkey/end', body))
+      localStorage.setItem('passkey_seen', 'true')
+      return result
+    } catch (error) {
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        localStorage.setItem('passkey_seen', 'true')
+      }
+      throw error
+    }
   }
 }

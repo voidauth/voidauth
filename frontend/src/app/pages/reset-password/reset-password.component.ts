@@ -10,6 +10,9 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../services/spinner.service'
 import { ConfigService } from '../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
+import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
+import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
 
 @Component({
   selector: 'app-reset-password',
@@ -17,6 +20,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
     MaterialModule,
     ReactiveFormsModule,
     PasswordSetComponent,
+    TextDividerComponent,
   ],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss',
@@ -25,6 +29,7 @@ export class ResetPasswordComponent {
   userid?: string
   challenge?: string
   config?: ConfigResponse
+  passkeySupport?: PasskeySupport
 
   public passwordForm = new FormGroup({
     newPassword: new FormControl<string>({
@@ -53,6 +58,7 @@ export class ResetPasswordComponent {
   private router = inject(Router)
   private spinnerService = inject(SpinnerService)
   private configService = inject(ConfigService)
+  passkeyService = inject(PasskeyService)
 
   async ngOnInit() {
     const params = this.activatedRoute.snapshot.queryParamMap
@@ -71,6 +77,7 @@ export class ResetPasswordComponent {
     try {
       this.spinnerService.show()
       this.config = await this.configService.getConfig()
+      this.passkeySupport = await this.passkeyService.getPasskeySupport()
     } finally {
       this.spinnerService.hide()
     }
@@ -103,6 +110,31 @@ export class ResetPasswordComponent {
 
       shownError ??= 'Something went wrong.'
       this.snackbarService.error(shownError)
+    } finally {
+      this.spinnerService.hide()
+    }
+  }
+
+  async registerPasskey() {
+    this.spinnerService.show()
+    try {
+      const userId = this.userid
+      const challenge = this.challenge
+      if (!userId || !challenge) {
+        throw new Error('Missing required parameters for submit.')
+      }
+      const optionsJSON = await this.authService.resetPasswordPasskeyStart({ userId, challenge })
+      const registration = await startRegistration({ optionsJSON })
+      await this.authService.resetPasswordPasskeyEnd({ ...registration, userId, challenge })
+      this.snackbarService.message('Passkey created.')
+      await this.router.navigate([REDIRECT_PATHS.LOGIN])
+    } catch (error) {
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        this.snackbarService.error('Passkey already registered.')
+      } else {
+        this.snackbarService.error('Could not register passkey.')
+      }
+      console.error(error)
     } finally {
       this.spinnerService.hide()
     }
