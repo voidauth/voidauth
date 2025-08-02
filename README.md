@@ -35,7 +35,7 @@ Key Features:
 - 🔄 Proxy ForwardAuth Domains
 - 📨 User Self-Registration and Invitations
 - 🎨 Custom Branding Options (Logo, Title, Theme Color, Email Templates)
-- 🔑 Passkey Support
+- 🔑 Passkeys and Passkey-Only Accounts
 - 📧 Secure Password Reset with Email Verification
 - 🔒 Encryption-At-Rest
 

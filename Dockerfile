@@ -50,3 +50,4 @@ FROM serve AS test
 RUN npm ci
 
 RUN npx tsc
+RUN npx eslint .
