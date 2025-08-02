@@ -5,6 +5,7 @@ import {
   browserSupportsWebAuthn, platformAuthenticatorIsAvailable, WebAuthnError, type AuthenticationResponseJSON,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
+  type RegistrationResponseJSON,
 } from '@simplewebauthn/browser'
 import type { Redirect } from '@shared/api-response/Redirect'
 import { UAParser } from 'ua-parser-js'
@@ -56,10 +57,10 @@ export class PasskeyService {
   }
 
   async getRegistrationOptions() {
-    return firstValueFrom(this.http.get<PublicKeyCredentialCreationOptionsJSON>('/api/passkey/registration'))
+    return firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>('/api/passkey/registration', null))
   }
 
-  async sendRegistration(reg: unknown) {
+  async sendRegistration(reg: RegistrationResponseJSON) {
     try {
       const result = await firstValueFrom(this.http.post<null>('/api/passkey/registration', reg))
       localStorage.setItem('passkey_seen', 'true')
@@ -73,7 +74,7 @@ export class PasskeyService {
   }
 
   async getAuthOptions() {
-    return firstValueFrom(this.http.get<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey'))
+    return firstValueFrom(this.http.post<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey', null))
   }
 
   async sendAuth(auth: AuthenticationResponseJSON) {

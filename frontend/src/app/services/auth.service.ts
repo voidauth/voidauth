@@ -10,6 +10,7 @@ import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import { type Nullable } from '@shared/utils'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
+import { type RegistrationResponseJSON, type PublicKeyCredentialCreationOptionsJSON, WebAuthnError } from '@simplewebauthn/browser'
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,26 @@ export class AuthService {
 
   async register(body: Nullable<RegisterUser>) {
     return firstValueFrom(this.http.post<Redirect>('/api/interaction/register', body))
+  }
+
+  async startPasskeySignup(inviteId?: string, challenge?: string) {
+    return firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>('/api/interaction/register/passkey/start', {
+      inviteId,
+      challenge,
+    }))
+  }
+
+  async endPasskeySignup(body: Nullable<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>) {
+    try {
+      const result = await firstValueFrom(this.http.post<Redirect>('/api/interaction/register/passkey/end', body))
+      localStorage.setItem('passkey_seen', 'true')
+      return result
+    } catch (error) {
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        localStorage.setItem('passkey_seen', 'true')
+      }
+      throw error
+    }
   }
 
   async login(body: LoginUser) {

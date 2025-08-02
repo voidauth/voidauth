@@ -13,7 +13,7 @@ export type Passkey = {
 
 export type PasskeyRegistration = {
   id: string
-  userId: string
+  uniqueId: string
   value: string
   expiresAt: Date
 }

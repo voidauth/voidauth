@@ -23,14 +23,27 @@
           <mat-error>{{ form.controls.name.errors | validationError }}</mat-error>
         }
       </mat-form-field>
+
+      <mat-divider></mat-divider>
+
       <app-new-password-input style="width: 100%" [password]="form.controls.password" [(pwdShow)]="pwdShow"></app-new-password-input>
 
-      <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid" type="submit">Sign Up</button>
-        @if (!invitation) {
-          <a mat-button routerLink="/login">Login</a>
-        }
-      </mat-card-actions>
+      <button mat-flat-button [disabled]="form.invalid || !form.value.password" type="submit">Sign Up</button>
+
+      @if (passkeySupport?.enabled) {
+        <app-text-divider text="or"></app-text-divider>
+        <button mat-flat-button [disabled]="form.invalid" type="button" (click)="passkey()">
+          Sign Up With {{ passkeySupport?.platformName ? passkeySupport?.platformName : "Passkey" }}
+          <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+        </button>
+      }
+
+      @if (!invitation) {
+        <app-text-divider text="or"></app-text-divider>
+        <a mat-button routerLink="/login">Login</a>
+      }
+
+      <div style="padding-bottom: 8px"></div>
     </form>
   </mat-card-content>
 </mat-card>

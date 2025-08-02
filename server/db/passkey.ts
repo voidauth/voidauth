@@ -27,18 +27,23 @@ export async function savePasskey(passkey: Passkey) {
   await db().table<Passkey>('passkey').insert(passkey)
 }
 
-export async function saveRegistrationOptions(userId: string, registration: PublicKeyCredentialCreationOptionsJSON) {
+export async function saveRegistrationOptions(registration: PublicKeyCredentialCreationOptionsJSON, uniqueId: string) {
+  const id = randomUUID()
   const reg: PasskeyRegistration = {
-    id: randomUUID(),
-    userId,
+    id,
+    uniqueId,
     value: JSON.stringify(registration),
     expiresAt: createExpiration(TTLs.PASSKEY_REGISTRATION),
   }
-  await db().table<PasskeyRegistration>('passkey_registration').insert(reg).onConflict(['userId']).merge()
+  await db().table<PasskeyRegistration>('passkey_registration').insert(reg).onConflict(['uniqueId']).merge()
 }
 
-export async function getRegistrationOptions(userId: string) {
-  return await db().select().table<PasskeyRegistration>('passkey_registration').where({ userId }).first()
+export async function getRegistrationOptions(uniqueId: string) {
+  return await db().select().table<PasskeyRegistration>('passkey_registration').where({ uniqueId }).first()
+}
+
+export async function deleteRegistrationOptions(id: string) {
+  return await db().delete().table<PasskeyRegistration>('passkey_registration').where({ id })
 }
 
 export async function saveAuthenticationOptions(interactionId: string, options: PublicKeyCredentialRequestOptionsJSON) {
@@ -53,6 +58,10 @@ export async function saveAuthenticationOptions(interactionId: string, options: 
 
 export async function getAuthenticationOptions(interactionId: string) {
   return await db().select().table<PasskeyAuthentication>('passkey_authentication').where({ interactionId }).first()
+}
+
+export async function deleteAuthenticationOptions(interactionId: string) {
+  return await db().delete().table<PasskeyAuthentication>('passkey_authentication').where({ interactionId })
 }
 
 export async function updatePasskeyCounter(id: string, counter: number) {

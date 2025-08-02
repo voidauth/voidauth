@@ -11,7 +11,7 @@ import { sendEmailVerification } from '../util/email'
 import { generate } from 'generate-password'
 import type { EmailVerification } from '@shared/db/EmailVerification'
 import type { User } from '@shared/db/User'
-import { db } from '../db/db'
+import { commit, db, transaction } from '../db/db'
 import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
@@ -28,10 +28,52 @@ import type { Consent } from '@shared/db/Consent'
 import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
 import { getClient } from '../db/client'
 import type { InvitationGroup, UserGroup } from '@shared/db/Group'
-import { generateAuthenticationOptions, verifyAuthenticationResponse, type AuthenticationResponseJSON } from '@simplewebauthn/server'
-import { getAuthenticationOptions, getPasskey, saveAuthenticationOptions, updatePasskeyCounter } from '../db/passkey'
-import { passkeyRpId, passkeyRpOrigin } from './passkey'
+import { generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+  type AuthenticationResponseJSON,
+  type RegistrationResponseJSON } from '@simplewebauthn/server'
+import { deleteAuthenticationOptions, deleteRegistrationOptions, getAuthenticationOptions,
+  getPasskey,
+  getRegistrationOptions,
+  saveAuthenticationOptions,
+  savePasskey,
+  saveRegistrationOptions,
+  updatePasskeyCounter } from '../db/passkey'
+import { passkeyRegistrationValidator, passkeyRpId, passkeyRpOrigin, passkeyRpName } from './passkey'
 import type { UserDetails } from '@shared/api-response/UserDetails'
+import { getEmailVerification } from '../db/emailVerification'
+import type { Passkey } from '@shared/db/Passkey'
+
+const registerUserValidator = {
+  username: {
+    default: {
+      options: null,
+    },
+    ...unlessNull,
+    ...usernameValidation,
+  },
+  name: nameValidation,
+  email: {
+    default: {
+      options: null,
+    },
+    optional: true,
+    ...unlessNull,
+    ...emailValidation,
+  },
+  inviteId: {
+    optional: true,
+    ...unlessNull,
+    ...stringValidation,
+  },
+  challenge: {
+    optional: true,
+    ...unlessNull,
+    ...stringValidation,
+  },
+} as const
 
 export const router = Router()
 
@@ -211,7 +253,7 @@ router.post('/login',
   },
 )
 
-router.get('/passkey',
+router.post('/passkey',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
@@ -292,6 +334,8 @@ router.post('/passkey',
       res.sendStatus(404)
       return
     }
+
+    await deleteAuthenticationOptions(interaction.uid)
 
     const currentOptions = JSON.parse(authOptions.value) as PublicKeyCredentialRequestOptionsJSON
 
@@ -389,33 +433,8 @@ router.post('/:uid/confirm/',
 
 router.post('/register',
   ...validate<RegisterUser>({
-    username: {
-      default: {
-        options: null,
-      },
-      ...unlessNull,
-      ...usernameValidation,
-    },
-    name: nameValidation,
-    email: {
-      default: {
-        options: null,
-      },
-      optional: true,
-      ...unlessNull,
-      ...emailValidation,
-    },
+    ...registerUserValidator,
     password: newPasswordValidation,
-    inviteId: {
-      optional: true,
-      ...unlessNull,
-      ...stringValidation,
-    },
-    challenge: {
-      optional: true,
-      ...unlessNull,
-      ...stringValidation,
-    },
   }),
   async (req, res) => {
     const registration = validatorData<RegisterUser>(req)
@@ -508,7 +527,226 @@ router.post('/register',
         login: {
           accountId: user.id,
           remember: false, // non-password logins are never remembered
-          amr: [],
+          amr: ['pwd'],
+        },
+      }, { mergeWithLastSubmission: true }),
+    }
+
+    res.send(redirect)
+  },
+)
+
+router.post('/register/passkey/start',
+  ...validate<{ inviteId?: Invitation['id'], challenge?: Invitation['challenge'] }>({
+    inviteId: {
+      optional: true,
+      ...unlessNull,
+      ...stringValidation,
+    },
+    challenge: {
+      optional: true,
+      ...unlessNull,
+      ...stringValidation,
+    },
+  }),
+  async (req, res) => {
+    const invite = validatorData<{ inviteId?: Invitation['id'], challenge?: Invitation['challenge'] }>(req)
+
+    const interaction = await getInteractionDetails(req, res)
+    if (!interaction) {
+      res.status(400).send({
+        message: `Page too old, refresh the page.`,
+      })
+      return
+    }
+
+    // check open signup or valid invitation
+    // Make sure that if invitation, it is valid
+    const invitation = invite.inviteId ? await getInvitation(invite.inviteId) : null
+    const invitationValid = invitation && invitation.challenge === invite.challenge
+    if (!invitationValid && !appConfig.SIGNUP) {
+      res.sendStatus(400)
+      return
+    }
+
+    const options = await generateRegistrationOptions({
+      rpName: passkeyRpName,
+      rpID: passkeyRpId,
+      userName: '', // should be set on FE
+      // Don't prompt users for additional information about the authenticator
+      // (Recommended for smoother UX)
+      attestationType: 'none',
+      preferredAuthenticatorType: 'localDevice',
+      // See "Guiding use of authenticators via authenticatorSelection" below
+      authenticatorSelection: {
+        // Defaults
+        residentKey: 'required',
+        userVerification: 'preferred',
+        // Optional
+        // authenticatorAttachment: 'platform',
+      },
+    })
+
+    await saveRegistrationOptions(options, interaction.uid)
+
+    res.send(options)
+  },
+)
+
+router.post('/register/passkey/end',
+  ...validate<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>({
+    ...passkeyRegistrationValidator,
+    ...registerUserValidator,
+  }),
+  async (req, res) => {
+    const registration = validatorData<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>(req)
+
+    const interaction = await getInteractionDetails(req, res)
+    if (!interaction) {
+      res.status(400).send({
+        message: `Page too old, refresh the page.`,
+      })
+      return
+    }
+
+    // Make sure that if invitation, it is valid
+    const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
+    const invitationValid = invitation && invitation.challenge === registration.challenge
+
+    if (!invitationValid && !appConfig.SIGNUP) {
+      res.sendStatus(400)
+      return
+    }
+
+    // Make sure a valid passkey registration exists
+    const regOptions = await getRegistrationOptions(interaction.uid)
+    if (!regOptions) {
+      res.sendStatus(400)
+      return
+    }
+
+    // Lock in the registration delete, even if we have errors later
+    // Prevents replay attacks
+    await deleteRegistrationOptions(regOptions.id)
+    await commit()
+    await transaction()
+
+    const currentOptions = JSON.parse(regOptions.value) as PublicKeyCredentialCreationOptionsJSON
+
+    const verification = await verifyRegistrationResponse({
+      response: registration,
+      expectedChallenge: currentOptions.challenge,
+      expectedOrigin: passkeyRpOrigin,
+      expectedRPID: passkeyRpId,
+      requireUserVerification: false,
+      requireUserPresence: false,
+    })
+
+    const { verified, registrationInfo } = verification
+    if (!verified || !registrationInfo) {
+      res.sendStatus(400)
+      return
+    }
+
+    const id = randomUUID()
+    const user: User = {
+      id: id,
+      username: invitation?.username || registration.username,
+      name: invitation?.name || registration.name,
+      email: invitation?.email || registration.email,
+      approved: !!invitationValid, // invited users are approved by default
+      emailVerified: !!invitation?.email && !!invitation.emailVerified,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    // check username and email not taken
+    const conflictingUser = await getUserByInput(user.username)
+      || (user.email && await getUserByInput(user.email))
+
+    if (conflictingUser) {
+      const message = conflictingUser.username === user.username
+        || conflictingUser.email === user.username
+        ? 'Username taken.'
+        : 'Email taken.'
+      res.status(409).send({ message: message })
+      return
+    }
+
+    // insert user into table
+    await db().table<User>('user').insert(user)
+
+    if (invitationValid) {
+      const inviteGroups = await db().select().table<InvitationGroup>('invitation_group')
+        .where({ invitationId: invitation.id })
+
+      if (inviteGroups.length) {
+        const userGroups: UserGroup[] = inviteGroups.map((g) => {
+          return {
+            groupId: g.groupId,
+            userId: user.id,
+            createdBy: g.createdBy,
+            updatedBy: g.updatedBy,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }
+        })
+        await db().table<UserGroup>('user_group').insert(userGroups)
+      }
+
+      await db().table<Invitation>('invitation').delete().where({ id: invitation.id })
+
+      // Accepted Invitation should redirect to DEFAULT_REDIRECT if set
+      const defaultRedirect = appConfig.DEFAULT_REDIRECT
+      if (defaultRedirect) {
+        interaction.params.redirect_uri = defaultRedirect
+        await interaction.save(TTLs.INTERACTION)
+      }
+    }
+
+    const createdUser = await getUserById(user.id)
+    if (!createdUser) {
+      throw Error('User was not created during registration when it already should have been.')
+    }
+
+    const {
+      credential,
+      credentialDeviceType,
+      credentialBackedUp,
+    } = registrationInfo
+
+    const newPasskey: Passkey = {
+      // `user` here is from Step 2
+      userId: createdUser.id,
+      // Created by `generateRegistrationOptions()` in Step 1
+      webAuthnUserID: currentOptions.user.id,
+      // A unique identifier for the credential
+      id: credential.id,
+      // The public key bytes, used for subsequent authentication signature verification
+      publicKey: credential.publicKey,
+      // The number of times the authenticator has been used on this site so far
+      counter: credential.counter,
+      // How the browser can talk with this credential's authenticator
+      transports: credential.transports?.join(','),
+      // Whether the passkey is single-device or multi-device
+      deviceType: credentialDeviceType,
+      // Whether the passkey has been backed up in some way
+      backedUp: credentialBackedUp,
+    }
+
+    // (Pseudocode) Save the authenticator info so that we can
+    // get it by user ID later
+    await savePasskey(newPasskey)
+
+    const loginRedirect = await userNeedsRedirect(createdUser)
+
+    // See where we need to redirect the user to, depending on config
+    const redirect: Redirect = loginRedirect || {
+      location: await provider.interactionResult(req, res, {
+        login: {
+          accountId: createdUser.id,
+          remember: false, // non-password logins are never remembered
+          amr: ['webauthn'],
         },
       }, { mergeWithLastSubmission: true }),
     }
@@ -694,14 +932,4 @@ export async function createEmailVerification(
   await db().table<EmailVerification>('email_verification').insert(email_verification)
   await sendEmailVerification(user, challenge, sentEmail)
   return true
-}
-
-export async function getEmailVerification(userId: string) {
-  const emailVerification = await db().select()
-    .table<EmailVerification>('email_verification')
-    .where({ userId }).andWhere('expiresAt', '>=', new Date()).first()
-
-  if (emailVerification) {
-    return emailVerification
-  }
 }

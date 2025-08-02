@@ -2,29 +2,75 @@ import { Router } from 'express'
 import appConfig from '../util/config'
 import { checkLoggedIn, stringValidation } from '../util/validators'
 import { generateRegistrationOptions, verifyRegistrationResponse, type RegistrationResponseJSON } from '@simplewebauthn/server'
-import { getRegistrationOptions, getUserPasskeys, savePasskey, saveRegistrationOptions } from '../db/passkey'
+import { deleteRegistrationOptions, getRegistrationOptions, getUserPasskeys, savePasskey, saveRegistrationOptions } from '../db/passkey'
 import { validate, validatorData } from '../util/validate'
 import type { Passkey } from '@shared/db/Passkey'
 import { provider } from '../oidc/provider'
 import { TTLs } from '@shared/constants'
+import { commit, transaction } from '../db/db'
 
-const rpName = appConfig.APP_TITLE
+export const passkeyRpName = appConfig.APP_TITLE
 const appURL = URL.parse(appConfig.APP_URL) as URL
 export const passkeyRpId = appURL.hostname
 export const passkeyRpOrigin = `${appURL.protocol}//${appURL.host}`
+
+export const passkeyRegistrationValidator = {
+  id: stringValidation,
+  rawId: stringValidation,
+  'response.clientDataJSON': stringValidation,
+  'response.attestationObject': stringValidation,
+  'response.authenticatorData': {
+    optional: true,
+    ...stringValidation,
+  },
+  'response.transports': {
+    optional: true,
+    isArray: true,
+  },
+  'response.transports.*': {
+    optional: true,
+    ...stringValidation,
+  },
+  'response.publicKeyAlgorithm': {
+    optional: true,
+    isNumeric: true,
+  },
+  'response.publicKey': {
+    optional: true,
+    ...stringValidation,
+  },
+  authenticatorAttachment: {
+    optional: true,
+    ...stringValidation,
+  },
+  'clientExtensionResults.appid': {
+    optional: true,
+    isBoolean: true,
+  },
+  'clientExtensionResults.credProps.rk': {
+    optional: true,
+    isBoolean: true,
+  },
+  'clientExtensionResults.hmacCreateSecret': {
+    optional: true,
+    isBoolean: true,
+  },
+  type: stringValidation,
+} as const
 
 export const passkeyRouter = Router()
 
 // Must be logged in to register a passkey
 passkeyRouter.use(checkLoggedIn)
 
-passkeyRouter.get('/registration',
+passkeyRouter.post('/registration',
   async (req, res) => {
     const user = req.user
+
     const userPasskeys = await getUserPasskeys(user.id)
 
     const options = await generateRegistrationOptions({
-      rpName,
+      rpName: passkeyRpName,
       rpID: passkeyRpId,
       userName: user.username,
       userDisplayName: user.username,
@@ -40,75 +86,39 @@ passkeyRouter.get('/registration',
       preferredAuthenticatorType: 'localDevice',
       // See "Guiding use of authenticators via authenticatorSelection" below
       authenticatorSelection: {
-        // Defaults
+      // Defaults
         residentKey: 'required',
-        userVerification: 'discouraged',
-        // Optional
-        // authenticatorAttachment: 'platform',
+        userVerification: 'preferred',
+      // Optional
+      // authenticatorAttachment: 'platform',
       },
     })
 
-    await saveRegistrationOptions(user.id, options)
+    await saveRegistrationOptions(options, user.id)
 
     res.send(options)
   },
 )
 
 passkeyRouter.post('/registration',
-  ...validate<RegistrationResponseJSON>({
-    id: stringValidation,
-    rawId: stringValidation,
-    'response.clientDataJSON': stringValidation,
-    'response.attestationObject': stringValidation,
-    'response.authenticatorData': {
-      optional: true,
-      ...stringValidation,
-    },
-    'response.transports': {
-      optional: true,
-      isArray: true,
-    },
-    'response.transports.*': {
-      optional: true,
-      ...stringValidation,
-    },
-    'response.publicKeyAlgorithm': {
-      optional: true,
-      isNumeric: true,
-    },
-    'response.publicKey': {
-      optional: true,
-      ...stringValidation,
-    },
-    authenticatorAttachment: {
-      optional: true,
-      ...stringValidation,
-    },
-    'clientExtensionResults.appid': {
-      optional: true,
-      isBoolean: true,
-    },
-    'clientExtensionResults.credProps.rk': {
-      optional: true,
-      isBoolean: true,
-    },
-    'clientExtensionResults.hmacCreateSecret': {
-      optional: true,
-      isBoolean: true,
-    },
-    type: stringValidation,
-  }),
+  ...validate<RegistrationResponseJSON>(passkeyRegistrationValidator),
   async (req, res) => {
     const body = validatorData<RegistrationResponseJSON>(req)
 
     // Retrieve the logged-in user
     const user = req.user
-    // (Pseudocode) Get `options.challenge` that was saved above
+    // Get `options.challenge` that was saved above
     const regOptions = await getRegistrationOptions(user.id)
     if (!regOptions) {
       res.sendStatus(404)
       return
     }
+
+    // Lock in the registration delete, even if we have errors later
+    // Prevents replay attacks
+    await deleteRegistrationOptions(regOptions.id)
+    await commit()
+    await transaction()
 
     const currentOptions = JSON.parse(regOptions.value) as PublicKeyCredentialCreationOptionsJSON
 

@@ -66,7 +66,7 @@ export class NewPasswordInputComponent implements OnInit {
       }
 
       const c = this.password()
-      if (this.score < this.minScore) {
+      if (this.score && this.score < this.minScore) {
         c.setErrors({ ...c.errors, strength: { min: this.minScore, current: this.score } })
       } else {
         if (c.errors) {
