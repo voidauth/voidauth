@@ -13,7 +13,7 @@ import { provider } from '../oidc/provider'
 import { TTLs } from '@shared/constants'
 import { commit, transaction } from '../db/db'
 
-export const passkeyRpName = appConfig.APP_TITLE
+const passkeyRpName = appConfig.APP_TITLE
 const appURL = URL.parse(appConfig.APP_URL) as URL
 export const passkeyRpId = appURL.hostname
 export const passkeyRpOrigin = `${appURL.protocol}//${appURL.host}`

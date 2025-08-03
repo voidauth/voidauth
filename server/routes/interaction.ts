@@ -210,7 +210,7 @@ router.post('/login',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
-      res.status(400).send({
+      res.status(419).send({
         message: 'Login page too old, refresh the page.',
       })
       return
@@ -256,7 +256,7 @@ router.post('/passkey/start',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
-      res.status(400).send({
+      res.status(419).send({
         message: 'Login page too old, refresh the page.',
       })
       return
@@ -313,7 +313,7 @@ router.post('/passkey/end',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
-      res.status(400).send({
+      res.status(419).send({
         message: 'Login page too old, refresh the page.',
       })
       return
@@ -411,7 +411,7 @@ router.post('/:uid/confirm/',
     const { uid: uidParam } = validatorData<{ uid: string }>(req)
 
     if (uid !== uidParam) {
-      res.status(400).send({ message: 'Consent form is no longer valid.' })
+      res.status(419).send({ message: 'Consent form is no longer valid.' })
       return
     }
 
@@ -440,7 +440,7 @@ router.post('/register',
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       const action = registration.inviteId ? 'Invite' : 'Registration'
-      res.status(400).send({
+      res.status(419).send({
         message: `${action} page too old, refresh the page.`,
       })
       return
@@ -553,7 +553,7 @@ router.post('/register/passkey/start',
 
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
-      res.status(400).send({
+      res.status(419).send({
         message: `Page too old, refresh the page.`,
       })
       return
@@ -584,7 +584,7 @@ router.post('/register/passkey/end',
 
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
-      res.status(400).send({
+      res.status(419).send({
         message: `Page too old, refresh the page.`,
       })
       return

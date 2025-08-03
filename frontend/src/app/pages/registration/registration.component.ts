@@ -75,6 +75,9 @@ export class RegistrationComponent implements OnInit {
         await this.authService.interactionExists()
         this.config = await this.configService.getConfig()
         this.passkeySupport = await this.passkeyService.getPasskeySupport()
+        if (!this.passkeySupport.enabled) {
+          this.form.controls.password.addValidators(Validators.required)
+        }
       } catch (_e) {
         // interaction session is missing, could not log in without it
         window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + '/api/cb', 'register', inviteId, challenge))

@@ -47,7 +47,7 @@ export type TypedSchema<T extends object> = {
 
 export function validate<T extends object = any>(schema: TypedSchema<T>) {
   return [
-    ...checkSchema(schema, ['body', 'params', 'query']).flat(),
+    ...checkSchema(schema, ['body', 'params', 'query']),
     handleValidatorError,
   ]
 }
