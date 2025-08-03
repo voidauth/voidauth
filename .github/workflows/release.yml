@@ -73,7 +73,7 @@ jobs:
 
       - name: Docker Hub Description Update
         uses: peter-evans/dockerhub-description@v4
-        if: startsWith(github.ref, 'refs/tags/v'
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           username: notquitenothing
           password: ${{ secrets.DOCKERHUB_TOKEN }}
