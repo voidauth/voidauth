@@ -5,7 +5,6 @@ import pug from 'pug'
 import appConfig from './config'
 import type SMTPTransport from 'nodemailer/lib/smtp-transport'
 import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
-import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import type { Invitation } from '@shared/db/Invitation'
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import { PRIMARY_CONTRAST_COLOR, PRIMARY_COLOR } from './theme'
@@ -13,6 +12,7 @@ import { db } from '../db/db'
 import type { EmailLog } from '@shared/db/EmailLog'
 import { randomUUID } from 'node:crypto'
 import type { User } from '@shared/db/User'
+import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 
 export let SMTP_VERIFIED = false
 const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
@@ -68,6 +68,7 @@ function compileTemplates(name: string) {
 const emailVerificationTemplates = compileTemplates('email_verification')
 const passwordResetTemplates = compileTemplates('reset_password')
 const invitationTemplate = compileTemplates('invitation')
+const approvedTemplate = compileTemplates('approved')
 const adminNotificationTemplate = compileTemplates('admin_notification')
 
 export async function sendEmailVerification(user: UserWithoutPassword, challenge: string, email: string) {
@@ -211,6 +212,52 @@ export async function sendInvitation(invitation: Invitation, email: string) {
   await db().table<EmailLog>('email_log').insert(emailLog)
 }
 
+export async function sendApproved(user: Pick<User, 'id' | 'username' | 'name'>, email: string) {
+  if (!appConfig.SMTP_FROM) {
+    throw new Error('Email cannot be sent without valid SMTP_FROM config value.')
+  }
+  if (!SMTP_VERIFIED) {
+    throw new Error('SMTP transport could not be validated.')
+  }
+
+  const { subject, html, text } = approvedTemplate({
+    primary_color: PRIMARY_COLOR,
+    primary_contrast_color: PRIMARY_CONTRAST_COLOR,
+    app_title: appConfig.APP_TITLE,
+    app_url: appConfig.APP_URL,
+    name: user.name || user.username,
+    default_url: appConfig.DEFAULT_REDIRECT || appConfig.APP_URL,
+  })
+
+  if (!subject || (!html && !text)) {
+    throw new Error('Missing email template.')
+  }
+
+  await transporter.sendMail({
+    from: {
+      name: appConfig.APP_TITLE,
+      address: appConfig.SMTP_FROM,
+    },
+    to: email,
+    subject: subject,
+    html: html,
+    text: text,
+  })
+
+  const emailLog: EmailLog = {
+    id: randomUUID(),
+    type: 'approved',
+    toUser: user.id,
+    to: email,
+    subject: subject,
+    body: html ?? text,
+    reasons: user.id,
+    createdAt: new Date(),
+  }
+
+  await db().table<EmailLog>('email_log').insert(emailLog)
+}
+
 export async function sendAdminNotifications() {
   if (!appConfig.ADMIN_EMAILS || !appConfig.SMTP_FROM || !SMTP_VERIFIED) {
     return
@@ -220,7 +267,7 @@ export async function sendAdminNotifications() {
     .innerJoin('user_group', 'user_group.userId', 'user.id')
     .innerJoin('group', 'group.id', 'user_group.groupId')
     .where('group.name', ADMIN_GROUP).and.whereNotNull('email')
-    .andWhereNot({ email: 'admin@localhost' })
+    .andWhereNot({ email: 'admin@localhost' }) // handle historic default admin email
 
   if (!adminUsers.length) {
     return

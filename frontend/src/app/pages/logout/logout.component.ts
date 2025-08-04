@@ -21,6 +21,8 @@ export class LogoutComponent implements OnInit {
 
   public host = this.configService.getCurrentHost()
 
+  history = window.history
+
   ngOnInit() {
     const params = this.route.snapshot.paramMap
 

@@ -6,4 +6,5 @@ export type ConfigResponse = {
   emailVerification: boolean
   registration: boolean
   contactEmail?: string
+  defaultRedirect?: string
 }

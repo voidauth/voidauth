@@ -1,10 +1,10 @@
-import { ADMIN_GROUP, USERNAME_REGEX } from '@shared/constants'
+import { USERNAME_REGEX } from '@shared/constants'
 import type { NextFunction, Request, Response } from 'express'
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import appConfig from './config'
-import type { SchemaValues } from './validate'
+import { isAdmin } from '../db/user'
 
 const options = {
   // recommended
@@ -30,24 +30,23 @@ export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
 }
 
 export function checkAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.user.groups.some(g => g === ADMIN_GROUP)) {
+  if (!isAdmin(req.user)) {
     res.sendStatus(403)
     return
   }
   next()
 }
 
-export const optionalNull: SchemaValues = {
-  optional: {
-    options: {
-      values: 'null',
-    },
+export const unlessNull = {
+  UnlessNull: {
+    if: (value: unknown) => value !== null,
+    custom: () => true,
   },
-} as const
+}
 
-export const stringValidation: SchemaValues = { isString: true, stripLow: true, trim: true } as const
-export const uuidValidation: SchemaValues = { ...stringValidation, isUUID: true } as const
-export const emailValidation: SchemaValues = {
+export const stringValidation = { isString: true, stripLow: true, trim: true } as const
+export const uuidValidation = { ...stringValidation, isUUID: true } as const
+export const emailValidation = {
   isEmail: {
     options: {
       require_tld: false,
@@ -73,11 +72,8 @@ export const nameValidation = {
   default: {
     options: null,
   },
-  optional: {
-    options: {
-      values: 'null',
-    },
-  },
+  optional: true,
+  ...unlessNull,
   ...stringValidation,
   matches: { options: /^[\w\s]{4,64}$/ },
 } as const

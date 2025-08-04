@@ -95,6 +95,10 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
       If you stil have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.
       Non-decryptable Clients: ${lockedClients.map(c => c.id).join(', ')}`)
   }
+
+  if (decryptableKeys.length || decryptableClients.length) {
+    console.log('A storage key rotation was detected, re-encrypted objects decryptable with STORAGE_KEY_SECONDARY with STORAGE_KEY.')
+  }
 }
 
 function checkEncrypted<T extends EncryptedTable>(entries: T[]) {

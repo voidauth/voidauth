@@ -4,6 +4,10 @@ import type { User } from '../db/User.js'
 
 export type UserWithoutPassword = RemoveKeys<User, 'passwordHash'>
 
+export type UserWithAdminIndicator = UserWithoutPassword & {
+  isAdmin: boolean
+}
+
 export type UserDetails = UserWithoutPassword & {
   groups: Group['name'][]
 }

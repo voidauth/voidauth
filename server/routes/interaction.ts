@@ -1,9 +1,8 @@
 import { Router, type Request, type Response } from 'express'
 import { provider } from '../oidc/provider'
-import { getUserById, getUserByInput } from '../db/user'
+import { checkPasswordHash, getUserById, getUserByInput, isUnapproved, isUnverified } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
-import { matchedData } from 'express-validator'
-import { validate } from '../util/validate'
+import { validate, validatorData } from '../util/validate'
 import type { Redirect } from '@shared/api-response/Redirect'
 import type { LoginUser } from '@shared/api-request/LoginUser'
 import appConfig from '../util/config'
@@ -16,24 +15,23 @@ import { db } from '../db/db'
 import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
-import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
-import type { Interaction } from 'oidc-provider'
-import { emailValidation, nameValidation,
+import { REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { type Interaction, type Session } from 'oidc-provider'
+import { unlessNull, emailValidation, nameValidation,
   newPasswordValidation,
-  optionalNull,
   stringValidation, usernameValidation, uuidValidation } from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { createExpiration } from '../db/util'
-import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
 import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
 import { getClient } from '../db/client'
-import type { Group, InvitationGroup, UserGroup } from '@shared/db/Group'
+import type { InvitationGroup, UserGroup } from '@shared/db/Group'
 import { generateAuthenticationOptions, verifyAuthenticationResponse, type AuthenticationResponseJSON } from '@simplewebauthn/server'
 import { getAuthenticationOptions, getPasskey, saveAuthenticationOptions, updatePasskeyCounter } from '../db/passkey'
 import { passkeyRpId, passkeyRpOrigin } from './passkey'
+import type { UserDetails } from '@shared/api-response/UserDetails'
 
 export const router = Router()
 
@@ -52,9 +50,23 @@ router.get('/', async (req, res) => {
     res.redirect('/')
     return
   }
-  const { uid, prompt, params, session } = interaction
+  const { uid, prompt, params } = interaction
 
+  // if we get here and user is blocked, remove the session and restart the flow
+  const ctx = provider.createContext(req, res)
+  const session = await provider.Session.get(ctx) as Session | undefined
   const accountId = session?.accountId
+  if (accountId) {
+    const user = await getUserById(accountId)
+    if (user) {
+      const redir = await userNeedsRedirect(user)
+      if (redir) {
+        await session.destroy()
+        res.redirect(redir.location)
+        return
+      }
+    }
+  }
 
   if (prompt.name === 'login') {
     // Determine which 'login' type page to redirect to
@@ -120,7 +132,7 @@ router.get('/', async (req, res) => {
 })
 
 router.get('/:uid/detail',
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.sendStatus(400)
@@ -149,9 +161,12 @@ router.post('/login',
       toLowerCase: true,
     },
     password: stringValidation,
-    remember: { isBoolean: true },
+    remember: {
+      optional: true,
+      isBoolean: true,
+    },
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.status(400).send({
@@ -161,7 +176,7 @@ router.post('/login',
     }
     const { prompt: { name } } = interaction
 
-    const { input, password, remember } = matchedData<LoginUser>(req, { includeOptionals: true })
+    const { input, password, remember } = validatorData<LoginUser>(req)
 
     if (name !== 'login') {
       res.sendStatus(400)
@@ -169,17 +184,19 @@ router.post('/login',
     }
 
     const user = await getUserByInput(input)
-
-    // check user password
-    if (!user || !await argon2.verify(user.passwordHash, password)) {
+    if (!user) {
       res.sendStatus(401)
       return
     }
 
-    const { passwordHash, ...userWithoutPassword } = user
+    // check user password
+    if (!await checkPasswordHash(user.id, password)) {
+      res.sendStatus(401)
+      return
+    }
 
-    // check if email verification needed, if not log in
-    const redir = await canUserLogin(userWithoutPassword) || {
+    // check if email verification or approval needed, if not log in
+    const redir = await userNeedsRedirect(user) || {
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -195,7 +212,7 @@ router.post('/login',
 )
 
 router.get('/passkey',
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.status(400).send({
@@ -252,7 +269,7 @@ router.post('/passkey',
     },
     type: stringValidation,
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       res.status(400).send({
@@ -262,7 +279,7 @@ router.post('/passkey',
     }
     const { prompt: { name } } = interaction
 
-    const body = matchedData<AuthenticationResponseJSON>(req, { includeOptionals: true })
+    const body = validatorData<AuthenticationResponseJSON>(req)
 
     if (name !== 'login') {
       res.sendStatus(400)
@@ -321,10 +338,8 @@ router.post('/passkey',
       return
     }
 
-    const { passwordHash, ...userWithoutPassword } = user
-
     // check if email verification needed, if not log in
-    const redir = await canUserLogin(userWithoutPassword) || {
+    const redir = await userNeedsRedirect(user) || {
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -343,14 +358,14 @@ router.post('/:uid/confirm/',
   ...validate<{ uid: string }>({
     uid: stringValidation,
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const {
       uid,
       prompt,
       params,
       session,
     } = await provider.interactionDetails(req, res)
-    const { uid: uidParam } = matchedData<{ uid: string }>(req, { includeOptionals: true })
+    const { uid: uidParam } = validatorData<{ uid: string }>(req)
 
     if (uid !== uidParam) {
       res.status(400).send({ message: 'Consent form is no longer valid.' })
@@ -378,7 +393,7 @@ router.post('/register',
       default: {
         options: null,
       },
-      ...optionalNull,
+      ...unlessNull,
       ...usernameValidation,
     },
     name: nameValidation,
@@ -386,33 +401,24 @@ router.post('/register',
       default: {
         options: null,
       },
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...unlessNull,
       ...emailValidation,
     },
     password: newPasswordValidation,
     inviteId: {
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...unlessNull,
       ...stringValidation,
     },
     challenge: {
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...unlessNull,
       ...stringValidation,
     },
   }),
-  async (req: Request, res: Response) => {
-    const registration = matchedData<RegisterUser>(req, { includeOptionals: true })
+  async (req, res) => {
+    const registration = validatorData<RegisterUser>(req)
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       const action = registration.inviteId ? 'Invite' : 'Registration'
@@ -489,9 +495,12 @@ router.post('/register',
       }
     }
 
-    const { passwordHash: _passwordHash, ...userWithoutPassword } = user
+    const createdUser = await getUserById(user.id)
+    if (!createdUser) {
+      throw Error('User was not created during registration when it already should have been.')
+    }
 
-    const loginRedirect = await canUserLogin(userWithoutPassword)
+    const loginRedirect = await userNeedsRedirect(createdUser)
 
     // See where we need to redirect the user to, depending on config
     const redirect: Redirect = loginRedirect || {
@@ -513,8 +522,8 @@ router.post('/verify_email',
     userId: uuidValidation,
     challenge: stringValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { userId, challenge } = matchedData<VerifyUserEmail>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { userId, challenge } = validatorData<VerifyUserEmail>(req)
 
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
@@ -628,25 +637,12 @@ async function applyConsent(interactionDetails: Interaction) {
   return grantId
 }
 
-async function canUserLogin(user: UserWithoutPassword) {
-  // check if user is an admin
-  // admins should not be prevented from logging in by an unverified email or not being approved
-  const groups = (await db().select()
-    .table<UserGroup>('user_group')
-    .innerJoin<Group>('group', 'user_group.groupId', 'group.id')
-    .where({ userId: user.id }).orderBy('name', 'asc'))
-    .map((g) => {
-      return g.name
-    })
-  if (groups.includes(ADMIN_GROUP)) {
-    return
-  }
-
+async function userNeedsRedirect(user: UserDetails) {
   return isUserUnapproved(user) || await isUserEmailUnverified(user)
 }
 
-function isUserUnapproved(user: UserWithoutPassword) {
-  if (appConfig.SIGNUP_REQUIRES_APPROVAL && !user.approved) {
+function isUserUnapproved(user: UserDetails) {
+  if (isUnapproved(user)) {
     const redirect: Redirect = {
       location: `/${REDIRECT_PATHS.APPROVAL_REQUIRED}`,
     }
@@ -654,9 +650,9 @@ function isUserUnapproved(user: UserWithoutPassword) {
   }
 }
 
-async function isUserEmailUnverified(user: UserWithoutPassword) {
+async function isUserEmailUnverified(user: UserDetails) {
   let verificationSent = false
-  if (appConfig.EMAIL_VERIFICATION && !user.emailVerified) {
+  if (isUnverified(user)) {
     if (!await getEmailVerification(user.id)) {
       verificationSent = await createEmailVerification(user, null)
     }
@@ -669,7 +665,7 @@ async function isUserEmailUnverified(user: UserWithoutPassword) {
 }
 
 export async function createEmailVerification(
-  user: UserWithoutPassword,
+  user: UserDetails,
   email?: string | null) {
   // Do not create an email verification for an unapproved user
   if (isUserUnapproved(user)) {

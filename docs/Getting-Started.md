@@ -59,10 +59,10 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | APP_URL | | URL VoidAuth will be served on. Must start with`https://`  Example: `https://auth.example.com` | 🔴 | |
-| DEFAULT_REDIRECT | ${APP_URL} | The home/landing page for your domain. This is where users will be redirected upon accepting an invitation. | | ✅ |
+| DEFAULT_REDIRECT | ${APP_URL} | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
 | SIGNUP | false | Whether the app allows new users to self-register themselves without invitation. | | |
 | SIGNUP_REQUIRES_APPROVAL | true | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |
-| EMAIL_VERIFICATION | false | If true, users who set or change their email address will get a verification email before it can be used. If you are using an email provider, this should be set to true. | | ✅ (If SMTP Settings are set) |
+| EMAIL_VERIFICATION | false | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should be set to true. | | ✅ (If SMTP Settings are set) |
 
 #### App Customization
 | Name | Default | Description | Required | Recommended |
@@ -99,7 +99,7 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 #### Misc.
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| PASSWORD_STRENGTH | 2 | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | ✅ |
+| PASSWORD_STRENGTH | 3 | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | |
 | ADMIN_EMAILS | hourly | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. If set to 'false', admin notification emails are disabled. | | | 
 
 > [!IMPORTANT]
@@ -110,13 +110,13 @@ Your own branding can be applied to the app by mounting the **/app/config** dire
 
 The logo and favicon of the web interface can be customized by placing your own **logo.svg**/**logo.png** and **favicon.svg**/**favicon.png** in the mounted **/app/config/branding** directory. You can also add an **apple-touch-icon.png** file to **/app/config/branding**.
 
-The email templates for email verification, invitations, and password resets can be changed by modifying the files in the **/app/config/email_templates** directory. The files are [pug](https://pugjs.org/api/getting-started.html) template format and text, which should be updated together when changed. To reset your changes to the email templates, just delete (or move) your **/app/config/email_templates** directory and it will be regenerated.
+The email templates for email verification, invitations, and password resets can be changed by modifying the files in the **/app/config/email_templates** directory. The files are [pug](https://pugjs.org/api/getting-started.html) template format and text, which should be updated together when changed. To reset your changes to the email templates, just delete (or move) your **/app/config/email_templates** directory and it will be regenerated on app restart.
 
 ### Customization
 > [!IMPORTANT]
 > There are enough branding options between environment variables like **APP_TITLE**, **APP_COLOR**, and config directory customization to remove any end-user reference to VoidAuth branding. You can make it your own! Below is an example of some theming changes and light mode enabled:
 >
-> <img width="260" src="https://github.com/user-attachments/assets/66152d9b-b041-4374-91ec-4363ab1cb064" />
+> <img width="260" src="/public/screenshots/66152d9b-b041-4374-91ec-4363ab1cb064.png" />
 
 ### Authentication
 To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. If the application does not support OIDC or you want to secure a domain or resource you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) guide.
@@ -125,5 +125,5 @@ To start setting up protected applications, there are two options available. If 
 > [!WARNING]
 > The following configurations are not well supported or tested, but may cover additional use-cases.
 ### Multi-Domain Protection
-You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net` 
+You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC clients, ProxyAuth Domains, etc.
 

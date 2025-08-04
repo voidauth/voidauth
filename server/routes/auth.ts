@@ -1,6 +1,5 @@
-import { Router, type Request, type Response } from 'express'
-import { validate } from '../util/validate'
-import { matchedData } from 'express-validator'
+import { Router } from 'express'
+import { validate, validatorData } from '../util/validate'
 import { getUserById } from '../db/user'
 import appConfig from '../util/config'
 import { stringValidation, uuidValidation } from '../util/validators'
@@ -13,12 +12,12 @@ authRouter.post('/send_verify_email',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     if (!appConfig.EMAIL_VERIFICATION) {
       res.sendStatus(400)
       return
     }
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+    const { id } = validatorData<{ id: string }>(req)
 
     const user = await getUserById(id)
 
@@ -43,8 +42,8 @@ authRouter.get('/invitation/:id/:challenge',
     id: stringValidation,
     challenge: stringValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id, challenge } = matchedData<{ id: string, challenge: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id, challenge } = validatorData<{ id: string, challenge: string }>(req)
     const invite = await getInvitation(id)
     if (!invite || invite.challenge != challenge) {
       res.sendStatus(404)

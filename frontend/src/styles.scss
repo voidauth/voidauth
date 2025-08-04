@@ -4,12 +4,14 @@
   box-sizing: border-box;
 }
 
-html, body { 
-  height: 100%; 
+html,
+body {
+  height: 100%;
   background: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
 }
-body { 
+
+body {
   margin: 0;
   font-family: var(--mat-sys-body-medium-font);
   background: var(--mat-sys-surface);
@@ -20,13 +22,9 @@ body {
   --form-min-width: 300px;
 
   // Material component theme overrides
-  @include mat.sidenav-overrides((
-    container-width: var(--form-min-width)
-  ));
+  @include mat.sidenav-overrides((container-width: var(--form-min-width)));
 
-  @include mat.list-overrides((
-    active-indicator-shape: 14px
-  ));
+  @include mat.list-overrides((active-indicator-shape: 14px));
 }
 
 body.dark {
@@ -62,6 +60,21 @@ mat-drawer-content {
   margin-right: 8px;
 }
 
+.multi-select-actions {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+  padding: 8px;
+
+  > * {
+    margin-left: 12px;
+  }
+}
+
+.cdk-overlay-dark-backdrop {
+  background: rgba(0,0,0,.90);
+}
+
 mat-card.form-card {
   max-width: var(--form-max-width);
   width: 100%;
@@ -77,11 +90,11 @@ mat-card.form-card {
     flex-direction: column;
     align-items: center;
     width: 100%;
-  
-    > * {
+
+    >* {
       margin-top: 24px;
     }
-  
+
     mat-form-field {
       width: 100%;
     }
@@ -90,27 +103,28 @@ mat-card.form-card {
       display: flex;
       flex-direction: column;
       align-items: center;
-    
+
       border-radius: var(--mat-sys-corner-extra-small);
       border-color: white;
       border: 1px solid;
-      
+
       width: 100%;
       padding: 16px;
     }
-    
+
     mat-list.invalid {
       border-color: var(--mat-sys-error);
       color: var(--mat-sys-error);
     }
+  }
 
-    mat-card-actions {
-      width: 100%;
-      flex-direction: column;
-  
-      button, a {
-        margin-top: 16px;
-      }
+  mat-card-actions {
+    width: 100%;
+    flex-direction: column;
+
+    button,
+    a {
+      margin-top: 16px;
     }
   }
 }
@@ -126,6 +140,7 @@ mat-divider {
 a {
   text-decoration: none;
   color: unset;
+
   &:hover {
     color: unset;
   }

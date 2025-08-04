@@ -96,4 +96,4 @@ Redirect URLs: https://portainer.example.com
 Token Endpoint Auth Method: client_secret_post
 ```
 Screenshot(s):
-<img width="1400" src="https://github.com/user-attachments/assets/f7cf9712-4259-43ce-bde1-fbe22a447763" />
+<img width="1400" src="/public/screenshots/f7cf9712-4259-43ce-bde1-fbe22a447763.png" />

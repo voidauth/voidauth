@@ -28,7 +28,7 @@ class Config {
 
   // Optional
   STORAGE_KEY_SECONDARY?: string
-  PASSWORD_STRENGTH = 2
+  PASSWORD_STRENGTH = 3
   DEFAULT_REDIRECT?: string
   CONTACT_EMAIL?: string
   ADMIN_EMAILS?: number

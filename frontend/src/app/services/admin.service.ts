@@ -7,7 +7,7 @@ import type { Nullable } from '@shared/utils'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
+import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { type InvitationDetails } from '@shared/api-response/InvitationDetails'
 import type { Group } from '@shared/db/Group'
 import type { Invitation } from '@shared/db/Invitation'
@@ -88,8 +88,8 @@ export class AdminService {
     return firstValueFrom(this.http.delete<null>(`/api/admin/group/${id}`))
   }
 
-  async users() {
-    return firstValueFrom(this.http.get<UserWithoutPassword[]>('/api/admin/users'))
+  async users(searchTerm?: string | null) {
+    return firstValueFrom(this.http.get<UserWithAdminIndicator[]>(`/api/admin/users${searchTerm ? '/' + searchTerm : ''}`))
   }
 
   async user(id: string) {
@@ -106,6 +106,10 @@ export class AdminService {
 
   async approveUsers(ids: string[]) {
     return firstValueFrom(this.http.patch<null>('/api/admin/users/approve', { users: ids }))
+  }
+
+  async deleteUsers(ids: string[]) {
+    return firstValueFrom(this.http.post<null>('/api/admin/users/delete', { users: ids }))
   }
 
   async invitations() {

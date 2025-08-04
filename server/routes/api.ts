@@ -1,10 +1,9 @@
 import { Router, type Request } from 'express'
 import { router as interactionRouter } from './interaction'
 import { provider } from '../oidc/provider'
-import { commit, transaction, db, rollback } from '../db/db'
-import { getUserById } from '../db/user'
+import { commit, transaction, rollback } from '../db/db'
+import { getUserById, isUnapproved, isUnverified } from '../db/user'
 import { userRouter } from './user'
-import type { Group, UserGroup } from '@shared/db/Group'
 import { adminRouter } from './admin'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
@@ -68,7 +67,7 @@ router.get('/authz/auth-request', async (req: Request, res) => {
   await proxyAuth(url, req, res)
 })
 
-// Set user on reqest
+// Set user on request
 router.use(async (req: Request, res, next) => {
   try {
     const ctx = provider.createContext(req, res)
@@ -80,16 +79,9 @@ router.use(async (req: Request, res, next) => {
 
     const user = await getUserById(session.accountId)
 
-    if (user) {
+    if (user && !isUnapproved(user) && !isUnverified(user)) {
       req.user = {
         ...user,
-        groups: (await db().select()
-          .table<UserGroup>('user_group')
-          .innerJoin<Group>('group', 'user_group.groupId', 'group.id')
-          .where({ userId: user.id }).orderBy('name', 'asc'))
-          .map((g) => {
-            return g.name
-          }),
         amr: session.amr,
       }
     }

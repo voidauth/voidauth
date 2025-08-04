@@ -1,15 +1,11 @@
-import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
-import type { Group, UserGroup } from '@shared/db/Group'
-import type { User } from '@shared/db/User'
 import { oidcLoginPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { isMatch } from 'matcher'
-import { db } from '../db/db'
 import { getProxyAuths } from '../db/proxyAuth'
-import { getUserById, getUserByInput } from '../db/user'
+import { checkPasswordHash, getUserById, getUserByInput, isUnapproved, isUnverified } from '../db/user'
 import { provider } from '../oidc/provider'
 import appConfig from './config'
-import * as argon2 from 'argon2'
+import type { UserDetails } from '@shared/api-response/UserDetails'
 
 // proxy auth cache
 let proxyAuthCache: { domain: string, groups: string[] }[] = []
@@ -22,14 +18,15 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
   const ctx = provider.createContext(req, res)
   const sessionId = ctx.cookies.get('x-voidauth-session-uid')
   const authorizationHeader = req.headersDistinct['authorization']?.[0]
-  let user: User | UserWithoutPassword | undefined
+  let user: UserDetails | undefined
 
   if (sessionId) {
     // Check for invalid session
     const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
     const accountId = session?.accountId
     user = accountId ? await getUserById(accountId) : undefined
-    if (!user) {
+
+    if (!user || isUnapproved(user) || isUnverified(user)) {
       res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
       return
     }
@@ -39,7 +36,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     const [, base64Credentials] = authorizationHeader.split(' ')
     const [username, password] = base64Credentials ? Buffer.from(base64Credentials, 'base64').toString().split(':') : []
     user = username ? await getUserByInput(username) : undefined
-    if (!user || !password || !await argon2.verify(user.passwordHash, password)) {
+    if (!user || !password || isUnapproved(user) || isUnverified(user) || !await checkPasswordHash(user.id, password)) {
       res.setHeader('WWW-Authenticate', `Basic realm="${formattedUrl}"`)
       res.sendStatus(401)
       return
@@ -49,11 +46,6 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
     return
   }
-
-  const groups = await db().select('name')
-    .table<Group>('group')
-    .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: user.id })
-    .orderBy('name', 'asc')
 
   // check if user may access url
   // using a short cache
@@ -65,7 +57,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
 
   const match = proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
 
-  if (!match || (match.groups.length && !groups.some(g => match.groups.includes(g.name)))) {
+  if (!match || (match.groups.length && !user.groups.some(g => match.groups.includes(g)))) {
     res.sendStatus(403)
     return
   }
@@ -77,8 +69,8 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
   if (user.name) {
     res.setHeader('Remote-Name', user.name)
   }
-  if (groups.length) {
-    res.setHeader('Remote-Groups', groups.map(g => g.name).join(','))
+  if (user.groups.length) {
+    res.setHeader('Remote-Groups', user.groups.join(','))
   }
   res.send()
 }

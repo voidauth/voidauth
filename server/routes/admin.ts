@@ -1,12 +1,12 @@
-import { Router, type Request, type Response } from 'express'
+import { Router } from 'express'
 import { validate, validatorData, type TypedSchema } from '../util/validate'
 import { db } from '../db/db'
-import { matchedData } from 'express-validator'
 import { isOIDCProviderError, provider } from '../oidc/provider'
 import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomUUID } from 'crypto'
 import {
+  unlessNull,
   checkAdmin, checkLoggedIn, emailValidation,
   nameValidation, stringValidation, usernameValidation, uuidValidation,
 } from '../util/validators'
@@ -17,11 +17,11 @@ import { ADMIN_GROUP, TTLs } from '@shared/constants'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
-import type { UserDetails, UserWithoutPassword } from '@shared/api-response/UserDetails'
+import type { UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import { sendInvitation, sendPasswordReset } from '../util/email'
+import { sendApproved, sendInvitation, sendPasswordReset, SMTP_VERIFIED } from '../util/email'
 import { generate } from 'generate-password'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
@@ -32,6 +32,7 @@ import { getProxyAuth, getProxyAuths } from '../db/proxyAuth'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
+import type { EmailLog } from '@shared/db/EmailLog'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -70,24 +71,29 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     ...stringValidation,
   },
   response_types: {
+    optional: true,
     isArray: true,
   },
   'response_types.*': {
+    optional: true,
     ...stringValidation,
     isIn: {
       options: [RESPONSE_TYPES],
     },
   },
   grant_types: {
+    optional: true,
     isArray: true,
   },
   'grant_types.*': {
+    optional: true,
     ...stringValidation,
     isIn: {
       options: [GRANT_TYPES],
     },
   },
   skip_consent: {
+    optional: true,
     default: {
       options: false,
     },
@@ -121,8 +127,8 @@ adminRouter.get('/clients', async (_req, res) => {
 adminRouter.get('/client/:client_id',
   ...validate<{ client_id: string }>({
     client_id: stringValidation,
-  }), async (req: Request, res: Response) => {
-    const { client_id } = matchedData<{ client_id: string }>(req, { includeOptionals: true })
+  }), async (req, res) => {
+    const { client_id } = validatorData<{ client_id: string }>(req)
     const client = await getClient(client_id)
     if (client) {
       res.send(client)
@@ -139,8 +145,8 @@ adminRouter.get('/client/:client_id',
 
 adminRouter.post('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
-  async (req: Request, res: Response) => {
-    const clientMetadata = matchedData<ClientUpsert>(req, { includeOptionals: true })
+  async (req, res) => {
+    const clientMetadata = validatorData<ClientUpsert>(req)
     try {
       // check that existing client does not exist with client_id
       const existingClient = await getClient(clientMetadata.client_id)
@@ -159,8 +165,8 @@ adminRouter.post('/client',
 
 adminRouter.patch('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
-  async (req: Request, res: Response) => {
-    const clientMetadata = matchedData<ClientUpsert>(req, { includeOptionals: true })
+  async (req, res) => {
+    const clientMetadata = validatorData<ClientUpsert>(req)
     try {
       // check that existing client exists with client_id
       const existingClient = await getClient(clientMetadata.client_id)
@@ -180,8 +186,8 @@ adminRouter.patch('/client',
 adminRouter.delete('/client/:client_id',
   ...validate<{ client_id: string }>({
     client_id: stringValidation,
-  }), async (req: Request, res: Response) => {
-    const { client_id } = matchedData<{ client_id: string }>(req, { includeOptionals: true })
+  }), async (req, res) => {
+    const { client_id } = validatorData<{ client_id: string }>(req)
     const client = await getClient(client_id)
     if (!client) {
       res.sendStatus(404)
@@ -201,8 +207,8 @@ adminRouter.get('/proxyauth/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
     const proxyauth = await getProxyAuth(id)
 
     if (!proxyauth) {
@@ -215,7 +221,7 @@ adminRouter.get('/proxyauth/:id',
       groups: (await db().select('name')
         .table<Group>('group')
         .innerJoin<ProxyAuthGroup>('proxy_auth_group', 'proxy_auth_group.groupId', 'group.id')
-        .where({ proxyAuthId: proxyauth.id }).orderBy('id', 'asc')).map(v => v.name),
+        .where({ proxyAuthId: proxyauth.id }).orderBy('name', 'asc')).map(v => v.name),
     }
 
     res.send(response)
@@ -253,8 +259,8 @@ adminRouter.post('/proxyAuth',
     },
     'groups.*': stringValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id, domain, groups } = matchedData<ProxyAuthUpsert>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id, domain, groups } = validatorData<ProxyAuthUpsert>(req)
 
     // Check for domain conflict
     const conflicting = await db().select()
@@ -307,8 +313,8 @@ adminRouter.delete('/proxyauth/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
 
     await db().table<ProxyAuth>('proxy_auth').delete().where({ id })
 
@@ -316,31 +322,33 @@ adminRouter.delete('/proxyauth/:id',
   },
 )
 
-adminRouter.get('/users', async (_req, res) => {
-  const users: UserWithoutPassword[] = await getUsers()
-  res.send(users)
-})
+adminRouter.get('/users{/:searchTerm}',
+  ...validate<{ searchTerm?: string }>({
+    searchTerm: {
+      optional: true,
+      ...stringValidation,
+    },
+  }),
+  async (req, res) => {
+    const { searchTerm } = validatorData<{ searchTerm?: string }>(req)
+    const users: UserWithAdminIndicator[] = await getUsers(searchTerm)
+    res.send(users)
+  },
+)
 
 adminRouter.get('/user/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
     const user = await getUserById(id)
     if (!user) {
       res.sendStatus(404)
       return
     }
 
-    const groups = await db().select('name')
-      .table<Group>('group')
-      .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: id })
-      .orderBy('name', 'asc')
-    const { passwordHash, ...userWithoutPassword } = user
-    const userResponse: UserDetails = { ...userWithoutPassword, groups: groups.map(g => g.name) }
-
-    res.send(userResponse)
+    res.send(user)
   },
 )
 
@@ -353,11 +361,8 @@ adminRouter.patch('/user',
       default: {
         options: null,
       },
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...unlessNull,
       ...emailValidation,
     },
     emailVerified: {
@@ -371,8 +376,14 @@ adminRouter.patch('/user',
     },
     'groups.*': stringValidation,
   }),
-  async (req: Request, res: Response) => {
-    const userUpdate = matchedData<UserUpdate>(req, { includeOptionals: true })
+  async (req, res) => {
+    const userUpdate = validatorData<UserUpdate>(req)
+
+    const existingUser = await db().table<User>('user').where({ id: userUpdate.id }).first()
+    if (!existingUser) {
+      res.sendStatus(404)
+      return
+    }
 
     const { groups: _, ...user } = userUpdate
     const ucount = await db().table<User>('user').update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
@@ -402,6 +413,19 @@ adminRouter.patch('/user',
       return
     }
 
+    if (!existingUser.approved && userUpdate.approved && userUpdate.email && SMTP_VERIFIED) {
+      const userApprovedEmail = await db().table<EmailLog>('email_log')
+        .where({ type: 'approved', toUser: userUpdate.id }).first()
+      if (!userApprovedEmail) {
+        // Only sent approved email to users that have never received one before
+        try {
+          await sendApproved(userUpdate, userUpdate.email)
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+
     res.send()
   },
 )
@@ -410,8 +434,8 @@ adminRouter.delete('/user/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
 
     if (req.user.id === id) {
       res.sendStatus(400)
@@ -438,7 +462,7 @@ adminRouter.patch('/users/approve',
       ...uuidValidation,
     },
   }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     const { users } = validatorData<{ users: string[] }>(req)
 
     if (!users.length) {
@@ -448,12 +472,65 @@ adminRouter.patch('/users/approve',
     }
 
     await db().table<User>('user').update({ approved: true }).whereIn('id', users)
+
+    const usersWithEmail = await db().select('id', 'email', 'name', 'username').table<User>('user').whereIn('id', users)
+    const userApprovedSent = await db().select().table<EmailLog>('email_log').where({ type: 'approved' })
+      .and.whereIn('toUser', users)
+
+    for (const user of usersWithEmail) {
+      // Only sent approved email to users that have never received one before
+      if (user.email && SMTP_VERIFIED && !userApprovedSent.some(e => e.toUser === user.id)) {
+        try {
+          await sendApproved(user, user.email)
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+
+    res.send()
+  },
+)
+
+adminRouter.post('/users/delete',
+  ...validate<{ users: string[] }>({
+    users: {
+      isArray: true,
+    },
+    'users.*': {
+      ...uuidValidation,
+    },
+  }),
+  async (req, res) => {
+    const { users } = validatorData<{ users: string[] }>(req)
+
+    if (!users.length) {
+      // nothing to do
+      res.send()
+      return
+    }
+
+    // Don't delete yourself
+    if (users.some(id => id === req.user.id)) {
+      res.sendStatus(400)
+      return
+    }
+
+    await db().table<User>('user').update({ approved: true }).whereIn('id', users)
+
+    const count = await db().table<User>('user').delete().whereIn('id', users)
+
+    if (!count) {
+      res.sendStatus(404)
+      return
+    }
+
     res.send()
   },
 )
 
 adminRouter.get('/groups', async (_req, res) => {
-  const groups = await db().select().table<Group>('group').orderBy('id', 'asc')
+  const groups = await db().select().table<Group>('group').orderBy('createdAt', 'asc')
   res.send(groups)
 })
 
@@ -461,8 +538,8 @@ adminRouter.get('/group/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
     const group = await db().select().table<Group>('group').where({ id }).first()
 
     if (!group) {
@@ -475,7 +552,7 @@ adminRouter.get('/group/:id',
       users: await db().select('id', 'username')
         .table<User>('user')
         .innerJoin<UserGroup>('user_group', 'user_group.userId', 'user.id')
-        .where({ groupId: group.id }).orderBy('id', 'asc'),
+        .where({ groupId: group.id }).orderBy('name', 'asc'),
     }
 
     res.send(groupWithUsers)
@@ -497,16 +574,12 @@ adminRouter.post('/group',
       isArray: true,
     },
     'users.*.id': uuidValidation,
-    'users.*.username': { // we aren't going to use this
-      optional: {
-        options: {
-          values: 'falsy',
-        },
-      },
+    'users.*.username': {
+      optional: true, // we don't use this
     },
   }),
-  async (req: Request, res: Response) => {
-    const { id, name, users } = matchedData<GroupUpsert>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id, name, users } = validatorData<GroupUpsert>(req)
 
     // Check for name conflict
     const conflictingGroup = await db().select()
@@ -568,8 +641,8 @@ adminRouter.delete('/group/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
 
     const group = await db().select().table<Group>('group').where({ id }).first()
     // Do not delete the admin group
@@ -593,8 +666,8 @@ adminRouter.get('/invitation/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
     const invitation = await getInvitation(id)
     if (!invitation) {
       res.sendStatus(404)
@@ -618,11 +691,8 @@ adminRouter.post('/invitation',
       default: {
         options: null,
       },
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...unlessNull,
       ...usernameValidation,
     },
     name: nameValidation,
@@ -630,11 +700,8 @@ adminRouter.post('/invitation',
       default: {
         options: null,
       },
-      optional: {
-        options: {
-          values: 'null',
-        },
-      },
+      optional: true,
+      ...unlessNull,
       ...emailValidation,
     },
     emailVerified: {
@@ -645,8 +712,8 @@ adminRouter.post('/invitation',
     },
     'groups.*': stringValidation,
   }),
-  async (req: Request, res: Response) => {
-    const invitationUpsert = matchedData<InvitationUpsert>(req, { includeOptionals: true })
+  async (req, res) => {
+    const invitationUpsert = validatorData<InvitationUpsert>(req)
     const { groups: groupNames, ...invitationData } = invitationUpsert
 
     const id = invitationData.id ?? randomUUID()
@@ -705,8 +772,8 @@ adminRouter.delete('/invitation/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
 
     const count = await db().table<Invitation>('invitation').delete().where({ id })
 
@@ -723,8 +790,8 @@ adminRouter.post('/send_invitation/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
     const invitation = await getInvitation(id)
 
     if (!invitation) {
@@ -762,8 +829,8 @@ adminRouter.post('/passwordreset',
   ...validate<PasswordResetCreate>({
     userId: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { userId } = matchedData<PasswordResetCreate>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { userId } = validatorData<PasswordResetCreate>(req)
     const user = await getUserById(userId)
 
     if (!user) {
@@ -792,8 +859,8 @@ adminRouter.delete('/passwordreset/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
 
     const count = await db().table<PasswordReset>('password_reset').delete().where({ id })
 
@@ -810,8 +877,8 @@ adminRouter.post('/send_passwordreset/:id',
   ...validate<{ id: string }>({
     id: uuidValidation,
   }),
-  async (req: Request, res: Response) => {
-    const { id } = matchedData<{ id: string }>(req, { includeOptionals: true })
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
     const reset = await db().select().table<PasswordReset>('password_reset').where({ id }).first()
 
     if (!reset) {
@@ -819,16 +886,14 @@ adminRouter.post('/send_passwordreset/:id',
       return
     }
 
-    const user = await db().select().table<User>('user').where({ id: reset.userId }).first()
+    const user = await getUserById(reset.userId)
 
     if (!user?.email) {
       res.sendStatus(400)
       return
     }
 
-    const { passwordHash: _, ...userWithoutPassword } = user
-
-    await sendPasswordReset(reset, userWithoutPassword, user.email)
+    await sendPasswordReset(reset, user, user.email)
     res.send()
   },
 )

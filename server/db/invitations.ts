@@ -4,7 +4,7 @@ import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import type { Group, InvitationGroup } from '@shared/db/Group'
 
 export async function getInvitations() {
-  return await db().select().table<Invitation>('invitation').where('expiresAt', '>=', new Date()).orderBy('id', 'asc')
+  return await db().select().table<Invitation>('invitation').where('expiresAt', '>=', new Date()).orderBy('expiresAt', 'desc')
 }
 
 export async function getInvitation(id: string) {

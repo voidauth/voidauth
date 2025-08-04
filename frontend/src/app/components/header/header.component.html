@@ -1,28 +1,20 @@
 <mat-toolbar>
-  <a class="header-logo" routerLink="/">
-    <img
-      #logo
-      src="logo.svg"
-      (error)="
-        logo.src.includes('logo.svg')
-          ? (logo.src = 'logo.png')
-          : logo.src.includes('logo.png')
-            ? (logo.src = 'favicon.svg')
-            : logo.src.includes('favicon.svg')
-              ? (logo.src = 'favicon.png')
-              : logo.src.includes('favicon.png')
-                ? (logo.src = 'apple-touch-icon.png')
-                : null
-      "
-    />
-  </a>
+  @if (location.pathname === "/" && config?.defaultRedirect; as logoLink) {
+    <a class="header-logo" [href]="logoLink">
+      <app-logo></app-logo>
+    </a>
+  } @else {
+    <a class="header-logo" routerLink="/">
+      <app-logo></app-logo>
+    </a>
+  }
 
   <span class="example-spacer"></span>
 
   <span class="right-actions">
     <app-theme-toggle></app-theme-toggle>
     <span>
-      @if (!user && loginRedirect && !router.url.includes("login")) {
+      @if (!user && loginRedirect && !location.pathname.includes("login")) {
         <span>
           <a mat-flat-button [href]="loginRedirect">Login</a>
         </span>

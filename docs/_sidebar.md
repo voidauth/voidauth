@@ -1,4 +1,4 @@
-* [VoidAuth](/)
+* [Home](/)
 * [Getting Started](Getting-Started.md)
 * [Usage](End‐User-Usage.md)
 * [OIDC Setup](OIDC-Setup.md)
