@@ -28,3 +28,7 @@ jobs:
           tags: voidauth/voidauth:test
           push: false
           target: test
+          cache-from: |
+            type=gha,scope=test
+            type=gha,scope=release
+          cache-to: type=gha,mode=max,scope=test
