@@ -70,6 +70,10 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           push: true
           target: serve
+          cache-from: |
+            type=gha,scope=test
+            type=gha,scope=release
+          cache-to: type=gha,mode=max,scope=release
 
       - name: Docker Hub Description Update
         uses: peter-evans/dockerhub-description@v4

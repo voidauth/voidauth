@@ -1,4 +1,4 @@
-div(style='font-family:monospace;font-weight:bold;margin:2rem;')
+div(style='font-family:monospace;margin:0;border:0;padding:16px;padding-top:48px;')
   h1(align='center') Your Access is Approved
   h2(align='center') #{app_title}
   br
@@ -8,6 +8,6 @@ div(style='font-family:monospace;font-weight:bold;margin:2rem;')
     a(style=`background-color:${primary_color};color:${primary_contrast_color};text-decoration:none;padding:1rem;border-radius:100px;` href=`${default_url}`)
       | Visit #{app_title}
   br
-  p(align='center' style='margin-top: 4rem;') Or, paste the following link into your browser:
+  p(align='center' style='margin-top: 64px;') Or, paste the following link into your browser:
   div(align='center')
     a(href=`${default_url}`) #{default_url}
