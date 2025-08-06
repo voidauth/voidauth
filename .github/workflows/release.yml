@@ -3,8 +3,8 @@ name: Release
 on:
   push:
     tags: ['v[0-9]+.[0-9]+.[0-9]+']
-    branches: 
-      - main
+    # branches: 
+    #   - main
   workflow_dispatch:
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}
             type=semver,pattern={{major}}.{{minor}}
-            # type=edge
+            type=edge
             # set edge tag if manual run
             type=raw,value=edge,enable=${{ github.event_name == 'workflow_dispatch' }}
 
