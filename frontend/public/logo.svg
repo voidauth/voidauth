@@ -49,7 +49,7 @@
          id="stop7" /></linearGradient><linearGradient
        id="linearGradient223"><stop
          style="stop-color:#1a0f24;stop-opacity:1;"
-         offset="0.53402555"
+         offset="0.06496428"
          id="stop222" /><stop
          style="stop-color:#331f47;stop-opacity:1;"
          offset="1"
@@ -72,12 +72,12 @@
        y2="246.17273" /><radialGradient
        xlink:href="#linearGradient223"
        id="radialGradient1"
-       cx="275.5441"
-       cy="380.15988"
-       fx="275.5441"
-       fy="380.15988"
+       cx="212.95084"
+       cy="318.8385"
+       fx="212.95084"
+       fy="318.8385"
        r="226.61182"
-       gradientTransform="matrix(1.0003264,0,0,1.000653,-0.16126304,-0.11208039)"
+       gradientTransform="matrix(1.0807273,0.30346624,-0.26750884,0.95267302,68.009405,-49.43759)"
        gradientUnits="userSpaceOnUse" /><linearGradient
        xlink:href="#linearGradient3"
        id="linearGradient1"
