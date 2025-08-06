@@ -51,7 +51,9 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}
             type=semver,pattern={{major}}.{{minor}}
-            type=edge
+            # type=edge
+            # set edge tag if manual run
+            type=raw,value=edge,enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Docker QEMU
         uses: docker/setup-qemu-action@v3
