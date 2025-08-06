@@ -45,12 +45,9 @@ export type TypedSchema<T extends object> = {
   [K in DotNotation<T> as WasOptionalKey<K> extends true ? FixOptionalKey<K> : never]?: SchemaValues & { optional: ParamSchema['optional'] }
 }
 
-export function validate<T extends object = any>(schema: TypedSchema<T> | TypedSchema<T>[]) {
-  const schemas: TypedSchema<T>[] = (schema instanceof Array ? schema : [schema])
+export function validate<T extends object = any>(schema: TypedSchema<T>) {
   return [
-    ...schemas.map((s) => {
-      return checkSchema(s, ['body', 'params', 'query'])
-    }).flat(),
+    ...checkSchema(schema, ['body', 'params', 'query']),
     handleValidatorError,
   ]
 }

@@ -33,6 +33,7 @@ export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndica
     return {
       ...u,
       isAdmin: !!isAdmin,
+      hasPassword: !!passwordHash,
     }
   })
 }
@@ -50,7 +51,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     .orderBy('name', 'asc')).map(g => g.name)
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups }
+  return { ...userWithoutPassword, groups, hasPassword: !!passwordHash }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
@@ -67,12 +68,12 @@ export async function getUserByInput(input: string): Promise<UserDetails | undef
     .orderBy('name', 'asc')).map(g => g.name)
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups }
+  return { ...userWithoutPassword, groups, hasPassword: !!passwordHash }
 }
 
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
   const user = await db().select().table<User>('user').where({ id: userId }).first()
-  return !!user && await argon2.verify(user.passwordHash, password)
+  return !!user && !!password && !!user.passwordHash && await argon2.verify(user.passwordHash, password)
 }
 
 export function isAdmin(user: Pick<UserDetails, 'groups'>) {

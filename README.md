@@ -1,19 +1,23 @@
-# VoidAuth
-
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/voidauth/voidauth/release.yml)
 ![GitHub License](https://img.shields.io/github/license/voidauth/voidauth)
 ![GitHub Release](https://img.shields.io/github/v/release/voidauth/voidauth?logo=github)
-![Docker Image Version](https://img.shields.io/docker/v/voidauth/voidauth?sort=semver&logo=docker&logoColor=white)
 ![Docker Pulls](https://img.shields.io/docker/pulls/voidauth/voidauth?logo=docker&logoColor=white)
 
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/frontend/public/logo.svg" width="150" title="VoidAuth" alt="VoidAuth logo">
 </p>
+<h1 align="center" style="font-family: monospace">VoidAuth</h1>
 
 <p align="center">
 The Single Sign-On Provider that makes securing your applications and resources easy.
 </p>
+
+<div align="center">
+  <a href="https://voidauth.app">Website</a> |
+  <a href="https://github.com/voidauth/voidauth">Source Code</a>
+</div>
+
 <br>
 
 <p align="center">
@@ -31,7 +35,7 @@ Key Features:
 - 🔄 Proxy ForwardAuth Domains
 - 📨 User Self-Registration and Invitations
 - 🎨 Custom Branding Options (Logo, Title, Theme Color, Email Templates)
-- 🔑 Passkey Support
+- 🔑 Passkeys and Passkey-Only Accounts
 - 📧 Secure Password Reset with Email Verification
 - 🔒 Encryption-At-Rest
 
@@ -51,7 +55,7 @@ Administrators can access the Admin Panel in the sidebar menu, where they can ma
   <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/admin_panel.png" width="600">
 </p>
 
-## Getting Started
+## Quick Start
 
 Getting started with VoidAuth is straightforward, with just a few lines of Docker Compose you can have it up and running.
 ``` yaml
@@ -86,13 +90,23 @@ volumes:
   db:
 ```
 
-After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`
+> [!TIP]
+> A bind mount for VoidAuth `/app/config` is recommended to enable customization.
+
+> [!IMPORTANT]
+> After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`
+
+
 
 Please see the [Getting Started](https://voidauth.app/#/Getting-Started) page for details and configuration options.
 
 ## Support
 
 Issues, Suggestions, and Feature Requests should be added as [Issues](https://github.com/voidauth/voidauth/issues) of the appropriate type. For Help and Support, Q&A, or anything else; open a [Discussion](https://github.com/orgs/voidauth/discussions). This project is actively monitored, I will likely respond quickly.
+
+## Contributing
+
+Please read the CONTRIBUTING.md
 
 ## Disclaimer
 

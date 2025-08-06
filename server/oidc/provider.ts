@@ -48,10 +48,10 @@ const configuration: Configuration = {
     },
     rpInitiatedLogout: {
       // custom logout question page
-      logoutSource: (ctx, form) => {
+      logoutSource: (ctx, _form) => {
         // parse out secret value so static frontend can use
-        const secret = /value="(\w*)"/.exec(form)
-        ctx.redirect(`/${REDIRECT_PATHS.LOGOUT}${secret?.[1] ? `/${secret[1]}` : ''}`)
+        const secret = ctx.oidc.session?.state?.secret
+        ctx.redirect(`/${REDIRECT_PATHS.LOGOUT}${typeof secret === 'string' ? `/${String(secret)}` : ''}`)
       },
       postLogoutSuccessSource: (ctx) => {
         // TODO: custom logout success page?

@@ -5,6 +5,7 @@ import {
   browserSupportsWebAuthn, platformAuthenticatorIsAvailable, WebAuthnError, type AuthenticationResponseJSON,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
+  type RegistrationResponseJSON,
 } from '@simplewebauthn/browser'
 import type { Redirect } from '@shared/api-response/Redirect'
 import { UAParser } from 'ua-parser-js'
@@ -16,9 +17,9 @@ export class PasskeyService {
   private http = inject(HttpClient)
 
   /**
-   * Checks if passkey registration or usage has ever been and flagged in localStorage.
+   * Checks if passkey registration or usage has ever been flagged in localStorage.
    * Not a perfect solution, but until there is a method to check if a device passkey exists,
-   * this will have to do.
+   * this will have to do. This is just a hint and should not disable any functionality.
    * @returns if there is passkey usage flagged in localStorage
    */
   localPasskeySeen() {
@@ -56,12 +57,12 @@ export class PasskeyService {
   }
 
   async getRegistrationOptions() {
-    return firstValueFrom(this.http.get<PublicKeyCredentialCreationOptionsJSON>('/api/passkey/registration'))
+    return firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>('/api/passkey/registration/start', null))
   }
 
-  async sendRegistration(reg: unknown) {
+  async sendRegistration(reg: RegistrationResponseJSON) {
     try {
-      const result = await firstValueFrom(this.http.post<null>('/api/passkey/registration', reg))
+      const result = await firstValueFrom(this.http.post<null>('/api/passkey/registration/end', reg))
       localStorage.setItem('passkey_seen', 'true')
       return result
     } catch (error) {
@@ -73,11 +74,11 @@ export class PasskeyService {
   }
 
   async getAuthOptions() {
-    return firstValueFrom(this.http.get<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey'))
+    return firstValueFrom(this.http.post<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey/start', null))
   }
 
   async sendAuth(auth: AuthenticationResponseJSON) {
-    const result = firstValueFrom(this.http.post<Redirect>('/api/interaction/passkey', auth))
+    const result = firstValueFrom(this.http.post<Redirect>('/api/interaction/passkey/end', auth))
     localStorage.setItem('passkey_seen', 'true')
     return result
   }

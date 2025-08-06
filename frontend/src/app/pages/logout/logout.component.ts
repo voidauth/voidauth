@@ -13,7 +13,7 @@ import { ConfigService } from '../../services/config.service'
   styleUrl: './logout.component.scss',
 })
 export class LogoutComponent implements OnInit {
-  protected secret?: string
+  protected challenge?: string
 
   private configService = inject(ConfigService)
   private route = inject(ActivatedRoute)
@@ -26,9 +26,9 @@ export class LogoutComponent implements OnInit {
   ngOnInit() {
     const params = this.route.snapshot.paramMap
 
-    const secret = params.get('secret')
-    if (secret) {
-      this.secret = secret
+    const challenge = params.get('challenge')
+    if (challenge) {
+      this.challenge = challenge
     } else {
       this.snackbarService.error('Invalid logout request.')
     }

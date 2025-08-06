@@ -48,7 +48,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     oldPassword: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.required]),
+    }, []),
     newPassword: new FormControl<string>({
       value: '',
       disabled: false,
@@ -119,6 +119,10 @@ export class HomeComponent implements OnInit, OnDestroy {
         email: this.user.email,
       })
       this.passwordForm.reset()
+
+      if (this.user.hasPassword) {
+        this.passwordForm.controls.oldPassword.addValidators(Validators.required)
+      }
     } finally {
       this.spinnerService.hide()
     }
@@ -143,8 +147,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   async updatePassword() {
     try {
       this.spinnerService.show()
-      const { oldPassword, newPassword } = this.passwordForm.value
-      if (!oldPassword || !newPassword) {
+      const { oldPassword, newPassword } = this.passwordForm.getRawValue()
+      if (!newPassword) {
         throw new Error('Password missing.')
       }
 
