@@ -5,7 +5,7 @@
 
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/frontend/public/logo.svg" width="150" title="VoidAuth" alt="VoidAuth logo">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/logo.svg" width="150" title="VoidAuth" alt="VoidAuth logo">
 </p>
 <h1 align="center" style="font-family: monospace">VoidAuth</h1>
 
