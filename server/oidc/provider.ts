@@ -1,4 +1,4 @@
-import Provider, { type Configuration, type KoaContextWithOIDC } from 'oidc-provider'
+import Provider, { type Configuration } from 'oidc-provider'
 import { findAccount } from '../db/user'
 import appConfig from '../util/config'
 import { KnexAdapter } from './adapter'
@@ -51,7 +51,7 @@ const configuration: Configuration = {
       logoutSource: (ctx, _form) => {
         // parse out secret value so static frontend can use
         const secret = ctx.oidc.session?.state?.secret
-        ctx.redirect(`/${REDIRECT_PATHS.LOGOUT}${typeof secret === 'string' ? `/${String(secret)}` : ''}`)
+        ctx.redirect(`/${REDIRECT_PATHS.LOGOUT}${typeof secret === 'string' ? `/${secret}` : ''}`)
       },
       postLogoutSuccessSource: (ctx) => {
         // TODO: custom logout success page?
@@ -193,9 +193,7 @@ export const provider = new Provider(`${appConfig.APP_URL}/oidc`, configuration)
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const { redirectUriAllowed } = provider.Client.prototype
 provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
-  // @ts-expect-error ctx actually is a static getter on Provider
-  const ctx = Provider.ctx as KoaContextWithOIDC | undefined
-  if (ctx?.oidc.params?.client_id === 'auth_internal_client') {
+  if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
     return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(URL.parse(appConfig.APP_URL)?.hostname ?? '')
   }
   return redirectUriAllowed.call(this, redirectUri)
@@ -205,8 +203,7 @@ provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
 // Used for proxy auth
 provider.on('session.saved', (session) => {
   const sessionCookie = session.uid
-  // @ts-expect-error ctx actually is a static getter on Provider
-  const ctx = Provider.ctx as KoaContextWithOIDC | undefined
+  const ctx = Provider.ctx
   if (!ctx || !sessionCookie) {
     return
   }
@@ -223,8 +220,7 @@ provider.on('session.saved', (session) => {
 })
 
 provider.on('session.destroyed', (_session) => {
-  // @ts-expect-error ctx actually is a static getter on Provider
-  const ctx = Provider.ctx as KoaContextWithOIDC | undefined
+  const ctx = Provider.ctx
   if (!ctx) {
     return
   }

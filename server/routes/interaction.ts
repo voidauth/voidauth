@@ -464,7 +464,7 @@ router.post('/register',
       email: invitation?.email || registration.email,
       passwordHash,
       approved: !!invitationValid, // invited users are approved by default
-      emailVerified: !!invitation?.email && !!invitation.emailVerified,
+      emailVerified: !!invitation?.email && invitation.emailVerified,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -614,7 +614,7 @@ router.post('/register/passkey/end',
       name: invitation?.name || registration.name,
       email: invitation?.email || registration.email,
       approved: !!invitationValid, // invited users are approved by default
-      emailVerified: !!invitation?.email && !!invitation.emailVerified,
+      emailVerified: !!invitation?.email && invitation.emailVerified,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
