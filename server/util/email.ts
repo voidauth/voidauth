@@ -13,6 +13,7 @@ import type { EmailLog } from '@shared/db/EmailLog'
 import { randomUUID } from 'node:crypto'
 import type { User } from '@shared/db/User'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
+import DOMPurify from 'isomorphic-dompurify'
 
 export let SMTP_VERIFIED = false
 const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
@@ -59,9 +60,9 @@ function compileTemplates(name: string) {
   }
   return (locals: pug.LocalsObject) => {
     return {
-      subject: templates.subject ? templates.subject(locals) : undefined,
-      html: templates.html ? templates.html(locals) : undefined,
-      text: templates.text ? templates.text(locals) : undefined,
+      subject: templates.subject ? DOMPurify.sanitize(templates.subject(locals)) : undefined,
+      html: templates.html ? DOMPurify.sanitize(templates.html(locals)) : undefined,
+      text: templates.text ? DOMPurify.sanitize(templates.text(locals)) : undefined,
     }
   }
 }
