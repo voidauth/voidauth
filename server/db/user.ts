@@ -10,6 +10,7 @@ import { als } from '../util/als'
 import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
 import appConfig from '../util/config'
+import type { OIDCPayload } from '@shared/db/OIDCPayload'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>('user').select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -86,6 +87,10 @@ export function isUnapproved(user: Pick<UserDetails, 'approved' | 'groups'>) {
 
 export function isUnverified(user: Pick<UserDetails, 'email' | 'emailVerified' | 'groups'>) {
   return !isAdmin(user) && appConfig.EMAIL_VERIFICATION && (!user.email || !user.emailVerified)
+}
+
+export async function endSessions(userId: string) {
+  await db().table<OIDCPayload>('oidc_payloads').delete().where({ type: 'Session', accountId: userId })
 }
 
 export async function findAccount(_: KoaContextWithOIDC | null, id: string): Promise<Account | undefined> {

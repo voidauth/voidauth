@@ -104,6 +104,10 @@ export class AdminService {
     return firstValueFrom(this.http.delete<null>(`/api/admin/user/${id}`))
   }
 
+  async signOutUser(id: string) {
+    return firstValueFrom(this.http.post<null>(`/api/admin/user/signout/${id}`, null))
+  }
+
   async approveUsers(ids: string[]) {
     return firstValueFrom(this.http.patch<null>('/api/admin/users/approve', { users: ids }))
   }

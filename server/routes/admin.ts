@@ -15,7 +15,7 @@ import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import { ADMIN_GROUP, TTLs } from '@shared/constants'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
-import { getUserById, getUsers } from '../db/user'
+import { endSessions, getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
 import type { UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { getInvitation, getInvitations } from '../db/invitations'
@@ -33,6 +33,7 @@ import type { PasswordResetUser } from '@shared/api-response/admin/PasswordReset
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
 import type { EmailLog } from '@shared/db/EmailLog'
+import appConfig from '../util/config'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -413,7 +414,7 @@ adminRouter.patch('/user',
       return
     }
 
-    if (!existingUser.approved && userUpdate.approved && userUpdate.email && SMTP_VERIFIED) {
+    if (SMTP_VERIFIED && appConfig.SIGNUP_REQUIRES_APPROVAL && !existingUser.approved && userUpdate.approved && userUpdate.email) {
       const userApprovedEmail = await db().table<EmailLog>('email_log')
         .where({ type: 'approved', toUser: userUpdate.id }).first()
       if (!userApprovedEmail) {
@@ -453,6 +454,24 @@ adminRouter.delete('/user/:id',
   },
 )
 
+adminRouter.post('/user/signout/:id',
+  ...validate<{ id: string }>({
+    id: uuidValidation,
+  }),
+  async (req, res) => {
+    const { id } = validatorData<{ id: string }>(req)
+
+    if (req.user.id === id) {
+      res.sendStatus(400)
+      return
+    }
+
+    await endSessions(id)
+
+    res.send()
+  },
+)
+
 adminRouter.patch('/users/approve',
   ...validate<{ users: string[] }>({
     users: {
@@ -479,7 +498,7 @@ adminRouter.patch('/users/approve',
 
     for (const user of usersWithEmail) {
       // Only sent approved email to users that have never received one before
-      if (user.email && SMTP_VERIFIED && !userApprovedSent.some(e => e.toUser === user.id)) {
+      if (SMTP_VERIFIED && appConfig.SIGNUP_REQUIRES_APPROVAL && user.email && !userApprovedSent.some(e => e.toUser === user.id)) {
         try {
           await sendApproved(user, user.email)
         } catch (e) {

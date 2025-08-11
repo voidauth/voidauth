@@ -153,6 +153,21 @@ export class UserComponent {
     }
   }
 
+  async signout() {
+    this.spinnerService.show()
+    try {
+      if (this.id) {
+        await this.adminService.signOutUser(this.id)
+      }
+
+      this.snackbarService.message('User signed out.')
+    } catch (_e) {
+      this.snackbarService.error('Could not sign out user.')
+    } finally {
+      this.spinnerService.hide()
+    }
+  }
+
   remove() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
