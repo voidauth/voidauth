@@ -73,6 +73,7 @@
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">Update</button>
         @if (id !== me?.id) {
+          <button mat-button type="button" (click)="signout()">Sign Out</button>
           <button mat-button type="button" (click)="remove()">Delete</button>
         }
       </mat-card-actions>

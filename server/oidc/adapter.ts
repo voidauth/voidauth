@@ -2,7 +2,7 @@
 import type { Adapter, ClientMetadata } from 'oidc-provider'
 import { db } from '../db/db'
 import { decryptString, encryptString } from '../db/key'
-import type { OIDCPayload } from '@shared/db/OIDCPayload'
+import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
 import appConfig from '../util/config'
 
 const tableName = 'oidc_payloads'
@@ -34,9 +34,9 @@ function stringifyPayload(payload: any, pt: string) {
 }
 
 export class KnexAdapter implements Adapter {
-  payloadType: string
+  payloadType: PayloadType
   constructor(pt: string) {
-    this.payloadType = pt
+    this.payloadType = pt as PayloadType
   }
 
   get _table() {
@@ -72,7 +72,7 @@ export class KnexAdapter implements Adapter {
   async upsert(id: string, payload: any, expiresIn: number) {
     const expiresAt = getExpireAt(expiresIn)
     await db()
-      .table(tableName)
+      .table<OIDCPayload>(tableName)
       .insert({
         id,
         type: this.payloadType,
@@ -81,6 +81,7 @@ export class KnexAdapter implements Adapter {
         userCode: payload.userCode,
         uid: payload.uid,
         expiresAt,
+        accountId: payload.accountId,
       })
       .onConflict(['id', 'type'])
       .merge()

@@ -5,7 +5,7 @@ import { sendPasswordReset, SMTP_VERIFIED } from '../util/email'
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import { validate, validatorData } from '../util/validate'
 import { newPasswordValidation, stringValidation, uuidValidation } from '../util/validators'
-import { getUserById, getUserByInput } from '../db/user'
+import { endSessions, getUserById, getUserByInput } from '../db/user'
 import { db } from '../db/db'
 import { createExpiration } from '../db/util'
 import { TTLs } from '@shared/constants'
@@ -95,6 +95,7 @@ publicRouter.post('/reset_password',
 
     await db().table<User>('user').update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
     await db().table<PasswordReset>('password_reset').delete().where({ id: passwordReset.id })
+    await endSessions(user.id)
     res.send()
   },
 )

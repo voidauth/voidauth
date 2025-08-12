@@ -43,7 +43,7 @@ export class PasskeyService {
       } else if (os.name == 'iOS') {
         name = 'Face ID'
         icon = 'face'
-      } else if (os.name == 'MacOS') {
+      } else if (os.name == 'macOS') {
         name = 'Touch ID'
         icon = 'fingerprint'
       }
