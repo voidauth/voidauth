@@ -3,7 +3,7 @@
 ![GitHub Release](https://img.shields.io/github/v/release/voidauth/voidauth?logo=github)
 ![Docker Pulls](https://img.shields.io/docker/pulls/voidauth/voidauth?logo=docker&logoColor=white)
 
-
+<br>
 <p align="center">
   <a href='https://voidauth.app'>
     <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/logo.svg" width="180" title="VoidAuth" alt="VoidAuth logo"/>
