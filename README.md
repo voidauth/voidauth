@@ -5,13 +5,19 @@
 
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/logo.svg" width="150" title="VoidAuth" alt="VoidAuth logo">
+  <a href='https://voidauth.app'>
+    <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/logo.svg" width="180" title="VoidAuth" alt="VoidAuth logo"/>
+  </a>
 </p>
 <h1 align="center" style="font-family: monospace">VoidAuth</h1>
 
 <p align="center">
-The Single Sign-On Provider that makes securing your applications and resources easy.
+  <strong>
+    Single Sign-On for Your Self-Hosted Universe
+  </strong>
 </p>
+
+<br>
 
 <div align="center">
   <a href="https://voidauth.app">Website</a> |
@@ -26,7 +32,7 @@ The Single Sign-On Provider that makes securing your applications and resources 
 
 ## What is VoidAuth
 
-VoidAuth is an open-source authentication platform that streamlines user management and access control for self-hosted applications. Centered on OpenID Connect (OIDC) integration, it also offers first class support for Proxy ForwardAuth (ProxyAuth). With a focus on an intuitive end-user and administrator web interface, VoidAuth provides a seamless and professional authentication experience, try it today!
+VoidAuth is an open-source authentication platform that streamlines user management and access control for self-hosted applications. Centered on OpenID Connect (OIDC) integration, it also offers first class support for Proxy ForwardAuth (ProxyAuth). With a focus on an intuitive end-user and administrator web interface, VoidAuth provides a seamless and professional authentication experience. Try it today!
 
 Key Features:
 
@@ -34,7 +40,7 @@ Key Features:
 - 🌐 OpenID Connect (OIDC) Provider
 - 🔄 Proxy ForwardAuth Domains
 - 📨 User Self-Registration and Invitations
-- 🎨 Custom Branding Options (Logo, Title, Theme Color, Email Templates)
+- 🎨 Customizable Branding (Logo, Title, Theme Color, Email Templates)
 - 🔑 Passkeys and Passkey-Only Accounts
 - 📧 Secure Password Reset with Email Verification
 - 🔒 Encryption-At-Rest
