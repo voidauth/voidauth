@@ -9,6 +9,8 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 export class ConfigService {
   private http = inject(HttpClient)
 
+  private config?: Promise<ConfigResponse>
+
   getCurrentHost() {
     const currentUri = new URL(window.location.href)
     let currentHost = currentUri.hostname
@@ -22,7 +24,10 @@ export class ConfigService {
   }
 
   async getConfig() {
-    return firstValueFrom(this.http.get<ConfigResponse>('/api/public/config'))
+    if (!this.config) {
+      this.config = firstValueFrom(this.http.get<ConfigResponse>('/api/public/config'))
+    }
+    return this.config
   }
 
   async getOIDCWellknown() {

@@ -13,8 +13,14 @@ import { ADMIN_GROUP } from '@shared/constants'
 export class UserService {
   private http = inject(HttpClient)
 
+  private me?: Promise<CurrentUserDetails>
+
   async getMyUser() {
-    return firstValueFrom(this.http.get<CurrentUserDetails>('/api/user/me'))
+    if (!this.me) {
+      this.me = firstValueFrom(this.http.get<CurrentUserDetails>('/api/user/me'))
+    }
+
+    return this.me
   }
 
   userIsAdmin(user: Pick<UserDetails, 'groups'>) {
