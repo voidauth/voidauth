@@ -29,6 +29,6 @@ jobs:
           push: false
           target: test
           cache-from: |
-            type=gha,scope=test
-            type=gha,scope=release
-          cache-to: type=gha,mode=max,scope=test
+            type=registry,ref=voidauth/voidauth-cache:test
+            type=registry,ref=voidauth/voidauth-cache:release
+          cache-to: type=registry,mode=max,ref=voidauth/voidauth-cache:test

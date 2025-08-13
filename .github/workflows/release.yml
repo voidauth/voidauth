@@ -35,8 +35,7 @@ jobs:
 
       - name: DOCKER_IMAGE_NAME
         run: |
-          REPO_OWNER=${{ github.repository_owner }}
-          DOCKER_IMAGE_NAME="${REPO_OWNER,,}/voidauth"
+          DOCKER_IMAGE_NAME="voidauth/voidauth"
           # Make DOCKER_IMAGE_NAME accessible in other steps
           echo "DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME}" >>${GITHUB_ENV}
           
@@ -73,9 +72,9 @@ jobs:
           push: true
           target: serve
           cache-from: |
-            type=gha,scope=test
-            type=gha,scope=release
-          cache-to: type=gha,mode=max,scope=release
+            type=registry,ref=voidauth/voidauth-cache:test
+            type=registry,ref=voidauth/voidauth-cache:release
+          cache-to: type=registry,mode=max,ref=voidauth/voidauth-cache:release
 
       - name: Docker Hub Description Update
         uses: peter-evans/dockerhub-description@v4
