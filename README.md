@@ -62,7 +62,7 @@ Administrators can access the Admin Panel in the sidebar menu, where they can ma
 
 ## Quick Start
 
-Getting started with VoidAuth is straightforward, with just a few lines of Docker Compose you can have it up and running.
+Getting started with VoidAuth is straightforward, below is an example of how you could add VoidAuth to a `compose.yml` file:
 ``` yaml
 services:
   # ---------------------------------
@@ -73,7 +73,7 @@ services:
   voidauth: 
     image: voidauth/voidauth:latest
     volumes:
-      - config:/app/config
+      - /your/config/directory:/app/config
     environment:
       # Required environment variables
       APP_URL: # required
@@ -91,12 +91,13 @@ services:
       - db:/var/lib/postgresql/data
 
 volumes:
-  config:
   db:
 ```
 
 > [!TIP]
-> A bind mount for VoidAuth `/app/config` is recommended to enable customization.
+> A bind mount as shown for VoidAuth `/app/config` is recommended to enable customization.
+
+After creating/updating the compose.yml file and filling in the required environment variables, run `docker compose up -d` to get started.
 
 > [!IMPORTANT]
 > After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`
