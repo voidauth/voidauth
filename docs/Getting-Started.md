@@ -14,7 +14,7 @@ services:
   voidauth: 
     image: voidauth/voidauth:latest
     volumes:
-      - config:/app/config
+      - /your/config/directory:/app/config
     # you may not need this external port mapping, map VoidAuth through your reverse-proxy
     ports:
       - "3000:3000"
@@ -35,7 +35,6 @@ services:
       - db:/var/lib/postgresql/data
 
 volumes:
-  config:
   db:
 ```
 
