@@ -48,7 +48,7 @@ volumes:
 > During the first start of the app, the **initial admin username and password** will be shown in the logs. They will never be shown again. You will need to note them down and use them to create a user for yourself, which you should add to the **auth_admins** group. Afterwards you may delete the **auth_admin** user.
 
 > [!IMPORTANT]
-> Any user in the **auth_admins** group will be an administrator in VoidAuth and have access to the admin pages. Do not give this security group to any user you do not want to have full privileges in VoidAuth, you should probably make a different group for administrators of protected domains/apps.
+> Any user in the **auth_admins** group will be an administrator in VoidAuth and have access to the admin pages. Do not give this security group to any user you do not want to have full privileges in VoidAuth, you should make a different group for administrators of protected domains/apps.
 
 ## Configuration
 ### Environment Variables
