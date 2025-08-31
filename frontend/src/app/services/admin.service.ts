@@ -18,6 +18,8 @@ import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
 import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
+import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
+import type { SortDirection } from '@angular/material/sort'
 
 @Injectable({
   providedIn: 'root',
@@ -150,5 +152,16 @@ export class AdminService {
 
   async sendPasswordReset(id: string) {
     return firstValueFrom(this.http.post<null>(`/api/admin/send_passwordreset/${id}`, null))
+  }
+
+  async emails(page: number, pageSize: number, sortActive?: string, sortDirection?: SortDirection) {
+    let query = `?page=${String(page)}&pageSize=${String(pageSize)}`
+    if (sortActive) {
+      query += `&sortActive=${sortActive}`
+      if (sortDirection) {
+        query += `&sortDirection=${sortDirection}`
+      }
+    }
+    return firstValueFrom(this.http.get<EmailsResponse>(`/api/admin/emails${query}`))
   }
 }
