@@ -8,6 +8,27 @@ In the guides below, there may be omitted options when those options are set to 
 > [!CAUTION]
 > Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. VoidAuth provides options to generate the Client Secret field and to copy it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
 
+## Beszel
+In Beszel:
+
+Follow the [OAuth Guide](https://www.beszel.dev/guide/oauth) in the Beszel Docs and select `OpenID Connect (oidc)` from the **Add Provider** dropdown. Fill out the config as follows:
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Auth URL: Copy from OIDC Info in VoidAuth (Auth Endpoint)
+Token URL: Copy from OIDC Info in VoidAuth (Token Endpoint)
+Fetch user info from: User info URL
+User info URL: Copy from OIDC Info in VoidAuth (UserInfo Endpoint)
+```
+
+In VoidAuth:
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://beszel.example.com/api/oauth2-redirect
+Token Endpoint Auth Method: client_secret_basic
+```
+
 ## Immich
 In Immich:
 **Administration** > **Settings** > **OAuth Settings**
@@ -34,6 +55,7 @@ Token Endpoint Auth Method: client_secret_post
 
 ## Jellyfin
 In Jellyfin:
+
 1. Follow the instructions in the [Jellyfin SSO Plugin](https://github.com/9p4/jellyfin-plugin-sso) repository to install it.
     1. Navigate in Jellyfin to **Dashboard** > **Plugins** > **Catalog** > **Repositories**/**Gear Icon**
     2. Add a repository, (+) button
