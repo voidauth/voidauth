@@ -35,6 +35,7 @@ jobs:
           push: false
           target: test
           cache-from: |
+            type=gha
             type=registry,ref=voidauth/voidauth-cache:test
             type=registry,ref=voidauth/voidauth-cache:release
           cache-to: type=registry,mode=max,ref=voidauth/voidauth-cache:test
