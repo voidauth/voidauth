@@ -26,18 +26,18 @@
 <br>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/2f8c15db-28fd-4b0e-a266-1dddd9cf9e3a.png" width="240">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/2f8c15db-28fd-4b0e-a266-1dddd9cf9e3a.png" title="Login Portal" alt="Login Portal" width="240">
 </p>
 
 ## What is VoidAuth
 
-VoidAuth is an open-source authentication platform that streamlines user management and access control for self-hosted applications. Centered on OpenID Connect (OIDC) integration, it also offers first class support for Proxy ForwardAuth (ProxyAuth). With a focus on an intuitive end-user and administrator web interface, VoidAuth provides a seamless and professional authentication experience. Try it today!
+VoidAuth is an open-source SSO authentication and user management provider that sits in front of your self-hosted applications. Methods of authentication include OpenID Connect (OIDC) for your apps that support it, and Proxy ForwardAuth (ProxyAuth) for those that don't. The web interface aims to provide a professional and customizable authentication experience.
 
 Key Features:
 
-- 👤 User Management
 - 🌐 OpenID Connect (OIDC) Provider
 - 🔄 Proxy ForwardAuth Domains
+- 👤 User Management
 - 📨 User Self-Registration and Invitations
 - 🎨 Customizable Branding (Logo, Title, Theme Color, Email Templates)
 - 🔑 Passkeys and Passkey-Only Accounts
@@ -49,7 +49,7 @@ Key Features:
 The default page for users logging into VoidAuth, on the Profile Settings page a user can manage their profile, password, email, and passkey settings.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/091a0122-75d7-44d0-9c97-e395c945cf4f.png" width="240">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/091a0122-75d7-44d0-9c97-e395c945cf4f.png" title="User Settings" alt="User Settings" width="240">
 </p>
 
 ## Admin Panel
@@ -57,7 +57,7 @@ The default page for users logging into VoidAuth, on the Profile Settings page a
 Administrators can access the Admin Panel in the sidebar menu, where they can manage the authentication settings of the VoidAuth instance.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/admin_panel.png" width="600">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/admin_panel.png" title="Admin Panel" alt="An Admin Page with the Admin Side Panel Open" width="600">
 </p>
 
 ## Quick Start
@@ -95,7 +95,7 @@ volumes:
 ```
 
 > [!TIP]
-> A bind mount as shown for VoidAuth `/app/config` is recommended to enable customization.
+> A bind mount as shown for VoidAuth `/app/config` is recommended to enable logo and email template customization.
 
 After creating/updating the compose.yml file and filling in the required environment variables, run `docker compose up -d` to get started.
 
@@ -105,6 +105,10 @@ After creating/updating the compose.yml file and filling in the required environ
 
 
 Please see the [Getting Started](https://voidauth.app/#/Getting-Started) page for details and configuration options.
+
+## Why VoidAuth?
+
+VoidAuth exists because I was unable to find what I am looking for in existing SSO solutions. Comparison is the thief of joy, but I do hope to build VoidAuth into an SSO Provider that covers my own use cases and is useful to others in the community. VoidAuth will always be free and open-source.
 
 ## Support
 
@@ -116,7 +120,7 @@ Please read the CONTRIBUTING.md
 
 ## Disclaimer
 
-I am not a security researcher or expert, just a developer unsatisfied with the difficult onboarding process of existing self-hosted auth solutions. Use at your own risk.
+I am not a security researcher or expert, use at your own risk.
 
 ## Credits
 
@@ -128,6 +132,6 @@ This project would not be possible without the incredible work of others includi
 
 [Angular](https://angular.dev) Frontend web framework used by VoidAuth
 
-[authelia](https://www.authelia.com/) An amazing project and heavy inspiration, VoidAuth aims to be less feature-complete but more user friendly
+[authelia](https://www.authelia.com/) An amazing project and heavy inspiration, VoidAuth aims to be more user/admin friendly
 
 [lldap](https://github.com/lldap/lldap) Inspiration for user management, a very good self-hosted ldap service
