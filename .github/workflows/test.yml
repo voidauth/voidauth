@@ -18,6 +18,12 @@ jobs:
       - name: Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Login Dockerhub
+        uses: docker/login-action@v3
+        with:
+          username: voidauth
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build Push
         uses: docker/build-push-action@v6
         id: docker-build
