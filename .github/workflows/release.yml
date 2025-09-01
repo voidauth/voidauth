@@ -80,7 +80,7 @@ jobs:
         uses: peter-evans/dockerhub-description@v4
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          username: notquitenothing
+          username: voidauth
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.DOCKER_IMAGE_NAME }}
           short-description: ${{ github.event.repository.description }}
