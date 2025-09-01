@@ -49,5 +49,7 @@ export const routes: Routes = [
 
   { path: 'admin/passwordresets', loadComponent: () => import('./pages/admin/password-resets/password-resets.component').then(m => m.PasswordResetsComponent), canActivate: [isAdminGuard] },
 
+  { path: 'admin/emails', loadComponent: () => import('./pages/admin/emails/emails.component').then(m => m.EmailsComponent), canActivate: [isAdminGuard] },
+
   { path: '**', redirectTo: '', pathMatch: 'full' },
 ]

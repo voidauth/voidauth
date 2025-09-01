@@ -34,6 +34,8 @@ import type { PasswordReset } from '@shared/db/PasswordReset'
 import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
 import type { EmailLog } from '@shared/db/EmailLog'
 import appConfig from '../util/config'
+import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
+import DOMPurify from 'isomorphic-dompurify'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -916,3 +918,74 @@ adminRouter.post('/send_passwordreset/:id',
     res.send()
   },
 )
+
+type EmailsRequest = {
+  page: number
+  pageSize: number
+  sortActive?: 'createdAt' | 'to' | 'type'
+  sortDirection?: 'asc' | 'desc' | ''
+}
+adminRouter.get('/emails',
+  ...validate<EmailsRequest>({
+    page: {
+      isInt: {
+        options: {
+          min: 0,
+        },
+      },
+      toInt: true,
+    },
+    pageSize: {
+      isInt: {
+        options: {
+          min: 1,
+        },
+      },
+      toInt: true,
+    },
+    sortActive: {
+      optional: true,
+      ...stringValidation,
+      isIn: {
+        options: [['createdAt', 'to', 'type']],
+      },
+    },
+    sortDirection: {
+      optional: true,
+      ...stringValidation,
+      isIn: {
+        options: [['asc', 'desc', '']],
+      },
+    },
+  }),
+  async (req, res) => {
+    const { page, pageSize, sortActive, sortDirection } = validatorData<EmailsRequest>(req)
+
+    const emailsModel = db().table<EmailLog>('email_log')
+
+    const count = +((await emailsModel.clone().count({ count: '*' }).first())?.count ?? 0)
+
+    switch (sortActive) {
+      case 'to':
+        emailsModel.orderBy(sortActive, sortDirection || 'desc')
+        break
+      case 'type':
+        emailsModel.orderBy(sortActive, sortDirection || 'desc')
+        break
+      case 'createdAt':
+      default:
+        emailsModel.orderBy('createdAt', sortDirection || 'desc')
+    }
+
+    const emails = (await emailsModel.clone().select().offset(page * pageSize).limit(pageSize)).map((e) => {
+      return {
+        ...e,
+        body: e.body ? DOMPurify.sanitize(e.body) : e.body,
+        subject: DOMPurify.sanitize(e.subject),
+      }
+    })
+
+    const result: EmailsResponse = { count, emails }
+
+    res.send(result)
+  })
