@@ -12,22 +12,22 @@
         <mat-divider></mat-divider>
         @if (isAdmin) {
           <div mat-subheader>Admin</div>
+          <a mat-list-item routerLink="/admin/clients"><mat-icon fontSet="material-icons-round" matListItemIcon>security</mat-icon>OIDC</a>
+          <a mat-list-item routerLink="/admin/domains"
+            ><mat-icon fontSet="material-icons-round" matListItemIcon>domain</mat-icon>ProxyAuth</a
+          >
           <a mat-list-item routerLink="/admin/users"
             ><mat-icon fontSet="material-icons-round" matListItemIcon>supervised_user_circle</mat-icon>Users</a
           >
+          <a mat-list-item routerLink="/admin/groups"><mat-icon fontSet="material-icons-round" matListItemIcon>group</mat-icon>Groups</a>
           <a mat-list-item routerLink="/admin/invitations"
             ><mat-icon fontSet="material-icons-round" matListItemIcon>mail</mat-icon>Invitations</a
           >
           <a mat-list-item routerLink="/admin/passwordresets"
             ><mat-icon fontSet="material-icons-round" matListItemIcon>lock_reset</mat-icon>Password Resets</a
           >
-          <a mat-list-item routerLink="/admin/groups"><mat-icon fontSet="material-icons-round" matListItemIcon>group</mat-icon>Groups</a>
           <a mat-list-item routerLink="/admin/emails"
             ><mat-icon fontSet="material-icons-round" matListItemIcon>outbox</mat-icon>Sent Mail</a
-          >
-          <a mat-list-item routerLink="/admin/clients"><mat-icon fontSet="material-icons-round" matListItemIcon>security</mat-icon>OIDC</a>
-          <a mat-list-item routerLink="/admin/domains"
-            ><mat-icon fontSet="material-icons-round" matListItemIcon>domain</mat-icon>ProxyAuth</a
           >
           <mat-divider></mat-divider>
         }

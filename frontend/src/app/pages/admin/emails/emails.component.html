@@ -18,11 +18,8 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
-        <a mat-icon-button matTooltip="Open">
+        <a mat-icon-button matTooltip="Preview" (click)="previewEmail(row)">
           <mat-icon>open_in_new</mat-icon>
-        </a>
-        <a mat-icon-button matTooltip="Resend">
-          <mat-icon>send</mat-icon>
         </a>
         <a mat-icon-button matTooltip="View User" [disabled]="!row.toUser" target="_blank" [routerLink]="['/admin', 'user', row.toUser]">
           <mat-icon>account_circle</mat-icon>

@@ -7,9 +7,11 @@ import type { EmailLog } from '@shared/db/EmailLog'
 import { AdminService } from '../../../services/admin.service'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
-import { MatDialog } from '@angular/material/dialog'
+import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog'
 import { MaterialModule } from '../../../material-module'
 import { RouterLink } from '@angular/router'
+import { DomSanitizer, type SafeHtml } from '@angular/platform-browser'
+import DOMPurify from 'isomorphic-dompurify'
 
 @Component({
   selector: 'app-emails',
@@ -80,6 +82,64 @@ export class EmailsComponent {
       this.paginator().length = data.count
     } catch (_e) {
       this.snackbarService.error('Could not get Sent Mail.')
+    }
+  }
+
+  previewEmail(email: EmailLog) {
+    this.dialog.open(DialogExampleComponent, {
+      data: email,
+      width: '600px',
+      height: 'calc(100% - 16px)',
+    })
+  }
+}
+
+@Component({
+  selector: 'app-dialog-example',
+  imports: [
+    MaterialModule,
+  ],
+  template: `
+    <h2 mat-dialog-title><b>{{dialogData.subject}}</b></h2>
+    <div class="content">
+      <p>To: {{dialogData.to}}</p>
+      <div style="flex-grow: 1;">
+        <iframe [srcdoc]="body"></iframe>
+      </div>
+    </div>
+    <mat-dialog-actions>
+      <button mat-button [mat-dialog-close]="true">Close</button>
+    </mat-dialog-actions>
+  `,
+  styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      padding: 0px 16px;
+    }
+
+    iframe {
+      width: 100%;
+      height: calc(100% - 6px);
+      border-radius: 16px;
+      border: 0px;
+    }
+  `,
+})
+export class DialogExampleComponent {
+  dialogData = inject<EmailLog>(MAT_DIALOG_DATA)
+  sanitizer = inject(DomSanitizer)
+  body?: SafeHtml
+  constructor() {
+    if (this.dialogData.body) {
+      this.body = this.sanitizer.bypassSecurityTrustHtml(DOMPurify.sanitize(this.dialogData.body))
     }
   }
 }
