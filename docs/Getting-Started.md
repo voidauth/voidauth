@@ -9,10 +9,12 @@ services:
   # ---------------------------------
   # Your reverse-proxy service here:
   # caddy, traefik, nginx, etc.
+  # https:// setup is REQUIRED
   # ---------------------------------
 
   voidauth: 
     image: voidauth/voidauth:latest
+    restart: unless-stopped
     volumes:
       - /your/config/directory:/app/config
     # you may not need this external port mapping, map VoidAuth through your reverse-proxy
@@ -29,6 +31,7 @@ services:
 
   voidauth-db:
     image: postgres:17
+    restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: # required
     volumes:
@@ -38,17 +41,20 @@ volumes:
   db:
 ```
 
+> [!TIP]
+> A bind mount as shown for VoidAuth `/app/config` is recommended to enable logo and email template customization.
+
 > [!WARNING]
 > VoidAuth does **NOT** provide https termination itself, but it is absolutely **required**. This likely means you will need a reverse-proxy with https support in front of VoidAuth, as well as your other services.
 
 > [!WARNING]
-> The **APP_URL** environment variable **must** be set to the external url of the VoidAuth service for the OIDC Provider to work properly, ex. `APP_URL: https://auth.example.com`
+> The **APP_URL** environment variable **must** be set to the external url of the VoidAuth service for the OIDC Provider to work properly, ex. `APP_URL: https://auth.example.com`. Subdomain routing is **NOT** supported.
 
 > [!CAUTION]
-> During the first start of the app, the **initial admin username and password** will be shown in the logs. They will never be shown again. You will need to note them down and use them to create a user for yourself, which you should add to the **auth_admins** group. Afterwards you may delete the **auth_admin** user.
+> During the first start of the app, the **initial admin username and password** will be shown in the logs. They will never be shown again. You will need to note them down and either change the username and password or create a user for yourself, which you should add to the **auth_admins** group. Afterwards you may delete the **auth_admin** user.
 
 > [!IMPORTANT]
-> Any user in the **auth_admins** group will be an administrator in VoidAuth and have access to the admin pages. Do not give this security group to any user you do not want to have full privileges in VoidAuth, you should make a different group for administrators of protected domains/apps.
+> Any user in the **auth_admins** group will be an administrator in VoidAuth and have access to the admin pages. Do not give this security group to any user you do not want to have full privileges in VoidAuth! You should make a different group for administrators of protected domains/apps.
 
 ## Configuration
 ### Environment Variables
@@ -57,7 +63,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 #### App Settings
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| APP_URL | | URL VoidAuth will be served on. Must start with`https://`  Example: `https://auth.example.com` | 🔴 | |
+| APP_URL | | URL VoidAuth will be served on. Must start with`https://`, subdomain routing is **NOT** supported. ex. `https://auth.example.com` | 🔴 | |
 | DEFAULT_REDIRECT | ${APP_URL} | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
 | SIGNUP | false | Whether the app allows new users to self-register themselves without invitation. | | |
 | SIGNUP_REQUIRES_APPROVAL | true | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |

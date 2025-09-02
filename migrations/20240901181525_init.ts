@@ -9,7 +9,7 @@ export async function up(knex: Knex): Promise<void> {
       table.timestamp('expiresAt', { useTz: true }).notNullable()
 
       // eslint-disable-next-line @stylistic/quotes
-      table.check("type in ('oidc_jwk', 'cookie_key')")
+      table.check("type in ('oidc_jwk', 'cookie_key')", [], 'key_type_check')
     })
     .createTable('flag', (table) => {
       table.text('name').primary().notNullable()

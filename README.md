@@ -44,17 +44,9 @@ Key Features:
 - 📧 Secure Password Reset with Email Verification
 - 🔒 Encryption-At-Rest
 
-## User Profile Settings
-
-The default page for users logging into VoidAuth, on the Profile Settings page a user can manage their profile, password, email, and passkey settings.
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/091a0122-75d7-44d0-9c97-e395c945cf4f.png" title="User Settings" alt="User Settings" width="240">
-</p>
-
 ## Admin Panel
 
-Administrators can access the Admin Panel in the sidebar menu, where they can manage the authentication settings of the VoidAuth instance.
+Administrators can access the Admin Panel in the sidebar menu, where they can manage users, groups, and settings of the VoidAuth instance.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/admin_panel.png" title="Admin Panel" alt="An Admin Page with the Admin Side Panel Open" width="600">
@@ -68,10 +60,12 @@ services:
   # ---------------------------------
   # Your reverse-proxy service here:
   # caddy, traefik, nginx, etc.
+  # https:// setup is REQUIRED
   # ---------------------------------
 
   voidauth: 
     image: voidauth/voidauth:latest
+    restart: unless-stopped
     volumes:
       - /your/config/directory:/app/config
     environment:
@@ -85,6 +79,7 @@ services:
 
   voidauth-db:
     image: postgres:17
+    restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: # required
     volumes:
@@ -94,21 +89,12 @@ volumes:
   db:
 ```
 
-> [!TIP]
-> A bind mount as shown for VoidAuth `/app/config` is recommended to enable logo and email template customization.
-
-After creating/updating the compose.yml file and filling in the required environment variables, run `docker compose up -d` to get started.
+After creating/updating the compose.yml file and filling in the required environment variables, run `docker compose up -d` and visit your `APP_URL` to get started.
 
 > [!IMPORTANT]
 > After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`
 
-
-
-Please see the [Getting Started](https://voidauth.app/#/Getting-Started) page for details and configuration options.
-
-## Why VoidAuth?
-
-VoidAuth exists because I was unable to find what I am looking for in existing SSO solutions. Comparison is the thief of joy, but I do hope to build VoidAuth into an SSO Provider that covers my own use cases and is useful to others in the community. VoidAuth will always be free and open-source.
+Please see the [Getting Started](https://voidauth.app/#/Getting-Started) page for setup details and configuration options.
 
 ## Support
 
