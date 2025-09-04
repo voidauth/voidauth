@@ -1,8 +1,27 @@
 @if (data.header) {
   <h2 mat-dialog-title>{{ data.header }}</h2>
 }
-<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+<mat-dialog-content>
+  {{ data.message }}
+  @if (data.requiredText) {
+    <div></div>
+    <p>
+      To confirm, type <b>{{ data.requiredText }}</b> in the box below.
+    </p>
+    <mat-form-field style="width: 100%">
+      <input matInput type="text" [formControl]="requiredTextControl" />
+    </mat-form-field>
+  }
+</mat-dialog-content>
+
 <mat-dialog-actions align="end">
   <button matButton mat-dialog-close>Cancel</button>
-  <button matButton [mat-dialog-close]="true" cdkFocusInitial>Confirm</button>
+  <button
+    matButton
+    [mat-dialog-close]="true"
+    cdkFocusInitial
+    [disabled]="data.requiredText && data.requiredText !== requiredTextControl.value"
+  >
+    Confirm
+  </button>
 </mat-dialog-actions>

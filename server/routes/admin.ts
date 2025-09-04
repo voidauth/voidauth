@@ -36,6 +36,7 @@ import type { EmailLog } from '@shared/db/EmailLog'
 import appConfig from '../util/config'
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import DOMPurify from 'isomorphic-dompurify'
+import type { OIDCPayload } from '@shared/db/OIDCPayload'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -446,6 +447,7 @@ adminRouter.delete('/user/:id',
     }
 
     const count = await db().table<User>('user').delete().where({ id })
+    await db().table<OIDCPayload>('oidc_payloads').delete().where({ accountId: id })
 
     if (!count) {
       res.sendStatus(404)

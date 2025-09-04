@@ -128,6 +128,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (this.user.hasPassword) {
         this.passwordForm.controls.oldPassword.addValidators(Validators.required)
       }
+    } catch (_e) {
+      location.reload()
     } finally {
       this.spinnerService.hide()
     }
@@ -262,6 +264,34 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.snackbarService.message('Removed password.')
       } catch (_e) {
         this.snackbarService.error('Could not remove password.')
+      } finally {
+        await this.loadUser()
+        this.spinnerService.hide()
+      }
+    })
+  }
+
+  deleteUser() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete your account?`,
+        header: 'DANGER',
+        requiredText: this.user?.username,
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.message('Account deletion cancelled.')
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.userService.deleteUser()
+        this.snackbarService.message('Deleted account.')
+      } catch (_e) {
+        this.snackbarService.error('Could not delete account.')
       } finally {
         await this.loadUser()
         this.spinnerService.hide()

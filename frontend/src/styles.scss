@@ -50,6 +50,14 @@ body.light {
   ));
 }
 
+.danger-button {
+  color-scheme: light; // hack to make button seem scary in dark mode
+  @include mat.button-overrides((
+    filled-container-color: var(--mat-sys-on-error-container),
+    filled-label-text-color: var(--mat-sys-error-container),
+  ));
+}
+
 .container {
   display: flex;
   flex-direction: column;

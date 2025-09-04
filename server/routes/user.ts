@@ -12,6 +12,7 @@ import { checkLoggedIn, emailValidation, nameValidation, newPasswordValidation, 
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
 import { deleteUserPasskeys } from '../db/passkey'
+import type { OIDCPayload } from '@shared/db/OIDCPayload'
 
 export const userRouter = Router()
 
@@ -100,5 +101,13 @@ userRouter.delete('/password', async (req, res) => {
   }
 
   await db().table<User>('user').update({ passwordHash: null }).where({ id: user.id })
+  res.send()
+})
+
+userRouter.delete('/user', async (req, res) => {
+  const user = req.user
+
+  await db().table<User>('user').delete().where({ id: user.id })
+  await db().table<OIDCPayload>('oidc_payloads').delete().where({ accountId: user.id })
   res.send()
 })
