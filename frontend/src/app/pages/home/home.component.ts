@@ -113,7 +113,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   async loadUser() {
     try {
       this.spinnerService.show()
-      this.user = await this.userService.getMyUser(true)
+
+      try {
+        this.user = await this.userService.getMyUser(true)
+      } catch (_e) {
+        // If user cannot be loaded, refresh page
+        location.reload()
+        return
+      }
 
       this.isPasskeySession = this.userService.passkeySession(this.user)
 
@@ -128,8 +135,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (this.user.hasPassword) {
         this.passwordForm.controls.oldPassword.addValidators(Validators.required)
       }
-    } catch (_e) {
-      location.reload()
     } finally {
       this.spinnerService.hide()
     }
