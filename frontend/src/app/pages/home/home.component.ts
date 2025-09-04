@@ -113,7 +113,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   async loadUser() {
     try {
       this.spinnerService.show()
-      this.user = await this.userService.getMyUser(true)
+
+      try {
+        this.user = await this.userService.getMyUser(true)
+      } catch (_e) {
+        // If user cannot be loaded, refresh page
+        location.reload()
+        return
+      }
 
       this.isPasskeySession = this.userService.passkeySession(this.user)
 
@@ -262,6 +269,34 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.snackbarService.message('Removed password.')
       } catch (_e) {
         this.snackbarService.error('Could not remove password.')
+      } finally {
+        await this.loadUser()
+        this.spinnerService.hide()
+      }
+    })
+  }
+
+  deleteUser() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete your account?`,
+        header: 'DANGER',
+        requiredText: this.user?.username,
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.message('Account deletion cancelled.')
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.userService.deleteUser()
+        this.snackbarService.message('Deleted account.')
+      } catch (_e) {
+        this.snackbarService.error('Could not delete account.')
       } finally {
         await this.loadUser()
         this.spinnerService.hide()

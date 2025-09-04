@@ -50,4 +50,8 @@ export class UserService {
   async removePassword() {
     return firstValueFrom(this.http.delete<null>('/api/user/password'))
   }
+
+  async deleteUser() {
+    return firstValueFrom(this.http.delete<null>('/api/user/user'))
+  }
 }
