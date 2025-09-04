@@ -15,4 +15,5 @@ export type UserDetails = UserWithoutPassword & {
 // UserDetails and info about current session
 export type CurrentUserDetails = UserDetails & {
   amr?: string[]
+  hasPasskeys: boolean
 }

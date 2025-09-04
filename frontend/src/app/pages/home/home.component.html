@@ -20,9 +20,10 @@
   <mat-divider></mat-divider>
 }
 
+<!-- profile card -->
 <mat-card class="form-card">
   <mat-card-header>
-    <mat-card-title> Change Profile </mat-card-title>
+    <mat-card-title> Profile </mat-card-title>
   </mat-card-header>
 
   <mat-card-content>
@@ -46,17 +47,9 @@
         </button>
       </mat-card-actions>
     </form>
-  </mat-card-content>
-</mat-card>
 
-<mat-divider></mat-divider>
+    <mat-divider class="disabled"></mat-divider>
 
-<!-- email change form -->
-<mat-card class="form-card">
-  <mat-card-header>
-    <mat-card-title> Change Email </mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
     <form [formGroup]="emailForm" (ngSubmit)="updateEmail()">
       <mat-form-field>
         <mat-label>Email</mat-label>
@@ -75,10 +68,10 @@
 
 <mat-divider></mat-divider>
 
-<!-- password change form -->
+<!-- security card -->
 <mat-card class="form-card">
   <mat-card-header>
-    <mat-card-title> {{ user?.hasPassword ? "Change " : "Set " }} Password </mat-card-title>
+    <mat-card-title> Security </mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <form [formGroup]="passwordForm">
@@ -97,8 +90,54 @@
           (click)="updatePassword()"
           [disabled]="!passwordForm.enabled || !passwordForm.valid || !passwordForm.dirty"
         >
-          Update Password
+          {{ user?.hasPassword ? "Change " : "Set " }} Password
         </button>
+
+        <app-text-divider text="or"></app-text-divider>
+
+        <button mat-flat-button type="button" (click)="registerPasskey(false)" [disabled]="!passkeySupport?.enabled">
+          Register Passkey
+          <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
+        </button>
+      </mat-card-actions>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<mat-divider></mat-divider>
+
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title> Account </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form>
+      <mat-card-actions>
+        <span
+          [matTooltip]="!user?.hasPassword ? 'You have no password to remove' : !user?.hasPasskeys ? 'You do not have any passkeys' : null"
+          ><button
+            mat-flat-button
+            type="button"
+            class="error-button"
+            (click)="removePassword()"
+            [disabled]="!user?.hasPassword || !user?.hasPasskeys"
+          >
+            Remove Password
+          </button></span
+        >
+
+        <span
+          [matTooltip]="!user?.hasPasskeys ? 'You have no passkeys to remove' : !user?.hasPassword ? 'You do not have a password' : null"
+          ><button
+            mat-flat-button
+            type="button"
+            class="error-button"
+            (click)="removeAllPasskeys()"
+            [disabled]="!user?.hasPasskeys || !user?.hasPassword"
+          >
+            Remove All Passkeys
+          </button></span
+        >
       </mat-card-actions>
     </form>
   </mat-card-content>
@@ -107,5 +146,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">Contact Us</a>
+  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">Contact</a>
 }

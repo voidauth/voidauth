@@ -11,6 +11,7 @@ import { als } from '../util/als'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import { passkeyRouter } from './passkey'
+import { getUserPasskeys } from '../db/passkey'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -80,9 +81,11 @@ router.use(async (req: Request, res, next) => {
     const user = await getUserById(session.accountId)
 
     if (user && !isUnapproved(user) && !isUnverified(user)) {
+      const hasPasskeys = !!(await getUserPasskeys(user.id)).length
       req.user = {
         ...user,
         amr: session.amr,
+        hasPasskeys,
       }
     }
   } catch (_e) {

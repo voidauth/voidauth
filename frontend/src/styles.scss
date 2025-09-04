@@ -43,6 +43,13 @@ body.light {
   ));
 }
 
+.error-button {
+  @include mat.button-overrides((
+    filled-container-color: var(--mat-sys-on-error-container),
+    filled-label-text-color: var(--mat-sys-error-container),
+  ));
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -135,6 +142,11 @@ mat-divider {
   height: 3px;
   border-radius: 2px;
   align-self: center;
+}
+
+mat-divider.disabled {
+  background-color: var(--mat-button-filled-disabled-container-color, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent));
+  border: 0px;
 }
 
 a {
