@@ -75,7 +75,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | APP_TITLE | VoidAuth | Title that will show on the web interface, use your own brand/app/title. | | ✅ |
 | APP_PORT | 3000 | The port that app will listen on. | | |
 | APP_COLOR | #906bc7 | Theme color, rgb format; ex. #xxyyzz | | ✅ |
-| CONTACT_EMAIL | | The email address used for 'Contact Us' links, which are shown on most end-user pages if this is set. | | |
+| CONTACT_EMAIL | | The email address used for 'Contact' links, which are shown on most end-user pages if this is set. | | |
 
 #### DB Settings
 | Name | Default | Description | Required | Recommended |

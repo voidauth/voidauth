@@ -14,6 +14,10 @@ export async function getUserPasskeys(userId: string) {
   })
 }
 
+export async function deleteUserPasskeys(userId: string) {
+  return await db().delete().table<Passkey>('passkey').where({ userId })
+}
+
 export async function getPasskey(id: string) {
   return (await db().select().table<Passkey>('passkey').where({ id })).map((p) => {
     return {

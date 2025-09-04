@@ -129,7 +129,7 @@ export async function createPasskeyRegistrationOptions(uniqueId: string, usernam
     attestationType: 'none',
     // Prevent users from re-registering existing authenticators
     excludeCredentials: excludeCredentials,
-    preferredAuthenticatorType: 'localDevice',
+    // preferredAuthenticatorType: 'localDevice',
     // See "Guiding use of authenticators via authenticatorSelection" below
     authenticatorSelection: {
       // Defaults

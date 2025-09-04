@@ -11,8 +11,3 @@ mat-divider {
 p.disabled {
   color: var(--mat-button-filled-disabled-container-color, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent));
 }
-
-mat-divider.disabled {
-  background-color: var(--mat-button-filled-disabled-container-color, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent));
-  border: 0px;
-}

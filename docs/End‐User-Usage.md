@@ -15,7 +15,7 @@ If the **SIGNUP** environment variable is set, there will be an option on the [L
 </p>
 
 ## Accept Invitation
-Shown if a user visits an active invitation link, this page has the same fields as the [Sign Up](#sign-up) form but with any fields already filled in by the admin populated and disabled.
+Shown if a user visits an active invitation link, this page has the same fields as the [Sign Up](#sign-up) form but with any fields already filled in by the admin pre-populated.
 
 ## Forgot Password
 Shown when the "Forgot Password" button on the login page is clicked, here a user can enter their username or email and receive a [Reset Password](#reset-password) link.
@@ -26,7 +26,7 @@ Shown when the "Forgot Password" button on the login page is clicked, here a use
 ## Reset Password
 Show when user follows a password reset link either from email or sent by an admin.
 <p align=center>
-<img src="/public/screenshots/password_reset.png" width="375" />
+<img src="/public/screenshots/reset_password.png" width="375" />
 </p>
 
 ## Profile Settings
@@ -34,5 +34,3 @@ The default page when a user navigates directly to VoidAuth, here a user can cha
 <p align=center>
 <img src="/public/screenshots/091a0122-75d7-44d0-9c97-e395c945cf4f.png" width="375" />
 </p>
-
-The passkey options will only show if a user's session was not started with a passkey and they have not created a passkey with the current session. When a user login directly to VoidAuth is complete with a method other than a passkey, it will attempt to automatically add a passkey.

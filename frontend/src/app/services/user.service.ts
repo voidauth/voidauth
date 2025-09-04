@@ -15,8 +15,8 @@ export class UserService {
 
   private me?: Promise<CurrentUserDetails>
 
-  async getMyUser() {
-    if (!this.me) {
+  async getMyUser(disableCache: boolean = false) {
+    if (!this.me || disableCache) {
       this.me = firstValueFrom(this.http.get<CurrentUserDetails>('/api/user/me'))
     }
 
@@ -41,5 +41,13 @@ export class UserService {
 
   async updatePassword(passwordUpdate: UpdatePassword) {
     return firstValueFrom(this.http.patch<null>('/api/user/password', passwordUpdate))
+  }
+
+  async removeAllPasskeys() {
+    return firstValueFrom(this.http.delete<null>('/api/user/passkeys'))
+  }
+
+  async removePassword() {
+    return firstValueFrom(this.http.delete<null>('/api/user/password'))
   }
 }

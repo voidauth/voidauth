@@ -11,6 +11,7 @@ import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 import { checkLoggedIn, emailValidation, nameValidation, newPasswordValidation, stringValidation, unlessNull } from '../util/validators'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
+import { deleteUserPasskeys } from '../db/passkey'
 
 export const userRouter = Router()
 
@@ -77,3 +78,27 @@ userRouter.patch('/password',
     res.send()
   },
 )
+
+userRouter.delete('/passkeys', async (req, res) => {
+  const user = req.user
+
+  if (!user.hasPassword) {
+    res.sendStatus(400)
+    return
+  }
+
+  await deleteUserPasskeys(user.id)
+  res.send()
+})
+
+userRouter.delete('/password', async (req, res) => {
+  const user = req.user
+
+  if (!user.hasPasskeys) {
+    res.sendStatus(400)
+    return
+  }
+
+  await db().table<User>('user').update({ passwordHash: null }).where({ id: user.id })
+  res.send()
+})

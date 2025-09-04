@@ -12,6 +12,9 @@ import { PasskeyService, type PasskeySupport } from '../../services/passkey.serv
 import { startRegistration, WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
 import { ActivatedRoute, Router } from '@angular/router'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
+import { MatDialog } from '@angular/material/dialog'
+import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 
 @Component({
   selector: 'app-home',
@@ -20,6 +23,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
     MaterialModule,
     ValidationErrorPipe,
     PasswordSetComponent,
+    TextDividerComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -76,6 +80,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   passkeyService = inject(PasskeyService)
+  private dialog = inject(MatDialog)
 
   async ngOnInit() {
     await this.loadUser()
@@ -108,7 +113,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   async loadUser() {
     try {
       this.spinnerService.show()
-      this.user = await this.userService.getMyUser()
+      this.user = await this.userService.getMyUser(true)
 
       this.isPasskeySession = this.userService.passkeySession(this.user)
 
@@ -201,12 +206,66 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
           this.snackbarService.error('Passkey already registered.')
         } else {
-          this.snackbarService.error('Could not register passkey.')
+          this.snackbarService.error('Could not register Passkey.')
         }
       }
       console.error(error)
     } finally {
       this.spinnerService.hide()
     }
+  }
+
+  removeAllPasskeys() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete all of your account Passkeys? Previously enabled services like FaceID, Windows Hello, TouchID, etc. will stop working.`,
+        header: 'Delete',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.message('Passkey removal cancelled.')
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.userService.removeAllPasskeys()
+        this.snackbarService.message('Removed all Passkeys.')
+      } catch (_e) {
+        this.snackbarService.error('Could not remove all Passkeys.')
+      } finally {
+        await this.loadUser()
+        this.spinnerService.hide()
+      }
+    })
+  }
+
+  removePassword() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. unless you set a password again.`,
+        header: 'Remove',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        this.snackbarService.message('Password removal cancelled.')
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.userService.removePassword()
+        this.snackbarService.message('Removed password.')
+      } catch (_e) {
+        this.snackbarService.error('Could not remove password.')
+      } finally {
+        await this.loadUser()
+        this.spinnerService.hide()
+      }
+    })
   }
 }
