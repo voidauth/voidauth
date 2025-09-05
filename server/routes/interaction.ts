@@ -34,6 +34,7 @@ import { generateAuthenticationOptions,
   type RegistrationResponseJSON } from '@simplewebauthn/server'
 import { deleteAuthenticationOptions, getAuthenticationOptions,
   getPasskey,
+  getUserPasskeys,
   saveAuthenticationOptions,
   updatePasskeyCounter } from '../db/passkey'
 import { passkeyRegistrationValidator,
@@ -41,8 +42,8 @@ import { passkeyRegistrationValidator,
   passkeyRpOrigin,
   createPasskeyRegistrationOptions,
   getRegistrationInfo,
-  createPasskey } from './passkey'
-import type { UserDetails } from '@shared/api-response/UserDetails'
+  createPasskey } from '../util/passkey'
+import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
 import { getEmailVerification } from '../db/emailVerification'
 
 const registerUserValidator = {
@@ -237,7 +238,8 @@ router.post('/login',
     }
 
     // check if email verification or approval needed, if not log in
-    const redir = await userNeedsRedirect(user) || {
+    const redir: Redirect = await userNeedsRedirect(user) || {
+      success: true,
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -382,7 +384,8 @@ router.post('/passkey/end',
     }
 
     // check if email verification needed, if not log in
-    const redir = await userNeedsRedirect(user) || {
+    const redir: Redirect = await userNeedsRedirect(user) || {
+      success: true,
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -522,6 +525,7 @@ router.post('/register',
 
     // See where we need to redirect the user to, depending on config
     const redirect: Redirect = loginRedirect || {
+      success: true,
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -674,6 +678,7 @@ router.post('/register/passkey/end',
 
     // See where we need to redirect the user to, depending on config
     const redirect: Redirect = loginRedirect || {
+      success: true,
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: createdUser.id,
@@ -684,6 +689,93 @@ router.post('/register/passkey/end',
     }
 
     res.send(redirect)
+  },
+)
+
+router.post('/passkey/registration/start',
+  async (req, res) => {
+    // user could actually be missing here since we are not checking with middleware before this
+    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+
+    if (!user) {
+      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
+      if (accountId) {
+        user = await getUserById(accountId)
+      }
+    }
+
+    if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    const userPasskeys = await getUserPasskeys(user.id)
+
+    const options = await createPasskeyRegistrationOptions(user.id, user.username, userPasskeys)
+
+    res.send(options)
+  },
+)
+
+router.post('/passkey/registration/end',
+  ...validate<RegistrationResponseJSON>(passkeyRegistrationValidator),
+  async (req, res) => {
+    const body = validatorData<RegistrationResponseJSON>(req)
+
+    // Retrieve the logged-in user
+    // user could actually be missing here since we are not checking with middleware before this
+    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+
+    if (!user) {
+      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
+      if (accountId) {
+        user = await getUserById(accountId)
+      }
+    }
+
+    if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
+
+    const { verified, registrationInfo } = verification
+    if (!verified || !registrationInfo) {
+      res.sendStatus(400)
+      return
+    }
+
+    await createPasskey(user.id, registrationInfo, currentOptions)
+
+    // Try to add webauthn to session amr
+    try {
+      const ctx = provider.createContext(req, res)
+      const session = await provider.Session.get(ctx)
+      const amr = session.amr ?? []
+      if (!amr.includes('webauthn')) {
+        amr.push('webauthn')
+      }
+      session.amr = amr
+      await session.save(TTLs.SESSION)
+    } catch (e) {
+      console.error(e)
+    }
+
+    // Try to add webauthn to interaction amr
+    try {
+      const interaction = await getInteractionDetails(req, res)
+      if (interaction?.result?.login?.accountId && !interaction.result.login.amr?.includes('webauthn')) {
+        const amr = interaction.result.login.amr ?? []
+        amr.push('webauthn')
+        interaction.result.login.amr = amr
+        await interaction.save(TTLs.INTERACTION)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+
+    res.send()
   },
 )
 
@@ -698,6 +790,7 @@ router.post('/verify_email',
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       const redir: Redirect = {
+        success: false,
         location: oidcLoginPath(appConfig.APP_URL + '/api/cb', 'verify_email', userId, challenge),
       }
       res.send(redir)
@@ -739,6 +832,7 @@ router.post('/verify_email',
     // If a uid was found, finish the interaction.
     // Otherwise redirect to /login to begin a new interaction flow
     const redir: Redirect = {
+      success: true,
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
@@ -814,6 +908,7 @@ async function userNeedsRedirect(user: UserDetails) {
 function isUserUnapproved(user: UserDetails) {
   if (isUnapproved(user)) {
     const redirect: Redirect = {
+      success: false,
       location: `/${REDIRECT_PATHS.APPROVAL_REQUIRED}`,
     }
     return redirect
@@ -828,6 +923,7 @@ async function isUserEmailUnverified(user: UserDetails) {
     }
 
     const redirect: Redirect = {
+      success: false,
       location: `/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user.id}?sent=${verificationSent ? 'true' : 'false'}`,
     }
     return redirect

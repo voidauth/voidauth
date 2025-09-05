@@ -1,20 +1,26 @@
 import { HttpClient } from '@angular/common/http'
-import { inject, Injectable } from '@angular/core'
+import { Component, inject, Injectable, type OnInit } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import {
-  browserSupportsWebAuthn, platformAuthenticatorIsAvailable, WebAuthnError, type AuthenticationResponseJSON,
+  browserSupportsWebAuthn, platformAuthenticatorIsAvailable, startRegistration, WebAuthnError, type AuthenticationResponseJSON,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
-  type RegistrationResponseJSON,
 } from '@simplewebauthn/browser'
 import type { Redirect } from '@shared/api-response/Redirect'
 import { UAParser } from 'ua-parser-js'
+import { MatDialog } from '@angular/material/dialog'
+import { SnackbarService } from './snackbar.service'
+import { SpinnerService } from './spinner.service'
+import { MaterialModule } from '../material-module'
 
 @Injectable({
   providedIn: 'root',
 })
 export class PasskeyService {
   private http = inject(HttpClient)
+  private dialog = inject(MatDialog)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
 
   /**
    * Checks if passkey registration or usage has ever been flagged in localStorage.
@@ -23,7 +29,15 @@ export class PasskeyService {
    * @returns if there is passkey usage flagged in localStorage
    */
   localPasskeySeen() {
-    return localStorage.getItem('passkey_seen') === 'true'
+    return !!localStorage.getItem('passkey_seen')
+  }
+
+  /**
+   * Checks if the passkey registration dialog has been skipped before
+   * @returns if the passkey dialog has previously been skipped
+   */
+  localPasskeySkipped() {
+    return !!localStorage.getItem('passkey_skipped')
   }
 
   async getPasskeySupport(): Promise<PasskeySupport> {
@@ -56,31 +70,67 @@ export class PasskeyService {
     }
   }
 
-  async getRegistrationOptions() {
-    return firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>('/api/passkey/registration/start', null))
-  }
-
-  async sendRegistration(reg: RegistrationResponseJSON) {
-    try {
-      const result = await firstValueFrom(this.http.post<null>('/api/passkey/registration/end', reg))
-      localStorage.setItem('passkey_seen', 'true')
-      return result
-    } catch (error) {
-      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-        localStorage.setItem('passkey_seen', 'true')
-      }
-      throw error
-    }
-  }
-
   async getAuthOptions() {
     return firstValueFrom(this.http.post<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey/start', null))
   }
 
   async sendAuth(auth: AuthenticationResponseJSON) {
     const result = firstValueFrom(this.http.post<Redirect>('/api/interaction/passkey/end', auth))
-    localStorage.setItem('passkey_seen', 'true')
+    localStorage.setItem('passkey_seen', Date())
     return result
+  }
+
+  async register() {
+    const options = await firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>(
+      '/api/interaction/passkey/registration/start',
+      null,
+    ))
+    const reg = await startRegistration({ optionsJSON: options })
+    try {
+      const result = await firstValueFrom(this.http.post<null>('/api/interaction/passkey/registration/end', reg))
+      localStorage.setItem('passkey_seen', Date())
+      return result
+    } catch (error) {
+      // Check if error because passkey already exists
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        localStorage.setItem('passkey_seen', Date())
+      }
+      throw error
+    }
+  }
+
+  async dialogRegistration() {
+    return new Promise<void>((resolve, _reject) => {
+      void this.register().then(() => {
+        // If success without dialog, resolve
+        resolve()
+      }).catch((_ee: unknown) => { })
+
+      const dialog = this.dialog.open(PasskeyDialog, { disableClose: true })
+
+      dialog.afterClosed().subscribe((result) => {
+        if (!result) {
+          localStorage.setItem('passkey_skipped', Date())
+          resolve()
+          return
+        }
+
+        this.spinnerService.show()
+
+        void this.register().then(() => {
+          this.snackbarService.message('Passkey added.')
+        }).catch((error: unknown) => {
+          if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+            this.snackbarService.error('Passkey already exists.')
+          } else {
+            this.snackbarService.error('Could not create Passkey.')
+          }
+        }).finally(() => {
+          this.spinnerService.hide()
+          resolve()
+        })
+      })
+    })
   }
 }
 
@@ -88,4 +138,35 @@ export type PasskeySupport = {
   enabled: boolean
   platformName?: string
   platformIcon?: string
+}
+
+@Component({
+  selector: 'app-passkey-dialog',
+  imports: [
+    MaterialModule,
+  ],
+  template: `
+    <h1 mat-dialog-title>{{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}</h1>
+    <mat-dialog-content style="height: 200px; display: flex; justify-content: center; align-items: center;">
+      <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px;" fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button matButton mat-dialog-close>Skip</button>
+      <button mat-flat-button type="button" [mat-dialog-close]="true" cdkFocusInitial>
+        {{ passkeySupport?.platformName ? 'Enable' : "Register" }}
+        <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
+      </button>
+    </mat-dialog-actions>
+  `,
+  styles: `
+    
+  `,
+})
+class PasskeyDialog implements OnInit {
+  private passkeyService = inject(PasskeyService)
+  passkeySupport?: PasskeySupport
+
+  async ngOnInit() {
+    this.passkeySupport = await this.passkeyService.getPasskeySupport()
+  }
 }

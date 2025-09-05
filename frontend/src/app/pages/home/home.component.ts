@@ -9,7 +9,7 @@ import { ConfigService } from '../../services/config.service'
 import { PasswordSetComponent } from '../../components/password-reset/password-set.component'
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
-import { startRegistration, WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
+import { WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
 import { ActivatedRoute, Router } from '@angular/router'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
@@ -87,23 +87,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.passkeySupport = await this.passkeyService.getPasskeySupport()
     this.config = await this.configService.getConfig()
-
-    this.route.queryParamMap.subscribe(async (queryParams) => {
-      if (queryParams.get('action') === 'passkey') {
-        if (!this.isPasskeySession
-          && this.passkeySupport?.enabled
-          && !this.passkeyService.localPasskeySeen()) {
-          // should try to automatically register a passkey
-          await this.registerPasskey(true)
-        }
-        void this.router.navigate([], {
-          queryParams: {
-            action: null,
-          },
-          queryParamsHandling: 'merge',
-        })
-      }
-    })
   }
 
   ngOnDestroy(): void {
@@ -201,20 +184,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  async registerPasskey(auto: boolean) {
+  async registerPasskey() {
     this.spinnerService.show()
     try {
-      const optionsJSON = await this.passkeyService.getRegistrationOptions()
-      const registration = await startRegistration({ optionsJSON, useAutoRegister: auto })
-      await this.passkeyService.sendRegistration(registration)
+      await this.passkeyService.register()
       await this.loadUser()
     } catch (error) {
-      if (!auto) {
-        if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-          this.snackbarService.error('Passkey already registered.')
-        } else {
-          this.snackbarService.error('Could not register Passkey.')
-        }
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        this.snackbarService.error('Passkey already registered.')
+      } else {
+        this.snackbarService.error('Could not register Passkey.')
       }
       console.error(error)
     } finally {

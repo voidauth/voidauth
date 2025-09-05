@@ -15,7 +15,7 @@ import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import type { User } from '@shared/db/User'
 import * as argon2 from 'argon2'
 import { generate } from 'generate-password'
-import { createPasskey, createPasskeyRegistrationOptions, getRegistrationInfo, passkeyRegistrationValidator } from './passkey'
+import { createPasskey, createPasskeyRegistrationOptions, getRegistrationInfo, passkeyRegistrationValidator } from '../util/passkey'
 import { getUserPasskeys } from '../db/passkey'
 import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 

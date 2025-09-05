@@ -1,24 +1,4 @@
 <h1>Settings</h1>
-@if (!isPasskeySession && passkeySupport?.enabled) {
-  <mat-card class="form-card">
-    <mat-card-header>
-      <mat-card-title> Device </mat-card-title>
-    </mat-card-header>
-
-    <mat-card-content>
-      <form>
-        <mat-card-actions>
-          <button mat-flat-button type="button" (click)="registerPasskey(false)">
-            {{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}
-            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
-          </button>
-        </mat-card-actions>
-      </form>
-    </mat-card-content>
-  </mat-card>
-
-  <mat-divider></mat-divider>
-}
 
 <!-- profile card -->
 <mat-card class="form-card">
@@ -95,7 +75,7 @@
 
         <app-text-divider text="or"></app-text-divider>
 
-        <button mat-flat-button type="button" (click)="registerPasskey(false)" [disabled]="!passkeySupport?.enabled">
+        <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
           Register Passkey
           <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
         </button>

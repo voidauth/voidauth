@@ -86,7 +86,7 @@ export class EmailsComponent {
   }
 
   previewEmail(email: EmailLog) {
-    this.dialog.open(DialogExampleComponent, {
+    this.dialog.open(EmailPreviewComponent, {
       data: email,
       width: '600px',
       height: 'calc(100% - 16px)',
@@ -95,7 +95,7 @@ export class EmailsComponent {
 }
 
 @Component({
-  selector: 'app-dialog-example',
+  selector: 'app-email-preview',
   imports: [
     MaterialModule,
   ],
@@ -133,7 +133,7 @@ export class EmailsComponent {
     }
   `,
 })
-export class DialogExampleComponent {
+class EmailPreviewComponent {
   dialogData = inject<EmailLog>(MAT_DIALOG_DATA)
   sanitizer = inject(DomSanitizer)
   body?: SafeHtml

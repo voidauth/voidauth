@@ -10,7 +10,6 @@ import { authRouter } from './auth'
 import { als } from '../util/als'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
-import { passkeyRouter } from './passkey'
 import { getUserPasskeys } from '../db/passkey'
 
 declare global {
@@ -94,7 +93,7 @@ router.use(async (req: Request, res, next) => {
   next()
 })
 
-router.get('/cb', async (req, res) => {
+router.get('/cb', (req, res) => {
   const { error, error_description, iss } = req.query
   if (error) {
     res.status(500).send({
@@ -105,15 +104,7 @@ router.get('/cb', async (req, res) => {
     return
   }
 
-  // Get session info, see if passkey was used to sign in
-  let query = ''
-  const ctx = provider.createContext(req, res)
-  const session = await provider.Session.get(ctx)
-  if (!session.amr?.includes('webauthn')) {
-    query += '?action=passkey'
-  }
-
-  res.redirect(`/${query}`)
+  res.redirect(`/`)
 })
 
 router.use('/public', publicRouter)
@@ -125,8 +116,6 @@ router.use('/interaction', interactionRouter)
 router.use('/user', userRouter)
 
 router.use('/admin', adminRouter)
-
-router.use('/passkey', passkeyRouter)
 
 // API route was not found
 router.use((_req, res) => {
