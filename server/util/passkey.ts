@@ -1,16 +1,12 @@
-import { Router } from 'express'
-import appConfig from '../util/config'
-import { checkLoggedIn, stringValidation } from '../util/validators'
+import appConfig from './config'
+import { stringValidation } from './validators'
 import { generateRegistrationOptions,
   verifyRegistrationResponse,
   type AuthenticatorTransportFuture,
   type RegistrationResponseJSON,
   type VerifiedRegistrationResponse } from '@simplewebauthn/server'
-import { deleteRegistrationOptions, getRegistrationOptions, getUserPasskeys, savePasskey, saveRegistrationOptions } from '../db/passkey'
-import { validate, validatorData } from '../util/validate'
+import { deleteRegistrationOptions, getRegistrationOptions, savePasskey, saveRegistrationOptions } from '../db/passkey'
 import type { Passkey } from '@shared/db/Passkey'
-import { provider } from '../oidc/provider'
-import { TTLs } from '@shared/constants'
 import { commit, transaction } from '../db/db'
 
 const passkeyRpName = appConfig.APP_TITLE
@@ -61,59 +57,6 @@ export const passkeyRegistrationValidator = {
   },
   type: stringValidation,
 } as const
-
-export const passkeyRouter = Router()
-
-// Must be logged in to register a passkey
-passkeyRouter.use(checkLoggedIn)
-
-passkeyRouter.post('/registration/start',
-  async (req, res) => {
-    const user = req.user
-
-    const userPasskeys = await getUserPasskeys(user.id)
-
-    const options = await createPasskeyRegistrationOptions(user.id, user.username, userPasskeys)
-
-    res.send(options)
-  },
-)
-
-passkeyRouter.post('/registration/end',
-  ...validate<RegistrationResponseJSON>(passkeyRegistrationValidator),
-  async (req, res) => {
-    const body = validatorData<RegistrationResponseJSON>(req)
-
-    // Retrieve the logged-in user
-    const user = req.user
-
-    const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
-
-    const { verified, registrationInfo } = verification
-    if (!verified || !registrationInfo) {
-      res.sendStatus(400)
-      return
-    }
-
-    await createPasskey(user.id, registrationInfo, currentOptions)
-
-    // Try to add webauthn to session amr
-    try {
-      const ctx = provider.createContext(req, res)
-      const session = await provider.Session.get(ctx)
-      const amr = session.amr ?? []
-      if (!amr.includes('webauthn')) {
-        amr.push('webauthn')
-      }
-      session.amr = amr
-      await session.save(TTLs.SESSION)
-    } catch (e) {
-      console.error(e)
-    }
-
-    res.send()
-  },
-)
 
 export async function createPasskeyRegistrationOptions(uniqueId: string, username?: string, excludeCredentials?: {
   id: Base64URLString

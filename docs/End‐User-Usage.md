@@ -17,6 +17,13 @@ If the **SIGNUP** environment variable is set, there will be an option on the [L
 ## Accept Invitation
 Shown if a user visits an active invitation link, this page has the same fields as the [Sign Up](#sign-up) form but with any fields already filled in by the admin pre-populated.
 
+## Passkeys
+After a user finishes on the Login or Sign Up pages by using a password, they may be prompted to create a passkey if their device supports them.
+
+<p align=center>
+<img src="/public/screenshots/passkey_dialog.png" width="375" />
+</p>
+
 ## Forgot Password
 Shown when the "Forgot Password" button on the login page is clicked, here a user can enter their username or email and receive a [Reset Password](#reset-password) link.
 <p align=center>
