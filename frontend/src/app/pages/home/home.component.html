@@ -76,8 +76,8 @@
         <app-text-divider text="or"></app-text-divider>
 
         <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
-          {{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}
-          <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+          Register Passkey
+          <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
         </button>
       </mat-card-actions>
     </form>
