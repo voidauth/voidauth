@@ -101,11 +101,6 @@ export class PasskeyService {
 
   async dialogRegistration() {
     return new Promise<void>((resolve, _reject) => {
-      void this.register().then(() => {
-        // If success without dialog, resolve
-        resolve()
-      }).catch((_ee: unknown) => { })
-
       const dialog = this.dialog.open(PasskeyDialog, { disableClose: true })
 
       dialog.afterClosed().subscribe((result) => {
@@ -146,7 +141,7 @@ export type PasskeySupport = {
     MaterialModule,
   ],
   template: `
-    <h1 mat-dialog-title>{{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}</h1>
+    <h1 mat-dialog-title>{{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName + "?" : "Register Passkey?" }}</h1>
     <mat-dialog-content style="height: 200px; display: flex; justify-content: center; align-items: center;">
       <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px;" fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
     </mat-dialog-content>
