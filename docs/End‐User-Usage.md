@@ -18,10 +18,20 @@ If the **SIGNUP** environment variable is set, there will be an option on the [L
 Shown if a user visits an active invitation link, this page has the same fields as the [Sign Up](#sign-up) form but with any fields already filled in by the admin pre-populated.
 
 ## Passkeys
-After a user finishes on the Login or Sign Up pages by using a password, they may be prompted to create a passkey if their device supports them.
+After a user finishes on the [Login](#login) or [Sign Up](#sign-up) pages by using a password, they may be prompted to create a passkey if their device supports them.
 
 <p align=center>
 <img src="/public/screenshots/passkey_dialog.png" width="375" />
+</p>
+
+For a user to add additional passkeys to their account and onboard new devices they can either: login on that device with a password, or visit the [Profile Settings](#profile-settings) page and register a hardware or external passkey on an existing device. To register a passkey on an external device, they should visit the 'Security' tab on the [Profile Settings](#profile-settings) page, click the 'Register Passkey' button, and follow their device passkey provider instructions for Using Another Device.
+
+<p align=center>
+<img src="/public/screenshots/security_tab.png" width="375" />
+</p>
+
+<p align=center>
+<img src="/public/screenshots/windows_hello_external.png" width="375" />
 </p>
 
 ## Forgot Password
@@ -37,7 +47,7 @@ Show when user follows a password reset link either from email or sent by an adm
 </p>
 
 ## Profile Settings
-The default page when a user navigates directly to VoidAuth, here a user can change their profile settings, email address, password, or add a passkey.
+The default page when a user navigates directly to VoidAuth, here a user can change their profile settings, email address, password, add a passkey, or manage their account.
 <p align=center>
 <img src="/public/screenshots/091a0122-75d7-44d0-9c97-e395c945cf4f.png" width="375" />
 </p>
