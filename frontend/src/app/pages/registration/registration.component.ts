@@ -135,10 +135,7 @@ export class RegistrationComponent implements OnInit {
       })
 
       // See if we want to ask the user to register a passkey
-      if (redirect.success
-        && this.passkeySupport?.enabled
-        && !this.passkeyService.localPasskeySeen()
-        && !this.passkeyService.localPasskeySkipped()) {
+      if (redirect.success && this.passkeySupport?.enabled) {
         try {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
