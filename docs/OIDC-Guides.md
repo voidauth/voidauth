@@ -8,8 +8,7 @@ In the guides below, there may be omitted options when those options are set to 
 > [!CAUTION]
 > Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. VoidAuth provides options to generate the Client Secret field and to copy it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
 
-## Beszel
-In Beszel:
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/beszel.svg" width="28" /> Beszel
 
 Follow the [OAuth Guide](https://www.beszel.dev/guide/oauth) in the Beszel Docs and select `OpenID Connect (oidc)` from the **Add Provider** dropdown. Fill out the config as follows:
 ```
@@ -29,7 +28,7 @@ Redirect URLs: https://beszel.example.com/api/oauth2-redirect
 Token Endpoint Auth Method: client_secret_basic
 ```
 
-## Immich
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/immich.svg" width="28" /> Immich
 In Immich:
 **Administration** > **Settings** > **OAuth Settings**
 ```
@@ -53,7 +52,7 @@ Token Endpoint Auth Method: client_secret_post
 > [!NOTE]
 > Because Immich requires a custom scheme for it's mobile app (app.immich:///) you must set the **Application Type** in VoidAuth to 'native'. This has the side-effect that immich must be on a secure https:// url, since insecure http:// is not supported by the 'native' Application Type.
 
-## Jellyfin
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyfin.svg" width="28" /> Jellyfin
 In Jellyfin:
 
 1. Follow the instructions in the [Jellyfin SSO Plugin](https://github.com/9p4/jellyfin-plugin-sso) repository to install it.
@@ -90,7 +89,7 @@ Redirect URLs: https://jellyfin.example.com/sso/OID/redirect/VoidAuth
 Token Endpoint Auth Method: client_secret_post
 ```
 
-## Portainer
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/portainer.svg" width="28" /> Portainer
 In Portainer:
 **Settings** > **Authenticate**
 1. Select **OAuth** from the Authentication Methods
