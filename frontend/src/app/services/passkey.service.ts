@@ -40,6 +40,14 @@ export class PasskeyService {
     return !!localStorage.getItem('passkey_skipped')
   }
 
+  resetPasskeySeen() {
+    localStorage.removeItem('passkey_seen')
+  }
+
+  resetPasskeySkipped() {
+    localStorage.removeItem('passkey_skipped')
+  }
+
   async getPasskeySupport(): Promise<PasskeySupport> {
     if (!browserSupportsWebAuthn()) {
       return {

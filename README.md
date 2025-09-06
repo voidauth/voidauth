@@ -1,7 +1,8 @@
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/voidauth/voidauth/release.yml)
 ![GitHub License](https://img.shields.io/github/license/voidauth/voidauth)
 ![GitHub Release](https://img.shields.io/github/v/release/voidauth/voidauth?logo=github)
-![Docker Pulls](https://img.shields.io/docker/pulls/voidauth/voidauth?logo=docker&logoColor=white)
+![GitHub Repo stars](https://img.shields.io/github/stars/voidauth/voidauth?style=flat&logo=github)
+
 
 <br>
 <p align="center">
@@ -31,7 +32,7 @@
 
 ## What is VoidAuth
 
-VoidAuth is an open-source SSO authentication and user management provider that sits in front of your self-hosted applications. Methods of authentication include OpenID Connect (OIDC) for your apps that support it, and Proxy ForwardAuth (ProxyAuth) for those that don't. The web interface aims to provide a professional and customizable authentication experience.
+VoidAuth is an open-source SSO authentication and user management provider that sits in front of your self-hosted applications. The goal of VoidAuth is to be easy-to-use for admins and end-users, supporting nice-to-have features like passkeys, user invitation, self-registration, email support, and more!
 
 Key Features:
 
@@ -44,7 +45,7 @@ Key Features:
 - 📧 Secure Password Reset with Email Verification
 - 🔒 Encryption-At-Rest
 
-## Admin Panel
+### Admin Panel
 
 Administrators can access the Admin Panel in the sidebar menu, where they can manage users, groups, and settings of the VoidAuth instance.
 
@@ -54,7 +55,7 @@ Administrators can access the Admin Panel in the sidebar menu, where they can ma
 
 ## Quick Start
 
-Getting started with VoidAuth is straightforward, below is an example of how you could add VoidAuth to a `compose.yml` file:
+Getting started with VoidAuth is straightforward, the recommended approach is to add VoidAuth to a `compose.yml` file:
 ``` yaml
 services:
   # ---------------------------------
@@ -70,9 +71,11 @@ services:
       - /your/config/directory:/app/config
     environment:
       # Required environment variables
+      # More environment variable options can be found 
+      #   on the Getting Started page.
       APP_URL: # required
       STORAGE_KEY: # required
-      DB_PASSWORD: # required
+      DB_PASSWORD: # required, same as voidauth-db POSTGRES_PASSWORD
       DB_HOST: voidauth-db # required
     depends_on:
       - voidauth-db
@@ -81,7 +84,7 @@ services:
     image: postgres:17
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: # required
+      POSTGRES_PASSWORD: # required, same as voidauth DB_PASSWORD
     volumes:
       - db:/var/lib/postgresql/data
 
@@ -103,10 +106,6 @@ Issues, Suggestions, and Feature Requests should be added as [Issues](https://gi
 ## Contributing
 
 Please read the CONTRIBUTING.md
-
-## Disclaimer
-
-I am not a security researcher or expert, use at your own risk.
 
 ## Credits
 
