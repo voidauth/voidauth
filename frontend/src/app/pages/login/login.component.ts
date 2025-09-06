@@ -80,7 +80,10 @@ export class LoginComponent implements OnInit, OnDestroy {
       }
 
       try {
-        await this.authService.interactionExists()
+        const redirect = await this.authService.interactionExists()
+        if (redirect) {
+          window.location.assign(redirect.location)
+        }
       } catch (_e) {
         // interaction session is missing, could not log in without it
         window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + '/api/cb'))
