@@ -111,12 +111,12 @@ Please read the CONTRIBUTING.md
 
 This project would not be possible without the incredible work of others including but not limited to:
 
-[node-oidc-provider](https://github.com/panva/node-oidc-provider) Handles VoidAuth OIDC Provider functionality
+[node-oidc-provider](https://github.com/panva/node-oidc-provider) Handles OIDC Provider functionality
 
-[SimpleWebAuthn](https://github.com/MasterKale/SimpleWebAuthn) Used by VoidAuth for webauthn/passkey support
+[SimpleWebAuthn](https://github.com/MasterKale/SimpleWebAuthn) Used for webauthn/passkey support
 
-[Angular](https://angular.dev) Frontend web framework used by VoidAuth
+[Angular](https://angular.dev) Frontend web framework
 
-[authelia](https://www.authelia.com/) An amazing project and heavy inspiration, VoidAuth aims to be more user/admin friendly
+[Knex](https://knexjs.org/) Database connection and query builder
 
-[lldap](https://github.com/lldap/lldap) Inspiration for user management, a very good self-hosted ldap service
+[zxcvbn-ts](https://zxcvbn-ts.github.io/zxcvbn/) Password strength calculator

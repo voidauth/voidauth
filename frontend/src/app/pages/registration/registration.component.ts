@@ -69,10 +69,12 @@ export class RegistrationComponent implements OnInit {
     this.route.queryParamMap.subscribe(async (queryParams) => {
       const inviteId = queryParams.get('invite')
       const challenge = queryParams.get('challenge')
-
       try {
         this.spinnerService.show()
-        await this.authService.interactionExists()
+        const redirect = await this.authService.interactionExists()
+        if (redirect) {
+          window.location.assign(redirect.location)
+        }
         this.config = await this.configService.getConfig()
         this.passkeySupport = await this.passkeyService.getPasskeySupport()
         if (!this.passkeySupport.enabled) {

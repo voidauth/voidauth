@@ -23,7 +23,7 @@ export class AuthService {
   }
 
   async interactionExists() {
-    return firstValueFrom(this.http.get<null>('/api/interaction/exists'))
+    return firstValueFrom(this.http.get<Redirect | null>('/api/interaction/exists'))
   }
 
   async register(body: Nullable<RegisterUser>) {

@@ -78,12 +78,22 @@ const registerUserValidator = {
 export const router = Router()
 
 router.get('/exists', async (req, res) => {
-  if (await getInteractionDetails(req, res)) {
-    res.send()
+  const interaction = await getInteractionDetails(req, res)
+  if (!interaction) {
+    res.sendStatus(404)
     return
   }
 
-  res.sendStatus(404)
+  // send redirect if interaction is already logged in
+  const location = interaction.returnTo
+  const success = !!interaction.result?.login?.accountId
+  const redir: Redirect | null = success
+    ? {
+        success,
+        location: location,
+      }
+    : null
+  res.send(redir)
 })
 
 router.get('/', async (req, res) => {
