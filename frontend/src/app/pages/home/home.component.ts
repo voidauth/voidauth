@@ -218,6 +218,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       try {
         this.spinnerService.show()
         await this.userService.removeAllPasskeys()
+        this.passkeyService.resetPasskeySeen()
+        this.passkeyService.resetPasskeySkipped()
         this.snackbarService.message('Removed all Passkeys.')
       } catch (_e) {
         this.snackbarService.error('Could not remove all Passkeys.')
