@@ -6,6 +6,10 @@ Contributions to VoidAuth are welcome! Lets get started.
 
 Issues, Suggestions, and Feature Requests should be added as [Issues](https://github.com/voidauth/voidauth/issues) of the appropriate type. For Help and Support, Q&A, or anything else; open a [Discussion](https://github.com/orgs/voidauth/discussions).
 
+## Documentation Updates
+
+Documentation updates should made in the docs/ directory and a PR opened for approval of the changes.
+
 ## Development Environment
 
 VoidAuth consists of a Frontend `./frontend` and Backend `./server`. The frontend is served through the backend, and when developing the frontend is automatically rebuilt when changes are detected. To see those frontend changes on the web UI the page must be refreshed. Lets get set up!
@@ -29,6 +33,6 @@ All paths and actions are in the project root directory unless otherwise specifi
 
 ## Contribution Standards
 
-All code contributions are expected to be thoroughly tested and defect-free. Changes must also pass Typescript checking and linting. You can manually run Typescript and linting locally by running `npx tsc && npx eslint ./`, they should run automatically when committing code.
+All code contributions are expected to be thoroughly tested and defect-free. Changes must also pass Typescript checking and linting, which are checked automatically for every PR. You can manually run Typescript and linting locally by running `npx tsc && npx eslint ./`, they should run automatically when committing code.
 
 Pull Requests (PRs) should follow the template that appears when they are opened. Make sure to list every feature and fix contained in the PR, screenshots should be attached if any changes to the frontend UI were made.

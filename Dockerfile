@@ -49,4 +49,10 @@ FROM serve AS test
 
 RUN npm ci
 
+COPY ./frontend ./frontend
+RUN cd frontend && npm ci
+
+COPY ./eslint.config.js ./
+RUN npx eslint .
+
 RUN npx tsc
