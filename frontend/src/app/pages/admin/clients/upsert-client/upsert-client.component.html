@@ -113,11 +113,14 @@
 
       <mat-form-field>
         <mat-label>Response Types</mat-label>
-        <mat-select formControlName="response_types" multiple>
+        <mat-select [formControl]="responseTypeControl" multiple>
           @for (rt of uniqueResponseTypes; track rt) {
             <mat-option [value]="rt">{{ rt }}</mat-option>
           }
         </mat-select>
+        @if (form.controls.response_types.errors) {
+          <mat-error>{{ form.controls.response_types.errors | validationError }}</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field>

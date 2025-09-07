@@ -171,6 +171,12 @@ const configuration: Configuration = {
     // Additional
     groups: ['groups'],
   },
+  responseTypes: [
+    'code',
+    'id_token', 'id_token token',
+    'code id_token', 'code token', 'code id_token token',
+    'none',
+  ],
   extraClientMetadata: { properties: ['skip_consent'] },
   renderError: (ctx, out, error) => {
     console.error(error)
