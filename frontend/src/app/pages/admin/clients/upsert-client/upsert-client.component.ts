@@ -38,7 +38,7 @@ export class UpsertClientComponent implements OnInit {
     'client_secret_basic',
     'client_secret_jwt',
     'client_secret_post',
-    'private_key_jwt',
+    // 'private_key_jwt', // do not enable until jwk_uri is ready
     'none',
   ]
 

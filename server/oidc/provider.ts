@@ -177,6 +177,7 @@ const configuration: Configuration = {
     'code id_token', 'code token', 'code id_token token',
     'none',
   ],
+  conformIdTokenClaims: false,
   extraClientMetadata: { properties: ['skip_consent'] },
   renderError: (ctx, out, error) => {
     console.error(error)
