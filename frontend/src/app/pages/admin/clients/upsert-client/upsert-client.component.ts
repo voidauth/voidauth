@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import { isValidURL, isValidWebURL } from '../../../../validators/validators'
 import { generate } from 'generate-password-browser'
-import { GRANT_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
+import { GRANT_TYPES, RESPONSE_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
 import type { itemIn } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
@@ -38,7 +38,7 @@ export class UpsertClientComponent implements OnInit {
     'client_secret_basic',
     'client_secret_jwt',
     'client_secret_post',
-    'private_key_jwt',
+    // 'private_key_jwt', // do not enable until jwk_uri is ready
     'none',
   ]
 
@@ -58,14 +58,26 @@ export class UpsertClientComponent implements OnInit {
     disabled: false,
   }, [isValidURL])
 
-  responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>([])
+  responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>([], [(c) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (c.value?.length === 1 && c.value[0] === 'token') {
+      return { invalid: 'This is an invalid Response Type selection.' }
+    }
+    return null
+  }])
 
   form = new FormGroup<TypedControls<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
     redirect_uris: new FormControl<string[]>([], [Validators.required, Validators.minLength(1)]),
     client_secret: new FormControl<string>('', [Validators.required, Validators.minLength(4)]),
     token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_post'),
-    response_types: new FormControl<ResponseType[]>(['code']),
+    response_types: new FormControl<ResponseType[]>(['code'], [(c) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (!c.value?.length) {
+        return { invalid: 'This is an invalid Response Type selection.' }
+      }
+      return null
+    }]),
     grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(['authorization_code', 'refresh_token']),
     application_type: new FormControl<ClientUpsert['application_type']>('web'),
     skip_consent: new FormControl<boolean>(true),
@@ -128,14 +140,15 @@ export class UpsertClientComponent implements OnInit {
       if (!value?.length) {
         response_types.push('none')
       } else {
-        value.sort().forEach((ur) => {
-          response_types.concat(response_types.map(r => (r + ' ' + ur) as ResponseType))
-          if (ur !== 'token') {
-            response_types.push(ur)
+        RESPONSE_TYPES.forEach((rt) => {
+          if (rt.split(' ').every(rs => value.includes(rs as 'code' | 'id_token' | 'token'))) {
+            response_types.push(rt)
           }
         })
       }
       this.form.controls.response_types.setValue(response_types)
+      this.form.controls.response_types.markAsDirty()
+      this.form.controls.response_types.updateValueAndValidity()
     })
   }
 
