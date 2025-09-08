@@ -2,7 +2,7 @@ import { Component, inject, type OnInit } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { ActivatedRoute } from '@angular/router'
 import { SnackbarService } from '../../services/snackbar.service'
-import { ConfigService } from '../../services/config.service'
+import { getCurrentHost } from '../../services/config.service'
 
 @Component({
   selector: 'app-logout',
@@ -15,11 +15,10 @@ import { ConfigService } from '../../services/config.service'
 export class LogoutComponent implements OnInit {
   protected challenge?: string
 
-  private configService = inject(ConfigService)
   private route = inject(ActivatedRoute)
   private snackbarService = inject(SnackbarService)
 
-  public host = this.configService.getCurrentHost()
+  public host = getCurrentHost()
 
   history = window.history
 

@@ -99,7 +99,7 @@ router.get('/exists', async (req, res) => {
 router.get('/', async (req, res) => {
   const interaction = await getInteractionDetails(req, res)
   if (!interaction) {
-    res.redirect('/')
+    res.redirect(`${appConfig.APP_URL}/`)
     return
   }
   const { uid, prompt, params } = interaction
@@ -126,19 +126,19 @@ router.get('/', async (req, res) => {
     switch (extraParams.login_type) {
       case 'register':
         if (params.login_id) {
-          res.redirect(`/${REDIRECT_PATHS.INVITE}?invite=${extraParams.login_id}&challenge=${extraParams.login_challenge}`)
+          res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.INVITE}?invite=${extraParams.login_id}&challenge=${extraParams.login_challenge}`)
         } else {
-          res.redirect(`/${REDIRECT_PATHS.REGISTER}`)
+          res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.REGISTER}`)
         }
         return
 
       case 'verify_email':
-        res.redirect(`/${REDIRECT_PATHS.VERIFY_EMAIL}/${extraParams.login_id}/${extraParams.login_challenge}`)
+        res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFY_EMAIL}/${extraParams.login_id}/${extraParams.login_challenge}`)
         return
 
       case 'login':
       default:
-        res.redirect(`/${REDIRECT_PATHS.LOGIN}`)
+        res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGIN}`)
         return
     }
   } else if (prompt.name === 'consent') {
@@ -177,7 +177,7 @@ router.get('/', async (req, res) => {
       }
     }
 
-    res.redirect(`/consent/${uid}`)
+    res.redirect(`${appConfig.APP_URL}/consent/${uid}`)
   } else {
     res.sendStatus(400)
   }
@@ -919,7 +919,7 @@ function isUserUnapproved(user: UserDetails) {
   if (isUnapproved(user)) {
     const redirect: Redirect = {
       success: false,
-      location: `/${REDIRECT_PATHS.APPROVAL_REQUIRED}`,
+      location: `${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`,
     }
     return redirect
   }
@@ -934,7 +934,7 @@ async function isUserEmailUnverified(user: UserDetails) {
 
     const redirect: Redirect = {
       success: false,
-      location: `/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user.id}?sent=${verificationSent ? 'true' : 'false'}`,
+      location: `${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user.id}?sent=${verificationSent ? 'true' : 'false'}`,
     }
     return redirect
   }

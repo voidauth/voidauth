@@ -1,4 +1,4 @@
-import appConfig from './config'
+import appConfig, { appUrl } from './config'
 import { stringValidation } from './validators'
 import { generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -10,7 +10,7 @@ import type { Passkey } from '@shared/db/Passkey'
 import { commit, transaction } from '../db/db'
 
 const passkeyRpName = appConfig.APP_TITLE
-const appURL = URL.parse(appConfig.APP_URL) as URL
+const appURL = appUrl()
 export const passkeyRpId = appURL.hostname
 export const passkeyRpOrigin = `${appURL.protocol}//${appURL.host}`
 

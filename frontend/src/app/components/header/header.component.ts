@@ -4,7 +4,7 @@ import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component'
 import { MaterialModule } from '../../material-module'
 import { UserService } from '../../services/user.service'
 import type { UserDetails } from '@shared/api-response/UserDetails'
-import { ConfigService } from '../../services/config.service'
+import { ConfigService, getBaseHrefPath, getCurrentHost } from '../../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
@@ -35,7 +35,7 @@ export class HeaderComponent implements OnInit {
   private spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
-    this.loginRedirect = oidcLoginPath(this.configService.getCurrentHost() + '/api/cb')
+    this.loginRedirect = getBaseHrefPath() + oidcLoginPath(getCurrentHost() + '/api/cb')
 
     try {
       this.spinnerService.show()

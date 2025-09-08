@@ -1,7 +1,7 @@
 import { Component, inject, type OnInit } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { CopyFieldComponent } from '../copy-field/copy-field.component'
-import { ConfigService, type WellknownConfig } from '../../services/config.service'
+import { ConfigService, getCurrentHost, type WellknownConfig } from '../../services/config.service'
 import { SpinnerService } from '../../services/spinner.service'
 
 @Component({
@@ -18,7 +18,7 @@ export class OidcInfoComponent implements OnInit {
   private configService = inject(ConfigService)
 
   oidcConfig?: WellknownConfig
-  currentHost: string = this.configService.getCurrentHost()
+  currentHost: string = getCurrentHost()
 
   async ngOnInit() {
     try {

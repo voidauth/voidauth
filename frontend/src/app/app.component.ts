@@ -5,6 +5,7 @@ import { MaterialModule } from './material-module'
 import { UserService } from './services/user.service'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { SpinnerService } from './services/spinner.service'
+import { getCurrentHost } from './services/config.service'
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ import { SpinnerService } from './services/spinner.service'
 export class AppComponent implements OnInit {
   user?: UserDetails
   isAdmin: boolean = false
+  host = getCurrentHost()
 
   private userService = inject(UserService)
   private spinnerService = inject(SpinnerService)

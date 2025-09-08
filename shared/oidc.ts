@@ -4,7 +4,8 @@ export type OIDCExtraParams = {
   login_challenge: string
 }
 
-export function oidcLoginPath(redirectUrl: string,
+export function oidcLoginPath(
+  redirectUrl: string,
   type: OIDCExtraParams['login_type'] = 'login',
   id?: OIDCExtraParams['login_id'] | null,
   challenge?: OIDCExtraParams['login_challenge'] | null) {

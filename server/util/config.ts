@@ -204,4 +204,8 @@ if (appConfig.PASSWORD_STRENGTH < 0 || appConfig.PASSWORD_STRENGTH > 4) {
   exit(1)
 }
 
+export function appUrl(): URL {
+  return URL.parse(appConfig.APP_URL) as URL
+}
+
 export default appConfig

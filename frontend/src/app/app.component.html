@@ -31,7 +31,9 @@
           >
           <mat-divider></mat-divider>
         }
-        <a mat-list-item href="/oidc/session/end"><mat-icon fontSet="material-icons-round" matListItemIcon>logout</mat-icon>Logout</a>
+        <a mat-list-item [href]="host + '/oidc/session/end'"
+          ><mat-icon fontSet="material-icons-round" matListItemIcon>logout</mat-icon>Logout</a
+        >
       </mat-nav-list>
     </mat-drawer>
 

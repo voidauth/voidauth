@@ -11,18 +11,6 @@ export class ConfigService {
 
   private config?: Promise<ConfigResponse>
 
-  getCurrentHost() {
-    const currentUri = new URL(window.location.href)
-    let currentHost = currentUri.hostname
-    if (currentUri.protocol) {
-      currentHost = `${currentUri.protocol}//${currentHost}`
-    }
-    if (currentUri.port) {
-      currentHost = `${currentHost}:${currentUri.port}`
-    }
-    return currentHost
-  }
-
   async getConfig() {
     if (!this.config) {
       this.config = firstValueFrom(this.http.get<ConfigResponse>('/api/public/config'))
@@ -33,6 +21,24 @@ export class ConfigService {
   async getOIDCWellknown() {
     return firstValueFrom(this.http.get<WellknownConfig>('/oidc/.well-known/openid-configuration'))
   }
+}
+
+export function getBaseHrefPath(): string {
+  const baseHref = document.querySelector('base')?.getAttribute('href') || '/'
+  return baseHref.replace(/\/$/, '')
+}
+
+export function getCurrentHost() {
+  const currentUri = new URL(window.location.href)
+  let currentHost = currentUri.hostname
+  if (currentUri.protocol) {
+    currentHost = `${currentUri.protocol}//${currentHost}`
+  }
+  if (currentUri.port) {
+    currentHost = `${currentHost}:${currentUri.port}`
+  }
+
+  return currentHost + getBaseHrefPath()
 }
 
 export type WellknownConfig = {

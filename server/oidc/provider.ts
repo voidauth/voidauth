@@ -1,6 +1,6 @@
 import Provider, { type Configuration } from 'oidc-provider'
 import { findAccount } from '../db/user'
-import appConfig from '../util/config'
+import appConfig, { appUrl } from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
@@ -51,17 +51,17 @@ const configuration: Configuration = {
       logoutSource: (ctx, _form) => {
         // parse out secret value so static frontend can use
         const secret = ctx.oidc.session?.state?.secret
-        ctx.redirect(`/${REDIRECT_PATHS.LOGOUT}${typeof secret === 'string' ? `/${secret}` : ''}`)
+        ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGOUT}${typeof secret === 'string' ? `/${secret}` : ''}`)
       },
       postLogoutSuccessSource: (ctx) => {
         // TODO: custom logout success page?
-        ctx.redirect(appConfig.DEFAULT_REDIRECT || '/')
+        ctx.redirect(appConfig.DEFAULT_REDIRECT || appConfig.APP_URL)
       },
     },
   },
   interactions: {
     url: (_ctx, _interaction) => {
-      return '/api/interaction'
+      return `${appUrl().pathname}/api/interaction`
     },
   },
   ttl: {
@@ -112,12 +112,12 @@ const configuration: Configuration = {
     long: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: URL.parse(appConfig.APP_URL)?.protocol === 'https:',
+      secure: appUrl().protocol === 'https:',
     },
     short: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: URL.parse(appConfig.APP_URL)?.protocol === 'https:',
+      secure: appUrl().protocol === 'https:',
     },
   },
   jwks: initialJwks,
@@ -201,7 +201,7 @@ export const provider = new Provider(`${appConfig.APP_URL}/oidc`, configuration)
 const { redirectUriAllowed } = provider.Client.prototype
 provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
   if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
-    return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(URL.parse(appConfig.APP_URL)?.hostname ?? '')
+    return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(appUrl().hostname)
   }
   return redirectUriAllowed.call(this, redirectUri)
 }
