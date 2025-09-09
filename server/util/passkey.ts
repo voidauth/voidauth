@@ -10,9 +10,8 @@ import type { Passkey } from '@shared/db/Passkey'
 import { commit, transaction } from '../db/db'
 
 const passkeyRpName = appConfig.APP_TITLE
-const appURL = appUrl()
-export const passkeyRpId = appURL.hostname
-export const passkeyRpOrigin = `${appURL.protocol}//${appURL.host}`
+export const passkeyRpId = appUrl().hostname
+export const passkeyRpOrigin = `${appUrl().protocol}//${appUrl().host}`
 
 export const passkeyRegistrationValidator = {
   id: stringValidation,

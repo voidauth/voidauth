@@ -208,4 +208,8 @@ export function appUrl(): URL {
   return URL.parse(appConfig.APP_URL) as URL
 }
 
+export function basePath() {
+  return appUrl().pathname.replace(/\/$/, '')
+}
+
 export default appConfig
