@@ -1,6 +1,6 @@
 import Provider, { type Configuration } from 'oidc-provider'
 import { findAccount } from '../db/user'
-import appConfig, { appUrl } from '../util/config'
+import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
@@ -61,7 +61,7 @@ const configuration: Configuration = {
   },
   interactions: {
     url: (_ctx, _interaction) => {
-      return `${appUrl().pathname}/api/interaction`
+      return `${basePath()}/api/interaction`
     },
   },
   ttl: {
