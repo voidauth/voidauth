@@ -8,7 +8,7 @@ import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
 import { USERNAME_REGEX } from '@shared/constants'
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
-import { ConfigService } from '../../services/config.service'
+import { ConfigService, getBaseHrefPath, getCurrentHost } from '../../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
 import { NewPasswordInputComponent } from '../../components/new-password-input/new-password-input.component'
 import { SpinnerService } from '../../services/spinner.service'
@@ -82,7 +82,11 @@ export class RegistrationComponent implements OnInit {
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it
-        window.location.assign(oidcLoginPath(this.configService.getCurrentHost() + '/api/cb', 'register', inviteId, challenge))
+        window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost() + '/api/cb',
+          'register',
+          inviteId,
+          challenge,
+        ))
         return
       } finally {
         this.spinnerService.hide()

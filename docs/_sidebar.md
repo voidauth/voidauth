@@ -1,5 +1,6 @@
 * [Home](/)
 * [Getting Started](Getting-Started.md)
+* [Reverse Proxy Setup](ReverseProxy-Setup.md)
 * [User Experience](End‐User-Usage.md)
 - Admin Guides
   * [OIDC Setup](OIDC-Setup.md)

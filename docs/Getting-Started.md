@@ -45,10 +45,10 @@ volumes:
 > A bind mount as shown for VoidAuth `/app/config` is recommended to enable logo and email template customization.
 
 > [!WARNING]
-> VoidAuth does **NOT** provide https termination itself, but it is absolutely **required**. This likely means you will need a reverse-proxy with https support in front of VoidAuth, as well as your other services.
+> VoidAuth does **NOT** provide https termination itself, but it is absolutely **required**. This means you will need a reverse-proxy with https support in front of VoidAuth, as well as your other services.
 
 > [!WARNING]
-> The **APP_URL** environment variable **must** be set to the external url of the VoidAuth service for the OIDC Provider to work properly, ex. `APP_URL: https://auth.example.com`. Subdomain routing is **NOT** supported.
+> The **APP_URL** environment variable **must** be set to the full external url of the VoidAuth service, ex. `APP_URL: https://auth.example.com` or `APP_URL: https://example.com/auth`.
 
 > [!CAUTION]
 > During the first start of the app, the **initial admin username and password** will be shown in the logs. They will never be shown again. You will need to note them down and either change the username and password or create a user for yourself, which you should add to the **auth_admins** group. Afterwards you may delete the **auth_admin** user.
@@ -63,7 +63,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 #### App Settings
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| APP_URL | | URL VoidAuth will be served on. Must start with`https://`, subdomain routing is **NOT** supported. ex. `https://auth.example.com` | 🔴 | |
+| APP_URL | | URL VoidAuth will be served on. Must start with`https://`, subdirectory routing is supported. ex. `https://auth.example.com` or `https://example.com/auth` | 🔴 | |
 | DEFAULT_REDIRECT | ${APP_URL} | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
 | SIGNUP | false | Whether the app allows new users to self-register themselves without invitation. | | |
 | SIGNUP_REQUIRES_APPROVAL | true | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |
@@ -124,7 +124,7 @@ The email templates for email verification, invitations, and password resets can
 > <img width="260" src="/public/screenshots/66152d9b-b041-4374-91ec-4363ab1cb064.png" />
 
 ### Authentication
-To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. If the application does not support OIDC or you want to secure a domain or resource you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) guide.
+To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. If the application does not support OIDC or you just want to secure a specific path, you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) guide.
 
 ## Experimental
 > [!WARNING]

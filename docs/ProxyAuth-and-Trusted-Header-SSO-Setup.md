@@ -12,7 +12,7 @@ You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains
 > [!CAUTION]
 > If no group is assigned to a ProxyAuth Domain, then **any signed in user** will have access to that domain.
 
-When a user navigates to a protected domain, their access will be checked against all ProxyAuth Domains from **most specific** to **least specific**. In the example below, a user with only the group **users** would **not** have access to **app.example.com/admin/user_accounts** but would have access to **app.example.com/home**. They would likewise not have access to **secret.example.com**.
+When a user navigates to a protected domain, their access will be checked against all ProxyAuth Domains from **most specific** to **least specific**. In the example below, a user with only the group **[users]** would **not** have access to **app.example.com/admin/user_accounts** but would have access to **app.example.com/home**. They would likewise not have access to **secret.example.com**.
 
 <p align=center>
 <img align=center src="/public/screenshots/3f0b0afc-5bcf-436c-8def-f45e68adb019.png" width="800" />
@@ -21,7 +21,7 @@ When a user navigates to a protected domain, their access will be checked agains
 When creating ProxyAuth Domains, remember that the trailing "**/**" and separators like "**.**" **ARE CHECKED**. Access to ***.example.com** would not give access to **example.com**, they must be added seperately.
 
 > [!IMPORTANT]
-> You can set up a wildcard ProxyAuth Domain **\*/\*** which will cover any domain not specifically listed in your ProxyAuth Domain settings. Special care should be taken to make sure such a domain has a restrictive group assigned like **owners** or **admins**.
+> You can set up a wildcard ProxyAuth Domain **\*/\*** which will cover any domain not specifically listed in your ProxyAuth Domain settings. Special care should be taken to make sure such a domain has a restrictive group assigned like **owners** or **admins**, this will match any request not already matched by another ProxyAuth Domain.
 
 ### ProxyAuth and Trusted Header SSO
 
@@ -32,7 +32,7 @@ ProxyAuth Domains perform multiple steps to determine whether a request should b
 3. If a user was found, determine which ProxyAuth Domain matches the request host and path. If there is none found respond with a 403 Forbidden status code.
 3. If the user has a security group which would grant access to the ProxyAuth Domain or if the ProxyAuth Domain has no groups, grant access to the resource. If not, respond with a 403 Forbidden status code.
 
-If a request is allowed, the following headers will be set on the response which enabled Trusted Header SSO on certain self-hosted applications:
+If a request is allowed, the following headers will be set on the response. This enables Trusted Header SSO on certain self-hosted applications:
 * Remote-User
 * Remote-Email
 * Remote-Name
@@ -54,11 +54,12 @@ VoidAuth exposes two proxy auth endpoints, which one you use will depend on your
 You can setup ProxyAuth using [Caddy](https://caddyserver.com) as a reverse-proxy with the following CaddyFile which protects domain **app.example.com** using VoidAuth hosted on **auth.example.com**
 ``` Caddyfile
 # Serve the authentication gateway itself
+#   on a subdomain
 auth.example.com {
   reverse_proxy voidauth:3000
 }
 
-# Serve your app
+# Serve your protected app
 app.example.com {
   forward_auth voidauth:3000 {
     uri /api/authz/forward-auth

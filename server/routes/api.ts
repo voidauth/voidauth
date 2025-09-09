@@ -11,6 +11,7 @@ import { als } from '../util/als'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import { getUserPasskeys } from '../db/passkey'
+import appConfig from '../util/config'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -104,7 +105,7 @@ router.get('/cb', (req, res) => {
     return
   }
 
-  res.redirect(`/`)
+  res.redirect(`${appConfig.APP_URL}/`)
 })
 
 router.use('/public', publicRouter)

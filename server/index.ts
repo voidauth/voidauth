@@ -1,4 +1,4 @@
-import appConfig from './util/config'
+import appConfig, { appUrl } from './util/config'
 import * as _ from '../custom_typings/type_validator'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import path from 'node:path'
@@ -49,11 +49,11 @@ app.use(rateLimit({
   validate: { trustProxy: false },
 }))
 
-app.use('/oidc', provider.callback())
+app.use(`${appUrl().pathname}/oidc`, provider.callback())
 
 app.use(express.json({ limit: '1Mb' }))
 
-app.use('/api', router)
+app.use(`${appUrl().pathname}/api`, router)
 
 // branding folder static assets
 if (!fs.existsSync(path.join('./config', 'branding'))) {
@@ -86,7 +86,7 @@ app.get(/\/(logo|favicon|apple-touch-icon)\.(svg|png)/, (req, res, next) => {
 
   next()
 })
-app.use(express.static(path.join('./config', 'branding'), {
+app.use(appUrl().pathname, express.static(path.join('./config', 'branding'), {
   fallthrough: true,
 }))
 
@@ -96,25 +96,32 @@ if (!fs.existsSync('./theme')) {
     recursive: true,
   })
 }
-app.use(express.static('./theme', {
+app.use(appUrl().pathname, express.static('./theme', {
   fallthrough: true,
 }))
 
 // override index.html return, inject app title
-app.get('/index.html', (_req, res) => {
+app.get(`${appUrl().pathname}/index.html`, (_req, res) => {
   const index = modifyIndex()
   res.send(index)
 })
 
 // frontend
-app.use(express.static(FE_ROOT, {
+app.use(appUrl().pathname, express.static(FE_ROOT, {
   index: false,
 }))
 
-// Unresolved GET requests should return frontend
-app.get(/(.*)/, (_req, res) => {
+// Unresolved GET requests should return index
+app.get(new RegExp(`^${appUrl().pathname}(\\/.*)?$`), (_req, res) => {
   const index = modifyIndex()
   res.send(index)
+})
+
+// This GET request does not match the expected subdirectory of APP_URL
+app.get(new RegExp(`(.*)`), (req, res) => {
+  res.status(404).send({
+    error: `Invalid subdirectory. Expected a base path of ${appUrl().pathname}/ based on APP_URL, but got ${req.protocol}://${req.host}${req.originalUrl}`,
+  })
 })
 
 // All other unresolved are not found
@@ -136,6 +143,9 @@ function modifyIndex() {
   // add APP_TITLE
   let index = fs.readFileSync(path.join(FE_ROOT, './index.html')).toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
 
+  // Replace base href with path of APP_URL
+  index = index.replace(/<base[^>]*href=[^>]*>/g, `<base href="${appUrl().pathname.length > 1 ? appUrl().pathname + '/' : '/'}"/>`)
+
   // dynamically replace favicon and logo depending on whats available in config/branding
   const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
   const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
@@ -146,13 +156,13 @@ function modifyIndex() {
   const faviconRgx = /<link[^>]*rel="icon"[^>]*>/g
   if (!brandingFiles.includes('favicon.svg')) {
     if (brandingFiles.includes('favicon.png')) {
-      index = index.replaceAll(faviconRgx, '<link rel="icon" href="/favicon.png" type="image/png"/>')
+      index = index.replaceAll(faviconRgx, '<link rel="icon" href="favicon.png" type="image/png"/>')
     } else if (brandingFiles.includes('logo.svg')) {
-      index = index.replaceAll(faviconRgx, '<link rel="icon" href="/logo.svg" sizes="any" type="image/svg+xml"/>')
+      index = index.replaceAll(faviconRgx, '<link rel="icon" href="logo.svg" sizes="any" type="image/svg+xml"/>')
     } else if (brandingFiles.includes('logo.png')) {
-      index = index.replaceAll(faviconRgx, '<link rel="icon" href="/logo.png" type="image/png"/>')
+      index = index.replaceAll(faviconRgx, '<link rel="icon" href="logo.png" type="image/png"/>')
     } else if (brandingFiles.includes('apple-touch-icon.png')) {
-      index = index.replaceAll(faviconRgx, '<link rel="icon" href="/apple-touch-icon.png" type="image/png"/>')
+      index = index.replaceAll(faviconRgx, '<link rel="icon" href="apple-touch-icon.png" type="image/png"/>')
     }
   }
 
