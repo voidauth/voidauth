@@ -44,7 +44,7 @@
           }
         </mat-form-field>
 
-        <div mat-subheader>Groups:</div>
+        <div mat-subheader>Security Groups:</div>
         @for (g of form.value.groups; track g) {
           <mat-list-item>
             <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>

@@ -1,7 +1,6 @@
 import { Component, inject, type AfterViewInit, viewChild } from '@angular/core'
 import { AdminService } from '../../../services/admin.service'
 import { MaterialModule } from '../../../material-module'
-import type { ClientMetadata } from 'oidc-provider'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -11,6 +10,7 @@ import { SpinnerService } from '../../../services/spinner.service'
 import { OidcInfoComponent } from '../../../components/oidc-info/oidc-info.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
+import type { ClientResponse } from '@shared/api-response/ClientResponse'
 
 export type TableColumn<T> = {
   columnDef: keyof T & string
@@ -30,12 +30,12 @@ export type TableColumn<T> = {
   styleUrl: './clients.component.scss',
 })
 export class ClientsComponent implements AfterViewInit {
-  dataSource: MatTableDataSource<ClientMetadata> = new MatTableDataSource()
+  dataSource: MatTableDataSource<ClientResponse> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
   readonly sort = viewChild.required(MatSort)
 
-  columns: TableColumn<ClientMetadata>[] = [
+  columns: TableColumn<ClientResponse>[] = [
     {
       columnDef: 'client_id',
       header: 'Client ID',
@@ -45,6 +45,11 @@ export class ClientsComponent implements AfterViewInit {
       columnDef: 'redirect_uris',
       header: 'Redirects',
       cell: element => String(element.redirect_uris?.join('\n')),
+    },
+    {
+      columnDef: 'groups',
+      header: 'Allowed Groups',
+      cell: element => element.groups.length ? element.groups.join('\n') : '*',
     },
   ]
 

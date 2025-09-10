@@ -11,6 +11,48 @@
         }
       </mat-form-field>
 
+      <mat-list [ngClass]="{ invalid: form.controls.groups.errors }">
+        <mat-form-field>
+          <mat-label>Add Group</mat-label>
+          <input
+            #input
+            type="text"
+            placeholder="Pick one"
+            matInput
+            [formControl]="groupSelect"
+            [matAutocomplete]="auto"
+            (input)="groupAutoFilter(input.value)"
+            (focus)="groupAutoFilter(input.value)"
+          />
+          <mat-autocomplete (optionSelected)="addGroup($event); input.value = ''" requireSelection #auto="matAutocomplete">
+            @for (option of selectableGroups; track option) {
+              <mat-option [value]="option">{{ option }}</mat-option>
+            }
+          </mat-autocomplete>
+          @if (groupSelect.errors) {
+            <mat-error>{{ groupSelect.errors | validationError }}</mat-error>
+          }
+        </mat-form-field>
+
+        <div mat-subheader>Security Groups:</div>
+        @for (g of form.value.groups; track g) {
+          <mat-list-item>
+            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
+            <div matListItemTitle>{{ g }}</div>
+          </mat-list-item>
+        }
+        @if (!form.value.groups?.length) {
+          <mat-list-item> No Groups, so <b>ALL</b> users will have access. </mat-list-item>
+        }
+      </mat-list>
+      @if (form.controls.groups.errors) {
+        <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
+          {{ form.controls.groups.errors | validationError }}
+        </mat-error>
+      }
+
+      <mat-divider></mat-divider>
+
       <mat-form-field class="client-secret">
         <mat-label>Client Secret</mat-label>
         <input #secret matInput [type]="pwdShow ? 'text' : 'password'" formControlName="client_secret" />
@@ -118,8 +160,8 @@
             <mat-option [value]="rt">{{ rt }}</mat-option>
           }
         </mat-select>
-        @if (form.controls.response_types.errors) {
-          <mat-error>{{ form.controls.response_types.errors | validationError }}</mat-error>
+        @if (responseTypeControl.errors) {
+          <mat-error>{{ responseTypeControl.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
@@ -130,6 +172,15 @@
             <mat-option [value]="gt">{{ gt }}</mat-option>
           }
         </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>PostLogout URL</mat-label>
+        <input matInput type="text" [formControl]="postLogoutUrlControl" />
+        <mat-hint>Allowed post-logout redirect url on client initiated logout.</mat-hint>
+        @if (postLogoutUrlControl.errors) {
+          <mat-error>{{ postLogoutUrlControl.errors | validationError }}</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field>

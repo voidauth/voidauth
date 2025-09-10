@@ -6,7 +6,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import { isValidURL, isValidWebURL } from '../../../../validators/validators'
+import { isValidURL, isValidURLControl, isValidWebURLControl } from '../../../../validators/validators'
 import { generate } from 'generate-password-browser'
 import { GRANT_TYPES, RESPONSE_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
@@ -16,6 +16,7 @@ import { SpinnerService } from '../../../../services/spinner.service'
 import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
+import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 
 export type TypedControls<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
@@ -53,10 +54,18 @@ export class UpsertClientComponent implements OnInit {
 
   public client_id: string | null = null
 
+  public groups: string[] = []
+  public unselectedGroups: string[] = []
+  public selectableGroups: string[] = []
+  groupSelect = new FormControl<string>({
+    value: '',
+    disabled: false,
+  }, [])
+
   redirectUrlControl = new FormControl<string>({
     value: '',
     disabled: false,
-  }, [isValidURL])
+  }, [isValidURLControl])
 
   responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>([], [(c) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -65,6 +74,8 @@ export class UpsertClientComponent implements OnInit {
     }
     return null
   }])
+
+  postLogoutUrlControl = new FormControl<string | null>(null, [isValidURLControl])
 
   form = new FormGroup<TypedControls<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
@@ -80,8 +91,17 @@ export class UpsertClientComponent implements OnInit {
     }]),
     grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(['authorization_code', 'refresh_token']),
     application_type: new FormControl<ClientUpsert['application_type']>('web'),
+    post_logout_redirect_uris: new FormControl<ClientUpsert['post_logout_redirect_uris']>([], [(c) => {
+      if ((c.value as string[]).some(v => typeof v === 'string' && v && !isValidURL(v))) {
+        return {
+          isValidUrl: 'Must be a valid URL.',
+        }
+      }
+      return null
+    }]),
     skip_consent: new FormControl<boolean>(true),
-    logo_uri: new FormControl<string | null>(null, [isValidWebURL]),
+    logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
+    groups: new FormControl<ClientUpsert['groups']>([]),
   })
 
   pwdShow = false
@@ -99,6 +119,9 @@ export class UpsertClientComponent implements OnInit {
         this.spinnerService.show()
         this.client_id = params.get('client_id')
 
+        this.groups = (await this.adminService.groups()).map(g => g.name)
+        this.groupAutoFilter()
+
         if (this.client_id) {
           const client = await this.adminService.client(this.client_id)
           this.form.reset({
@@ -109,23 +132,27 @@ export class UpsertClientComponent implements OnInit {
             response_types: client.response_types ?? ['code'],
             grant_types: client.grant_types ?? ['authorization_code', 'refresh_token'],
             application_type: client.application_type ?? 'web',
+            post_logout_redirect_uris: client.post_logout_redirect_uris ?? [],
             skip_consent: client['skip_consent'] ?? true,
             logo_uri: client.logo_uri,
+            groups: client.groups,
           })
 
           this.form.controls.client_id.disable()
 
-          const intialResponseType: itemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
+          const initialResponseType: itemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
           if (client.response_types?.some(t => t.includes('code'))) {
-            intialResponseType.push('code')
+            initialResponseType.push('code')
           }
           if (client.response_types?.some(t => t.includes('id_token'))) {
-            intialResponseType.push('id_token')
+            initialResponseType.push('id_token')
           }
           if (client.response_types?.some(t => t.includes('token'))) {
-            intialResponseType.push('token')
+            initialResponseType.push('token')
           }
-          this.responseTypeControl.setValue(intialResponseType)
+          this.responseTypeControl.setValue(initialResponseType)
+
+          this.postLogoutUrlControl.setValue(this.form.controls.post_logout_redirect_uris.value?.[0] ?? null)
         }
       } catch (e) {
         console.error(e)
@@ -141,14 +168,22 @@ export class UpsertClientComponent implements OnInit {
         response_types.push('none')
       } else {
         RESPONSE_TYPES.forEach((rt) => {
-          if (rt.split(' ').every(rs => value.includes(rs as 'code' | 'id_token' | 'token'))) {
+          if ((rt.split(' ') as ('code' | 'id_token' | 'token')[]).every(rs => value.includes(rs))) {
             response_types.push(rt)
           }
         })
       }
       this.form.controls.response_types.setValue(response_types)
       this.form.controls.response_types.markAsDirty()
-      this.form.controls.response_types.updateValueAndValidity()
+    })
+
+    this.postLogoutUrlControl.valueChanges.subscribe((value) => {
+      if (value) {
+        this.form.controls.post_logout_redirect_uris.setValue([value])
+      } else {
+        this.form.controls.post_logout_redirect_uris.setValue([])
+      }
+      this.form.controls.post_logout_redirect_uris.markAsDirty()
     })
   }
 
@@ -225,6 +260,37 @@ export class UpsertClientComponent implements OnInit {
       strict: true,
     }))
     this.form.controls.client_secret.markAsDirty()
+  }
+
+  groupAutoFilter(value: string = '') {
+    this.unselectedGroups = this.groups.filter((g) => {
+      return !this.form.controls.groups.value?.includes(g)
+    })
+    this.selectableGroups = this.unselectedGroups.filter((g) => {
+      return g.toLowerCase().includes(value.toLowerCase())
+    }).slice(0, 5)
+    if (this.unselectedGroups.length) {
+      this.groupSelect.enable()
+    } else {
+      this.groupSelect.disable()
+    }
+  }
+
+  addGroup(event: MatAutocompleteSelectedEvent) {
+    const value = event.option.value as string
+    if (!value) {
+      return
+    }
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value ?? []).sort())
+    this.form.controls.groups.markAsDirty()
+    this.groupSelect.setValue(null)
+    this.groupAutoFilter()
+  }
+
+  removeGroup(value: string) {
+    this.form.controls.groups.setValue((this.form.controls.groups.value ?? []).filter(g => g !== value))
+    this.form.controls.groups.markAsDirty()
+    this.groupAutoFilter()
   }
 
   addRedirectUrl(value: string) {

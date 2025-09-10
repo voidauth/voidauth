@@ -6,6 +6,7 @@ import { SnackbarService } from '../../services/snackbar.service'
 import { MaterialModule } from '../../material-module'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { SpinnerService } from '../../services/spinner.service'
+import { getBaseHrefPath } from '../../services/config.service'
 
 @Component({
   selector: 'app-consent',
@@ -19,6 +20,7 @@ export class ConsentComponent implements OnInit {
   public uid: string | null = null
   public details?: ConsentDetails
   public redirectHost?: string
+  public basePath = getBaseHrefPath()
 
   private authService = inject(AuthService)
   private route = inject(ActivatedRoute)
