@@ -9,18 +9,18 @@
     "test": "ng test"
   },
   "dependencies": {
-    "@angular/animations": "^20.1.6",
+    "@angular/animations": "^20.3.0",
     "@angular/cdk": "^20.1.5",
-    "@angular/cli": "^20.1.5",
-    "@angular/common": "^20.1.6",
-    "@angular/compiler": "^20.1.6",
-    "@angular/compiler-cli": "^20.1.6",
-    "@angular/core": "^20.1.6",
-    "@angular/forms": "^20.1.6",
+    "@angular/cli": "^20.3.0",
+    "@angular/common": "^20.3.0",
+    "@angular/compiler": "^20.3.0",
+    "@angular/compiler-cli": "^20.3.0",
+    "@angular/core": "^20.3.0",
+    "@angular/forms": "^20.3.0",
     "@angular/material": "^20.1.5",
-    "@angular/platform-browser": "^20.1.6",
-    "@angular/platform-browser-dynamic": "^20.1.6",
-    "@angular/router": "^20.1.6",
+    "@angular/platform-browser": "^20.3.0",
+    "@angular/platform-browser-dynamic": "^20.3.0",
+    "@angular/router": "^20.3.0",
     "@simplewebauthn/browser": "^13.1.2",
     "@types/jasmine": "~5.1.0",
     "@types/oidc-provider": "^9.1.2",
@@ -45,6 +45,6 @@
     "zone.js": "^0.15.1"
   },
   "devDependencies": {
-    "@angular/build": "^20.1.5"
+    "@angular/build": "^20.3.0"
   }
 }
