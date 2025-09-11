@@ -4,7 +4,7 @@ import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
-import { REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs } from '../db/key'
 import Keygrip from 'keygrip'
@@ -25,7 +25,7 @@ consentPromptPolicy.checks.add(new Check('user_group_missing',
       const client = await getClient(oidc.client.clientId)
       if (client?.groups.length) {
         const user = await getUserById(oidc.account.accountId)
-        if (user && !user.groups.some(g => client.groups.includes(g))) {
+        if (user && !user.groups.includes(ADMIN_GROUP) && !user.groups.some(g => client.groups.includes(g))) {
           // Throw oidc error
           const error: errors.OIDCProviderError = {
             statusCode: 403,
