@@ -13,10 +13,16 @@ grant_types: "authorization_code"
 
 Could be filled out in VoidAuth as follows:
 
-<img src="/public/screenshots/oidc_client.png" width="300">
+<p align=center>
+<img src="/public/screenshots/oidc_client.png" width="500">
+</p>
 
 > [!IMPORTANT]
 > At the top of the OIDC Clients pages there is a drop-down panel with info about the VoidAuth OIDC Provider that your Client application will probably need during its OIDC setup.
+
+<p align=center>
+<img src="/public/screenshots/oidc_endpoints.png" width="500">
+</p>
 
 > [!IMPORTANT]
 > The OIDC Client page starts with sensible defaults, but you must follow the application OIDC setup guide parameters exactly or it is likely your OIDC integration will not work. You can see setup guides for some applications on the [OIDC Guides](OIDC-Guides.md) page.

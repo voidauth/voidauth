@@ -12,7 +12,7 @@ You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains
 > [!CAUTION]
 > If no group is assigned to a ProxyAuth Domain, then **any signed in user** will have access to that domain.
 
-When a user navigates to a protected domain, their access will be checked against all ProxyAuth Domains from **most specific** to **least specific**. In the example below, a user with only the group **[users]** would **not** have access to **app.example.com/admin/user_accounts** but would have access to **app.example.com/home**. They would likewise not have access to **secret.example.com**.
+When a user navigates to a protected domain their access will be checked against the first matching ProxyAuth Domain, from **most specific** to **least specific**. In the example below, a user with only the group **[users]** would **not** have access to **app.example.com/admin/user_accounts** but would have access to **app.example.com/home**. They would likewise not have access to **secret.example.com**.
 
 <p align=center>
 <img align=center src="/public/screenshots/3f0b0afc-5bcf-436c-8def-f45e68adb019.png" width="800" />
@@ -38,7 +38,7 @@ If a request is allowed, the following headers will be set on the response. This
 * Remote-Name
 * Remote-Groups
 
-## Reverse-Proxy Setup
+## Reverse-Proxy ProxyAuth Setup
 
 VoidAuth exposes two proxy auth endpoints, which one you use will depend on your reverse-proxy.
 
@@ -51,10 +51,10 @@ VoidAuth exposes two proxy auth endpoints, which one you use will depend on your
 > You must set up your reverse-proxy **AND** VoidAuth correctly to protect a domain! This will usually involve modifying your reverse-proxy config to put the domain 'behind' VoidAuth, and then adding that domain to the VoidAuth ProxyAuth Domain list with an access group(s).
 
 ### Caddy
+
 You can setup ProxyAuth using [Caddy](https://caddyserver.com) as a reverse-proxy with the following CaddyFile which protects domain **app.example.com** using VoidAuth hosted on **auth.example.com**
 ``` Caddyfile
 # Serve the authentication gateway itself
-#   on a subdomain
 auth.example.com {
   reverse_proxy voidauth:3000
 }
@@ -69,3 +69,7 @@ app.example.com {
   reverse_proxy app:8080
 }
 ```
+
+### NGINX
+
+`🚧 Under Construction 🚧`
