@@ -67,7 +67,7 @@ export class UpsertClientComponent implements OnInit {
     disabled: false,
   }, [isValidURLControl])
 
-  responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>([], [(c) => {
+  responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>(['code'], [(c) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (c.value?.length === 1 && c.value[0] === 'token') {
       return { invalid: 'This is an invalid Response Type selection.' }

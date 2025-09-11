@@ -10,7 +10,8 @@ token_endpoint_auth_method: "client_secret_post"
 response_types: "code"
 grant_types: "authorization_code"
 ```
-Would be filled out in VoidAuth as follows:
+
+Could be filled out in VoidAuth as follows:
 
 <img src="/public/screenshots/oidc_client.png" width="300">
 
