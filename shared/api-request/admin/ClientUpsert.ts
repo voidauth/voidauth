@@ -1,3 +1,4 @@
+import type { OIDCGroup } from '@shared/db/Group'
 import type { ClientMetadata, ResponseType } from 'oidc-provider'
 
 export const RESPONSE_TYPES: ResponseType[] = ['none', 'code', 'id_token', 'code id_token',
@@ -18,4 +19,8 @@ export type ClientUpsert = Required<Pick<ClientMetadata,
   | 'grant_types'
   | 'logo_uri'
   | 'skip_consent'
-  | 'application_type'>>
+  | 'application_type'
+  | 'post_logout_redirect_uris'>>
+  & {
+    groups: OIDCGroup['groupId'][]
+  }

@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from 'express'
+import { Router } from 'express'
 import { provider } from '../oidc/provider'
 import { checkPasswordHash, getUserById, getUserByInput, isUnapproved, isUnverified } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
@@ -45,6 +45,8 @@ import { passkeyRegistrationValidator,
   createPasskey } from '../util/passkey'
 import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
 import { getEmailVerification } from '../db/emailVerification'
+import type { IncomingMessage, ServerResponse } from 'http'
+import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 
 const registerUserValidator = {
   username: {
@@ -104,16 +106,20 @@ router.get('/', async (req, res) => {
   }
   const { uid, prompt, params } = interaction
 
-  // if we get here and user is blocked, remove the session and restart the flow
   const ctx = provider.createContext(req, res)
   const session = await provider.Session.get(ctx) as Session | undefined
-  const accountId = session?.accountId
+  const accountId = session?.accountId ?? interaction.result?.login?.accountId
   if (accountId) {
     const user = await getUserById(accountId)
     if (user) {
+      // If user is blocked by approvals or email verification
+      //   log them out and redirect
       const redir = await userNeedsRedirect(user)
       if (redir) {
-        await session.destroy()
+        if (session) {
+          await session.destroy()
+        }
+        await interaction.destroy()
         res.redirect(redir.location)
         return
       }
@@ -142,7 +148,7 @@ router.get('/', async (req, res) => {
         return
     }
   } else if (prompt.name === 'consent') {
-    // Check conditions to skip consent
+    // Check conditions to skip consent, after provider has already determined it is required
     const { redirect_uri, client_id, scope } = params
     if (typeof redirect_uri === 'string' && typeof client_id === 'string' && typeof scope === 'string') {
       // Check if the client_id is auth_internal_client
@@ -160,19 +166,21 @@ router.get('/', async (req, res) => {
       const client = await getClient(client_id)
       if (client?.skip_consent) {
         const grantId = await applyConsent(interaction)
-        await provider.interactionFinished(req, res, { consent: { grantId } }, {
+        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
+        res.redirect(redir)
         return
       }
 
       // Check if the user has already consented to this client/redirect
-      const consent = accountId && await getExistingConsent(accountId, redirect_uri)
-      if (consent && !consentMissingScopes(consent, scope).length) {
+      const existingConsent = accountId && await getExistingConsent(accountId, redirect_uri)
+      if (existingConsent && !consentMissingScopes(existingConsent, scope).length) {
         const grantId = await applyConsent(interaction)
-        await provider.interactionFinished(req, res, { consent: { grantId } }, {
+        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
+        res.redirect(redir)
         return
       }
     }
@@ -393,7 +401,7 @@ router.post('/passkey/end',
       return
     }
 
-    // check if email verification needed, if not log in
+    // check if email verification or approval needed, if not log in
     const redir: Redirect = await userNeedsRedirect(user) || {
       success: true,
       location: await provider.interactionResult(req, res, {
@@ -437,9 +445,11 @@ router.post('/:uid/confirm/',
     if (typeof params.redirect_uri === 'string' && typeof params.scope === 'string' && session?.accountId) {
       await addConsent(params.redirect_uri, session.accountId, params.scope)
     }
-    await provider.interactionFinished(req, res, { consent: { grantId } }, {
+    const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
       mergeWithLastSubmission: true,
     })
+    res.redirect(redir)
+    return
   },
 )
 
@@ -531,15 +541,13 @@ router.post('/register',
       throw Error('User was not created during registration when it already should have been.')
     }
 
-    const loginRedirect = await userNeedsRedirect(createdUser)
-
     // See where we need to redirect the user to, depending on config
-    const redirect: Redirect = loginRedirect || {
+    const redirect: Redirect = await userNeedsRedirect(createdUser) || {
       success: true,
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
-          remember: false, // non-password logins are never remembered
+          remember: false,
           amr: ['pwd'],
         },
       }, { mergeWithLastSubmission: true }),
@@ -684,10 +692,8 @@ router.post('/register/passkey/end',
 
     await createPasskey(createdUser.id, registrationInfo, currentOptions)
 
-    const loginRedirect = await userNeedsRedirect(createdUser)
-
     // See where we need to redirect the user to, depending on config
-    const redirect: Redirect = loginRedirect || {
+    const redirect: Redirect = await userNeedsRedirect(createdUser) || {
       success: true,
       location: await provider.interactionResult(req, res, {
         login: {
@@ -838,15 +844,12 @@ router.post('/verify_email',
       await interaction.save(TTLs.INTERACTION)
     }
 
-    // finish login step, get redirect url to resume interaction
-    // If a uid was found, finish the interaction.
-    // Otherwise redirect to /login to begin a new interaction flow
-    const redir: Redirect = {
+    const redir: Redirect = await userNeedsRedirect(user) || {
       success: true,
       location: await provider.interactionResult(req, res, {
         login: {
           accountId: user.id,
-          remember: false, // non-password logins are never remembered
+          remember: false,
           amr: ['email'],
         },
       },
@@ -858,7 +861,7 @@ router.post('/verify_email',
   },
 )
 
-async function getInteractionDetails(req: Request, res: Response) {
+export async function getInteractionDetails(req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) {
   try {
     return await provider.interactionDetails(req, res)
   } catch (_e) {

@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import type { ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
-import type { ClientMetadata } from 'oidc-provider'
 import type { Nullable } from '@shared/utils'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
@@ -11,7 +10,6 @@ import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/U
 import { type InvitationDetails } from '@shared/api-response/InvitationDetails'
 import type { Group } from '@shared/db/Group'
 import type { Invitation } from '@shared/db/Invitation'
-import { ConfigService } from './config.service'
 import { REDIRECT_PATHS } from '@shared/constants'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
@@ -20,12 +18,12 @@ import type { PasswordResetUser } from '@shared/api-response/admin/PasswordReset
 import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import type { SortDirection } from '@angular/material/sort'
+import type { ClientResponse } from '@shared/api-response/ClientResponse'
 
 @Injectable({
   providedIn: 'root',
 })
 export class AdminService {
-  private configService = inject(ConfigService)
   private http = inject(HttpClient)
 
   getInviteLink(domain: string, id: string, challenge: string) {
@@ -39,11 +37,11 @@ export class AdminService {
   }
 
   async clients() {
-    return firstValueFrom(this.http.get<ClientMetadata[]>('/api/admin/clients'))
+    return firstValueFrom(this.http.get<ClientResponse[]>('/api/admin/clients'))
   }
 
   async client(client_id: string) {
-    return firstValueFrom(this.http.get<ClientMetadata>(`/api/admin/client/${client_id}`))
+    return firstValueFrom(this.http.get<ClientResponse>(`/api/admin/client/${client_id}`))
   }
 
   async addClient(client: Nullable<ClientUpsert>) {

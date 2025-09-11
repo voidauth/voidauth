@@ -1,15 +1,50 @@
 import Provider, { type Configuration } from 'oidc-provider'
-import { findAccount } from '../db/user'
+import { findAccount, getUserById } from '../db/user'
 import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
-import { REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs } from '../db/key'
 import Keygrip from 'keygrip'
 import * as psl from 'psl'
 import { createExpiration } from '../db/util'
+import { interactionPolicy } from 'oidc-provider'
+import { getClient } from '../db/client'
+
+// Modify consent interaction policy to check for user and client groups
+const { Check, base } = interactionPolicy
+const basePolicy = base()
+const consentPromptPolicy = basePolicy.get('consent') as interactionPolicy.Prompt
+consentPromptPolicy.checks.add(new Check('user_group_missing',
+  'missing any security group that would give access to the resource',
+  'user_group_missing', async (ctx) => {
+    const { oidc } = ctx
+    if (oidc.client?.clientId && oidc.account?.accountId) {
+      const client = await getClient(oidc.client.clientId)
+      if (client?.groups.length) {
+        const user = await getUserById(oidc.account.accountId)
+        if (user && !user.groups.includes(ADMIN_GROUP) && !user.groups.some(g => client.groups.includes(g))) {
+          // Throw oidc error
+          const error: errors.OIDCProviderError = {
+            statusCode: 403,
+            error: 'user_group_missing',
+            error_description: 'missing any security group that would give access to the resource',
+            allow_redirect: false,
+            status: 403,
+            expose: true,
+            name: 'user_group_missing',
+            message: 'user_group_missing',
+          }
+          throw error
+        }
+      }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
 
 // Do not allow any oidc-provider errors to redirect back to redirect_uri of client
 let e: keyof typeof errors
@@ -63,6 +98,7 @@ const configuration: Configuration = {
     url: (_ctx, _interaction) => {
       return `${basePath()}/api/interaction`
     },
+    policy: basePolicy,
   },
   ttl: {
     Session: TTLs.SESSION,

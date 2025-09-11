@@ -6,6 +6,7 @@ import { checkPasswordHash, getUserById, getUserByInput, isUnapproved, isUnverif
 import { provider } from '../oidc/provider'
 import appConfig from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
+import { ADMIN_GROUP } from '@shared/constants'
 
 // proxy auth cache
 let proxyAuthCache: { domain: string, groups: string[] }[] = []
@@ -47,19 +48,22 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     return
   }
 
-  // check if user may access url
-  // using a short cache
-  if (proxyAuthCacheExpires < new Date().getTime()) {
-    proxyAuthCache = await getProxyAuths()
+  // Check user groups for access if not an admin
+  if (!user.groups.includes(ADMIN_GROUP)) {
+    // check if user may access url
+    // using a short cache
+    if (proxyAuthCacheExpires < new Date().getTime()) {
+      proxyAuthCache = await getProxyAuths()
 
-    proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
-  }
+      proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
+    }
 
-  const match = proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
+    const match = proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
 
-  if (!match || (match.groups.length && !user.groups.some(g => match.groups.includes(g)))) {
-    res.sendStatus(403)
-    return
+    if (!match || (match.groups.length && !user.groups.some(g => match.groups.includes(g)))) {
+      res.sendStatus(403)
+      return
+    }
   }
 
   res.setHeader('Remote-User', user.username)

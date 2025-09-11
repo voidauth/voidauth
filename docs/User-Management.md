@@ -2,7 +2,7 @@
 
 User management can be accessed by admins (users in the **auth_admins** group) in the sidebar under [Invitations](#invitations) and [Users](#users).
 > [!IMPORTANT]
-> Users cannot be created, only invited. This means an end-user will always be able to choose their own password, though the admin can choose their username and initial profile settings if they want.
+> Users cannot be created, only invited. This means an end-user will always be able to choose their own password, though the admin can choose their username and initial profile settings if they choose.
 
 ## Invitations
 The Invitation Create/Update page.
@@ -17,8 +17,8 @@ Once the invitation is created, the invitation link will be generated and displa
 > Invited users are always 'approved', and if an admin set their initial email address that email will be verified when they accept the invitation.
 
 ## Registration
-> [!WARNING]
-> Under construction...
+
+`🚧 Under Construction 🚧`
 
 User self-registration is available if the **SIGNUP** environment variable is set to 'true'.
 

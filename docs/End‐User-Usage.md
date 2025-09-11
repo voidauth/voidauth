@@ -8,7 +8,7 @@ Users are directed to the login portal if they are not already signed into VoidA
 </p>
 
 ## Sign Up
-If the **SIGNUP** environment variable is set, there will be an option on the [Login](#login) page to Sign Up. A username is required, and so is an email if the **EMAIL_VERIFICATION** environment variable is set. Password strength requirements are set by the **PASSWORD_STRENGTH** environment variable. The current password strength is calculated with [zxcvbn-ts](https://zxcvbn-ts.github.io/zxcvbn/).
+If the **SIGNUP** environment variable is set, there will be an option on the [Login](#login) page to Sign Up. A username is required, and so is an email if the **EMAIL_VERIFICATION** environment variable is set. Password strength requirements are set by the **PASSWORD_STRENGTH** environment variable. Password strength is calculated with [zxcvbn-ts](https://zxcvbn-ts.github.io/zxcvbn/).
 
 <p align=center>
 <img src="/public/screenshots/sign_up.png" width="375" />
@@ -41,7 +41,8 @@ Shown when the "Forgot Password" button on the login page is clicked, here a use
 </p>
 
 ## Reset Password
-Show when user follows a password reset link either from email or sent by an admin.
+Show when user follows a password reset link either from email or sent by an admin. Users may choose to add an additional passkey instead of resetting their password.
+
 <p align=center>
 <img src="/public/screenshots/reset_password.png" width="375" />
 </p>

@@ -58,6 +58,19 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     },
     trim: true,
   },
+  post_logout_redirect_uris: {
+    optional: true,
+    isArray: true,
+  },
+  'post_logout_redirect_uris.*': {
+    optional: true,
+    isValidURL: {
+      custom: (input) => {
+        return typeof input === 'string' && URL.parse(input)
+      },
+    },
+    trim: true,
+  },
   client_secret: {
     ...stringValidation,
     isLength: {
@@ -117,6 +130,10 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     },
     trim: true,
   },
+  groups: {
+    isArray: true,
+  },
+  'groups.*': stringValidation,
 }
 
 export const adminRouter = Router()
@@ -159,7 +176,7 @@ adminRouter.post('/client',
         return
       }
 
-      await upsertClient(provider, clientMetadata, provider.createContext(req, res))
+      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
       res.send()
     } catch (e) {
       res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
@@ -179,10 +196,14 @@ adminRouter.patch('/client',
         return
       }
 
-      await upsertClient(provider, clientMetadata, provider.createContext(req, res))
+      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
       res.send()
     } catch (e) {
-      res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
+      if (isOIDCProviderError(e)) {
+        res.status(400).send({ message: e.error_description })
+      } else {
+        throw e
+      }
     }
   },
 )

@@ -6,7 +6,7 @@ In the guides below, there may be omitted options when those options are set to 
 > Placeholders are used for common settings, like **your-client-id**, **your-client-secret**, **example.com**, and **Copy from VoidAuth OIDC Info**. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC Client Create pages.
 
 > [!CAUTION]
-> Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. VoidAuth provides options to generate the Client Secret field and to copy it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
+> Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. VoidAuth provides the ability to generate the Client Secret field on the OIDC Client page and to copy it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/beszel.svg" width="28" /> Beszel
 
@@ -50,7 +50,7 @@ Application Type: native
 Token Endpoint Auth Method: client_secret_post
 ```
 > [!NOTE]
-> Because Immich requires a custom scheme for it's mobile app (app.immich:///) you must set the **Application Type** in VoidAuth to 'native'. This has the side-effect that immich must be on a secure https:// url, since insecure http:// is not supported by the 'native' Application Type.
+> Because Immich requires a custom scheme for the mobile app (app.immich:///) you must set the **Application Type** in VoidAuth to 'native'. This has the side-effect that immich must be on a secure `https://` url, since insecure `http://` urls are not supported by the 'native' Application Type.
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyfin.svg" width="28" /> Jellyfin
 In Jellyfin:
