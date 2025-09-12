@@ -187,6 +187,8 @@ if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
   console.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
   exit(1)
 }
+// make sure APP_URL does not have trailing slash(es)
+appConfig.APP_URL = appConfig.APP_URL.replace(/\/+$/, '')
 
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {
