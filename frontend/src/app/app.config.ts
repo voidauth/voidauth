@@ -2,6 +2,7 @@ import { type ApplicationConfig, provideZoneChangeDetection } from '@angular/cor
 import { provideRouter } from '@angular/router'
 import { routes } from './app.routes'
 import { provideHttpClient, withInterceptors, type HttpInterceptorFn } from '@angular/common/http'
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'
 import { getBaseHrefPath } from './services/config.service'
 
 const baseHrefInterceptor: HttpInterceptorFn = (req, next) => {
@@ -26,5 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([baseHrefInterceptor]),
     ),
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    provideAnimationsAsync(),
   ],
 }

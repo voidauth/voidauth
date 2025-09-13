@@ -30,7 +30,7 @@ publicRouter.get('/config', (_req, res) => {
     appName: appConfig.APP_TITLE,
     zxcvbnMin: appConfig.PASSWORD_STRENGTH,
     emailActive: SMTP_VERIFIED,
-    emailVerification: appConfig.EMAIL_VERIFICATION,
+    emailVerification: !!appConfig.EMAIL_VERIFICATION,
     registration: appConfig.SIGNUP,
     contactEmail: appConfig.CONTACT_EMAIL,
     defaultRedirect: appConfig.DEFAULT_REDIRECT,

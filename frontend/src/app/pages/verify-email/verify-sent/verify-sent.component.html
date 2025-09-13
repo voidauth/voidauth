@@ -1,13 +1,14 @@
-<h1>{{ sent ? "Verification Email Sent" : "Email Verification Required" }}</h1>
 <mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title> {{ sent ? "Verification Email Sent" : "Email Verification Required" }} </mat-card-title>
+  </mat-card-header>
   <mat-card-content>
+    <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px" fontSet="material-icons-round" matSuffix>mail</mat-icon>
     <mat-card-actions>
+      <a mat-button [href]="host + '/oidc/session/end'">Logout</a>
       <button mat-button (click)="sendVerification()">
         {{ sent ? "Send Again" : "Send Verification Email" }}
       </button>
-      @if (sent) {
-        <a mat-flat-button routerLink="/">Login</a>
-      }
     </mat-card-actions>
   </mat-card-content>
 </mat-card>

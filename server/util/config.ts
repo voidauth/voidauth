@@ -12,7 +12,7 @@ class Config {
 
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
-  EMAIL_VERIFICATION = false
+  EMAIL_VERIFICATION: boolean | null = null
 
   APP_COLOR = '#906bc7'
 
@@ -59,9 +59,12 @@ function assignConfigValue(key: keyof Config, value: unknown) {
 
     // booleans
     case 'SMTP_SECURE':
-    case 'EMAIL_VERIFICATION':
     case 'SIGNUP':
     case 'SIGNUP_REQUIRES_APPROVAL':
+      appConfig[key] = booleanString(value) ?? appConfig[key]
+      break
+
+    case 'EMAIL_VERIFICATION':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 
@@ -176,6 +179,10 @@ configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
 })
 
+/**
+ * Validations and Coercions
+ */
+
 // check APP_URL is set
 if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
   console.error('APP_URL must be set and be a valid URL, starting with http(s)://')
@@ -206,6 +213,15 @@ if (appConfig.PASSWORD_STRENGTH < 0 || appConfig.PASSWORD_STRENGTH > 4) {
   exit(1)
 }
 
+// If EMAIL_VALIDATION is unset, give it a default value
+if (appConfig.EMAIL_VERIFICATION == null) {
+  appConfig.EMAIL_VERIFICATION = !!appConfig.SMTP_HOST
+}
+
+//
+// Exported Utility Functions
+//
+
 export function appUrl(): URL {
   return URL.parse(appConfig.APP_URL) as URL
 }
@@ -213,5 +229,9 @@ export function appUrl(): URL {
 export function basePath() {
   return appUrl().pathname.replace(/\/$/, '')
 }
+
+//
+// Default Export
+//
 
 export default appConfig

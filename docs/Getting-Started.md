@@ -64,17 +64,17 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | APP_URL | | URL VoidAuth will be served on. Must start with`https://`, subdirectory routing is supported. ex. `https://auth.example.com` or `https://example.com/auth` | 🔴 | |
-| DEFAULT_REDIRECT | ${APP_URL} | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
-| SIGNUP | false | Whether the app allows new users to self-register themselves without invitation. | | |
-| SIGNUP_REQUIRES_APPROVAL | true | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |
-| EMAIL_VERIFICATION | false | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should be set to true. | | ✅ (If SMTP Settings are set) |
+| DEFAULT_REDIRECT | `${APP_URL}` | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
+| SIGNUP | `false` | Whether the app allows new users to self-register themselves without invitation. | | |
+| SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |
+| EMAIL_VERIFICATION | `true` if SMTP_HOST is set, otherwise `false` | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should be set to true. | | |
 
 #### App Customization
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| APP_TITLE | VoidAuth | Title that will show on the web interface, use your own brand/app/title. | | ✅ |
-| APP_PORT | 3000 | The port that app will listen on. | | |
-| APP_COLOR | #906bc7 | Theme color, rgb format; ex. #xxyyzz | | ✅ |
+| APP_TITLE | `VoidAuth` | Title that will show on the web interface, use your own brand/app/title. | | ✅ |
+| APP_PORT | `3000` | The port that app will listen on. | | |
+| APP_COLOR | `#906bc7` | Theme color, rgb format; ex. #xxyyzz | | ✅ |
 | CONTACT_EMAIL | | The email address used for 'Contact' links, which are shown on most end-user pages if this is set. | | |
 
 #### DB Settings
@@ -82,9 +82,9 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | :------ | :-- | :-------- | :--- | :--- |
 | DB_HOST | | Host address of the database. | 🔴 | |
 | DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
-| DB_PORT | 5432 | Port of the database. | | |
-| DB_USER | postgres | Username used to sign into the database by the app. | | |
-| DB_NAME | postgres | Database name used to connect to the database by the app. | | |
+| DB_PORT | `5432` | Port of the database. | | |
+| DB_USER | `postgres` | Username used to sign into the database by the app. | | |
+| DB_NAME | `postgres` | Database name used to connect to the database by the app. | | |
 | STORAGE_KEY | | Storage encryption key for secret values such as keys and client secrets. Must be at least 32 characters long and should be randomly generated. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
 | STORAGE_KEY_SECONDARY | | Secondary storage encryption key, used when rotating the primary storage encryption key. | | |
 
@@ -96,16 +96,16 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | :------ | :-- | :-------- |
 | SMTP_HOST | | SMTP Host; ex. `mail.example.com` |
 | SMTP_FROM | | SMTP From field; ex.`My App<app@example.com>` |
-| SMTP_PORT | 587 | SMTP port to use. |
-| SMTP_SECURE | false | SMTP has TLS/SSL enabled. |
+| SMTP_PORT | `587` | SMTP port to use. |
+| SMTP_SECURE | `false` | SMTP has TLS/SSL enabled. |
 | SMTP_USER | | SMTP username used to sign into email provider; ex `user@example.com` |
 | SMTP_PASS | | SMTP password used to sign into email provider |
 
 #### Misc.
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| PASSWORD_STRENGTH | 3 | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | |
-| ADMIN_EMAILS | hourly | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. If set to 'false', admin notification emails are disabled. | | | 
+| PASSWORD_STRENGTH | `3` | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | |
+| ADMIN_EMAILS | `hourly` | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. If set to 'false', admin notification emails are disabled. | | | 
 
 > [!IMPORTANT]
 > Some configuration options only make sense when used together. **EMAIL_VERIFICATION** should only be set if the **SMTP_** options are also set. Likewise, **SIGNUP_REQUIRES_APPROVAL** does nothing unless **SIGNUP** is set.
