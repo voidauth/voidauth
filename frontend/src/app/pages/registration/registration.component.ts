@@ -79,6 +79,7 @@ export class RegistrationComponent implements OnInit {
         this.passkeySupport = await this.passkeyService.getPasskeySupport()
         if (!this.passkeySupport.enabled) {
           this.form.controls.password.addValidators(Validators.required)
+          this.form.controls.password.updateValueAndValidity()
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it
@@ -123,6 +124,7 @@ export class RegistrationComponent implements OnInit {
           this.spinnerService.show()
           if (this.config.emailVerification) {
             this.form.controls.email.addValidators(Validators.required)
+            this.form.controls.email.updateValueAndValidity()
           }
         } finally {
           this.spinnerService.hide()

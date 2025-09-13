@@ -1,0 +1,17 @@
+mat-card {
+  max-width: 500px;
+}
+
+mat-card-content {
+  padding-top: 32px;
+
+  mat-card-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+
+    > * {
+      margin-left: 16px;
+    }
+  }
+}

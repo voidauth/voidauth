@@ -27,8 +27,9 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     const accountId = session?.accountId
     user = accountId ? await getUserById(accountId) : undefined
 
-    if (!user || isUnapproved(user) || isUnverified(user)) {
+    if (!user) {
       res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+      res.send()
       return
     }
   } else if (authorizationHeader) {
@@ -37,7 +38,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     const [, base64Credentials] = authorizationHeader.split(' ')
     const [username, password] = base64Credentials ? Buffer.from(base64Credentials, 'base64').toString().split(':') : []
     user = username ? await getUserByInput(username) : undefined
-    if (!user || !password || isUnapproved(user) || isUnverified(user) || !await checkPasswordHash(user.id, password)) {
+    if (!user || !password || !await checkPasswordHash(user.id, password)) {
       res.setHeader('WWW-Authenticate', `Basic realm="${formattedUrl}"`)
       res.sendStatus(401)
       return
@@ -45,6 +46,13 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
   } else {
     // User not logged in, redirect to login
     res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+    res.send()
+    return
+  }
+
+  // Check that user is approved and verified
+  if (isUnapproved(user) || isUnverified(user)) {
+    res.sendStatus(403)
     return
   }
 

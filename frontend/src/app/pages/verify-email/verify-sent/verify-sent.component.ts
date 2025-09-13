@@ -1,18 +1,17 @@
 import { Component, inject, type OnInit } from '@angular/core'
-import { ActivatedRoute, Router, RouterLink } from '@angular/router'
+import { ActivatedRoute, Router } from '@angular/router'
 import { MaterialModule } from '../../../material-module'
 import { AuthService } from '../../../services/auth.service'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { ConfigService } from '../../../services/config.service'
+import { ConfigService, getCurrentHost } from '../../../services/config.service'
 
 @Component({
   selector: 'app-verify-sent',
   imports: [
     MaterialModule,
-    RouterLink,
   ],
   templateUrl: './verify-sent.component.html',
   styleUrl: './verify-sent.component.scss',
@@ -21,6 +20,7 @@ export class VerifySentComponent implements OnInit {
   sent: boolean = false
   userId: string | null = null
   config?: ConfigResponse
+  host = getCurrentHost()
 
   private router = inject(Router)
   private activatedRoute = inject(ActivatedRoute)

@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { provider } from '../oidc/provider'
-import { checkPasswordHash, getUserById, getUserByInput, isUnapproved, isUnverified } from '../db/user'
+import { checkPasswordHash, getUserById, getUserByInput, isUnapproved } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
 import { validate, validatorData } from '../util/validate'
 import type { Redirect } from '@shared/api-response/Redirect'
@@ -109,24 +109,32 @@ router.get('/', async (req, res) => {
   const ctx = provider.createContext(req, res)
   const session = await provider.Session.get(ctx) as Session | undefined
   const accountId = session?.accountId ?? interaction.result?.login?.accountId
-  if (accountId) {
-    const user = await getUserById(accountId)
-    if (user) {
-      // If user is blocked by approvals or email verification
-      //   log them out and redirect
-      const redir = await userNeedsRedirect(user)
-      if (redir) {
-        if (session) {
-          await session.destroy()
-        }
-        await interaction.destroy()
-        res.redirect(redir.location)
-        return
-      }
-    }
-  }
+  const user = accountId ? await getUserById(accountId) : undefined
 
   if (prompt.name === 'login') {
+    // Check for prompt reasons that cause special redirects
+    if (prompt.reasons.includes('user_not_approved')) {
+      // User is not approved, destroy their session/interaction so they can re-attempt login
+      await interaction.destroy()
+      if (session) {
+        await session.destroy()
+      }
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`)
+      res.send()
+      return
+    } else if (prompt.reasons.includes('user_email_not_validated')) {
+      // User does not have a validated email and needs one
+      // Send a verification email if possible
+      let verificationSent = false
+      if (user && !await getEmailVerification(user.id)) {
+        verificationSent = await createEmailVerification(user, null)
+      }
+
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user?.id ?? ''}?sent=${verificationSent ? 'true' : 'false'}`)
+      res.send()
+      return
+    }
+
     // Determine which 'login' type page to redirect to
     const extraParams: OIDCExtraParams = params as OIDCExtraParams
     switch (extraParams.login_type) {
@@ -256,7 +264,7 @@ router.post('/login',
     }
 
     // check if email verification or approval needed, if not log in
-    const redir: Redirect = await userNeedsRedirect(user) || {
+    const redir: Redirect = {
       success: true,
       location: await provider.interactionResult(req, res, {
         login: {
@@ -402,7 +410,7 @@ router.post('/passkey/end',
     }
 
     // check if email verification or approval needed, if not log in
-    const redir: Redirect = await userNeedsRedirect(user) || {
+    const redir: Redirect = {
       success: true,
       location: await provider.interactionResult(req, res, {
         login: {
@@ -542,7 +550,7 @@ router.post('/register',
     }
 
     // See where we need to redirect the user to, depending on config
-    const redirect: Redirect = await userNeedsRedirect(createdUser) || {
+    const redirect: Redirect = {
       success: true,
       location: await provider.interactionResult(req, res, {
         login: {
@@ -693,7 +701,7 @@ router.post('/register/passkey/end',
     await createPasskey(createdUser.id, registrationInfo, currentOptions)
 
     // See where we need to redirect the user to, depending on config
-    const redirect: Redirect = await userNeedsRedirect(createdUser) || {
+    const redirect: Redirect = {
       success: true,
       location: await provider.interactionResult(req, res, {
         login: {
@@ -844,7 +852,7 @@ router.post('/verify_email',
       await interaction.save(TTLs.INTERACTION)
     }
 
-    const redir: Redirect = await userNeedsRedirect(user) || {
+    const redir: Redirect = {
       success: true,
       location: await provider.interactionResult(req, res, {
         login: {
@@ -914,40 +922,11 @@ async function applyConsent(interactionDetails: Interaction) {
   return grantId
 }
 
-async function userNeedsRedirect(user: UserDetails) {
-  return isUserUnapproved(user) || await isUserEmailUnverified(user)
-}
-
-function isUserUnapproved(user: UserDetails) {
-  if (isUnapproved(user)) {
-    const redirect: Redirect = {
-      success: false,
-      location: `${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`,
-    }
-    return redirect
-  }
-}
-
-async function isUserEmailUnverified(user: UserDetails) {
-  let verificationSent = false
-  if (isUnverified(user)) {
-    if (!await getEmailVerification(user.id)) {
-      verificationSent = await createEmailVerification(user, null)
-    }
-
-    const redirect: Redirect = {
-      success: false,
-      location: `${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user.id}?sent=${verificationSent ? 'true' : 'false'}`,
-    }
-    return redirect
-  }
-}
-
 export async function createEmailVerification(
   user: UserDetails,
   email?: string | null) {
   // Do not create an email verification for an unapproved user
-  if (isUserUnapproved(user)) {
+  if (isUnapproved(user)) {
     return false
   }
 

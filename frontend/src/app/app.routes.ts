@@ -15,7 +15,7 @@ export const routes: Routes = [
 
   { path: REDIRECT_PATHS.RESET_PASSWORD, loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
 
-  { path: `${REDIRECT_PATHS.LOGOUT}/:challenge`, loadComponent: () => import('./pages/logout/logout.component').then(m => m.LogoutComponent), canActivate: [loggedInGuard] },
+  { path: `${REDIRECT_PATHS.LOGOUT}/:challenge`, loadComponent: () => import('./pages/logout/logout.component').then(m => m.LogoutComponent) },
 
   { path: `${REDIRECT_PATHS.VERIFY_EMAIL}/:id/:challenge`, loadComponent: () => import('./pages/verify-email/verify/verify.component').then(m => m.VerifyComponent) },
 

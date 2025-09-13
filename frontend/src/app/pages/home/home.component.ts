@@ -117,6 +117,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       if (this.user.hasPassword) {
         this.passwordForm.controls.oldPassword.addValidators(Validators.required)
+        this.passwordForm.controls.oldPassword.updateValueAndValidity()
       }
     } finally {
       this.spinnerService.hide()
