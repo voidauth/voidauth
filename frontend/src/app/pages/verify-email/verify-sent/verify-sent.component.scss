@@ -1,5 +1,5 @@
 mat-card {
-  max-width: 600px;
+  max-width: 500px;
 }
 
 mat-card-content {
@@ -11,7 +11,7 @@ mat-card-content {
     justify-content: end;
 
     > * {
-      margin-left: 8px;
+      margin-left: 16px;
     }
   }
 }

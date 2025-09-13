@@ -6,8 +6,8 @@
     <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px" fontSet="material-icons-round" matSuffix>mail</mat-icon>
     <mat-card-actions>
       <a mat-button [href]="host + '/oidc/session/end'">Logout</a>
-      <button mat-button (click)="sendVerification()">
-        {{ sent ? "Send Again" : "Send Verification Email" }}
+      <button mat-flat-button (click)="sendVerification()">
+        {{ sent ? "Send Again" : "Send Verification" }}
       </button>
     </mat-card-actions>
   </mat-card-content>
