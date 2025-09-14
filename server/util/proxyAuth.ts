@@ -52,7 +52,9 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
 
   // Check that user is approved and verified
   if (isUnapproved(user) || isUnverified(user)) {
-    res.sendStatus(403)
+    // If not, redirect to login flow, which will send to correct redirect
+    res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+    res.send()
     return
   }
 
