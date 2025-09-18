@@ -26,7 +26,7 @@ export async function getClients(): Promise<ClientResponse[]> {
     .where({ type: CLIENT_TYPE })
     .orderBy('id', 'asc'))
     .reduce<ClientResponse[]>((arr, r) => {
-      const existing = arr.find(a => a.id === r.id)
+      const existing = arr.find(a => a.client_id === r.id)
       if (existing && r.groupName) {
         existing.groups.push(r.groupName)
       } else {
