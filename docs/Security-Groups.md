@@ -22,6 +22,6 @@ For information on ProxyAuth setup visit the [ProxyAuth Setup Guide](ProxyAuth-a
 ### OIDC
 Security Groups are used in OIDC Clients for:
 * OIDC Client authorization
-* Sent with tokens when the OIDC Client requests the 'groups' scope. The OIDC Client may use the groups for its own authorization, ex. [Jellyfin SSO Plugin](https://github.com/9p4/jellyfin-plugin-sso).
+* Sent with tokens when the OIDC Client requests the 'groups' scope. The OIDC Client may use the groups for its own authorization, ex. [Jellyfin SSO Plugin](https://github.com/9p4/jellyfin-plugin-sso)
 
 For information on OIDC setup visit the [OIDC Setup Guide](OIDC-Setup.md).

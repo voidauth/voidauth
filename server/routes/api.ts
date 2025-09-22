@@ -55,7 +55,7 @@ router.get('/authz/forward-auth', async (req: Request, res) => {
     res.sendStatus(400)
     return
   }
-  await proxyAuth(url, req, res)
+  await proxyAuth(url, 'forward-auth', req, res)
 })
 
 router.get('/authz/auth-request', async (req: Request, res) => {
@@ -65,7 +65,7 @@ router.get('/authz/auth-request', async (req: Request, res) => {
     res.sendStatus(400)
     return
   }
-  await proxyAuth(url, req, res)
+  await proxyAuth(url, 'auth-request', req, res)
 })
 
 // Set user on request
