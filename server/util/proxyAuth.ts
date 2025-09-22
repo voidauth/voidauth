@@ -13,8 +13,9 @@ let proxyAuthCache: { domain: string, groups: string[] }[] = []
 let proxyAuthCacheExpires: number = 0
 
 // proxy auth common
-export async function proxyAuth(url: URL, req: Request, res: Response) {
+export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request', req: Request, res: Response) {
   const formattedUrl = `${url.hostname}${url.pathname}`
+  const redirCode = method === 'auth-request' ? 401 : 302
 
   const ctx = provider.createContext(req, res)
   const sessionId = ctx.cookies.get('x-voidauth-session-uid')
@@ -28,7 +29,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     user = accountId ? await getUserById(accountId) : undefined
 
     if (!user) {
-      res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+      res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
       res.send()
       return
     }
@@ -45,7 +46,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
     }
   } else {
     // User not logged in, redirect to login
-    res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
     res.send()
     return
   }
@@ -53,7 +54,7 @@ export async function proxyAuth(url: URL, req: Request, res: Response) {
   // Check that user is approved and verified
   if (isUnapproved(user) || isUnverified(user)) {
     // If not, redirect to login flow, which will send to correct redirect
-    res.redirect(`${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
     res.send()
     return
   }

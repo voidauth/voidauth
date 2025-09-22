@@ -37,7 +37,7 @@ VoidAuth is an open-source SSO authentication and user management provider that 
 Key Features:
 
 - 🌐 OpenID Connect (OIDC) Provider
-- 🔄 Proxy ForwardAuth Domains
+- 🔄 Proxy ForwardAuth
 - 👤 User Management
 - 📨 User Self-Registration and Invitations
 - 🎨 Customizable Branding (Logo, Title, Theme Color, Email Templates)
@@ -106,6 +106,10 @@ Issues, Suggestions, and Feature Requests should be added as [Issues](https://gi
 ## Contributing
 
 Please read the CONTRIBUTING.md
+
+## Disclaimer
+
+I am not a security expert! Please do not use VoidAuth for any purpose that is security critical or high risk. VoidAuth has not been audited and uses 3rd party packages for much of its functionality.
 
 ## Credits
 
