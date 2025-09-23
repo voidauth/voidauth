@@ -188,7 +188,7 @@ http {
 
 ### NGINX Proxy Manager
 
-NGINX Proxy Manager is a Web UI application that assists with managing NGINX reverse proxies. As an NGINX based reverse-proxy, it also requires the same [NGINX Snippets](#nginx-snippets) which in all examples are assumed to be mounted at `/config/nginx/snippets/`. The following example will assume you are hosting VoidAuth and your protected app on their own sub-domains of example.com and must be adjusted if you are hosting either on sub-directories appropriately.
+As an NGINX based reverse-proxy, NGINX Proxy Manager also requires the same [NGINX Snippets](#nginx-snippets), which in all examples are assumed to be mounted at `/config/nginx/snippets/`. The following example will assume you are hosting VoidAuth and your protected app on their own sub-domains of example.com and must be adjusted if you are hosting either on sub-directories.
 
 #### To Serve VoidAuth: 
 
