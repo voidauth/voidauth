@@ -8,34 +8,46 @@ You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains
 <img align=center src="/public/screenshots/b774693a-6ef2-4d15-b193-dbc1a8388f3a.png" width="300" />
 </p>
 
+## Identifying Users
+
+ProxyAuth can identify a user attempting a request to a protected domain using the three following methods, tried in order.
+
+1. Check for `Proxy-Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 407 status code and the Proxy-Authenticate response Header set.
+2. Check for `Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 401 status code and the WWW-Authenticate response Header set.
+3. Check for a valid user Session cookie in `x-voidauth-session-uid`. This is the common way that a user is identified when making the request through the browser.
+
+## Authorization
+
 > [!CAUTION]
 > If no group is assigned to a ProxyAuth Domain, then **any signed in user** will have access to that domain.
 
-When a user navigates to a protected domain their access will be checked against the first matching ProxyAuth Domain, from **most specific** to **least specific**. In the example below, a user with only the group **[users]** would **not** have access to **app.example.com/admin/user_accounts** but would have access to **app.example.com/home**. They would likewise not have access to **secret.example.com**.
+When a user navigates to a protected domain their access will be checked against the first matching ProxyAuth Domain, from **most specific** to **least specific**. In the example below, a user with only the group **[users]** would **not** have access to `app.example.com/admin/user_accounts` but would have access to `app.example.com/home`. They would likewise not have access to `secret.example.com`, which would be matched by `*.example.com/*` and is only allowed to a user with the `admin` group.
 
 <p align=center>
 <img align=center src="/public/screenshots/3f0b0afc-5bcf-436c-8def-f45e68adb019.png" width="800" />
 </p>
 
-When creating ProxyAuth Domains, remember that the trailing "**/**" and separators like "**.**" **ARE CHECKED**. Access to ***.example.com** would not give access to **example.com**, they must be added seperately.
+When creating ProxyAuth Domains, the trailing `/` and separators like `.` **ARE CHECKED**. Access to `*.example.com` does not give access to `example.com`, they must be added separately. The exception is ProxyAuth Domains ending in a `/*`, since a blank path is added to all request URLs. Because of this, the requested URL `example.com` would match the ProxyAuth Domain `example.com/*`. VoidAuth will attempt to automatically add wildcard matching to any ProxyAuth Domain that does not have a path or ends in a `/`.
 
 > [!IMPORTANT]
-> You can set up a wildcard ProxyAuth Domain **\*/\*** which will cover any domain not specifically listed in your ProxyAuth Domain settings. Special care should be taken to make sure such a domain has a restrictive group assigned like **owners** or **admins**, this will match any request not already matched by another ProxyAuth Domain.
+> You can set up a wildcard ProxyAuth Domain `*/*` which will cover any domain not specifically listed in your ProxyAuth Domain settings. Special care should be taken to make sure such a domain has a restrictive group assigned like **owners** or **admins**, this will match any request not already matched by another ProxyAuth Domain.
 
-## ProxyAuth and Trusted Header SSO
+## Responses
 
-ProxyAuth Domains perform multiple steps to determine whether a request should be granted or denied. The following actions happen in VoidAuth during process:
+When a user is identified and confirmed to have access to the requested resource, a `200` Success response is sent.
 
-1. Check for Authorization Header Basic Auth, and if so identify the user by username and password in the header. If the user is not found respond with a 401 status code and the WWW-Authenticate response header set.
-2. If the request did not have an Authorization Header, check if the request has a valid user Session Cookie and if not then redirect to the login page.
-3. If a user was found, determine which ProxyAuth Domain matches the request host and path. If there is none found respond with a 403 Forbidden status code.
-3. If the user has a security group which would grant access to the ProxyAuth Domain or if the ProxyAuth Domain has no groups, grant access to the resource. If not, respond with a 403 Forbidden status code.
+In all denied requests, a `Location` Header containing the location of the VoidAuth login page is added to the response. 
+
+* When a user is not identified, either a `401`, `407`, or `302` response code will be sent depending on the authorization endpoint and identification method used.
+* When a user is found but **denied** access, a `403` Forbidden response code will be sent
+
+## Trusted Header SSO
 
 If a request is allowed, the following headers will be set on the response. This enables Trusted Header SSO on certain self-hosted applications:
-* Remote-User
-* Remote-Email
-* Remote-Name
-* Remote-Groups
+* `Remote-User` = `username`
+* `Remote-Email` = `email`
+* `Remote-Name` = `name`
+* `Remote-Groups` = `groups` in a comma separated list, ex. `users,admins,owners`
 
 ## Reverse-Proxy ProxyAuth Setup
 
@@ -94,6 +106,12 @@ proxy_set_header X-Forwarded-URI $request_uri;
 proxy_set_header X-Forwarded-For $remote_addr;
 ```
 
+`websockets.conf`
+```
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+```
+
 `auth-location.conf`
 ```
 location /api/authz/auth-request {
@@ -117,13 +135,14 @@ auth_request /api/authz/auth-request;
 
 proxy_set_header Remote-User $upstream_http_remote_user;
 proxy_set_header Remote-Groups $upstream_http_remote_groups;
-proxy_set_header Remote-Email $upstream_http_remote_name;
-proxy_set_header Remote-Name $upstream_http_remote_email;
+proxy_set_header Remote-Email $upstream_http_remote_email;
+proxy_set_header Remote-Name $upstream_http_remote_name;
 
-# If response 401 code, try to redirect to Location header as if 302.
+# If response 401 or 407 code, try to redirect to Location Header as if 302.
 # NGINX auth_request cannot handle codes except 2xx and 4xx, this is a workaround
 auth_request_set $redirection_url $upstream_http_location;
 error_page 401 =302 $redirection_url;
+error_page 407 =302 $redirection_url;
 ```
 
 ### NGINX
@@ -178,6 +197,9 @@ http {
 
     location / {
       include /config/nginx/snippets/proxy.conf;
+      # If your protected app uses websockets, un-comment the line below
+      # include /config/nginx/snippets/websockets.conf;
+
       # Snippet to send auth_request to VoidAuth before accessing protected app
       include /config/nginx/snippets/proxy-auth.conf;
       proxy_pass http://app:8080;
@@ -217,11 +239,17 @@ As an NGINX based reverse-proxy, NGINX Proxy Manager also requires the same [NGI
 
     location / {
       include /config/nginx/snippets/proxy.conf;
+      # If your protected app uses websockets, un-comment the line below
+      # include /config/nginx/snippets/websockets.conf;
+
       include /config/nginx/snippets/proxy-auth.conf;
       proxy_pass $forward_scheme://$server:$port;
     }
     ```
     * <img src="/public/screenshots/NPM_app_advanced.png" width="500" />
+
+> [!WARNING]
+> If your protected app requires websockets, make sure to un-comment the line in the `Advanced` tab that includes the `websockets.conf` snippet.
 
 ### Traefik
 
