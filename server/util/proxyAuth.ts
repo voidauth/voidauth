@@ -19,6 +19,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
   const ctx = provider.createContext(req, res)
   const sessionId = ctx.cookies.get('x-voidauth-session-uid')
+  const proxyAuthorizationHeader = req.headersDistinct['proxy-authorization']?.[0]
   const authorizationHeader = req.headersDistinct['authorization']?.[0]
   let user: UserDetails | undefined
 
@@ -33,6 +34,18 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       res.send()
       return
     }
+  } else if (proxyAuthorizationHeader) {
+    // Proxy-Authorization header flow
+    // Decode the Basic Authorization header
+    const [, base64Credentials] = proxyAuthorizationHeader.split(' ')
+    const [username, password] = base64Credentials ? Buffer.from(base64Credentials, 'base64').toString().split(':') : []
+    user = username ? await getUserByInput(username) : undefined
+    if (!user || !password || !await checkPasswordHash(user.id, password)) {
+      res.setHeader('Proxy-Authenticate', `Basic realm="${formattedUrl}"`)
+      res.redirect(407, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+      res.send()
+      return
+    }
   } else if (authorizationHeader) {
     // Authorization header flow
     // Decode the Basic Authorization header
@@ -41,7 +54,8 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     user = username ? await getUserByInput(username) : undefined
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
       res.setHeader('WWW-Authenticate', `Basic realm="${formattedUrl}"`)
-      res.sendStatus(401)
+      res.redirect(401, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+      res.send()
       return
     }
   } else {
