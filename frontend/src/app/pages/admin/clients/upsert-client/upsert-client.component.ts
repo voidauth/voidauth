@@ -43,39 +43,11 @@ export class UpsertClientComponent implements OnInit {
     'none',
   ]
 
-  public applicationTypes: ClientUpsert['application_type'][] = [
-    'web',
-    'native',
-  ]
-
   public uniqueResponseTypes = UNIQUE_RESPONSE_TYPES
 
   public grantTypes = GRANT_TYPES
 
   public client_id: string | null = null
-
-  public groups: string[] = []
-  public unselectedGroups: string[] = []
-  public selectableGroups: string[] = []
-  groupSelect = new FormControl<string>({
-    value: '',
-    disabled: false,
-  }, [])
-
-  redirectUrlControl = new FormControl<string>({
-    value: '',
-    disabled: false,
-  }, [isValidURLControl])
-
-  responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>(['code'], [(c) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (c.value?.length === 1 && c.value[0] === 'token') {
-      return { invalid: 'This is an invalid Response Type selection.' }
-    }
-    return null
-  }])
-
-  postLogoutUrlControl = new FormControl<string | null>(null, [isValidURLControl])
 
   form = new FormGroup<TypedControls<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
@@ -90,7 +62,6 @@ export class UpsertClientComponent implements OnInit {
       return null
     }]),
     grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(['authorization_code', 'refresh_token']),
-    application_type: new FormControl<ClientUpsert['application_type']>('web'),
     post_logout_redirect_uris: new FormControl<ClientUpsert['post_logout_redirect_uris']>([], [(c) => {
       if ((c.value as string[]).some(v => typeof v === 'string' && v && !isValidURL(v))) {
         return {
@@ -103,6 +74,48 @@ export class UpsertClientComponent implements OnInit {
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     groups: new FormControl<ClientUpsert['groups']>([]),
   })
+
+  public groups: string[] = []
+  public unselectedGroups: string[] = []
+  public selectableGroups: string[] = []
+  groupSelect = new FormControl<string>({
+    value: '',
+    disabled: false,
+  }, [])
+
+  redirectUrlControl = new FormControl<string>({
+    value: '',
+    disabled: false,
+  }, [isValidURLControl, (c) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const value = c.value
+    const existing = this.form.controls.redirect_uris.value
+    if (typeof value !== 'string' || !isValidURL(value) || !existing?.length) {
+      return null
+    }
+    const all = existing.concat([value])
+    let hasHttpProtocol = false
+    let hasCustomProtocol = false
+    for (const uri of all) {
+      const protocol = URL.parse(uri)?.protocol
+      hasHttpProtocol ||= protocol === 'http:'
+      hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
+    }
+    if (hasCustomProtocol && hasHttpProtocol) {
+      return { invalid: 'You cannot mix insecure and custom protocol URLs in the Redirect URLs list.' }
+    }
+    return null
+  }])
+
+  responseTypeControl = new FormControl<itemIn<typeof UNIQUE_RESPONSE_TYPES>[]>(['code'], [(c) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (c.value?.length === 1 && c.value[0] === 'token') {
+      return { invalid: 'This is an invalid Response Type selection.' }
+    }
+    return null
+  }])
+
+  postLogoutUrlControl = new FormControl<string | null>(null, [isValidURLControl])
 
   pwdShow = false
 
@@ -131,7 +144,6 @@ export class UpsertClientComponent implements OnInit {
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_post',
             response_types: client.response_types ?? ['code'],
             grant_types: client.grant_types ?? ['authorization_code', 'refresh_token'],
-            application_type: client.application_type ?? 'web',
             post_logout_redirect_uris: client.post_logout_redirect_uris ?? [],
             skip_consent: client['skip_consent'] ?? true,
             logo_uri: client.logo_uri,
@@ -304,5 +316,7 @@ export class UpsertClientComponent implements OnInit {
   removeRedirectUrl(value: string) {
     this.form.controls.redirect_uris.setValue((this.form.controls.redirect_uris.value ?? []).filter(r => r !== value))
     this.form.controls.redirect_uris.markAsDirty()
+    this.form.updateValueAndValidity()
+    this.redirectUrlControl.updateValueAndValidity()
   }
 }

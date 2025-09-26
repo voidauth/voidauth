@@ -19,7 +19,6 @@ export type ClientUpsert = Required<Pick<ClientMetadata,
   | 'grant_types'
   | 'logo_uri'
   | 'skip_consent'
-  | 'application_type'
   | 'post_logout_redirect_uris'>>
   & {
     groups: OIDCGroup['groupId'][]
