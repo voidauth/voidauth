@@ -37,6 +37,7 @@ import appConfig from '../util/config'
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import DOMPurify from 'isomorphic-dompurify'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
+import type { ClientResponse } from '@shared/api-response/ClientResponse'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -80,10 +81,6 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     },
   },
   token_endpoint_auth_method: {
-    optional: true,
-    ...stringValidation,
-  },
-  application_type: {
     optional: true,
     ...stringValidation,
   },
@@ -167,7 +164,8 @@ adminRouter.get('/client/:client_id',
 adminRouter.post('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req, res) => {
-    const clientMetadata = validatorData<ClientUpsert>(req)
+    const clientUpsert = validatorData<ClientUpsert>(req)
+    const clientMetadata: ClientResponse = { ...clientUpsert }
     try {
       // check that existing client does not exist with client_id
       const existingClient = await getClient(clientMetadata.client_id)
@@ -175,6 +173,20 @@ adminRouter.post('/client',
         res.sendStatus(409)
         return
       }
+
+      // determine proper Application Type
+      let hasHttpProtocol = false
+      let hasCustomProtocol = false
+      for (const uri of clientUpsert.redirect_uris) {
+        const protocol = URL.parse(uri)?.protocol
+        hasHttpProtocol ||= protocol === 'http:'
+        hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
+      }
+      if (hasCustomProtocol && hasHttpProtocol) {
+        res.sendStatus(400)
+        return
+      }
+      clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
 
       await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
       res.send()
@@ -187,7 +199,8 @@ adminRouter.post('/client',
 adminRouter.patch('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req, res) => {
-    const clientMetadata = validatorData<ClientUpsert>(req)
+    const clientUpsert = validatorData<ClientUpsert>(req)
+    const clientMetadata: ClientResponse = { ...clientUpsert }
     try {
       // check that existing client exists with client_id
       const existingClient = await getClient(clientMetadata.client_id)
@@ -195,6 +208,20 @@ adminRouter.patch('/client',
         res.sendStatus(404)
         return
       }
+
+      // determine proper Application Type
+      let hasHttpProtocol = false
+      let hasCustomProtocol = false
+      for (const uri of clientUpsert.redirect_uris) {
+        const protocol = URL.parse(uri)?.protocol
+        hasHttpProtocol ||= protocol === 'http:'
+        hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
+      }
+      if (hasCustomProtocol && hasHttpProtocol) {
+        res.sendStatus(400)
+        return
+      }
+      clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
 
       await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
       res.send()

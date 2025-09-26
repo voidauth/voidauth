@@ -121,23 +121,6 @@
         </mat-error>
       }
 
-      <mat-form-field style="margin-bottom: 12px">
-        <mat-label>Application Type</mat-label>
-        <mat-select formControlName="application_type">
-          @for (type of applicationTypes; track type) {
-            <mat-option [value]="type">{{ type }}</mat-option>
-          }
-        </mat-select>
-        @if (form.controls.application_type.value === "web") {
-          <mat-hint>'web' allows 'https://' and 'http://' URLs</mat-hint>
-        } @else if (form.controls.application_type.value === "native") {
-          <mat-hint>'native' allows any URL, except insecure 'http://'</mat-hint>
-        }
-        @if (form.controls.application_type.errors) {
-          <mat-error>{{ form.controls.application_type.errors | validationError }}</mat-error>
-        }
-      </mat-form-field>
-
       <mat-form-field>
         <mat-label>Token Endpoint Auth Method</mat-label>
         <mat-select formControlName="token_endpoint_auth_method">
