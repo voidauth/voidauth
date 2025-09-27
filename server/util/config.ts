@@ -17,6 +17,7 @@ class Config {
   APP_COLOR = '#906bc7'
 
   // Database config
+  DB_ADAPTER = 'postgres'
   DB_PASSWORD?: string // checked for validity
   DB_HOST?: string
   DB_PORT: number = 5432
@@ -43,7 +44,7 @@ class Config {
 }
 const appConfig = new Config()
 
-function assignConfigValue(key: keyof Config, value: unknown) {
+function assignConfigValue(key: keyof Config, value: string | undefined) {
   switch (key) {
     // positive ints
     case 'APP_PORT':

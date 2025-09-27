@@ -16,9 +16,6 @@ export async function up(knex: Knex): Promise<void> {
       table.text('body')
 
       table.text('reasons') // optional, searchable text to narrow down if an email needs to be sent
-
-      // eslint-disable-next-line @stylistic/quotes
-      table.check("type in ('email_verification', 'password_reset', 'invitation', 'admin_notification')", [], 'email_log_types')
     })
 }
 
