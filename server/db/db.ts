@@ -26,6 +26,7 @@ if (appConfig.DB_ADAPTER === 'postgres') {
 
   connectionOptions = {
     client: 'pg',
+    useNullAsDefault: true,
     connection: {
       host: appConfig.DB_HOST,
       port: appConfig.DB_PORT,
@@ -46,7 +47,7 @@ if (appConfig.DB_ADAPTER === 'postgres') {
     connection: {
       filename: './db/db.sqlite',
     },
-    useNullAsDefault: false,
+    useNullAsDefault: true,
     pool: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       afterCreate: (conn: any, cb: any) => {

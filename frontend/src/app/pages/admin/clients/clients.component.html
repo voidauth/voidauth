@@ -2,7 +2,7 @@
   <span style="align-self: end">
     <a mat-flat-button routerLink="/admin/client">Create OIDC Client</a>
   </span>
-  <app-oidc-info style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
+  <app-oidc-info style="width: 100%; margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
 
   <table mat-table [dataSource]="dataSource" matSort>
     @for (column of columns; track column) {

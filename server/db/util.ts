@@ -25,11 +25,11 @@ export function createExpiration(ttl: number) {
   return new Date(Date.now() + (ttl * 1000))
 }
 
-function timeToExpiration(expires: Date) {
+function timeToExpiration(expires: Date | number) {
   return ((new Date(expires)).getTime() - Date.now())
 }
 
-export function pastHalfExpired(ttl: number, expires: Date) {
+export function pastHalfExpired(ttl: number, expires: Date | number) {
   return timeToExpiration(expires) < (ttl * 1000 / 2)
 }
 

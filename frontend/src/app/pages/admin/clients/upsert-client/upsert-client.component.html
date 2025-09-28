@@ -1,5 +1,5 @@
 <h1>{{ this.client_id ? "Update" : "Create" }} OIDC Client</h1>
-<app-oidc-info style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
+<app-oidc-info style="width: 100%; margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">

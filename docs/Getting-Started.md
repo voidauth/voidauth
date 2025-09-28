@@ -1,7 +1,7 @@
 # Getting Started
 
 ## Initial Setup
-VoidAuth currently only supports setup through docker. The container image expects a mounted volume for configuration, and a postgres database connection. There are additional required environment variables listed in the example below, a simple Docker Compose setup:
+VoidAuth currently only supports setup through docker. The container image expects a mounted volume for configuration, and a postgres database connection. There are additional required environment variables listed in the example below, a simple Docker Compose setup using a postgres database:
 
 ```yaml
 
@@ -17,15 +17,15 @@ services:
     restart: unless-stopped
     volumes:
       - /your/config/directory:/app/config
-    # you may not need this external port mapping, map VoidAuth through your reverse-proxy
+      # - db:/app/db # volume for SQLite file if using SQLite database
     ports:
-      - "3000:3000"
+      - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
       # Required environment variables
       APP_URL: # required
       STORAGE_KEY: # required
-      DB_PASSWORD: # required
-      DB_HOST: voidauth-db # required, should probably be the same as the db service name
+      DB_PASSWORD: # required unless using SQLite database
+      DB_HOST: voidauth-db # required unless using SQLite database
     depends_on:
       - voidauth-db
 
@@ -78,13 +78,16 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | CONTACT_EMAIL | | The email address used for 'Contact' links, which are shown on most end-user pages if this is set. | | |
 
 #### DB Settings
+When using the `sqlite` database adapter type, no additional database connection variables are required. You will need a mounted volume to hold the generated `db.sqlite` file, as shown (commented out) in the docker compose example above.
+
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| DB_HOST | | Host address of the database. | 🔴 | |
-| DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
-| DB_PORT | `5432` | Port of the database. | | |
-| DB_USER | `postgres` | Username used to sign into the database by the app. | | |
-| DB_NAME | `postgres` | Database name used to connect to the database by the app. | | |
+| DB_ADAPTER | `postgres` | Allowed values are `postgres` and `sqlite`. | | |
+| DB_HOST | | Host address of the database. | 🔴 (unless using SQLite database) | |
+| DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless using SQLite database) | |
+| DB_PORT | `5432` | Port of the database. Not used if using SQLite database. | | |
+| DB_USER | `postgres` | Username used to sign into the database by the app. Not used if using SQLite database. | | |
+| DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if using SQLite database. | | |
 | STORAGE_KEY | | Storage encryption key for secret values such as keys and client secrets. Must be at least 32 characters long and should be randomly generated. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
 | STORAGE_KEY_SECONDARY | | Secondary storage encryption key, used when rotating the primary storage encryption key. | | |
 
