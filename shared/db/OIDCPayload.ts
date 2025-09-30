@@ -5,8 +5,8 @@ export type OIDCPayload = {
   grantId?: string | null
   userCode?: string | null
   uid?: string | null
-  expiresAt?: Date | null
-  consumedAt?: Date | null
+  expiresAt?: Date | number | null
+  consumedAt?: Date | number | null
   accountId?: string | null
 }
 

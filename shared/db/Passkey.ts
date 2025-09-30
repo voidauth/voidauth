@@ -7,7 +7,7 @@ export type Passkey = {
   webAuthnUserID: string
   counter: number
   deviceType: string
-  backedUp: boolean
+  backedUp: boolean | number
   transports?: string | null // CSV array
 }
 
@@ -15,12 +15,12 @@ export type PasskeyRegistration = {
   id: string
   uniqueId: string
   value: string
-  expiresAt: Date
+  expiresAt: Date | number
 }
 
 export type PasskeyAuthentication = {
   id: string
   interactionId: string
   value: string
-  expiresAt: Date
+  expiresAt: Date | number
 }

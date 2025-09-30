@@ -7,9 +7,6 @@ export async function up(knex: Knex): Promise<void> {
       table.text('type').notNullable()
       table.text('value').notNullable() // encrypted
       table.timestamp('expiresAt', { useTz: true }).notNullable()
-
-      // eslint-disable-next-line @stylistic/quotes
-      table.check("type in ('oidc_jwk', 'cookie_key')", [], 'key_type_check')
     })
     .createTable('flag', (table) => {
       table.text('name').primary().notNullable()
@@ -22,8 +19,8 @@ export async function up(knex: Knex): Promise<void> {
       table.text('username').unique().notNullable()
       table.text('name')
       table.text('passwordHash').notNullable()
-      table.boolean('emailVerified').notNullable().defaultTo(false) // email was verified
-      table.boolean('approved').notNullable().defaultTo(false) // user was approved by an admin
+      table.boolean('emailVerified').notNullable() // email was verified
+      table.boolean('approved').notNullable() // user was approved by an admin
 
       table.timestamp('createdAt', { useTz: true }).notNullable()
       table.timestamp('updatedAt', { useTz: true }).notNullable()
@@ -82,7 +79,7 @@ export async function up(knex: Knex): Promise<void> {
       table.text('username')
       table.text('name')
       table.text('challenge').notNullable()
-      table.boolean('emailVerified').notNullable().defaultTo(false)
+      table.boolean('emailVerified').notNullable()
       table.uuid('createdBy').notNullable()
       table.uuid('updatedBy').notNullable()
       table.timestamp('createdAt', { useTz: true }).notNullable()

@@ -1,6 +1,6 @@
 export type Audit = {
-  createdAt: Date
+  createdAt: Date | number
   createdBy: string
-  updatedAt: Date
+  updatedAt: Date | number
   updatedBy: string
 }

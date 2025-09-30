@@ -5,5 +5,5 @@ export type Consent = Pick<Audit, 'createdAt'> & {
   userId: User['id']
   redirectUri: string
   scope: string
-  expiresAt: Date
+  expiresAt: Date | number
 }
