@@ -3,7 +3,7 @@
 In the guides below, there may be omitted options when those options are set to the default value.
 
 > [!TIP]
-> Placeholders are used for common settings, like **your-client-id**, **your-client-secret**, **example.com**, and **Copy from VoidAuth OIDC Info**. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC Client Create pages.
+> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `https://app-name.example.com`, `${APP_URL}` and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC Client Create pages.
 
 > [!CAUTION]
 > Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. VoidAuth provides the ability to generate the Client Secret field on the OIDC Client page and to copy it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
@@ -87,6 +87,65 @@ Client ID: your-client-id
 Client Secret: your-client-secret
 Redirect URLs: https://jellyfin.example.com/sso/OID/redirect/VoidAuth
 Token Endpoint Auth Method: client_secret_post
+```
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/mastodon.svg" width="28" /> Mastodon
+
+Mastodon OIDC Setup Environment Variables:
+
+```
+OIDC_ENABLED: true
+OIDC_DISCOVERY: true
+OIDC_ISSUER: ${APP_URL}
+OIDC_DISPLAY_NAME: VoidAuth
+OIDC_CLIENT_ID: your-client-id
+OIDC_CLIENT_SECRET: your-client-secret
+OIDC_SCOPE: openid,profile,email
+OIDC_UID_FIELD: preferred_username
+OIDC_REDIRECT_URI: https://mastodon.example.com/auth/auth/openid_connect/callback
+OIDC_SECURITY_ASSUME_EMAIL_IS_VERIFIED: true
+# Optional:
+# ALLOW_UNSAFE_AUTH_PROVIDER_REATTACH: true
+```
+
+In VoidAuth:
+
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://mastodon.example.com/auth/auth/openid_connect/callback
+Token Endpoint Auth Method: client_secret_basic
+```
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/open-webui.svg" width="28" /> Open WebUI
+
+In the following example only users in VoidAuth with the group `users` or `admins` will be able to log in. Adjust these group names as needed.
+
+Open WebUI OIDC Setup Environment Variables:
+
+```
+WEBUI_URL: https://openwebui.example.com
+ENABLE_OAUTH_SIGNUP: true
+OAUTH_MERGE_ACCOUNTS_BY_EMAIL: true
+OAUTH_CLIENT_ID: your-client-id
+OAUTH_CLIENT_SECRET: your-client-secret
+OPENID_PROVIDER_URL: Copy from OIDC Info in VoidAuth (Well-Known Endpoint)
+OAUTH_PROVIDER_NAME: VoidAuth
+OAUTH_SCOPES: openid profile groups email
+ENABLE_OAUTH_ROLE_MANAGEMENT: true
+OAUTH_ROLES_CLAIM: groups
+OAUTH_ALLOWED_ROLES: users,admins
+OAUTH_ADMIN_ROLES: admins
+...
+```
+
+In VoidAuth:
+
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://openwebui.example.com/oauth/oidc/callback
+Token Endpoint Auth Method: client_secret_basic
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/portainer.svg" width="28" /> Portainer
