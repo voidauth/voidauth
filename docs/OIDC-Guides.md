@@ -119,7 +119,7 @@ Redirect URLs: https://jellyfin.example.com/sso/OID/redirect/VoidAuth
 Token Endpoint Auth Method: client_secret_post
 ```
 
-## <img src="https://manyfold.app/images/roundel.svg" width="28" /> Manyfold
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/manyfold.png" width="28" /> Manyfold
 
 Manyfold OIDC Setup Environment Variables:
 

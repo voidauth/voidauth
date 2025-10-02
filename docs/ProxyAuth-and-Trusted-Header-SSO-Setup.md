@@ -66,7 +66,7 @@ These endpoints are mostly the same, but limitations in NGINX make a separate en
 ### Caddy
 
 You can setup ProxyAuth using [Caddy](https://caddyserver.com) as a reverse-proxy with the following CaddyFile which protects domain **app.example.com** using VoidAuth hosted on **auth.example.com**
-``` Caddyfile
+``` Caddy
 # Serve VoidAuth
 auth.example.com {
   reverse_proxy voidauth:3000
@@ -97,7 +97,7 @@ app.example.com {
 In order to use NGINX or NGINX Proxy Manager, you will need to make a `snippets/` directory available to their configuration. In all examples, this will mounted/available be at `/config/nginx/snippets/`.
 
 `proxy.conf`
-```
+``` conf
 proxy_set_header Host $host;
 proxy_set_header X-Original-URL $scheme://$http_host$request_uri;
 proxy_set_header X-Forwarded-Proto $scheme;
@@ -107,13 +107,13 @@ proxy_set_header X-Forwarded-For $remote_addr;
 ```
 
 `websockets.conf`
-```
+``` conf
 proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection "upgrade";
 ```
 
 `auth-location.conf`
-```
+``` conf
 location /api/authz/auth-request {
   internal;
 
@@ -130,7 +130,7 @@ location /api/authz/auth-request {
 ```
 
 `proxy-auth.conf`
-```
+``` conf
 auth_request /api/authz/auth-request;
 
 proxy_set_header Remote-User $upstream_http_remote_user;
@@ -153,7 +153,7 @@ NGINX is configured with a `nginx.conf` file mounted at `/etc/nginx/nginx.conf`.
 > While outside the scope of this guide, you **MUST** setup `https://` termination for your browser-facing reverse-proxy with a certificate that the browser will trust or VoidAuth will **NOT** work properly. A bare NGINX reverse-proxy will **NOT** do this for you.
 
 `nginx.conf`
-```
+``` conf
 events {
   worker_connections 1024;
 }
@@ -219,7 +219,7 @@ As an NGINX based reverse-proxy, NGINX Proxy Manager also requires the same [NGI
     * <img src="/public/screenshots/NPM_voidauth_details.png" width="500" />
 3. Fill out the `SSL` tab with your SSL configuration
 4. Fill out the `Advanced` tab; this is done to allow including the `proxy.conf` snippet and will also be required for any protected apps we add later
-    ```
+    ``` conf
     location / {
       include /config/nginx/snippets/proxy.conf;
       proxy_pass $forward_scheme://$server:$port;
@@ -234,7 +234,7 @@ As an NGINX based reverse-proxy, NGINX Proxy Manager also requires the same [NGI
     * <img src="/public/screenshots/NPM_app_details.png" width="500" />
 3. Fill out the `SSL` tab with your SSL configuration
 4. Fill out the `Advanced` tab; this configuration will include snippets that instruct NGINX to use VoidAuth for ProxyAuth
-    ```
+    ``` conf
     include /config/nginx/snippets/auth-location.conf;
 
     location / {
@@ -253,4 +253,93 @@ As an NGINX based reverse-proxy, NGINX Proxy Manager also requires the same [NGI
 
 ### Traefik
 
-`🚧 Under Construction 🚧`
+Below is an example `compose.yml` file that configures VoidAuth as a ProxyAuth middleware using Traefik for a protected whoami application. This example does not include certificate and `https://` setup, docs for which can be found at [Traefik TLS Overview](https://doc.traefik.io/traefik/reference/routing-configuration/http/tls/overview/), but this is **required**.
+
+``` yaml
+volumes:
+  traefik-config:
+  db:
+
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:v3.5
+    command:
+      # EntryPoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+
+      # Providers 
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+
+      # API & Dashboard 
+      - '--api=true'
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+
+      # Observability 
+      - '--log=true'
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--metrics.prometheus=true"
+      - '--global.sendAnonymousUsage=false'
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik-config:/config
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.api.rule: 'Host(`traefik.example.com`)'
+      traefik.http.routers.api.entryPoints: 'websecure'
+      traefik.http.routers.api.tls: 'true'
+      traefik.http.routers.api.service: 'api@internal'
+      traefik.http.routers.api.middlewares: 'voidauth@docker'
+    depends_on:
+      - voidauth
+
+  voidauth: 
+    image: voidauth/voidauth:latest
+    volumes:
+      - /your/config/directory:/app/config
+    environment:
+      # Required environment variables
+      APP_URL: # required
+      STORAGE_KEY: # required
+      DB_PASSWORD: # required
+      DB_HOST: voidauth-db
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.voidauth.rule: 'Host(`auth.example.com`)'
+      traefik.http.routers.voidauth.entryPoints: 'websecure'
+      traefik.http.routers.voidauth.tls: 'true'
+      traefik.http.middlewares.voidauth.forwardAuth.address: 'http://voidauth:3000/api/authz/forward-auth'
+      traefik.http.middlewares.voidauth.forwardAuth.trustForwardHeader: 'true'
+      traefik.http.middlewares.voidauth.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Name,Remote-Email,Remote-Groups'
+    depends_on:
+      - voidauth-db
+
+  voidauth-db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: # required
+    volumes:
+      - db:/var/lib/postgresql/data
+    
+  whoami:
+    container_name: whoami
+    image: traefik/whoami
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.whoami.rule: 'Host(`whoami.example.com`)'
+      traefik.http.routers.whoami.entryPoints: 'websecure'
+      traefik.http.routers.whoami.tls: 'true'
+      traefik.http.routers.whoami.middlewares: 'voidauth@docker'
+```
