@@ -20,7 +20,7 @@ Fetch user info from: User info URL
 User info URL: Copy from OIDC Info in VoidAuth (UserInfo Endpoint)
 ```
 
-In VoidAuth:
+In VoidAuth OIDC Client Page:
 ```
 Client ID: your-client-id
 Client Secret: your-client-secret
@@ -28,9 +28,38 @@ Redirect URLs: https://beszel.example.com/api/oauth2-redirect
 Token Endpoint Auth Method: client_secret_basic
 ```
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/cloudflare.svg" width="28" /> Cloudflare ZeroTrust
+
+In Cloudflare:
+
+1. Navigate to the **[Cloudflare ZeroTrust Dashboard](https://dash.teams.cloudflare.com)** > **Settings** > **Authentication**
+2. In the `Login methods` tab, select `Add new`
+3. Choose `OpenID Connect`
+4. Fill out the form as follows:
+    - Name: `VoidAuth`
+    - App ID: `your-client-id`
+    - Client secret: `your-client-secret`
+    - Auth URL: `Copy from OIDC Info in VoidAuth (Authorization Endpoint)`
+    - Token URL: `Copy from OIDC Info in VoidAuth (Token Endpoint)`
+    - Certificate URL: `Copy from OIDC Info in VoidAuth (JWKs Endpoint)`
+    - Proof Key for Code Exchange (PKCE): `ON`
+    - Optional configurations > OIDC Claims: `mail, preferred_username`
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://your-team-name.cloudflareaccess.com/cdn-cgi/access/callback
+Token Endpoint Auth Method: client_secret_basic
+```
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/immich.svg" width="28" /> Immich
+
 In Immich:
+
 **Administration** > **Settings** > **OAuth Settings**
+
 ```
 Issuer URL: Copy from OIDC Info in VoidAuth (Well-Known Endpoint)
 Client ID: your-client-id
@@ -38,7 +67,8 @@ Client Secret: your-client-secret
 Scope: openid profile email
 ```
 
-In VoidAuth:
+In VoidAuth OIDC Client Page:
+
 ```
 Client ID: your-client-id
 Client Secret: your-client-secret
@@ -81,13 +111,40 @@ Scheme Override: https
 ```
 4. Follow the instructions on the [Jellyfin SSO Plugin](https://github.com/9p4/jellyfin-plugin-sso) repository for how to make an SSO Login button on the Jellyfin Login page.
 
-In VoidAuth:
+In VoidAuth OIDC Client Page:
 ```
 Client ID: your-client-id
 Client Secret: your-client-secret
 Redirect URLs: https://jellyfin.example.com/sso/OID/redirect/VoidAuth
 Token Endpoint Auth Method: client_secret_post
 ```
+
+## <img src="https://manyfold.app/images/roundel.svg" width="28" /> Manyfold
+
+Manyfold OIDC Setup Environment Variables:
+
+```
+...
+MULTIUSER: true
+PUBLIC_HOSTNAME: manyfold.example.com
+OIDC_CLIENT_ID: your-client-id
+OIDC_CLIENT_SECRET: your-client-secret
+OIDC_ISSUER: ${APP_URL}
+OIDC_NAME: VoidAuth
+# Optional:
+# FORCE_OIDC: true
+...
+```
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://manyfold.example.com/users/auth/openid_connect/callback
+Token Endpoint Auth Method: client_secret_basic
+```
+
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/mastodon.svg" width="28" /> Mastodon
 
@@ -106,9 +163,10 @@ OIDC_REDIRECT_URI: https://mastodon.example.com/auth/auth/openid_connect/callbac
 OIDC_SECURITY_ASSUME_EMAIL_IS_VERIFIED: true
 # Optional:
 # ALLOW_UNSAFE_AUTH_PROVIDER_REATTACH: true
+...
 ```
 
-In VoidAuth:
+In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
@@ -139,7 +197,7 @@ OAUTH_ADMIN_ROLES: admins
 ...
 ```
 
-In VoidAuth:
+In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
@@ -168,7 +226,8 @@ Auth Style: In Params
 > [!Note]
 > Scopes are seperated by spaces, **not** by commas
 
-In VoidAuth: Create OIDC Client
+In VoidAuth Create OIDC Client:
+
 ```
 Client ID: your-client-id
 Client Secret: your-client-secret

@@ -266,7 +266,6 @@ const configuration: Configuration = {
     }
   },
   extraParams: extraParams,
-  clientBasedCORS: () => true,
   findAccount: findAccount,
   adapter: KnexAdapter,
 }
