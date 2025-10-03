@@ -327,11 +327,11 @@ services:
       - voidauth-db
 
   voidauth-db:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_PASSWORD: # required
     volumes:
-      - db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/18/docker
     
   whoami:
     container_name: whoami

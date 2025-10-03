@@ -20,11 +20,11 @@ services:
       - voidauth-db
 
   voidauth-db:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
-      - ./db/data:/var/lib/postgresql/data
+      - ./db/data:/var/lib/postgresql/18/docker
     restart: unless-stopped

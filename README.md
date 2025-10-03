@@ -32,7 +32,7 @@
 
 ## What is VoidAuth
 
-VoidAuth is an open-source SSO authentication and user management provider that sits in front of your self-hosted applications. The goal of VoidAuth is to be easy-to-use for admins and end-users, supporting nice-to-have features like passkeys, user invitation, self-registration, email support, and more!
+VoidAuth is an open-source SSO authentication and user management provider that stands guard in front of your self-hosted applications. The goal of VoidAuth is to be easy-to-use for admins and end-users, supporting nice-to-have features like passkeys, user invitation, self-registration, email support, and more!
 
 Key Features:
 
@@ -43,7 +43,7 @@ Key Features:
 - 🎨 Customizable Branding (Logo, Title, Theme Color, Email Templates)
 - 🔑 Passkeys and Passkey-Only Accounts
 - 📧 Secure Password Reset with Email Verification
-- 🔒 Encryption-At-Rest
+- 🔒 Encryption-At-Rest with Postgres or SQLite Database
 
 ### Admin Panel
 
@@ -56,12 +56,12 @@ Administrators can access the Admin Panel in the sidebar menu, where they can ma
 ## Quick Start
 
 Getting started with VoidAuth is straightforward, the recommended approach is to add VoidAuth to a `compose.yml` file:
+
 ``` yaml
 services:
   # ---------------------------------
   # Your reverse-proxy service here:
   # caddy, traefik, nginx, etc.
-  # https:// setup is REQUIRED
   # ---------------------------------
 
   voidauth: 
@@ -81,12 +81,12 @@ services:
       - voidauth-db
 
   voidauth-db:
-    image: postgres:17
+    image: postgres:18
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: # required, same as voidauth DB_PASSWORD
     volumes:
-      - db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/18/docker
 
 volumes:
   db:
