@@ -4,7 +4,6 @@
 VoidAuth currently only supports setup through docker. The container image expects a mounted volume for configuration, and a postgres database connection. There are additional required environment variables listed in the example below, a simple Docker Compose setup using a postgres database:
 
 ```yaml
-
 services:
   # ---------------------------------
   # Your reverse-proxy service here:
@@ -17,15 +16,14 @@ services:
     restart: unless-stopped
     volumes:
       - /your/config/directory:/app/config
-      # - db:/app/db # volume for SQLite file if using SQLite database
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
       # Required environment variables
       APP_URL: # required
       STORAGE_KEY: # required
-      DB_PASSWORD: # required unless using SQLite database
-      DB_HOST: voidauth-db # required unless using SQLite database
+      DB_PASSWORD: # required
+      DB_HOST: voidauth-db # required
     depends_on:
       - voidauth-db
 
@@ -36,6 +34,34 @@ services:
       POSTGRES_PASSWORD: # required
     volumes:
       - db:/var/lib/postgresql/18/docker
+
+volumes:
+  db:
+```
+
+Below is an alternate Docker Compose setup using a SQLite database:
+
+```yaml
+services:
+  # ---------------------------------
+  # Your reverse-proxy service here:
+  # caddy, traefik, nginx, etc.
+  # https:// setup is REQUIRED
+  # ---------------------------------
+
+  voidauth: 
+    image: voidauth/voidauth:latest
+    restart: unless-stopped
+    volumes:
+      - /your/config/directory:/app/config
+      - db:/app/db # volume for SQLite file
+    ports:
+      - "3000:3000" # may not be needed, depending on reverse-proxy setup
+    environment:
+      # Required environment variables
+      APP_URL: # required
+      STORAGE_KEY: # required
+      DB_ADAPTER: sqlite
 
 volumes:
   db:
