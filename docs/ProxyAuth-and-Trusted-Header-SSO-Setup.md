@@ -12,9 +12,9 @@ You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains
 
 ProxyAuth can identify a user attempting a request to a protected domain using the three following methods, tried in order.
 
-1. Check for `Proxy-Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 407 status code and the Proxy-Authenticate response Header set.
-2. Check for `Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 401 status code and the WWW-Authenticate response Header set.
-3. Check for a valid user Session cookie in `x-voidauth-session-uid`. This is the common way that a user is identified when making the request through the browser.
+1. Check for a valid user Session cookie in `x-voidauth-session-uid`. This is the common way that a user is identified when making the request through the browser.
+2. Check for `Proxy-Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 407 status code and the Proxy-Authenticate response Header set.
+3. Check for `Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 401 status code and the WWW-Authenticate response Header set.
 
 ## Authorization
 
