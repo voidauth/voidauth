@@ -1,63 +1,26 @@
 import knex from 'knex'
 import appConfig from '../util/config'
 import { als } from '../util/als'
-import { generate } from 'generate-password'
 import { exit } from 'process'
-import fs from 'node:fs'
+import { connectionPg, connectionSQLite } from './connection'
 
 let connectionOptions: Parameters<typeof knex>[0] | null = null
 
-if (appConfig.DB_ADAPTER === 'postgres') {
-  // check that DB_PASSWORD is set
-  if (!appConfig.DB_PASSWORD?.length) {
-    console.error('DB_PASSWORD must be set. If you don\'t already have one, use something long and random like:')
-    console.error(generate({
-      length: 32,
-      numbers: true,
-    }))
-    exit(1)
-  }
-
-  // check that DB_HOST is set
-  if (!appConfig.DB_HOST?.length) {
-    console.error('DB_HOST must be set.')
-    exit(1)
-  }
-
-  connectionOptions = {
-    client: 'pg',
-    useNullAsDefault: true,
-    connection: {
-      host: appConfig.DB_HOST,
-      port: appConfig.DB_PORT,
-      user: appConfig.DB_USER,
-      database: appConfig.DB_NAME,
-      password: appConfig.DB_PASSWORD,
-    },
-  }
-} else if (appConfig.DB_ADAPTER === 'sqlite') {
-  if (!fs.existsSync('./db')) {
-    fs.mkdirSync('./db', {
-      recursive: true,
+try {
+  if (appConfig.DB_ADAPTER === 'postgres') {
+    connectionOptions = connectionPg({
+      DB_HOST: appConfig.DB_HOST,
+      DB_PORT: appConfig.DB_PORT,
+      DB_USER: appConfig.DB_USER,
+      DB_NAME: appConfig.DB_NAME,
+      DB_PASSWORD: appConfig.DB_PASSWORD,
     })
+  } else if (appConfig.DB_ADAPTER === 'sqlite') {
+    connectionOptions = connectionSQLite()
   }
-
-  connectionOptions = {
-    client: 'sqlite3',
-    connection: {
-      filename: './db/db.sqlite',
-    },
-    useNullAsDefault: true,
-    pool: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      afterCreate: (conn: any, cb: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        conn.prepare('PRAGMA foreign_keys = ON').run()
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        cb()
-      },
-    },
-  }
+} catch (e) {
+  console.error(e)
+  exit(1)
 }
 
 if (!connectionOptions) {
@@ -99,3 +62,13 @@ export async function rollback() {
 export function db() {
   return als.getStore()?.transaction ?? _db
 }
+
+// if MIGRATE_TO_DB_ADAPTER is set, attempt to migrate existing DB to a new DB
+await als.run({}, async () => {
+  // Check if MIGRATE_TO_DB_ADAPTER is set
+  if (appConfig.MIGRATE_TO_DB_ADAPTER) {
+    await new Promise((resolve, _reject) => {
+      resolve(true)
+    })
+  }
+})
