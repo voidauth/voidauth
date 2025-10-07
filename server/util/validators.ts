@@ -75,7 +75,12 @@ export const nameValidation = {
   optional: true,
   ...unlessNull,
   ...stringValidation,
-  matches: { options: /^[\w\s]{4,64}$/ },
+  isLength: {
+    options: {
+      min: 4,
+      max: 64,
+    },
+  },
 } as const
 
 export const newPasswordValidation = {
