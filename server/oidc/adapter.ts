@@ -4,8 +4,7 @@ import { db } from '../db/db'
 import { decryptString, encryptString } from '../db/key'
 import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
 import appConfig from '../util/config'
-
-const tableName = 'oidc_payloads'
+import { TABLES } from '@shared/constants'
 
 function getExpireAt(expiresIn: number) {
   return expiresIn
@@ -41,7 +40,7 @@ export class KnexAdapter implements Adapter {
 
   get _table() {
     return db()
-      .table<OIDCPayload>(tableName)
+      .table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
       .where('type', this.payloadType)
       .andWhere((w) => {
         w.where({ expiresAt: null })
@@ -72,7 +71,7 @@ export class KnexAdapter implements Adapter {
   async upsert(id: string, payload: any, expiresIn: number) {
     const expiresAt = getExpireAt(expiresIn)
     await db()
-      .table<OIDCPayload>(tableName)
+      .table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
       .insert({
         id,
         type: this.payloadType,

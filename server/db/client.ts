@@ -9,6 +9,7 @@ import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { Group, OIDCGroup } from '@shared/db/Group'
 import type { User } from '@shared/db/User'
 import { mergeKeys } from './util'
+import { TABLES } from '@shared/constants'
 
 const CLIENT_TYPE: PayloadType = 'Client'
 
@@ -16,15 +17,15 @@ const CLIENT_TYPE: PayloadType = 'Client'
 export async function getClients(): Promise<ClientResponse[]> {
   const clients = (await db()
     .select<{ id: string, payload: string, groupName?: string }[]>(
-      db().ref('id').withSchema('oidc_payloads'),
-      db().ref('payload').withSchema('oidc_payloads'),
-      db().ref('name').as('groupName').withSchema('group'),
+      db().ref('id').withSchema(TABLES.OIDC_PAYLOADS),
+      db().ref('payload').withSchema(TABLES.OIDC_PAYLOADS),
+      db().ref('name').as('groupName').withSchema(TABLES.GROUP),
     )
-    .table<OIDCPayload>('oidc_payloads')
-    .leftOuterJoin<OIDCGroup>('oidc_group', 'oidc_payloads.id', 'oidc_group.oidcId')
-    .leftOuterJoin<Group>('group', 'oidc_group.groupId', 'group.id')
+    .table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
+    .leftOuterJoin<OIDCGroup>(TABLES.OIDC_GROUP, `${TABLES.OIDC_PAYLOADS}.id`, 'oidc_group.oidcId')
+    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ type: CLIENT_TYPE })
-    .orderBy('oidc_payloads.id', 'asc'))
+    .orderBy(`${TABLES.OIDC_PAYLOADS}.id`, 'asc'))
     .reduce<ClientResponse[]>((arr, r) => {
       const existing = arr.find(a => a.client_id === r.id)
       if (existing && r.groupName) {
@@ -54,8 +55,8 @@ export async function getClient(client_id: string): Promise<ClientResponse | und
   if (!client) {
     return
   }
-  const groups = (await db().select('name').table<OIDCGroup>('oidc_group')
-    .leftOuterJoin<Group>('group', 'oidc_group.groupId', 'group.id')
+  const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)
+    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ oidcId: client_id }))
     .map(g => g.name)
   return { ...client, groups }
@@ -65,7 +66,7 @@ export async function upsertClient(provider: Provider, clientMetadata: ClientRes
   const { groups, ...metadata } = clientMetadata
   const client: Client = await add(provider, metadata, { ctx, store: true })
   const clientId = client.clientId
-  const clientGroups: OIDCGroup[] = (await db().select().table<Group>('group').whereIn('name', groups)).map((g) => {
+  const clientGroups: OIDCGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups)).map((g) => {
     return {
       groupId: g.id,
       oidcId: clientId,
@@ -77,11 +78,11 @@ export async function upsertClient(provider: Provider, clientMetadata: ClientRes
     }
   })
   if (clientGroups[0]) {
-    await db().table<OIDCGroup>('oidc_group').insert(clientGroups)
+    await db().table<OIDCGroup>(TABLES.OIDC_GROUP).insert(clientGroups)
       .onConflict(['groupId', 'oidcId', 'oidcType']).merge(mergeKeys(clientGroups[0]))
   }
 
-  await db().table<OIDCGroup>('oidc_group').delete()
+  await db().table<OIDCGroup>(TABLES.OIDC_GROUP).delete()
     .where({ oidcId: clientId }).and
     .whereNotIn('groupId', clientGroups.map(g => g.groupId))
 

@@ -13,7 +13,7 @@ import {
 import { getClient, getClients, removeClient, upsertClient } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
-import { ADMIN_GROUP, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, TABLES, TTLs } from '@shared/constants'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { endSessions, getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
@@ -271,8 +271,8 @@ adminRouter.get('/proxyauth/:id',
     const response: ProxyAuthResponse = {
       ...proxyauth,
       groups: (await db().select('name')
-        .table<Group>('group')
-        .innerJoin<ProxyAuthGroup>('proxy_auth_group', 'proxy_auth_group.groupId', 'group.id')
+        .table<Group>(TABLES.GROUP)
+        .innerJoin<ProxyAuthGroup>(TABLES.PROXY_AUTH_GROUP, 'proxy_auth_group.groupId', 'group.id')
         .where({ proxyAuthId: proxyauth.id }).orderBy('name', 'asc')).map(v => v.name),
     }
 
@@ -316,7 +316,7 @@ adminRouter.post('/proxyAuth',
 
     // Check for domain conflict
     const conflicting = await db().select()
-      .table<ProxyAuth>('proxy_auth')
+      .table<ProxyAuth>(TABLES.PROXY_AUTH)
       .whereRaw('lower("domain") = lower(?)', [domain])
       .first()
     if (conflicting && conflicting.id !== id) {
@@ -335,9 +335,9 @@ adminRouter.post('/proxyAuth',
       updatedAt: new Date(),
     }
 
-    await db().table<ProxyAuth>('proxy_auth').insert(proxyAuth).onConflict(['id']).merge(mergeKeys(proxyAuth))
+    await db().table<ProxyAuth>(TABLES.PROXY_AUTH).insert(proxyAuth).onConflict(['id']).merge(mergeKeys(proxyAuth))
 
-    const proxyAuthGroups: ProxyAuthGroup[] = (await db().select().table<Group>('group').whereIn('name', groups)).map((g) => {
+    const proxyAuthGroups: ProxyAuthGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups)).map((g) => {
       return {
         proxyAuthId: proxyAuthId,
         groupId: g.id,
@@ -349,11 +349,11 @@ adminRouter.post('/proxyAuth',
     })
 
     if (proxyAuthGroups[0]) {
-      await db().table<ProxyAuthGroup>('proxy_auth_group').insert(proxyAuthGroups)
+      await db().table<ProxyAuthGroup>(TABLES.PROXY_AUTH_GROUP).insert(proxyAuthGroups)
         .onConflict(['groupId', 'proxyAuthId']).merge(mergeKeys(proxyAuthGroups[0]))
     }
 
-    await db().table<ProxyAuthGroup>('proxy_auth_group').delete()
+    await db().table<ProxyAuthGroup>(TABLES.PROXY_AUTH_GROUP).delete()
       .where({ proxyAuthId: proxyAuthId }).and
       .whereNotIn('groupId', proxyAuthGroups.map(g => g.groupId))
 
@@ -368,7 +368,7 @@ adminRouter.delete('/proxyauth/:id',
   async (req, res) => {
     const { id } = validatorData<{ id: string }>(req)
 
-    await db().table<ProxyAuth>('proxy_auth').delete().where({ id })
+    await db().table<ProxyAuth>(TABLES.PROXY_AUTH).delete().where({ id })
 
     res.send()
   },
@@ -431,15 +431,15 @@ adminRouter.patch('/user',
   async (req, res) => {
     const userUpdate = validatorData<UserUpdate>(req)
 
-    const existingUser = await db().table<User>('user').where({ id: userUpdate.id }).first()
+    const existingUser = await db().table<User>(TABLES.USER).where({ id: userUpdate.id }).first()
     if (!existingUser) {
       res.sendStatus(404)
       return
     }
 
     const { groups: _, ...user } = userUpdate
-    const ucount = await db().table<User>('user').update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
-    const groups: Group[] = await db().select().table<Group>('group').whereIn('name', userUpdate.groups)
+    const ucount = await db().table<User>(TABLES.USER).update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
+    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userUpdate.groups)
     const userGroups: UserGroup[] = groups.map((g) => {
       return {
         groupId: g.id,
@@ -452,11 +452,11 @@ adminRouter.patch('/user',
     })
 
     if (userGroups[0]) {
-      await db().table<UserGroup>('user_group').insert(userGroups)
+      await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
         .onConflict(['groupId', 'userId']).merge(mergeKeys(userGroups[0]))
     }
 
-    await db().table<UserGroup>('user_group').delete()
+    await db().table<UserGroup>(TABLES.USER_GROUP).delete()
       .where({ userId: userUpdate.id }).and
       .whereNotIn('groupId', userGroups.map(g => g.groupId))
 
@@ -466,7 +466,7 @@ adminRouter.patch('/user',
     }
 
     if (SMTP_VERIFIED && appConfig.SIGNUP_REQUIRES_APPROVAL && !existingUser.approved && userUpdate.approved && userUpdate.email) {
-      const userApprovedEmail = await db().table<EmailLog>('email_log')
+      const userApprovedEmail = await db().table<EmailLog>(TABLES.EMAIL_LOG)
         .where({ type: 'approved', toUser: userUpdate.id }).first()
       if (!userApprovedEmail) {
         // Only sent approved email to users that have never received one before
@@ -494,8 +494,8 @@ adminRouter.delete('/user/:id',
       return
     }
 
-    const count = await db().table<User>('user').delete().where({ id })
-    await db().table<OIDCPayload>('oidc_payloads').delete().where({ accountId: id })
+    const count = await db().table<User>(TABLES.USER).delete().where({ id })
+    await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).delete().where({ accountId: id })
 
     if (!count) {
       res.sendStatus(404)
@@ -542,10 +542,10 @@ adminRouter.patch('/users/approve',
       return
     }
 
-    await db().table<User>('user').update({ approved: true }).whereIn('id', users)
+    await db().table<User>(TABLES.USER).update({ approved: true }).whereIn('id', users)
 
-    const usersWithEmail = await db().select('id', 'email', 'name', 'username').table<User>('user').whereIn('id', users)
-    const userApprovedSent = await db().select().table<EmailLog>('email_log').where({ type: 'approved' })
+    const usersWithEmail = await db().select('id', 'email', 'name', 'username').table<User>(TABLES.USER).whereIn('id', users)
+    const userApprovedSent = await db().select().table<EmailLog>(TABLES.EMAIL_LOG).where({ type: 'approved' })
       .and.whereIn('toUser', users)
 
     for (const user of usersWithEmail) {
@@ -587,9 +587,9 @@ adminRouter.post('/users/delete',
       return
     }
 
-    await db().table<User>('user').update({ approved: true }).whereIn('id', users)
+    await db().table<User>(TABLES.USER).update({ approved: true }).whereIn('id', users)
 
-    const count = await db().table<User>('user').delete().whereIn('id', users)
+    const count = await db().table<User>(TABLES.USER).delete().whereIn('id', users)
 
     if (!count) {
       res.sendStatus(404)
@@ -601,7 +601,7 @@ adminRouter.post('/users/delete',
 )
 
 adminRouter.get('/groups', async (_req, res) => {
-  const groups = await db().select().table<Group>('group').orderBy('createdAt', 'asc')
+  const groups = await db().select().table<Group>(TABLES.GROUP).orderBy('createdAt', 'asc')
   res.send(groups)
 })
 
@@ -611,7 +611,7 @@ adminRouter.get('/group/:id',
   }),
   async (req, res) => {
     const { id } = validatorData<{ id: string }>(req)
-    const group = await db().select().table<Group>('group').where({ id }).first()
+    const group = await db().select().table<Group>(TABLES.GROUP).where({ id }).first()
 
     if (!group) {
       res.sendStatus(404)
@@ -621,8 +621,8 @@ adminRouter.get('/group/:id',
     const groupWithUsers: GroupUsers = {
       ...group,
       users: await db().select('id', 'username')
-        .table<User>('user')
-        .innerJoin<UserGroup>('user_group', 'user_group.userId', 'user.id')
+        .table<User>(TABLES.USER)
+        .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.userId', 'user.id')
         .where({ groupId: group.id }).orderBy('name', 'asc'),
     }
 
@@ -654,7 +654,7 @@ adminRouter.post('/group',
 
     // Check for name conflict
     const conflictingGroup = await db().select()
-      .table<Group>('group')
+      .table<Group>(TABLES.GROUP)
       .whereRaw('lower("name") = lower(?)', [name])
       .first()
     if (conflictingGroup && conflictingGroup.id !== id) {
@@ -675,7 +675,7 @@ adminRouter.post('/group',
         updatedAt: new Date(),
       }
 
-      await db().table<Group>('group').insert(group).onConflict(['id']).merge(mergeKeys(group))
+      await db().table<Group>(TABLES.GROUP).insert(group).onConflict(['id']).merge(mergeKeys(group))
     } else {
       // If this IS the ADMIN_GROUP, there should always be at least one user
       if (!users.length) {
@@ -696,11 +696,11 @@ adminRouter.post('/group',
     })
 
     if (userGroups[0]) {
-      await db().table<UserGroup>('user_group').insert(userGroups)
+      await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
         .onConflict(['groupId', 'userId']).merge(mergeKeys(userGroups[0]))
     }
 
-    await db().table<UserGroup>('user_group').delete()
+    await db().table<UserGroup>(TABLES.USER_GROUP).delete()
       .where({ groupId: groupId }).and
       .whereNotIn('userId', userGroups.map(g => g.userId))
 
@@ -715,14 +715,14 @@ adminRouter.delete('/group/:id',
   async (req, res) => {
     const { id } = validatorData<{ id: string }>(req)
 
-    const group = await db().select().table<Group>('group').where({ id }).first()
+    const group = await db().select().table<Group>(TABLES.GROUP).where({ id }).first()
     // Do not delete the admin group
     if (group?.name.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
       res.sendStatus(400)
       return
     }
 
-    await db().table<Group>('group').delete().where({ id })
+    await db().table<Group>(TABLES.GROUP).delete().where({ id })
 
     res.send()
   },
@@ -791,14 +791,14 @@ adminRouter.post('/invitation',
 
     if (invitationData.id) {
       // update
-      await db().table<Invitation>('invitation').update({
+      await db().table<Invitation>(TABLES.INVITATION).update({
         ...invitationData,
         updatedBy: req.user.id,
         updatedAt: new Date(),
       }).where({ id: invitationData.id })
     } else {
       // insert
-      await db().table<Invitation>('invitation').insert({
+      await db().table<Invitation>(TABLES.INVITATION).insert({
         ...invitationData,
         id,
         challenge: generate({
@@ -813,7 +813,7 @@ adminRouter.post('/invitation',
       })
     }
 
-    const groups: Group[] = await db().select().table<Group>('group').whereIn('name', groupNames)
+    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', groupNames)
     const invitationGroups: InvitationGroup[] = groups.map((g) => {
       return {
         groupId: g.id,
@@ -826,11 +826,11 @@ adminRouter.post('/invitation',
     })
 
     if (invitationGroups[0]) {
-      await db().table<InvitationGroup>('invitation_group').insert(invitationGroups)
+      await db().table<InvitationGroup>(TABLES.INVITATION_GROUP).insert(invitationGroups)
         .onConflict(['groupId', 'invitationId']).merge(mergeKeys(invitationGroups[0]))
     }
 
-    await db().table<InvitationGroup>('invitation_group').delete()
+    await db().table<InvitationGroup>(TABLES.INVITATION_GROUP).delete()
       .where({ invitationId: id }).and
       .whereNotIn('groupId', invitationGroups.map(g => g.groupId))
 
@@ -846,7 +846,7 @@ adminRouter.delete('/invitation/:id',
   async (req, res) => {
     const { id } = validatorData<{ id: string }>(req)
 
-    const count = await db().table<Invitation>('invitation').delete().where({ id })
+    const count = await db().table<Invitation>(TABLES.INVITATION).delete().where({ id })
 
     if (!count) {
       res.sendStatus(404)
@@ -882,15 +882,15 @@ adminRouter.post('/send_invitation/:id',
 
 adminRouter.get('/passwordresets', async (_req, res) => {
   const passwordResets: PasswordResetUser[] = await db().select(
-    db().ref('username').withSchema('user'),
-    db().ref('email').withSchema('user'),
+    db().ref('username').withSchema(TABLES.USER),
+    db().ref('email').withSchema(TABLES.USER),
     db().ref('id').withSchema('password_reset'),
     db().ref('userId').withSchema('password_reset'),
     db().ref('challenge').withSchema('password_reset'),
     db().ref('expiresAt').withSchema('password_reset'),
     db().ref('createdAt').withSchema('password_reset'),
-  ).table<PasswordReset>('password_reset')
-    .innerJoin<User>('user', 'user.id', 'password_reset.userId')
+  ).table<PasswordReset>(TABLES.PASSWORD_RESET)
+    .innerJoin<User>(TABLES.USER, 'user.id', 'password_reset.userId')
     .where('expiresAt', '>=', new Date())
     .orderBy('expiresAt', 'desc')
   res.send(passwordResets)
@@ -919,7 +919,7 @@ adminRouter.post('/passwordreset',
       createdAt: new Date(),
       expiresAt: createExpiration(TTLs.PASSWORD_RESET),
     }
-    await db().table<PasswordReset>('password_reset').insert(passwordReset)
+    await db().table<PasswordReset>(TABLES.PASSWORD_RESET).insert(passwordReset)
 
     const result: PasswordResetUser = { ...passwordReset, username: user.username, email: user.email }
     res.send(result)
@@ -933,7 +933,7 @@ adminRouter.delete('/passwordreset/:id',
   async (req, res) => {
     const { id } = validatorData<{ id: string }>(req)
 
-    const count = await db().table<PasswordReset>('password_reset').delete().where({ id })
+    const count = await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id })
 
     if (!count) {
       res.sendStatus(404)
@@ -950,7 +950,7 @@ adminRouter.post('/send_passwordreset/:id',
   }),
   async (req, res) => {
     const { id } = validatorData<{ id: string }>(req)
-    const reset = await db().select().table<PasswordReset>('password_reset').where({ id }).first()
+    const reset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET).where({ id }).first()
 
     if (!reset) {
       res.sendStatus(404)
@@ -1011,7 +1011,7 @@ adminRouter.get('/emails',
   async (req, res) => {
     const { page, pageSize, sortActive, sortDirection } = validatorData<EmailsRequest>(req)
 
-    const emailsModel = db().table<EmailLog>('email_log')
+    const emailsModel = db().table<EmailLog>(TABLES.EMAIL_LOG)
 
     const count = +((await emailsModel.clone().count({ count: '*' }).first())?.count ?? 0)
 

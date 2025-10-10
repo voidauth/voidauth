@@ -3,7 +3,7 @@ import type { Knex } from 'knex'
 // ---------------------------------
 // Check Constraints are not really
 //  well supported in sqlite
-//  so remove them from if pg
+//  so remove them from pg
 // ---------------------------------
 
 export async function up(knex: Knex): Promise<void> {

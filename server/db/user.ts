@@ -3,7 +3,7 @@ import { db } from './db'
 import type { UserGroup, Group } from '@shared/db/Group'
 import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import type { User } from '@shared/db/User'
-import { ADMIN_USER, ADMIN_GROUP } from '@shared/constants'
+import { ADMIN_USER, ADMIN_GROUP, TABLES } from '@shared/constants'
 import { randomUUID } from 'crypto'
 import { generate } from 'generate-password'
 import { als } from '../util/als'
@@ -13,7 +13,7 @@ import appConfig from '../util/config'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
-  return (await db().table<User>('user').select<(User & { isAdmin: number })[]>('user.*', db().raw(`
+  return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
       CASE 
         WHEN EXISTS (
           SELECT 1 
@@ -40,15 +40,15 @@ export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndica
 }
 
 export async function getUserById(id: string): Promise<UserDetails | undefined> {
-  const user = await db().table<User>('user').select().where({ id }).first()
+  const user = await db().table<User>(TABLES.USER).select().where({ id }).first()
 
   if (!user) {
     return undefined
   }
 
   const groups = (await db().select('name')
-    .table<Group>('group')
-    .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: user.id })
+    .table<Group>(TABLES.GROUP)
+    .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy('name', 'asc')).map(g => g.name)
 
   const { passwordHash, ...userWithoutPassword } = user
@@ -56,7 +56,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
-  const user = await db().table<User>('user').select()
+  const user = await db().table<User>(TABLES.USER).select()
     .whereRaw('lower("username") = lower(?) or lower("email") = lower(?)', [input, input]).first()
 
   if (!user) {
@@ -64,8 +64,8 @@ export async function getUserByInput(input: string): Promise<UserDetails | undef
   }
 
   const groups = (await db().select('name')
-    .table<Group>('group')
-    .innerJoin<UserGroup>('user_group', 'user_group.groupId', 'group.id').where({ userId: user.id })
+    .table<Group>(TABLES.GROUP)
+    .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy('name', 'asc')).map(g => g.name)
 
   const { passwordHash, ...userWithoutPassword } = user
@@ -73,7 +73,7 @@ export async function getUserByInput(input: string): Promise<UserDetails | undef
 }
 
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
-  const user = await db().select().table<User>('user').where({ id: userId }).first()
+  const user = await db().select().table<User>(TABLES.USER).where({ id: userId }).first()
   return !!user && !!password && !!user.passwordHash && await argon2.verify(user.passwordHash, password)
 }
 
@@ -90,7 +90,7 @@ export function isUnverified(user: Pick<UserDetails, 'email' | 'emailVerified' |
 }
 
 export async function endSessions(userId: string) {
-  await db().table<OIDCPayload>('oidc_payloads').delete().where({ type: 'Session', accountId: userId })
+  await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).delete().where({ type: 'Session', accountId: userId })
 }
 
 export async function findAccount(_: KoaContextWithOIDC | null, id: string): Promise<Account | undefined> {
@@ -126,7 +126,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
 // Create initial admin user and group
 await als.run({}, async () => {
   // Check if admin user and group have ever been created.
-  const adminCreated = await db().table<Flag>('flag').select().where({ name: 'ADMIN_CREATED' }).first()
+  const adminCreated = await db().table<Flag>(TABLES.FLAG).select().where({ name: 'ADMIN_CREATED' }).first()
   if (adminCreated?.value?.toLowerCase() !== 'true') {
     const password = generate({
       length: 32,
@@ -153,11 +153,11 @@ await als.run({}, async () => {
       updatedAt: new Date(),
     }
 
-    await db().table<User>('user').insert(initialAdminUser)
+    await db().table<User>(TABLES.USER).insert(initialAdminUser)
 
-    await db().table<Group>('group').insert(initialAdminGroup)
+    await db().table<Group>(TABLES.GROUP).insert(initialAdminGroup)
 
-    await db().table<UserGroup>('user_group').insert({
+    await db().table<UserGroup>(TABLES.USER_GROUP).insert({
       userId: initialAdminUser.id,
       groupId: initialAdminGroup.id,
       createdBy: initialAdminUser.id,
@@ -166,7 +166,7 @@ await als.run({}, async () => {
       updatedAt: new Date(),
     })
 
-    await db().table<Flag>('flag').insert({ name: 'ADMIN_CREATED', value: 'true', createdAt: new Date() })
+    await db().table<Flag>(TABLES.FLAG).insert({ name: 'ADMIN_CREATED', value: 'true', createdAt: new Date() })
       .onConflict(['name']).merge(['value'])
 
     console.log('')

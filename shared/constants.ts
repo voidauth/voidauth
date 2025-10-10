@@ -45,3 +45,24 @@ export const TTLs = {
   OIDC_JWK: 1 * YEAR,
   COOKIE_KEY: 1 * YEAR,
 } as const
+
+export const TABLES = {
+  KEY: 'key',
+  FLAG: 'flag',
+  USER: 'user',
+  GROUP: 'group',
+  USER_GROUP: 'user_group',
+  CONSENT: 'consent',
+  EMAIL_VERIFICATION: 'email_verification',
+  PASSWORD_RESET: 'password_reset',
+  INVITATION: 'invitation',
+  INVITATION_GROUP: 'invitation_group',
+  PROXY_AUTH: 'proxy_auth',
+  PROXY_AUTH_GROUP: 'proxy_auth_group',
+  OIDC_PAYLOADS: 'oidc_payloads',
+  PASSKEY: 'passkey',
+  PASSKEY_REGISTRATION: 'passkey_registration',
+  PASSKEY_AUTHENTICATION: 'passkey_authentication',
+  EMAIL_LOG: 'email_log',
+  OIDC_GROUP: 'oidc_group',
+} as const

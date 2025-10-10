@@ -1,10 +1,10 @@
 import type { Consent } from '@shared/db/Consent'
 import { db } from './db'
 import { createExpiration, mergeKeys } from './util'
-import { TTLs } from '@shared/constants'
+import { TABLES, TTLs } from '@shared/constants'
 
 export async function getExistingConsent(userId: string, redirectUri: string) {
-  return await db().select().table<Consent>('consent').where({ userId, redirectUri }).first()
+  return await db().select().table<Consent>(TABLES.CONSENT).where({ userId, redirectUri }).first()
 }
 
 export async function addConsent(redirectUri: string, userId: string, scope: string) {
@@ -16,7 +16,7 @@ export async function addConsent(redirectUri: string, userId: string, scope: str
     createdAt: new Date(),
   }
   await db()
-    .table<Consent>('consent')
+    .table<Consent>(TABLES.CONSENT)
     .insert(consent)
     .onConflict(['userId', 'redirectUri'])
     .merge(mergeKeys(consent))

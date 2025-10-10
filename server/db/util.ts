@@ -10,6 +10,7 @@ import appConfig from '../util/config'
 import { decryptString, encryptString, getCookieKeys, getJWKs } from './key'
 import type { ClientMetadata } from 'oidc-provider'
 import type { PasskeyAuthentication, PasskeyRegistration } from '@shared/db/Passkey'
+import { TABLES } from '@shared/constants'
 
 /**
  *
@@ -34,14 +35,14 @@ export function pastHalfExpired(ttl: number, expires: Date | number) {
 }
 
 export async function clearAllExpiredEntries() {
-  await db().delete().table<Key>('key').where('expiresAt', '<', new Date())
-  await db().delete().table<Consent>('consent').where('expiresAt', '<', new Date())
-  await db().delete().table<EmailVerification>('email_verification').where('expiresAt', '<', new Date())
-  await db().delete().table<PasswordReset>('password_reset').where('expiresAt', '<', new Date())
-  await db().delete().table<Invitation>('invitation').where('expiresAt', '<', new Date())
-  await db().delete().table<OIDCPayload>('oidc_payloads').where('expiresAt', '<', new Date())
-  await db().delete().table<PasskeyRegistration>('passkey_registration').where('expiresAt', '<', new Date())
-  await db().delete().table<PasskeyAuthentication>('passkey_authentication').where('expiresAt', '<', new Date())
+  await db().delete().table<Key>(TABLES.KEY).where('expiresAt', '<', new Date())
+  await db().delete().table<Consent>(TABLES.CONSENT).where('expiresAt', '<', new Date())
+  await db().delete().table<EmailVerification>(TABLES.EMAIL_VERIFICATION).where('expiresAt', '<', new Date())
+  await db().delete().table<PasswordReset>(TABLES.PASSWORD_RESET).where('expiresAt', '<', new Date())
+  await db().delete().table<Invitation>(TABLES.INVITATION).where('expiresAt', '<', new Date())
+  await db().delete().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where('expiresAt', '<', new Date())
+  await db().delete().table<PasskeyRegistration>(TABLES.PASSKEY_REGISTRATION).where('expiresAt', '<', new Date())
+  await db().delete().table<PasskeyAuthentication>(TABLES.PASSKEY_AUTHENTICATION).where('expiresAt', '<', new Date())
 }
 
 export type EncryptedTable = {
@@ -52,11 +53,11 @@ export type EncryptedTable = {
 export async function updateEncryptedTables(enableWarnings: boolean = false) {
   // update encrypted keys to use the latest storage encryption key
   // get keys that are locked, and those decryptable with the secondary key
-  const { locked: lockedKeys, decryptable: decryptableKeys } = checkEncrypted(await db().select().table<Key>('key'))
+  const { locked: lockedKeys, decryptable: decryptableKeys } = checkEncrypted(await db().select().table<Key>(TABLES.KEY))
   // for those decryptable with STORAGE_KEY_SECONDARY, re-encrypt with STORAGE_KEY
   for (const k of decryptableKeys) {
     const value = encryptString(k.value)
-    await db().table<Key>('key').update({
+    await db().table<Key>(TABLES.KEY).update({
       value,
     }).where({ id: k.id })
   }
@@ -72,7 +73,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
 
   // Do the same for clients
   const { locked: lockedClients, decryptable: decryptableClients } = checkEncrypted(
-    (await db().select().table<OIDCPayload>('oidc_payloads').where({ type: 'Client' })).map((p) => {
+    (await db().select().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where({ type: 'Client' })).map((p) => {
       const payload: ClientMetadata = JSON.parse(p.payload)
       return {
         id: p.id,
@@ -84,7 +85,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
   for (const k of decryptableClients) {
     const client_secret = k.value != null ? encryptString(k.value) : k.value
     const payload = JSON.stringify({ ...k.payload, client_secret: client_secret })
-    await db().table<OIDCPayload>('oidc_payloads').update({
+    await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).update({
       payload,
     }).where({ id: k.id, type: 'Client' })
   }

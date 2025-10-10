@@ -43,7 +43,7 @@ COPY --from=build /app/frontend/dist ./frontend/dist
 VOLUME ["/app/config"]
 VOLUME ["/app/db"]
 EXPOSE 3000
-CMD [ "npm", "run", "start:server" ]
+ENTRYPOINT [ "npx", "tsx", "server/index.ts" ]
 
 # Basic Typescript Checking
 FROM serve AS test

@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer'
 import pug from 'pug'
 import appConfig from './config'
 import type SMTPTransport from 'nodemailer/lib/smtp-transport'
-import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
+import { ADMIN_GROUP, REDIRECT_PATHS, TABLES } from '@shared/constants'
 import type { Invitation } from '@shared/db/Invitation'
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import { PRIMARY_CONTRAST_COLOR, PRIMARY_COLOR } from './theme'
@@ -115,7 +115,7 @@ export async function sendEmailVerification(user: UserWithoutPassword, challenge
     createdAt: new Date(),
   }
 
-  await db().table<EmailLog>('email_log').insert(emailLog)
+  await db().table<EmailLog>(TABLES.EMAIL_LOG).insert(emailLog)
 }
 
 export async function sendPasswordReset(passwordReset: PasswordReset, user: UserWithoutPassword, email: string) {
@@ -163,7 +163,7 @@ export async function sendPasswordReset(passwordReset: PasswordReset, user: User
     createdAt: new Date(),
   }
 
-  await db().table<EmailLog>('email_log').insert(emailLog)
+  await db().table<EmailLog>(TABLES.EMAIL_LOG).insert(emailLog)
 }
 
 export async function sendInvitation(invitation: Invitation, email: string) {
@@ -210,7 +210,7 @@ export async function sendInvitation(invitation: Invitation, email: string) {
     createdAt: new Date(),
   }
 
-  await db().table<EmailLog>('email_log').insert(emailLog)
+  await db().table<EmailLog>(TABLES.EMAIL_LOG).insert(emailLog)
 }
 
 export async function sendApproved(user: Pick<User, 'id' | 'username' | 'name'>, email: string) {
@@ -256,7 +256,7 @@ export async function sendApproved(user: Pick<User, 'id' | 'username' | 'name'>,
     createdAt: new Date(),
   }
 
-  await db().table<EmailLog>('email_log').insert(emailLog)
+  await db().table<EmailLog>(TABLES.EMAIL_LOG).insert(emailLog)
 }
 
 export async function sendAdminNotifications() {
@@ -264,9 +264,9 @@ export async function sendAdminNotifications() {
     return
   }
 
-  const adminUsers: User[] = await db().select<User[]>('user.*').table<User>('user')
-    .innerJoin('user_group', 'user_group.userId', 'user.id')
-    .innerJoin('group', 'group.id', 'user_group.groupId')
+  const adminUsers: User[] = await db().select<User[]>('user.*').table<User>(TABLES.USER)
+    .innerJoin(TABLES.USER_GROUP, 'user_group.userId', 'user.id')
+    .innerJoin(TABLES.GROUP, 'group.id', 'user_group.groupId')
     .where('group.name', ADMIN_GROUP).and.whereNotNull('email')
     .andWhereNot({ email: 'admin@localhost' }) // handle historic default admin email
 
@@ -277,13 +277,13 @@ export async function sendAdminNotifications() {
   // Reasons for admin notification
   // Checking that the events happened in the span after the last admin notification email could have
   // been sent, which is an approximation
-  const approvalsNeeded = appConfig.SIGNUP_REQUIRES_APPROVAL ? await db().select().table<User>('user').where({ approved: false }) : []
+  const approvalsNeeded = appConfig.SIGNUP_REQUIRES_APPROVAL ? await db().select().table<User>(TABLES.USER).where({ approved: false }) : []
 
   if (!approvalsNeeded.length) {
     return
   }
 
-  const approvalEmailsSent = await db().select('toUser', 'reasons', 'to').table<EmailLog>('email_log')
+  const approvalEmailsSent = await db().select('toUser', 'reasons', 'to').table<EmailLog>(TABLES.EMAIL_LOG)
     .where({ type: 'admin_notification' })
     .andWhere((w) => {
       let count = 0
@@ -303,7 +303,7 @@ export async function sendAdminNotifications() {
     const previousSend = new Date(new Date().getTime() - (appConfig.ADMIN_EMAILS * 1000))
 
     // Get the latest admin notification email sent for this user/email
-    const recentAdminEmail = await db().select().table<EmailLog>('email_log').where((w) => {
+    const recentAdminEmail = await db().select().table<EmailLog>(TABLES.EMAIL_LOG).where((w) => {
       w.where({ toUser: admin.id })
       w.orWhere({ to: email })
     }).andWhere({ type: 'admin_notification' })
@@ -357,7 +357,7 @@ export async function sendAdminNotifications() {
         createdAt: new Date(),
       }
 
-      await db().table<EmailLog>('email_log').insert(emailLog)
+      await db().table<EmailLog>(TABLES.EMAIL_LOG).insert(emailLog)
     }
   }
 }

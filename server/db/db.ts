@@ -2,41 +2,34 @@ import knex from 'knex'
 import appConfig from '../util/config'
 import { als } from '../util/als'
 import { exit } from 'process'
-import { connectionPg, connectionSQLite } from './connection'
+import { getConnectionOptions } from './connection'
 
-let connectionOptions: Parameters<typeof knex>[0] | null = null
+export let connectionOptions: knex.Knex.Config
 
 try {
-  if (appConfig.DB_ADAPTER === 'postgres') {
-    connectionOptions = connectionPg({
-      DB_HOST: appConfig.DB_HOST,
-      DB_PORT: appConfig.DB_PORT,
-      DB_USER: appConfig.DB_USER,
-      DB_NAME: appConfig.DB_NAME,
-      DB_PASSWORD: appConfig.DB_PASSWORD,
-    })
-  } else if (appConfig.DB_ADAPTER === 'sqlite') {
-    connectionOptions = connectionSQLite()
-  }
+  connectionOptions = getConnectionOptions({
+    DB_ADAPTER: appConfig.DB_ADAPTER,
+    DB_HOST: appConfig.DB_HOST,
+    DB_PORT: appConfig.DB_PORT,
+    DB_USER: appConfig.DB_USER,
+    DB_NAME: appConfig.DB_NAME,
+    DB_PASSWORD: appConfig.DB_PASSWORD,
+  })
 } catch (e) {
-  console.error(e)
-  exit(1)
-}
-
-if (!connectionOptions) {
-  console.error(`DB_ADAPTER, if set, must be either 'postgres' or 'sqlite'.`)
+  console.error(typeof e === 'object' && e != null && 'message' in e ? e.message : e)
   exit(1)
 }
 
 const _db = knex(connectionOptions)
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const [,migrations]: [number, string[]] = await _db.migrate.latest({
-  loadExtensions: ['.ts'],
-})
+await runMigrations(_db)
 
-if (migrations.length) {
-  console.log(`Ran Migrations: ${migrations.join(', ')}`)
+export async function runMigrations(db: knex.Knex) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [,migrations]: [number, string[]] = await db.migrate.latest({
+    loadExtensions: ['.ts'],
+  })
+  return migrations
 }
 
 export async function transaction() {
@@ -62,13 +55,3 @@ export async function rollback() {
 export function db() {
   return als.getStore()?.transaction ?? _db
 }
-
-// if MIGRATE_TO_DB_ADAPTER is set, attempt to migrate existing DB to a new DB
-await als.run({}, async () => {
-  // Check if MIGRATE_TO_DB_ADAPTER is set
-  if (appConfig.MIGRATE_TO_DB_ADAPTER) {
-    await new Promise((resolve, _reject) => {
-      resolve(true)
-    })
-  }
-})
