@@ -8,13 +8,13 @@ import { TABLES_ORDER } from '@shared/constants'
 
 export async function migrate() {
   if (!appConfig.MIGRATE_TO_DB_ADAPTER) {
-    console.error('Migration failed, environment variable MIGRATE_TO_DB_ADAPTER is not set')
+    console.error('Environment variable MIGRATE_TO_DB_ADAPTER is not set.')
     exit(1)
   }
   const newDBAdapter = appConfig.MIGRATE_TO_DB_ADAPTER
 
   if (appConfig.DB_ADAPTER === appConfig.MIGRATE_TO_DB_ADAPTER) {
-    console.error('Cannot migrate between the same DB_ADAPTER types.')
+    console.error('Cannot migrate databases between the same DB_ADAPTER types.')
     exit(1)
   }
 
