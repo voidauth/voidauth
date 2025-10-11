@@ -26,6 +26,7 @@
     "@angular/cli": "^20.3.0",
     "@angular/material": "^20.2.2",
     "@simplewebauthn/server": "^13.1.2",
+    "@types/yargs": "^17.0.33",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
@@ -49,7 +50,8 @@
     "sass": "^1.92.1",
     "sqlite3": "^5.1.7",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",

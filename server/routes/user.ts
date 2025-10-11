@@ -13,6 +13,7 @@ import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
 import { deleteUserPasskeys } from '../db/passkey'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
+import { TABLES } from '@shared/constants'
 
 export const userRouter = Router()
 
@@ -32,7 +33,7 @@ userRouter.patch('/profile',
     const user = req.user
     const profile = validatorData<UpdateProfile>(req)
 
-    await db().table<User>('user').update(profile).where({ id: user.id })
+    await db().table<User>(TABLES.USER).update(profile).where({ id: user.id })
 
     res.send()
   },
@@ -50,7 +51,7 @@ userRouter.patch('/email',
     if (appConfig.EMAIL_VERIFICATION && email) {
       await createEmailVerification(user, email)
     } else {
-      await db().table<User>('user').update({ email }).where({ id: user.id })
+      await db().table<User>(TABLES.USER).update({ email }).where({ id: user.id })
     }
 
     res.send()
@@ -75,7 +76,7 @@ userRouter.patch('/password',
       return
     }
 
-    await db().table<User>('user').update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
+    await db().table<User>(TABLES.USER).update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
     res.send()
   },
 )
@@ -100,14 +101,14 @@ userRouter.delete('/password', async (req, res) => {
     return
   }
 
-  await db().table<User>('user').update({ passwordHash: null }).where({ id: user.id })
+  await db().table<User>(TABLES.USER).update({ passwordHash: null }).where({ id: user.id })
   res.send()
 })
 
 userRouter.delete('/user', async (req, res) => {
   const user = req.user
 
-  await db().table<User>('user').delete().where({ id: user.id })
-  await db().table<OIDCPayload>('oidc_payloads').delete().where({ accountId: user.id })
+  await db().table<User>(TABLES.USER).delete().where({ id: user.id })
+  await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).delete().where({ accountId: user.id })
   res.send()
 })

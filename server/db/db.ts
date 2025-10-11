@@ -1,79 +1,38 @@
 import knex from 'knex'
 import appConfig from '../util/config'
 import { als } from '../util/als'
-import { generate } from 'generate-password'
 import { exit } from 'process'
-import fs from 'node:fs'
+import { getConnectionOptions } from './connection'
 
-let connectionOptions: Parameters<typeof knex>[0] | null = null
+let connectionOptions: knex.Knex.Config
 
-if (appConfig.DB_ADAPTER === 'postgres') {
-  // check that DB_PASSWORD is set
-  if (!appConfig.DB_PASSWORD?.length) {
-    console.error('DB_PASSWORD must be set. If you don\'t already have one, use something long and random like:')
-    console.error(generate({
-      length: 32,
-      numbers: true,
-    }))
-    exit(1)
-  }
-
-  // check that DB_HOST is set
-  if (!appConfig.DB_HOST?.length) {
-    console.error('DB_HOST must be set.')
-    exit(1)
-  }
-
-  connectionOptions = {
-    client: 'pg',
-    useNullAsDefault: true,
-    connection: {
-      host: appConfig.DB_HOST,
-      port: appConfig.DB_PORT,
-      user: appConfig.DB_USER,
-      database: appConfig.DB_NAME,
-      password: appConfig.DB_PASSWORD,
-    },
-  }
-} else if (appConfig.DB_ADAPTER === 'sqlite') {
-  if (!fs.existsSync('./db')) {
-    fs.mkdirSync('./db', {
-      recursive: true,
-    })
-  }
-
-  connectionOptions = {
-    client: 'sqlite3',
-    connection: {
-      filename: './db/db.sqlite',
-    },
-    useNullAsDefault: true,
-    pool: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      afterCreate: (conn: any, cb: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        conn.prepare('PRAGMA foreign_keys = ON').run()
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        cb()
-      },
-    },
-  }
-}
-
-if (!connectionOptions) {
-  console.error(`DB_ADAPTER, if set, must be either 'postgres' or 'sqlite'.`)
+try {
+  connectionOptions = getConnectionOptions({
+    DB_ADAPTER: appConfig.DB_ADAPTER,
+    DB_HOST: appConfig.DB_HOST,
+    DB_PORT: appConfig.DB_PORT,
+    DB_USER: appConfig.DB_USER,
+    DB_NAME: appConfig.DB_NAME,
+    DB_PASSWORD: appConfig.DB_PASSWORD,
+  })
+} catch (e) {
+  console.error(typeof e === 'object' && e != null && 'message' in e ? e.message : e)
   exit(1)
 }
 
 const _db = knex(connectionOptions)
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const [,migrations]: [number, string[]] = await _db.migrate.latest({
-  loadExtensions: ['.ts'],
-})
-
+const migrations = await runMigrations(_db)
 if (migrations.length) {
-  console.log(`Ran Migrations: ${migrations.join(', ')}`)
+  console.log('Database schema updated.')
+}
+
+export async function runMigrations(db: knex.Knex) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [,migrations]: [number, string[]] = await db.migrate.latest({
+    loadExtensions: ['.ts'],
+  })
+  return migrations
 }
 
 export async function transaction() {

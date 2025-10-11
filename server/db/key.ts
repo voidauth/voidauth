@@ -1,7 +1,7 @@
 import { parseEncrypedData, type Key } from '@shared/db/Key'
 import appConfig from '../util/config'
 import { commit, transaction, db, rollback } from './db'
-import { KEY_TYPES, TTLs } from '@shared/constants'
+import { KEY_TYPES, TABLES, TTLs } from '@shared/constants'
 import { createExpiration, pastHalfExpired, updateEncryptedTables } from './util'
 import { als } from '../util/als'
 import crypto from 'node:crypto'
@@ -29,7 +29,7 @@ export async function makeKeysValid() {
 export async function getCookieKeys() {
   const keys = (await db()
     .select()
-    .table<Key>('key')
+    .table<Key>(TABLES.KEY)
     .where({ type: KEY_TYPES.COOKIE_KEY }).andWhere('expiresAt', '>=', new Date())
     .orderBy('expiresAt', 'desc'))
     .reduce<Key[]>((ks, k) => {
@@ -58,7 +58,7 @@ async function createCookieKey() {
     expiresAt: createExpiration(TTLs.COOKIE_KEY),
   }
 
-  await db().table<Key>('key').insert(key)
+  await db().table<Key>(TABLES.KEY).insert(key)
 }
 
 /**
@@ -67,7 +67,7 @@ async function createCookieKey() {
 export async function getJWKs() {
   const keys = (await db()
     .select()
-    .table<Key>('key')
+    .table<Key>(TABLES.KEY)
     .where({ type: KEY_TYPES.OIDC_JWK }).andWhere('expiresAt', '>=', new Date())
     .orderBy('expiresAt', 'desc'))
     .reduce<Key[]>((ks, k) => {
@@ -108,7 +108,7 @@ async function createJWK() {
     expiresAt: createExpiration(TTLs.OIDC_JWK),
   }
 
-  await db().table<Key>('key').insert(key)
+  await db().table<Key>(TABLES.KEY).insert(key)
 }
 
 /**

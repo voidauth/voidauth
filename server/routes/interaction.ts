@@ -15,7 +15,7 @@ import { db } from '../db/db'
 import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
-import { REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { type Interaction, type Session } from 'oidc-provider'
 import { unlessNull, emailValidation, nameValidation,
   newPasswordValidation,
@@ -514,10 +514,10 @@ router.post('/register',
     }
 
     // insert user into table
-    await db().table<User>('user').insert(user)
+    await db().table<User>(TABLES.USER).insert(user)
 
     if (invitationValid) {
-      const inviteGroups = await db().select().table<InvitationGroup>('invitation_group')
+      const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP)
         .where({ invitationId: invitation.id })
 
       if (inviteGroups.length) {
@@ -531,10 +531,10 @@ router.post('/register',
             updatedAt: new Date(),
           }
         })
-        await db().table<UserGroup>('user_group').insert(userGroups)
+        await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
       }
 
-      await db().table<Invitation>('invitation').delete().where({ id: invitation.id })
+      await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
 
       // Accepted Invitation should redirect to DEFAULT_REDIRECT if set
       const defaultRedirect = appConfig.DEFAULT_REDIRECT
@@ -663,10 +663,10 @@ router.post('/register/passkey/end',
     }
 
     // insert user into table
-    await db().table<User>('user').insert(user)
+    await db().table<User>(TABLES.USER).insert(user)
 
     if (invitationValid) {
-      const inviteGroups = await db().select().table<InvitationGroup>('invitation_group')
+      const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP)
         .where({ invitationId: invitation.id })
 
       if (inviteGroups.length) {
@@ -680,10 +680,10 @@ router.post('/register/passkey/end',
             updatedAt: new Date(),
           }
         })
-        await db().table<UserGroup>('user_group').insert(userGroups)
+        await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
       }
 
-      await db().table<Invitation>('invitation').delete().where({ id: invitation.id })
+      await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
 
       // Accepted Invitation should redirect to DEFAULT_REDIRECT if set
       const defaultRedirect = appConfig.DEFAULT_REDIRECT
@@ -839,11 +839,11 @@ router.post('/verify_email',
     }
 
     // TODO: if user email does not match verification email, send an update to the old email
-    await db().table<User>('user').where('id', user.id).update({
+    await db().table<User>(TABLES.USER).where('id', user.id).update({
       emailVerified: true,
       email: emailVerification.email,
     })
-    await db().delete().table<EmailVerification>('email_verification').where(emailVerification)
+    await db().delete().table<EmailVerification>(TABLES.EMAIL_VERIFICATION).where(emailVerification)
 
     // Email verification should redirect to DEFAULT_REDIRECT if set
     const defaultRedirect = appConfig.DEFAULT_REDIRECT
@@ -949,7 +949,7 @@ export async function createEmailVerification(
     createdAt: new Date(),
   }
   // insert new email verification challenge
-  await db().table<EmailVerification>('email_verification').insert(email_verification)
+  await db().table<EmailVerification>(TABLES.EMAIL_VERIFICATION).insert(email_verification)
   await sendEmailVerification(user, challenge, sentEmail)
   return true
 }
