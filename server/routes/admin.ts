@@ -884,11 +884,11 @@ adminRouter.get('/passwordresets', async (_req, res) => {
   const passwordResets: PasswordResetUser[] = await db().select(
     db().ref('username').withSchema(TABLES.USER),
     db().ref('email').withSchema(TABLES.USER),
-    db().ref('id').withSchema('password_reset'),
-    db().ref('userId').withSchema('password_reset'),
-    db().ref('challenge').withSchema('password_reset'),
-    db().ref('expiresAt').withSchema('password_reset'),
-    db().ref('createdAt').withSchema('password_reset'),
+    db().ref('id').withSchema(TABLES.PASSWORD_RESET),
+    db().ref('userId').withSchema(TABLES.PASSWORD_RESET),
+    db().ref('challenge').withSchema(TABLES.PASSWORD_RESET),
+    db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET),
+    db().ref('createdAt').withSchema(TABLES.PASSWORD_RESET),
   ).table<PasswordReset>(TABLES.PASSWORD_RESET)
     .innerJoin<User>(TABLES.USER, 'user.id', 'password_reset.userId')
     .where('expiresAt', '>=', new Date())

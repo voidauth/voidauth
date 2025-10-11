@@ -40,8 +40,6 @@ COPY ./shared ./shared
 # Copy web files from builder
 COPY --from=build /app/frontend/dist ./frontend/dist
 
-VOLUME ["/app/config"]
-VOLUME ["/app/db"]
 EXPOSE 3000
 ENTRYPOINT [ "npx", "tsx", "server/index.ts" ]
 

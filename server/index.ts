@@ -1,3 +1,4 @@
+import { exit } from 'process'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
@@ -15,6 +16,7 @@ export const argv = yargs(hideBin(process.argv))
     async () => {
       const migrate = await import('./migrateDB')
       await migrate.migrate()
-      console.log('Migration completed successfully!')
+      console.log('Database migration completed successfully, adjust your DB_* environment variables and restart.')
+      exit(0)
     })
   .parse()

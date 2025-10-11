@@ -4,7 +4,7 @@ import { als } from '../util/als'
 import { exit } from 'process'
 import { getConnectionOptions } from './connection'
 
-export let connectionOptions: knex.Knex.Config
+let connectionOptions: knex.Knex.Config
 
 try {
   connectionOptions = getConnectionOptions({
@@ -22,7 +22,10 @@ try {
 
 const _db = knex(connectionOptions)
 
-await runMigrations(_db)
+const migrations = await runMigrations(_db)
+if (migrations.length) {
+  console.log('Database schema updated.')
+}
 
 export async function runMigrations(db: knex.Knex) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

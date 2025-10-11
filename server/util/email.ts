@@ -32,9 +32,9 @@ const transporter = nodemailer.createTransport(transportOptions)
 if (appConfig.SMTP_HOST) {
   transporter.verify().then(() => {
     SMTP_VERIFIED = true
-    console.log('Email Connection Verified.')
+    console.log('SMTP Email Connection Verified.')
   }).catch((e: unknown) => {
-    console.error('Email Connection NOT Verified:')
+    console.error('SMTP Email Connection ERROR:')
     console.error(e)
   })
 }
