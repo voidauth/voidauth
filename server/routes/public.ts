@@ -8,7 +8,7 @@ import { newPasswordValidation, stringValidation, uuidValidation } from '../util
 import { endSessions, getUserById, getUserByInput } from '../db/user'
 import { db } from '../db/db'
 import { createExpiration } from '../db/util'
-import { TTLs } from '@shared/constants'
+import { TABLES, TTLs } from '@shared/constants'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
 import { randomUUID } from 'crypto'
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
@@ -62,7 +62,7 @@ publicRouter.post('/send_password_reset',
       createdAt: new Date(),
       expiresAt: createExpiration(TTLs.PASSWORD_RESET),
     }
-    await db().table<PasswordReset>('password_reset').insert(passwordReset)
+    await db().table<PasswordReset>(TABLES.PASSWORD_RESET).insert(passwordReset)
 
     // If possible, send email
     const email = user.email
@@ -85,7 +85,7 @@ publicRouter.post('/reset_password',
   async (req, res) => {
     const { userId, challenge, newPassword } = validatorData<ResetPassword>(req)
     const user = await getUserById(userId)
-    const passwordReset = await db().select().table<PasswordReset>('password_reset')
+    const passwordReset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET)
       .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()
 
     if (!user || !passwordReset) {
@@ -93,8 +93,8 @@ publicRouter.post('/reset_password',
       return
     }
 
-    await db().table<User>('user').update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
-    await db().table<PasswordReset>('password_reset').delete().where({ id: passwordReset.id })
+    await db().table<User>(TABLES.USER).update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
+    await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id: passwordReset.id })
     await endSessions(user.id)
     res.send()
   },
@@ -108,7 +108,7 @@ publicRouter.post('/reset_password/passkey/start',
   async (req, res) => {
     const { userId, challenge } = validatorData<Omit<ResetPassword, 'newPassword'>>(req)
     const user = await getUserById(userId)
-    const passwordReset = await db().select().table<PasswordReset>('password_reset')
+    const passwordReset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET)
       .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()
 
     if (!user || !passwordReset) {
@@ -134,7 +134,7 @@ publicRouter.post('/reset_password/passkey/end',
     const body = validatorData<Omit<ResetPassword, 'newPassword'> & RegistrationResponseJSON>(req)
     const { userId, challenge } = body
     const user = await getUserById(userId)
-    const passwordReset = await db().select().table<PasswordReset>('password_reset')
+    const passwordReset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET)
       .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()
 
     if (!user || !passwordReset) {
@@ -142,7 +142,7 @@ publicRouter.post('/reset_password/passkey/end',
       return
     }
 
-    await db().table<PasswordReset>('password_reset').delete().where({ id: passwordReset.id })
+    await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id: passwordReset.id })
 
     const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
 

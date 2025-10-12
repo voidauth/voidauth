@@ -20,9 +20,17 @@ class Config {
   DB_ADAPTER = 'postgres'
   DB_PASSWORD?: string // checked for validity
   DB_HOST?: string
-  DB_PORT: number = 5432
-  DB_USER: string = 'postgres'
-  DB_NAME: string = 'postgres'
+  DB_PORT?: number
+  DB_USER?: string
+  DB_NAME?: string
+
+  // Database migration config
+  MIGRATE_TO_DB_ADAPTER = 'postgres'
+  MIGRATE_TO_DB_PASSWORD?: string
+  MIGRATE_TO_DB_HOST?: string
+  MIGRATE_TO_DB_PORT?: number
+  MIGRATE_TO_DB_USER?: string
+  MIGRATE_TO_DB_NAME?: string
 
   // required and checked for validity
   STORAGE_KEY: string = ''
@@ -49,7 +57,6 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     // positive ints
     case 'APP_PORT':
     case 'SMTP_PORT':
-    case 'DB_PORT':
     case 'PASSWORD_STRENGTH':
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
@@ -75,11 +82,23 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'CONTACT_EMAIL':
     case 'DB_HOST':
     case 'DB_PASSWORD':
+    case 'DB_NAME':
+    case 'DB_USER':
+    case 'MIGRATE_TO_DB_PASSWORD':
+    case 'MIGRATE_TO_DB_HOST':
+    case 'MIGRATE_TO_DB_USER':
+    case 'MIGRATE_TO_DB_NAME':
     case 'SMTP_HOST':
     case 'SMTP_FROM':
     case 'SMTP_USER':
     case 'SMTP_PASS':
       appConfig[key] = stringOnly(value) ?? appConfig[key]
+      break
+
+    // non default pos int variables
+    case 'DB_PORT':
+    case 'MIGRATE_TO_DB_PORT':
+      appConfig[key] = posInt(value) ?? appConfig[key]
       break
 
     // The default case for all string config values
