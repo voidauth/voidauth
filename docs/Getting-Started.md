@@ -90,6 +90,8 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | APP_URL | | URL VoidAuth will be served on. Must start with`https://`, subdirectory routing is supported. ex. `https://auth.example.com` or `https://example.com/auth` | 🔴 | |
+| STORAGE_KEY | | Storage encryption key for secret values such as keys and client secrets. Must be at least 32 characters long and should be randomly generated. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
+| STORAGE_KEY_SECONDARY | | Secondary storage encryption key, used when rotating the primary storage encryption key. | | |
 | DEFAULT_REDIRECT | `${APP_URL}` | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
 | SIGNUP | `false` | Whether the app allows new users to self-register themselves without invitation. | | |
 | SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |
@@ -103,8 +105,8 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | APP_COLOR | `#906bc7` | Theme color, rgb format; ex. #xxyyzz | | ✅ |
 | CONTACT_EMAIL | | The email address used for 'Contact' links, which are shown on most end-user pages if this is set. | | |
 
-#### DB Settings
-When using the `sqlite` database adapter type, no additional database connection variables are required. You will need a mounted volume to hold the generated `db.sqlite` file, as shown (commented out) in the docker compose example above.
+#### Database Settings
+When using the `sqlite` database adapter type, no additional database connection variables are required. You will need a mounted volume to hold the generated `db.sqlite` file, as shown in the SQLite docker compose example above.
 
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
@@ -114,9 +116,18 @@ When using the `sqlite` database adapter type, no additional database connection
 | DB_PORT | `5432` | Port of the database. Not used if using SQLite database. | | |
 | DB_USER | `postgres` | Username used to sign into the database by the app. Not used if using SQLite database. | | |
 | DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if using SQLite database. | | |
-| STORAGE_KEY | | Storage encryption key for secret values such as keys and client secrets. Must be at least 32 characters long and should be randomly generated. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
-| STORAGE_KEY_SECONDARY | | Secondary storage encryption key, used when rotating the primary storage encryption key. | | |
 
+#### Database Migration Settings
+Use the following environment variables to configure a database migration. These variables *exactly* mirror the `DB_*` environment variables and describe the connection to be made to the new database. See details on how to migrate an existing database to a new one on the [Database Migration](DB-Migration.md) page.
+
+| Name | Default | Description | Required | Recommended |
+| :------ | :-- | :-------- | :--- | :--- |
+| MIGRATE_TO_DB_ADAPTER | `postgres` | Allowed values are `postgres` and `sqlite`. | | |
+| MIGRATE_TO_DB_HOST | | Host address of the database. | 🔴 (unless migrating to SQLite database) | |
+| MIGRATE_TO_DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless migrating to SQLite database) | |
+| MIGRATE_TO_DB_PORT | `5432` | Port of the database. Not used if migrating to SQLite database. | | |
+| MIGRATE_TO_DB_USER | `postgres` | Username used to sign into the database by the app. Not used if migrating to SQLite database. | | |
+| MIGRATE_TO_DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if migrating to SQLite database. | | |
 
 #### SMTP Settings
 All of these settings are ✅ recommended to be set to the correct values for your email provider.

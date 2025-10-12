@@ -25,7 +25,7 @@ class Config {
   DB_NAME?: string
 
   // Database migration config
-  MIGRATE_TO_DB_ADAPTER?: string
+  MIGRATE_TO_DB_ADAPTER = 'postgres'
   MIGRATE_TO_DB_PASSWORD?: string
   MIGRATE_TO_DB_HOST?: string
   MIGRATE_TO_DB_PORT?: number
@@ -84,7 +84,6 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'DB_PASSWORD':
     case 'DB_NAME':
     case 'DB_USER':
-    case 'MIGRATE_TO_DB_ADAPTER':
     case 'MIGRATE_TO_DB_PASSWORD':
     case 'MIGRATE_TO_DB_HOST':
     case 'MIGRATE_TO_DB_USER':

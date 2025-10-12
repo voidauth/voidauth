@@ -7,12 +7,6 @@ import { exit } from 'process'
 import { TABLES_ORDER } from '@shared/constants'
 
 export async function migrate() {
-  if (!appConfig.MIGRATE_TO_DB_ADAPTER) {
-    console.error('Environment variable MIGRATE_TO_DB_ADAPTER is not set.')
-    exit(1)
-  }
-  const newDBAdapter = appConfig.MIGRATE_TO_DB_ADAPTER
-
   if (appConfig.DB_ADAPTER === appConfig.MIGRATE_TO_DB_ADAPTER) {
     console.error('Cannot migrate databases between the same DB_ADAPTER types.')
     exit(1)
@@ -28,7 +22,7 @@ export async function migrate() {
       let newConnectionOptions: knex.Knex.Config
       try {
         newConnectionOptions = getConnectionOptions({
-          DB_ADAPTER: newDBAdapter,
+          DB_ADAPTER: appConfig.MIGRATE_TO_DB_ADAPTER,
           DB_HOST: appConfig.MIGRATE_TO_DB_HOST,
           DB_PORT: appConfig.MIGRATE_TO_DB_PORT,
           DB_USER: appConfig.MIGRATE_TO_DB_USER,
