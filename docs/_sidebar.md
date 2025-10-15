@@ -7,3 +7,4 @@
   * [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md)
   * [User Management](User-Management.md)
   * [Security Groups](Security-Groups.md)
+  * [Database Migration](DB-Migration.md)

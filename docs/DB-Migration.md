@@ -3,7 +3,7 @@
 An existing VoidAuth database can be migrated to a new database using the `MIGRATE_TO_DB_*` environment variables and `migrate` command. See the **Database Migration Settings** section of the [Getting Started](Getting-Started.md#database-migration-settings) page for required environment variable information. The `MIGRATE_TO_DB_*` variables of the new database are the same as the `DB_*` variables of the existing database, and contain the configuration of the database you are migrating **to**.
 
 >[!TIP]
-> Database migration is **non-destructive** to the existing database described by the `DB_*` variables. It **IS** destructive to the database you are migrating **to**, described by the `MIGRATE_TO_DB_*`, as it removes all data from tables used by VoidAuth before copying the data from the existing database.
+> Database migration is **non-destructive** to the existing database described by the `DB_*` variables. It **IS** destructive to the database you are migrating **to**, described by the `MIGRATE_TO_DB_*` variables, as it may remove data before copying from the existing database.
 
 The following is the basic procedure for migrating **from** an existing database **to** a new database:
 
