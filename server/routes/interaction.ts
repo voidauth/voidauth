@@ -632,7 +632,7 @@ router.post('/register/passkey/end',
     const { verification, currentOptions } = await getRegistrationInfo(interaction.uid, registration)
 
     const { verified, registrationInfo } = verification
-    if (!verified || !registrationInfo) {
+    if (!verified) {
       res.sendStatus(400)
       return
     }
@@ -765,7 +765,7 @@ router.post('/passkey/registration/end',
     const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
 
     const { verified, registrationInfo } = verification
-    if (!verified || !registrationInfo) {
+    if (!verified) {
       res.sendStatus(400)
       return
     }

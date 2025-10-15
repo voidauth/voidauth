@@ -147,7 +147,7 @@ publicRouter.post('/reset_password/passkey/end',
     const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
 
     const { verified, registrationInfo } = verification
-    if (!verified || !registrationInfo) {
+    if (!verified) {
       res.sendStatus(400)
       return
     }
