@@ -2,7 +2,7 @@ import type { User } from './User'
 
 export type Passkey = {
   id: string
-  publicKey: Uint8Array
+  publicKey: Uint8Array<ArrayBuffer>
   userId: User['id']
   webAuthnUserID: string
   counter: number
