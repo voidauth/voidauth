@@ -57,7 +57,9 @@ function connectionPg(options: {
 
 function connectionSQLite() {
   if (!fs.existsSync('./db')) {
-    throw new Error('SQLite database directory not found.')
+    fs.mkdirSync('./db', {
+      recursive: true,
+    })
   }
 
   return {
