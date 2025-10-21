@@ -32,7 +32,7 @@
 
 ## What is VoidAuth
 
-VoidAuth is an open-source SSO authentication and user management provider that stands guard in front of your self-hosted applications. The goal of VoidAuth is to be easy-to-use for admins and end-users, supporting nice-to-have features like passkeys, user invitation, self-registration, email support, and more!
+VoidAuth is an open-source SSO authentication and user management provider that stands guard in front of your self-hosted applications. It is easy-to-use for admins and end-users, supports nice-to-have features like passkeys, user invitation, self-registration, email support, and more!
 
 Key Features:
 
