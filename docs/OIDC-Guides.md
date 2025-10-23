@@ -238,7 +238,7 @@ User identifier: preferred_username
 Scopes: openid profile groups email
 Auth Style: In Params
 ```
-> [!Note]
+> [!NOTE]
 > Scopes are seperated by spaces, **not** by commas
 
 In VoidAuth Create OIDC Client:
