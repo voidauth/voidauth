@@ -3,7 +3,7 @@
 In the guides below, there may be omitted options when those options are set to the default value.
 
 > [!TIP]
-> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `https://app-name.example.com`, `${APP_URL}` and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC Client Create pages.
+> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC Client Create pages.
 
 > [!CAUTION]
 > Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. VoidAuth provides the ability to generate the Client Secret field on the OIDC Client page and to copy it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
@@ -54,6 +54,25 @@ Redirect URLs: https://your-team-name.cloudflareaccess.com/cdn-cgi/access/callba
 Token Endpoint Auth Method: client_secret_basic
 ```
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/grist.svg" width="28" /> Grist
+
+Grist OIDC Setup Environment Variables:
+
+```
+GRIST_OIDC_IDP_ISSUER: Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
+GRIST_OIDC_IDP_CLIENT_ID: your-client-id
+GRIST_OIDC_IDP_CLIENT_SECRET: your-client-secret
+```
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://grist.example.com/oauth2/callback
+Token Endpoint Auth Method: client_secret_basic
+```
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/immich.svg" width="28" /> Immich
 
 In Immich:
@@ -96,7 +115,7 @@ In Jellyfin:
 3. Fill out the OID Provider form as follows and Save:
 ```
 Name: VoidAuth
-OID Endpoint: Copy from VoidAuth OIDC Info (OIDC Endpoint)
+OID Endpoint: Copy from VoidAuth OIDC Info (OIDC Issuer Endpoint)
 OpenID Client ID: your-client-id
 OID Secret: your-client-secret
 Enabled: Yes
@@ -124,16 +143,14 @@ Token Endpoint Auth Method: client_secret_post
 Manyfold OIDC Setup Environment Variables:
 
 ```
-...
 MULTIUSER: true
 PUBLIC_HOSTNAME: manyfold.example.com
 OIDC_CLIENT_ID: your-client-id
 OIDC_CLIENT_SECRET: your-client-secret
-OIDC_ISSUER: ${APP_URL}
+OIDC_ISSUER: Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
 OIDC_NAME: VoidAuth
 # Optional:
 # FORCE_OIDC: true
-...
 ```
 
 In VoidAuth OIDC Client Page:
@@ -153,7 +170,7 @@ Mastodon OIDC Setup Environment Variables:
 ```
 OIDC_ENABLED: true
 OIDC_DISCOVERY: true
-OIDC_ISSUER: ${APP_URL}
+OIDC_ISSUER: Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
 OIDC_DISPLAY_NAME: VoidAuth
 OIDC_CLIENT_ID: your-client-id
 OIDC_CLIENT_SECRET: your-client-secret
@@ -163,7 +180,6 @@ OIDC_REDIRECT_URI: https://mastodon.example.com/auth/auth/openid_connect/callbac
 OIDC_SECURITY_ASSUME_EMAIL_IS_VERIFIED: true
 # Optional:
 # ALLOW_UNSAFE_AUTH_PROVIDER_REATTACH: true
-...
 ```
 
 In VoidAuth OIDC Client Page:
@@ -194,7 +210,6 @@ ENABLE_OAUTH_ROLE_MANAGEMENT: true
 OAUTH_ROLES_CLAIM: groups
 OAUTH_ALLOWED_ROLES: users,admins
 OAUTH_ADMIN_ROLES: admins
-...
 ```
 
 In VoidAuth OIDC Client Page:

@@ -3,7 +3,7 @@
     <mat-expansion-panel-header>
       <mat-panel-title>OIDC Endpoints for Clients</mat-panel-title>
     </mat-expansion-panel-header>
-    <app-copy-field [value]="currentHost + '/oidc'" label="OIDC Endpoint"></app-copy-field>
+    <app-copy-field [value]="currentHost + '/oidc'" label="OIDC Issuer Endpoint"></app-copy-field>
     <app-copy-field [value]="currentHost + '/oidc/.well-known/openid-configuration'" label="Well-Known Endpoint"></app-copy-field>
     <app-copy-field [value]="oidcConfig?.authorization_endpoint" label="Authorization Endpoint"></app-copy-field>
     <app-copy-field [value]="oidcConfig?.token_endpoint" label="Token Endpoint"></app-copy-field>

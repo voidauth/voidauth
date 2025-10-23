@@ -9,19 +9,18 @@
           }
           <br />
           <br />
-          Do you allow <br />
+          Do you want to sign in to <br />
           <h2>{{ redirectHost ?? details.redirectUri }}</h2>
           <br />
-          to read your account information?
           @if (redirectHost) {
             <p>
-              After you confirm, you will be sent to <b>{{ details.redirectUri }}</b>
+              After you sign in, you will be sent to <b>{{ details.redirectUri }}</b>
             </p>
           }
         </div>
 
         <mat-card-actions>
-          <button mat-flat-button type="submit">Confirm</button>
+          <button mat-flat-button type="submit">Sign In</button>
         </mat-card-actions>
       </form>
     </mat-card-content>
