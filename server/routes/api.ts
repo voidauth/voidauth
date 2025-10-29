@@ -1,8 +1,8 @@
 import { Router, type Request } from 'express'
 import { router as interactionRouter } from './interaction'
-import { provider } from '../oidc/provider'
+import { getUserWithCache, provider } from '../oidc/provider'
 import { commit, transaction, rollback } from '../db/db'
-import { getUserById, isUnapproved, isUnverified } from '../db/user'
+import { isUnapproved, isUnverified } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
@@ -78,7 +78,7 @@ router.use(async (req: Request, res, next) => {
       return
     }
 
-    const user = await getUserById(session.accountId)
+    const user = await getUserWithCache(session.accountId)
 
     if (user && !isUnapproved(user) && !isUnverified(user)) {
       const hasPasskeys = !!(await getUserPasskeys(user.id)).length

@@ -11,6 +11,7 @@ import { decryptString, encryptString, getCookieKeys, getJWKs } from './key'
 import type { ClientMetadata } from 'oidc-provider'
 import type { PasskeyAuthentication, PasskeyRegistration } from '@shared/db/Passkey'
 import { TABLES } from '@shared/constants'
+import type { TOTP } from '@shared/db/TOTP'
 
 /**
  *
@@ -43,6 +44,7 @@ export async function clearAllExpiredEntries() {
   await db().delete().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where('expiresAt', '<', new Date())
   await db().delete().table<PasskeyRegistration>(TABLES.PASSKEY_REGISTRATION).where('expiresAt', '<', new Date())
   await db().delete().table<PasskeyAuthentication>(TABLES.PASSKEY_AUTHENTICATION).where('expiresAt', '<', new Date())
+  await db().delete().table<TOTP>(TABLES.TOTP).where('expiresAt', '<', new Date())
 }
 
 export type EncryptedTable = {

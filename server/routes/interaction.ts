@@ -133,6 +133,11 @@ router.get('/', async (req, res) => {
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user?.id ?? ''}?sent=${verificationSent ? 'true' : 'false'}`)
       res.send()
       return
+    } else if (prompt.reasons.includes('user_mfa_required')) {
+      // User has MFA required, direct them to MFA page
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.send()
+      return
     }
 
     // Determine which 'login' type page to redirect to

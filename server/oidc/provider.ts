@@ -1,5 +1,5 @@
 import Provider, { type Configuration } from 'oidc-provider'
-import { findAccount, getUserById, isUnapproved, isUnverified } from '../db/user'
+import { findAccount, getUserById, isUnapproved, isUnverified, mfaNeeded } from '../db/user'
 import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
@@ -17,7 +17,7 @@ import type { UserDetails } from '@shared/api-response/UserDetails'
 // Modify consent interaction policy to check for user and client groups
 let userCheckCache: Record<string, Promise<UserDetails | undefined>> = {}
 let userCheckCacheExpires: number = 0
-const getUserWithCache = async (accountId: string) => {
+export const getUserWithCache = async (accountId: string) => {
   if (userCheckCacheExpires < new Date().getTime()) {
     userCheckCache = {}
     userCheckCacheExpires = new Date().getTime() + 30000 // 30 seconds
@@ -59,6 +59,21 @@ loginPromptPolicy.checks.add(new Check('user_email_not_validated',
     return Check.NO_NEED_TO_PROMPT
   },
 ))
+loginPromptPolicy.checks.add(new Check('user_mfa_required',
+  'user login requires mfa',
+  'user_mfa_required', async (ctx) => {
+    const { oidc } = ctx
+    if (oidc.account?.accountId) {
+      const user = await getUserWithCache(oidc.account.accountId)
+      if (user && mfaNeeded(user, oidc.session?.amr ?? [])) {
+        return Check.REQUEST_PROMPT
+      }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
+
 const consentPromptPolicy = modifiedInteractionPolicy.get('consent') as interactionPolicy.Prompt
 consentPromptPolicy.checks.add(new Check('user_group_missing',
   'missing any security group that would give access to the resource',

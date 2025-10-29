@@ -11,6 +11,8 @@ import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
 import appConfig from '../util/config'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
+import { hasTOTP } from './totp'
+import { getUserPasskeys } from './passkey'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -51,8 +53,11 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy('name', 'asc')).map(g => g.name)
 
+  const mfaEnabled = await hasTOTP(id)
+  const hasPasskeys = !!(await getUserPasskeys(user.id)).length
+
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPassword: !!passwordHash }
+  return { ...userWithoutPassword, groups, hasPasskeys, mfaEnabled, hasPassword: !!passwordHash }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
@@ -68,8 +73,11 @@ export async function getUserByInput(input: string): Promise<UserDetails | undef
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy('name', 'asc')).map(g => g.name)
 
+  const mfaEnabled = await hasTOTP(user.id)
+  const hasPasskeys = !!(await getUserPasskeys(user.id)).length
+
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPassword: !!passwordHash }
+  return { ...userWithoutPassword, groups, hasPasskeys, mfaEnabled, hasPassword: !!passwordHash }
 }
 
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
@@ -87,6 +95,11 @@ export function isUnapproved(user: Pick<UserDetails, 'approved' | 'groups'>) {
 
 export function isUnverified(user: Pick<UserDetails, 'email' | 'emailVerified' | 'groups'>) {
   return !isAdmin(user) && appConfig.EMAIL_VERIFICATION && (!user.email || !user.emailVerified)
+}
+
+export function mfaNeeded(user: Pick<UserDetails, 'mfaEnabled'>, amr: string[]) {
+  // User MFA enabled, and only password has been used
+  return user.mfaEnabled && amr.length === 1 && amr[0] === 'pwd'
 }
 
 export async function endSessions(userId: string) {
