@@ -62,6 +62,7 @@ Grist OIDC Setup Environment Variables:
 GRIST_OIDC_IDP_ISSUER: Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
 GRIST_OIDC_IDP_CLIENT_ID: your-client-id
 GRIST_OIDC_IDP_CLIENT_SECRET: your-client-secret
+GRIST_OIDC_SP_IGNORE_EMAIL_VERIFIED: true
 ```
 
 In VoidAuth OIDC Client Page:
@@ -71,6 +72,7 @@ Client ID: your-client-id
 Client Secret: your-client-secret
 Redirect URLs: https://grist.example.com/oauth2/callback
 Token Endpoint Auth Method: client_secret_basic
+PostLogout URL: https://grist.example.com/signed-out
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/immich.svg" width="28" /> Immich
