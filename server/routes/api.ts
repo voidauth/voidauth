@@ -2,7 +2,7 @@ import { Router, type Request } from 'express'
 import { router as interactionRouter } from './interaction'
 import { getUserWithCache, provider } from '../oidc/provider'
 import { commit, transaction, rollback } from '../db/db'
-import { isUnapproved, isUnverified } from '../db/user'
+import { amrRequired, isUnapproved, isUnverified } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
@@ -80,7 +80,7 @@ router.use(async (req: Request, res, next) => {
 
     const user = await getUserWithCache(session.accountId)
 
-    if (user && !isUnapproved(user) && !isUnverified(user)) {
+    if (user && !amrRequired(user.mfaEnabled, session.amr ?? []) && !isUnapproved(user) && !isUnverified(user)) {
       const hasPasskeys = !!(await getUserPasskeys(user.id)).length
       req.user = {
         ...user,

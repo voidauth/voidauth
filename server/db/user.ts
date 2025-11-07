@@ -97,9 +97,25 @@ export function isUnverified(user: Pick<UserDetails, 'email' | 'emailVerified' |
   return !isAdmin(user) && appConfig.EMAIL_VERIFICATION && (!user.email || !user.emailVerified)
 }
 
-export function mfaNeeded(user: Pick<UserDetails, 'mfaEnabled'>, amr: string[]) {
-  // User MFA enabled, and only password has been used
-  return user.mfaEnabled && amr.length === 1 && amr[0] === 'pwd'
+export function amrRequired(mfaRequired: boolean, amr: string[]) {
+  const multiFactors = ['email', 'webauthn'] // something that should already required mfa to access
+  const firstFactors = ['pwd'] // something you know (password, PIN)
+  const secondFactors = ['totp'] // something you have or are (device, biometrics)
+
+  // Multi-factor AMRs allow access always
+  if (amr.some(f => multiFactors.includes(f))) {
+    return false
+  }
+
+  // Single-factor AMRs allow access if mfa is not required, or if there is a second factor
+  if (amr.some(f => firstFactors.includes(f))) {
+    if (!mfaRequired || amr.some(f => secondFactors.includes(f))) {
+      return false
+    }
+    return 'mfa'
+  }
+
+  return 'login'
 }
 
 export async function endSessions(userId: string) {

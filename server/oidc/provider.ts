@@ -1,5 +1,5 @@
 import Provider, { type Configuration } from 'oidc-provider'
-import { findAccount, getUserById, isUnapproved, isUnverified, mfaNeeded } from '../db/user'
+import { amrRequired, findAccount, getUserById, isUnapproved, isUnverified } from '../db/user'
 import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
@@ -65,7 +65,21 @@ loginPromptPolicy.checks.add(new Check('user_mfa_required',
     const { oidc } = ctx
     if (oidc.account?.accountId) {
       const user = await getUserWithCache(oidc.account.accountId)
-      if (user && mfaNeeded(user, oidc.session?.amr ?? [])) {
+      if (user && amrRequired(user.mfaEnabled, oidc.session?.amr ?? []) === 'mfa') {
+        return Check.REQUEST_PROMPT
+      }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
+loginPromptPolicy.checks.add(new Check('user_login_required',
+  'user requires login',
+  'user_login_required', async (ctx) => {
+    const { oidc } = ctx
+    if (oidc.account?.accountId) {
+      const user = await getUserWithCache(oidc.account.accountId)
+      if (user && amrRequired(user.mfaEnabled, oidc.session?.amr ?? []) === 'login') {
         return Check.REQUEST_PROMPT
       }
     }

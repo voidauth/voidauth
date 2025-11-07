@@ -70,7 +70,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
       You have key(s) that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
       This could be due to a mistake while rotating the storage key.
       New keys were generated to replace them, this invalidated all sessions and tokens.
-      If you stil have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY and get your keys back.`)
+      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY and get your keys back.`)
   }
 
   // Do the same for clients
@@ -95,12 +95,28 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
     console.error(`WARNING!!!
       You have OIDC Clients that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
       This could be due to a mistake while rotating the storage key.
-      If you stil have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.
+      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.
       Non-decryptable Clients: ${lockedClients.map(c => c.id).join(', ')}`)
   }
 
-  if (decryptableKeys.length || decryptableClients.length) {
-    console.log('A storage key rotation was detected, re-encrypted objects decryptable with STORAGE_KEY_SECONDARY with STORAGE_KEY.')
+  // Do the same for TOTPs
+  const { locked: lockedTOTPs, decryptable: decryptableTOTPs } = checkEncrypted(await db().select().table<TOTP>(TABLES.TOTP))
+  // for those decryptable with STORAGE_KEY_SECONDARY, re-encrypt with STORAGE_KEY
+  for (const t of decryptableTOTPs) {
+    const secret = encryptString(t.secret)
+    await db().table<TOTP>(TABLES.TOTP).update({
+      secret: secret,
+    }).where({ id: t.id })
+  }
+  if (enableWarnings && lockedTOTPs.length > 0) {
+    console.error(`WARNING!!!
+      You have MFA TOTP codes that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
+      This could be due to a mistake while rotating the storage key.
+      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.`)
+  }
+
+  if (decryptableKeys.length || decryptableClients.length || decryptableTOTPs.length) {
+    console.log('A storage key rotation was detected, re-encrypted with new STORAGE_KEY.')
   }
 }
 

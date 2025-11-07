@@ -47,6 +47,7 @@ import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserD
 import { getEmailVerification } from '../db/emailVerification'
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { createTOTP, validateTOTP } from '../db/totp'
 
 const registerUserValidator = {
   username: {
@@ -79,6 +80,9 @@ const registerUserValidator = {
 
 export const router = Router()
 
+/**
+ * Gets interaction details that are less specific, no uid required
+ */
 router.get('/exists', async (req, res) => {
   const interaction = await getInteractionDetails(req, res)
   if (!interaction) {
@@ -98,6 +102,9 @@ router.get('/exists', async (req, res) => {
   res.send(redir)
 })
 
+/**
+ * Direct user to correct page to finish login or consent
+ */
 router.get('/', async (req, res) => {
   const interaction = await getInteractionDetails(req, res)
   if (!interaction) {
@@ -204,6 +211,9 @@ router.get('/', async (req, res) => {
   }
 })
 
+/**
+ * Get information about current interaction
+ */
 router.get('/:uid/detail',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
@@ -226,6 +236,9 @@ router.get('/:uid/detail',
   },
 )
 
+/**
+ * Login with password, finishes login and adds pwd to amr
+ */
 router.post('/login',
   ...validate<LoginUser>({
     input: {
@@ -285,6 +298,9 @@ router.post('/login',
   },
 )
 
+/**
+ * Start login with passkey
+ */
 router.post('/passkey/start',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
@@ -314,6 +330,9 @@ router.post('/passkey/start',
   },
 )
 
+/**
+ * Finish login with passkey, finishes login and adds webauthn to amr
+ */
 router.post('/passkey/end',
   ...validate<AuthenticationResponseJSON>({
     id: stringValidation,
@@ -431,6 +450,9 @@ router.post('/passkey/end',
   },
 )
 
+/**
+ * Consent to oidc client
+ */
 router.post('/:uid/confirm/',
   ...validate<{ uid: string }>({
     uid: stringValidation,
@@ -466,6 +488,9 @@ router.post('/:uid/confirm/',
   },
 )
 
+/**
+ * Register new user with password, finishes login and adds pwd to amr
+ */
 router.post('/register',
   ...validate<RegisterUser>({
     ...registerUserValidator,
@@ -570,6 +595,9 @@ router.post('/register',
   },
 )
 
+/**
+ * Start user registration using a passkey instead of password
+ */
 router.post('/register/passkey/start',
   ...validate<{ inviteId?: Invitation['id'], challenge?: Invitation['challenge'] }>({
     inviteId: {
@@ -609,6 +637,9 @@ router.post('/register/passkey/start',
   },
 )
 
+/**
+ * Finish user registration using a passkey instead of password, finishes login and adds webauthn to amr
+ */
 router.post('/register/passkey/end',
   ...validate<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>({
     ...passkeyRegistrationValidator,
@@ -721,6 +752,9 @@ router.post('/register/passkey/end',
   },
 )
 
+/**
+ * Start registering a passkey
+ */
 router.post('/passkey/registration/start',
   async (req, res) => {
     // user could actually be missing here since we are not checking with middleware before this
@@ -746,6 +780,9 @@ router.post('/passkey/registration/start',
   },
 )
 
+/**
+ * Finish registering a passkey, finishes login and adds webauthn to amr
+ */
 router.post('/passkey/registration/end',
   ...validate<RegistrationResponseJSON>(passkeyRegistrationValidator),
   async (req, res) => {
@@ -754,6 +791,14 @@ router.post('/passkey/registration/end',
     // Retrieve the logged-in user
     // user could actually be missing here since we are not checking with middleware before this
     let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+
+    if (!user) {
+      const ctx = provider.createContext(req, res)
+      const accountId = (await provider.Session.get(ctx)).accountId
+      if (accountId) {
+        user = await getUserById(accountId)
+      }
+    }
 
     if (!user) {
       const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
@@ -808,6 +853,120 @@ router.post('/passkey/registration/end',
   },
 )
 
+/**
+ * Register a new totp, needs to be verified afterwards or it expires
+ */
+router.post('/totp/registration',
+  async (req, res) => {
+    // Retrieve the logged-in user
+    // user could actually be missing here since we are not checking with middleware before this
+    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+
+    if (!user) {
+      const ctx = provider.createContext(req, res)
+      const accountId = (await provider.Session.get(ctx)).accountId
+      if (accountId) {
+        user = await getUserById(accountId)
+      }
+    }
+
+    if (!user) {
+      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
+      if (accountId) {
+        user = await getUserById(accountId)
+      }
+    }
+
+    if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    if (!user.hasPassword) {
+      res.sendStatus(400)
+      return
+    }
+
+    const { uri, secret } = await createTOTP(user.id, user.name ?? user.username)
+
+    res.send({ uri, secret })
+  },
+)
+
+/**
+ * Validate totp and add totp to amr
+ */
+router.post('/totp',
+  ...validate<{ token: string }>({
+    token: {
+      ...stringValidation,
+    },
+  }),
+  async (req, res) => {
+    // Retrieve the logged-in user
+    // user could actually be missing here since we are not checking with middleware before this
+    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+
+    if (!user) {
+      const ctx = provider.createContext(req, res)
+      const accountId = (await provider.Session.get(ctx)).accountId
+      if (accountId) {
+        user = await getUserById(accountId)
+      }
+    }
+
+    if (!user) {
+      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
+      if (accountId) {
+        user = await getUserById(accountId)
+      }
+    }
+
+    if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    const { token } = validatorData<{ token: string }>(req)
+
+    if (!await validateTOTP(user.id, token)) {
+      res.sendStatus(400)
+    }
+
+    // Try to add totp to session amr
+    try {
+      const ctx = provider.createContext(req, res)
+      const session = await provider.Session.get(ctx)
+      const amr = session.amr ?? []
+      if (!amr.includes('totp')) {
+        amr.push('totp')
+      }
+      session.amr = amr
+      await session.save(TTLs.SESSION)
+    } catch (e) {
+      console.error(e)
+    }
+
+    // Try to add totp to interaction amr
+    try {
+      const interaction = await getInteractionDetails(req, res)
+      if (interaction?.result?.login?.accountId && !interaction.result.login.amr?.includes('totp')) {
+        const amr = interaction.result.login.amr ?? []
+        amr.push('totp')
+        interaction.result.login.amr = amr
+        await interaction.save(TTLs.INTERACTION)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+
+    res.send()
+  },
+)
+
+/**
+ * Verify an email, finishes login adds email to amr
+ */
 router.post('/verify_email',
   ...validate<VerifyUserEmail>({
     userId: uuidValidation,

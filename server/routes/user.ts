@@ -14,6 +14,7 @@ import { checkPasswordHash } from '../db/user'
 import { deleteUserPasskeys } from '../db/passkey'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/constants'
+import type { TOTP } from '@shared/db/TOTP'
 
 export const userRouter = Router()
 
@@ -89,6 +90,11 @@ userRouter.delete('/passkeys', async (req, res) => {
     return
   }
 
+  if (!user.hasPasskeys) {
+    res.sendStatus(404)
+    return
+  }
+
   await deleteUserPasskeys(user.id)
   res.send()
 })
@@ -101,7 +107,25 @@ userRouter.delete('/password', async (req, res) => {
     return
   }
 
+  if (!user.hasPassword) {
+    res.sendStatus(404)
+    return
+  }
+
   await db().table<User>(TABLES.USER).update({ passwordHash: null }).where({ id: user.id })
+  await db().table<TOTP>(TABLES.TOTP).delete().where({ userId: user.id })
+  res.send()
+})
+
+userRouter.delete('/totp', async (req, res) => {
+  const user = req.user
+
+  if (!user.mfaEnabled) {
+    res.sendStatus(404)
+    return
+  }
+
+  await db().table<TOTP>(TABLES.TOTP).delete().where({ userId: user.id })
   res.send()
 })
 

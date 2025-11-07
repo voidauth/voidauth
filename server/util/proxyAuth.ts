@@ -2,7 +2,7 @@ import { oidcLoginPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { isMatch } from 'matcher'
 import { getProxyAuths } from '../db/proxyAuth'
-import { checkPasswordHash, getUserByInput, isUnapproved, isUnverified, mfaNeeded } from '../db/user'
+import { amrRequired, checkPasswordHash, getUserByInput, isUnapproved, isUnverified } from '../db/user'
 import { getUserWithCache, provider } from '../oidc/provider'
 import appConfig from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
@@ -71,8 +71,8 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     return
   }
 
-  // Check that user is approved and verified
-  if (isUnapproved(user) || isUnverified(user) || mfaNeeded(user, amr)) {
+  // Check that user is approved and verified and should be able to continue
+  if (isUnapproved(user) || isUnverified(user) || amrRequired(user.mfaEnabled, amr)) {
     // If not, redirect to login flow, which will send to correct redirect
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
     res.send()

@@ -6,7 +6,6 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().notNullable()
     table.uuid('userId').notNullable().references('id').inTable('user').onDelete('CASCADE')
     table.text('secret').notNullable()
-    table.boolean('verified').notNullable()
     table.timestamp('expiresAt', { useTz: true })
 
     table.timestamp('createdAt', { useTz: true }).notNullable()

@@ -4,6 +4,5 @@ export type TOTP = Pick<Audit, 'createdAt' | 'updatedAt'> & {
   id: string
   userId: string
   secret: string
-  verified: boolean | number
   expiresAt: Date | number | null
 }
