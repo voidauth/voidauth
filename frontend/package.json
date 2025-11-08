@@ -11,16 +11,16 @@
   "dependencies": {
     "@angular/animations": "^20.3.4",
     "@angular/cdk": "^20.2.8",
-    "@angular/cli": "^20.3.5",
+    "@angular/cli": "^20.3.9",
     "@angular/common": "^20.3.4",
     "@angular/compiler": "^20.3.4",
-    "@angular/compiler-cli": "^20.3.4",
+    "@angular/compiler-cli": "^20.3.10",
     "@angular/core": "^20.3.4",
-    "@angular/forms": "^20.3.4",
-    "@angular/material": "^20.2.8",
+    "@angular/forms": "^20.3.10",
+    "@angular/material": "^20.2.12",
     "@angular/platform-browser": "^20.3.4",
-    "@angular/platform-browser-dynamic": "^20.3.4",
-    "@angular/router": "^20.3.4",
+    "@angular/platform-browser-dynamic": "^20.3.10",
+    "@angular/router": "^20.3.10",
     "@simplewebauthn/browser": "^13.2.2",
     "@types/jasmine": "~5.1.0",
     "@types/oidc-provider": "^9.5.0",
@@ -29,7 +29,7 @@
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
     "generate-password-browser": "^1.1.0",
-    "isomorphic-dompurify": "^2.29.0",
+    "isomorphic-dompurify": "^2.31.0",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -45,6 +45,6 @@
     "zone.js": "^0.15.1"
   },
   "devDependencies": {
-    "@angular/build": "^20.3.5"
+    "@angular/build": "^20.3.9"
   }
 }
