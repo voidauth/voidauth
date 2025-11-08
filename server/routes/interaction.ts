@@ -757,15 +757,8 @@ router.post('/register/passkey/end',
  */
 router.post('/passkey/registration/start',
   async (req, res) => {
-    // user could actually be missing here since we are not checking with middleware before this
-    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
-
-    if (!user) {
-      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
-    }
+    // get user from req
+    const user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
 
     if (!user) {
       res.sendStatus(401)
@@ -788,24 +781,8 @@ router.post('/passkey/registration/end',
   async (req, res) => {
     const body = validatorData<RegistrationResponseJSON>(req)
 
-    // Retrieve the logged-in user
-    // user could actually be missing here since we are not checking with middleware before this
-    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
-
-    if (!user) {
-      const ctx = provider.createContext(req, res)
-      const accountId = (await provider.Session.get(ctx)).accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
-    }
-
-    if (!user) {
-      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
-    }
+    // get user from req
+    const user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
 
     if (!user) {
       res.sendStatus(401)
@@ -858,24 +835,8 @@ router.post('/passkey/registration/end',
  */
 router.post('/totp/registration',
   async (req, res) => {
-    // Retrieve the logged-in user
-    // user could actually be missing here since we are not checking with middleware before this
-    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
-
-    if (!user) {
-      const ctx = provider.createContext(req, res)
-      const accountId = (await provider.Session.get(ctx)).accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
-    }
-
-    if (!user) {
-      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
-    }
+    // get user from req
+    const user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
 
     if (!user) {
       res.sendStatus(401)
@@ -903,24 +864,8 @@ router.post('/totp',
     },
   }),
   async (req, res) => {
-    // Retrieve the logged-in user
-    // user could actually be missing here since we are not checking with middleware before this
-    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
-
-    if (!user) {
-      const ctx = provider.createContext(req, res)
-      const accountId = (await provider.Session.get(ctx)).accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
-    }
-
-    if (!user) {
-      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
-    }
+    // get user from req
+    const user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
 
     if (!user) {
       res.sendStatus(401)

@@ -1,11 +1,11 @@
 import { Router, type Request } from 'express'
-import { router as interactionRouter } from './interaction'
+import { getInteractionDetails, router as interactionRouter } from './interaction'
 import { getUserWithCache, provider } from '../oidc/provider'
 import { commit, transaction, rollback } from '../db/db'
 import { amrRequired, isUnapproved, isUnverified } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
 import { als } from '../util/als'
 import { publicRouter } from './public'
@@ -71,20 +71,34 @@ router.get('/authz/auth-request', async (req: Request, res) => {
 // Set user on request
 router.use(async (req: Request, res, next) => {
   try {
-    const ctx = provider.createContext(req, res)
-    const session = await provider.Session.get(ctx)
-    if (!session.accountId) {
-      next()
-      return
+    // get user from session or interaction
+    let user: UserDetails | undefined
+    let amr: string[] = []
+
+    if (!user) {
+      const ctx = provider.createContext(req, res)
+      const session = await provider.Session.get(ctx)
+      const accountId = session.accountId
+      if (accountId) {
+        amr = session.amr ?? []
+        user = await getUserWithCache(accountId)
+      }
     }
 
-    const user = await getUserWithCache(session.accountId)
+    if (!user) {
+      const interaction = await getInteractionDetails(req, res)
+      const accountId = interaction?.result?.login?.accountId
+      if (accountId) {
+        amr = interaction.result?.login?.amr ?? []
+        user = await getUserWithCache(accountId)
+      }
+    }
 
-    if (user && !amrRequired(user.mfaEnabled, session.amr ?? []) && !isUnapproved(user) && !isUnverified(user)) {
+    if (user && !amrRequired(user.mfaEnabled, amr) && !isUnapproved(user) && !isUnverified(user)) {
       const hasPasskeys = !!(await getUserPasskeys(user.id)).length
       req.user = {
         ...user,
-        amr: session.amr,
+        amr,
         hasPasskeys,
       }
     }
