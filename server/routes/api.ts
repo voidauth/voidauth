@@ -1,6 +1,6 @@
-import { Router, type Request } from 'express'
-import { getInteractionDetails, router as interactionRouter } from './interaction'
-import { getUserWithCache, provider } from '../oidc/provider'
+import { Router, type Request, type Response } from 'express'
+import { getInteractionDetails, getSession, router as interactionRouter } from './interaction'
+import { getUserWithCache } from '../oidc/provider'
 import { commit, transaction, rollback } from '../db/db'
 import { amrRequired, isUnapproved, isUnverified } from '../db/user'
 import { userRouter } from './user'
@@ -68,33 +68,40 @@ router.get('/authz/auth-request', async (req: Request, res) => {
   await proxyAuth(url, 'auth-request', req, res)
 })
 
+export async function getUserSessionInteraction(req: Request, res: Response) {
+  // get user from session or interaction
+  let user: UserDetails | undefined
+  let amr: string[] = []
+
+  const session = await getSession(req, res)
+  const accountId = session?.accountId
+  if (accountId) {
+    amr = session.amr ?? []
+    user = await getUserWithCache(accountId)
+  }
+
+  if (!user) {
+    const interaction = await getInteractionDetails(req, res)
+    const accountId = interaction?.result?.login?.accountId
+    if (accountId) {
+      amr = interaction.result?.login?.amr ?? []
+      user = await getUserWithCache(accountId)
+    }
+  }
+
+  return { user, amr }
+}
+
+export function userCanLogin(user: UserDetails | undefined, amr: string[]): user is UserDetails {
+  return !!user && !amrRequired(user.mfaEnabled, amr) && !isUnapproved(user) && !isUnverified(user)
+}
+
 // Set user on request
-router.use(async (req: Request, res, next) => {
+router.use(async (req: Request, res: Response, next) => {
   try {
-    // get user from session or interaction
-    let user: UserDetails | undefined
-    let amr: string[] = []
+    const { user, amr } = await getUserSessionInteraction(req, res)
 
-    if (!user) {
-      const ctx = provider.createContext(req, res)
-      const session = await provider.Session.get(ctx)
-      const accountId = session.accountId
-      if (accountId) {
-        amr = session.amr ?? []
-        user = await getUserWithCache(accountId)
-      }
-    }
-
-    if (!user) {
-      const interaction = await getInteractionDetails(req, res)
-      const accountId = interaction?.result?.login?.accountId
-      if (accountId) {
-        amr = interaction.result?.login?.amr ?? []
-        user = await getUserWithCache(accountId)
-      }
-    }
-
-    if (user && !amrRequired(user.mfaEnabled, amr) && !isUnapproved(user) && !isUnverified(user)) {
+    if (userCanLogin(user, amr)) {
       const hasPasskeys = !!(await getUserPasskeys(user.id)).length
       req.user = {
         ...user,

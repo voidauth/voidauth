@@ -2,11 +2,12 @@ import { oidcLoginPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { isMatch } from 'matcher'
 import { getProxyAuths } from '../db/proxyAuth'
-import { amrRequired, checkPasswordHash, getUserByInput, isUnapproved, isUnverified } from '../db/user'
-import { getUserWithCache, provider } from '../oidc/provider'
+import { checkPasswordHash, getUserByInput } from '../db/user'
+import { provider } from '../oidc/provider'
 import appConfig from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
+import { getUserSessionInteraction, userCanLogin } from '../routes/api'
 
 // proxy auth cache
 let proxyAuthCache: { domain: string, groups: string[] }[] = []
@@ -25,11 +26,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   let amr: string[] = []
 
   if (sessionId) {
-    // Check for invalid session
-    const session = sessionId ? await provider.Session.adapter.findByUid(sessionId) : null
-    const accountId = session?.accountId
-    amr = session?.amr ?? []
-    user = accountId ? await getUserWithCache(accountId) : undefined
+    ({ user, amr } = await getUserSessionInteraction(req, res))
 
     if (!user) {
       res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
@@ -72,7 +69,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   }
 
   // Check that user is approved and verified and should be able to continue
-  if (isUnapproved(user) || isUnverified(user) || amrRequired(user.mfaEnabled, amr)) {
+  if (!userCanLogin(user, amr)) {
     // If not, redirect to login flow, which will send to correct redirect
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
     res.send()
