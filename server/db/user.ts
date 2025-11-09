@@ -134,8 +134,8 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
       const accountClaims: AccountClaims & Partial<UserDetails> = { sub: id }
 
       if (scope.includes('email')) {
-        accountClaims.email = user.email
-        accountClaims.email_verified = user.emailVerified
+        accountClaims.email = user.email ?? null
+        accountClaims.email_verified = !!user.emailVerified
       }
 
       if (scope.includes('profile')) {
