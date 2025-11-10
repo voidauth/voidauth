@@ -7,7 +7,7 @@ import { provider } from '../oidc/provider'
 import appConfig from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
-import { getUserSessionInteraction, userCanLogin } from '../routes/api'
+import { userCanLogin } from '../routes/api'
 
 // proxy auth cache
 let proxyAuthCache: { domain: string, groups: string[] }[] = []
@@ -26,13 +26,16 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   let amr: string[] = []
 
   if (sessionId) {
-    ({ user, amr } = await getUserSessionInteraction(req, res))
+    const sessionUser = req.sessionUser
 
-    if (!user) {
+    if (!sessionUser) {
       res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
       res.send()
       return
     }
+
+    user = sessionUser
+    amr = sessionUser.amr
   } else if (proxyAuthorizationHeader) {
     // Proxy-Authorization header flow
     // Decode the Basic Authorization header

@@ -57,27 +57,18 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const hasPasskeys = !!(await getUserPasskeys(user.id)).length
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPasskeys, mfaEnabled, hasPassword: !!passwordHash }
+  return { ...userWithoutPassword, groups, hasPasskeys, hasTotp: mfaEnabled, hasPassword: !!passwordHash }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
-  const user = await db().table<User>(TABLES.USER).select()
-    .whereRaw('lower("username") = lower(?) or lower("email") = lower(?)', [input, input]).first()
+  const userId = (await db().table<User>(TABLES.USER).select('id')
+    .whereRaw('lower("username") = lower(?) or lower("email") = lower(?)', [input, input]).first())?.id
 
-  if (!user) {
+  if (!userId) {
     return undefined
   }
 
-  const groups = (await db().select('name')
-    .table<Group>(TABLES.GROUP)
-    .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
-    .orderBy('name', 'asc')).map(g => g.name)
-
-  const mfaEnabled = await hasTOTP(user.id)
-  const hasPasskeys = !!(await getUserPasskeys(user.id)).length
-
-  const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPasskeys, mfaEnabled, hasPassword: !!passwordHash }
+  return await getUserById(userId)
 }
 
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
@@ -85,8 +76,8 @@ export async function checkPasswordHash(userId: string, password: string): Promi
   return !!user && !!password && !!user.passwordHash && await argon2.verify(user.passwordHash, password)
 }
 
-export function isAdmin(user: Pick<UserDetails, 'groups'>) {
-  return user.groups.includes(ADMIN_GROUP)
+export function isAdmin(user: Pick<UserDetails, 'groups'> | undefined) {
+  return !!user?.groups.includes(ADMIN_GROUP)
 }
 
 export function isUnapproved(user: Pick<UserDetails, 'approved' | 'groups'>) {

@@ -164,6 +164,11 @@ adminRouter.get('/client/:client_id',
 adminRouter.post('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req, res) => {
+    if (!req.loggedInUser) {
+      res.sendStatus(500)
+      return
+    }
+
     const clientUpsert = validatorData<ClientUpsert>(req)
     const clientMetadata: ClientResponse = { ...clientUpsert }
     try {
@@ -188,7 +193,7 @@ adminRouter.post('/client',
       }
       clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
 
-      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
+      await upsertClient(provider, clientMetadata, req.loggedInUser, provider.createContext(req, res))
       res.send()
     } catch (e) {
       res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
@@ -199,6 +204,11 @@ adminRouter.post('/client',
 adminRouter.patch('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req, res) => {
+    if (!req.loggedInUser) {
+      res.sendStatus(500)
+      return
+    }
+
     const clientUpsert = validatorData<ClientUpsert>(req)
     const clientMetadata: ClientResponse = { ...clientUpsert }
     try {
@@ -223,7 +233,7 @@ adminRouter.patch('/client',
       }
       clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
 
-      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
+      await upsertClient(provider, clientMetadata, req.loggedInUser, provider.createContext(req, res))
       res.send()
     } catch (e) {
       if (isOIDCProviderError(e)) {
@@ -312,6 +322,12 @@ adminRouter.post('/proxyAuth',
     'groups.*': stringValidation,
   }),
   async (req, res) => {
+    const user = req.loggedInUser
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+
     const { id, domain, groups } = validatorData<ProxyAuthUpsert>(req)
 
     // Check for domain conflict
@@ -329,8 +345,8 @@ adminRouter.post('/proxyAuth',
     const proxyAuth: ProxyAuth = {
       id: proxyAuthId,
       domain,
-      createdBy: req.user.id,
-      updatedBy: req.user.id,
+      createdBy: user.id,
+      updatedBy: user.id,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -341,8 +357,8 @@ adminRouter.post('/proxyAuth',
       return {
         proxyAuthId: proxyAuthId,
         groupId: g.id,
-        createdBy: req.user.id,
-        updatedBy: req.user.id,
+        createdBy: user.id,
+        updatedBy: user.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -429,6 +445,12 @@ adminRouter.patch('/user',
     'groups.*': stringValidation,
   }),
   async (req, res) => {
+    const currentUser = req.loggedInUser
+    if (!currentUser) {
+      res.sendStatus(500)
+      return
+    }
+
     const userUpdate = validatorData<UserUpdate>(req)
 
     const existingUser = await db().table<User>(TABLES.USER).where({ id: userUpdate.id }).first()
@@ -444,8 +466,8 @@ adminRouter.patch('/user',
       return {
         groupId: g.id,
         userId: userUpdate.id,
-        createdBy: req.user.id,
-        updatedBy: req.user.id,
+        createdBy: currentUser.id,
+        updatedBy: currentUser.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -487,9 +509,15 @@ adminRouter.delete('/user/:id',
     id: uuidValidation,
   }),
   async (req, res) => {
+    const currentUser = req.loggedInUser
+    if (!currentUser) {
+      res.sendStatus(500)
+      return
+    }
+
     const { id } = validatorData<{ id: string }>(req)
 
-    if (req.user.id === id) {
+    if (currentUser.id === id) {
       res.sendStatus(400)
       return
     }
@@ -511,9 +539,15 @@ adminRouter.post('/user/signout/:id',
     id: uuidValidation,
   }),
   async (req, res) => {
+    const currentUser = req.loggedInUser
+    if (!currentUser) {
+      res.sendStatus(500)
+      return
+    }
+
     const { id } = validatorData<{ id: string }>(req)
 
-    if (req.user.id === id) {
+    if (currentUser.id === id) {
       res.sendStatus(400)
       return
     }
@@ -573,6 +607,12 @@ adminRouter.post('/users/delete',
     },
   }),
   async (req, res) => {
+    const currentUser = req.loggedInUser
+    if (!currentUser) {
+      res.sendStatus(500)
+      return
+    }
+
     const { users } = validatorData<{ users: string[] }>(req)
 
     if (!users.length) {
@@ -582,7 +622,7 @@ adminRouter.post('/users/delete',
     }
 
     // Don't delete yourself
-    if (users.some(id => id === req.user.id)) {
+    if (users.some(id => id === currentUser.id)) {
       res.sendStatus(400)
       return
     }
@@ -650,6 +690,12 @@ adminRouter.post('/group',
     },
   }),
   async (req, res) => {
+    const currentUser = req.loggedInUser
+    if (!currentUser) {
+      res.sendStatus(500)
+      return
+    }
+
     const { id, name, users } = validatorData<GroupUpsert>(req)
 
     // Check for name conflict
@@ -669,8 +715,8 @@ adminRouter.post('/group',
       const group: Group = {
         id: groupId,
         name,
-        createdBy: req.user.id,
-        updatedBy: req.user.id,
+        createdBy: currentUser.id,
+        updatedBy: currentUser.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -688,8 +734,8 @@ adminRouter.post('/group',
       return {
         userId: u.id,
         groupId: groupId,
-        createdBy: req.user.id,
-        updatedBy: req.user.id,
+        createdBy: currentUser.id,
+        updatedBy: currentUser.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -784,6 +830,12 @@ adminRouter.post('/invitation',
     'groups.*': stringValidation,
   }),
   async (req, res) => {
+    const currentUser = req.loggedInUser
+    if (!currentUser) {
+      res.sendStatus(500)
+      return
+    }
+
     const invitationUpsert = validatorData<InvitationUpsert>(req)
     const { groups: groupNames, ...invitationData } = invitationUpsert
 
@@ -793,7 +845,7 @@ adminRouter.post('/invitation',
       // update
       await db().table<Invitation>(TABLES.INVITATION).update({
         ...invitationData,
-        updatedBy: req.user.id,
+        updatedBy: currentUser.id,
         updatedAt: new Date(),
       }).where({ id: invitationData.id })
     } else {
@@ -805,8 +857,8 @@ adminRouter.post('/invitation',
           length: 32,
           numbers: true,
         }),
-        createdBy: req.user.id,
-        updatedBy: req.user.id,
+        createdBy: currentUser.id,
+        updatedBy: currentUser.id,
         createdAt: new Date(),
         updatedAt: new Date(),
         expiresAt: createExpiration(TTLs.INVITATION),
@@ -818,8 +870,8 @@ adminRouter.post('/invitation',
       return {
         groupId: g.id,
         invitationId: id,
-        createdBy: req.user.id,
-        updatedBy: req.user.id,
+        createdBy: currentUser.id,
+        updatedBy: currentUser.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       }

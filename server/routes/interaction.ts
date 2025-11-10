@@ -51,12 +51,12 @@ import {
   getRegistrationInfo,
   createPasskey,
 } from '../util/passkey'
-import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
+import type { UserDetails } from '@shared/api-response/UserDetails'
 import { getEmailVerification } from '../db/emailVerification'
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
-import { getUserSessionInteraction } from './api'
+import { userCouldMFA } from './api'
 
 const registerUserValidator = {
   username: {
@@ -88,6 +88,12 @@ const registerUserValidator = {
 } as const
 
 export const router = Router()
+
+/**
+ *
+ * Meta Interaction Routes
+ *
+ */
 
 /**
  * Direct user to correct page to finish login or consent
@@ -243,6 +249,50 @@ router.get('/:uid/detail',
     res.send(details)
   },
 )
+
+/**
+ * Consent to oidc client
+ */
+router.post('/:uid/confirm/',
+  ...validate<{ uid: string }>({
+    uid: stringValidation,
+  }),
+  async (req, res) => {
+    const {
+      uid,
+      prompt,
+      params,
+      session,
+    } = await provider.interactionDetails(req, res)
+    const { uid: uidParam } = validatorData<{ uid: string }>(req)
+
+    if (uid !== uidParam) {
+      res.status(419).send({ message: 'Consent form is no longer valid.' })
+      return
+    }
+
+    if (prompt.name !== 'consent') {
+      res.sendStatus(400)
+      return
+    }
+
+    const grantId = await applyConsent(await provider.interactionDetails(req, res))
+    if (typeof params.redirect_uri === 'string' && typeof params.scope === 'string' && session?.accountId) {
+      await addConsent(params.redirect_uri, session.accountId, params.scope)
+    }
+    const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+      mergeWithLastSubmission: true,
+    })
+    res.redirect(redir)
+    return
+  },
+)
+
+/**
+ *
+ * User Registration Routes
+ *
+ */
 
 /**
  * Register new user with password, finishes login and adds pwd to amr
@@ -498,12 +548,24 @@ router.post('/register/passkey/end',
 )
 
 /**
+ *
+ * Register AMR Routes
+ *
+ */
+
+/**
  * Start registering a passkey
  */
 router.post('/passkey/registration/start',
   async (req, res) => {
-    // get user from req
-    const user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+    // Should only be able to register if fully logged in,
+    // OR could not otherwise MFA
+    // partially logged in users may be prompted to add MFA
+    let user = req.loggedInUser
+
+    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
+      user = req.sessionUser
+    }
 
     if (!user) {
       res.sendStatus(401)
@@ -526,8 +588,14 @@ router.post('/passkey/registration/end',
   async (req, res) => {
     const body = validatorData<RegistrationResponseJSON>(req)
 
-    // get user from req
-    const user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+    // Should only be able to register if fully logged in,
+    // OR could not otherwise MFA
+    // partially logged in users may be prompted to add MFA
+    let user = req.loggedInUser
+
+    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
+      user = req.sessionUser
+    }
 
     if (!user) {
       res.sendStatus(401)
@@ -558,16 +626,17 @@ router.post('/passkey/registration/end',
  */
 router.post('/totp/registration',
   async (req, res) => {
-    // get user from req
-    const user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+    // Should only be able to register if fully logged in,
+    // OR could not otherwise MFA
+    // partially logged in users may be prompted to add MFA
+    let user = req.loggedInUser
+
+    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
+      user = req.sessionUser
+    }
 
     if (!user) {
       res.sendStatus(401)
-      return
-    }
-
-    if (!user.hasPassword) {
-      res.sendStatus(400)
       return
     }
 
@@ -576,6 +645,12 @@ router.post('/totp/registration',
     res.send({ uri, secret })
   },
 )
+
+/**
+ *
+ * AMR Action Routes
+ *
+ */
 
 /**
  * Login with password, finishes login and adds pwd to amr
@@ -773,7 +848,7 @@ router.post('/totp',
   }),
   async (req, res) => {
     // get user from req without checking user can login already
-    const { user } = await getUserSessionInteraction(req, res)
+    const user = req.sessionUser
 
     if (!user || isUnapproved(user)) {
       res.sendStatus(401)
@@ -858,55 +933,19 @@ router.post('/verify_email',
   },
 )
 
-/**
- * Consent to oidc client
- */
-router.post('/:uid/confirm/',
-  ...validate<{ uid: string }>({
-    uid: stringValidation,
-  }),
-  async (req, res) => {
-    const {
-      uid,
-      prompt,
-      params,
-      session,
-    } = await provider.interactionDetails(req, res)
-    const { uid: uidParam } = validatorData<{ uid: string }>(req)
-
-    if (uid !== uidParam) {
-      res.status(419).send({ message: 'Consent form is no longer valid.' })
-      return
-    }
-
-    if (prompt.name !== 'consent') {
-      res.sendStatus(400)
-      return
-    }
-
-    const grantId = await applyConsent(await provider.interactionDetails(req, res))
-    if (typeof params.redirect_uri === 'string' && typeof params.scope === 'string' && session?.accountId) {
-      await addConsent(params.redirect_uri, session.accountId, params.scope)
-    }
-    const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
-      mergeWithLastSubmission: true,
-    })
-    res.redirect(redir)
-    return
-  },
-)
-
 export async function interactionResult(req: Request, res: Response, options: {
   amr: string[]
   userId: string
   remember?: boolean
 }): Promise<Redirect | undefined> {
-  const { amr, userId, remember } = options
+  let { amr } = options
+  const { userId, remember = false } = options
 
   try {
     const session = await getSession(req, res)
     if (session?.accountId === userId) {
-      session.amr = [...new Set([...amr, ...(session.amr ?? [])])]
+      amr = [...new Set([...amr, ...(session.amr ?? [])])]
+      session.amr = amr
       await session.save(TTLs.SESSION)
     }
   } catch (e) {
@@ -917,9 +956,10 @@ export async function interactionResult(req: Request, res: Response, options: {
     const interaction = await getInteractionDetails(req, res)
 
     if (interaction) {
-      let iamr = amr
       if (interaction.result?.login?.accountId === userId) {
-        iamr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
+        amr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
+        interaction.result.login.amr = amr
+        await interaction.save(TTLs.INTERACTION)
       }
 
       return {
@@ -928,7 +968,7 @@ export async function interactionResult(req: Request, res: Response, options: {
           login: {
             accountId: userId,
             remember: interaction.result?.login?.remember || remember,
-            amr: iamr,
+            amr: amr,
           },
         },
         { mergeWithLastSubmission: true }),

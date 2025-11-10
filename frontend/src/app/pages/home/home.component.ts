@@ -190,6 +190,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     try {
       await this.passkeyService.register()
       await this.loadUser()
+      this.snackbarService.message('Passkey registered successfully.')
     } catch (error) {
       if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
         this.snackbarService.error('Passkey already registered.')

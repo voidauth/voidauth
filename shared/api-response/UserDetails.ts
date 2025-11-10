@@ -12,11 +12,11 @@ export type UserWithAdminIndicator = UserWithoutPassword & {
 
 export type UserDetails = UserWithoutPassword & {
   groups: Group['name'][]
-  mfaEnabled: boolean
+  hasTotp: boolean
   hasPasskeys: boolean
 }
 
 // UserDetails and info about current session
 export type CurrentUserDetails = UserDetails & {
-  amr?: string[]
+  amr: string[]
 }
