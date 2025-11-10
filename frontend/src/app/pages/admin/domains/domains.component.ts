@@ -89,7 +89,6 @@ export class DomainsComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('Domain delete cancelled.')
         return
       }
 

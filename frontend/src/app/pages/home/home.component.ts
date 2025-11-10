@@ -213,7 +213,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.message('Passkey removal cancelled.')
         return
       }
 
@@ -242,7 +241,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.message('Password removal cancelled.')
         return
       }
 
@@ -270,7 +268,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.message('Account deletion cancelled.')
         return
       }
 

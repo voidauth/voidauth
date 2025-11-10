@@ -178,7 +178,6 @@ export class UserComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('User delete cancelled.')
         return
       }
       try {

@@ -68,7 +68,6 @@ export class GroupsComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('Group delete cancelled.')
         return
       }
 
