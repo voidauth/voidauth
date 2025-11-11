@@ -1,0 +1,2 @@
+<h2 matDialogTitle>Add Authenticator</h2>
+<app-totp-input [uri]="uri()" [secret]="secret()" [disabled]="disabled()" (codeFinished)="verifyToken($event)"></app-totp-input>

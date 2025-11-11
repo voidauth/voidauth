@@ -22,6 +22,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatDialogModule } from '@angular/material/dialog'
 import { NgxSpinnerModule } from 'ngx-spinner'
+import { CdkAccordionModule } from '@angular/cdk/accordion'
 
 @NgModule({
   exports: [
@@ -38,6 +39,7 @@ import { NgxSpinnerModule } from 'ngx-spinner'
     MatPaginatorModule,
     MatCheckboxModule,
     DragDropModule,
+    CdkAccordionModule,
     MatMenuModule,
     MatTabsModule,
     MatTableModule,

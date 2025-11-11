@@ -108,7 +108,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       const redirect = await this.authService.login({ input: email, password, remember: !!remember })
 
       // See if we want to ask the user to register a passkey
-      if (redirect.success
+      if (redirect?.success
         && this.passkeySupport?.enabled
         && !this.passkeyService.localPasskeySeen()
         && !this.passkeyService.localPasskeySkipped()) {
@@ -120,7 +120,9 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       }
 
-      window.location.assign(redirect.location)
+      if (redirect) {
+        location.assign(redirect.location)
+      }
     } catch (e) {
       let shownError: string | null = null
 
@@ -151,7 +153,9 @@ export class LoginComponent implements OnInit, OnDestroy {
       const optionsJSON = await this.passkeyService.getAuthOptions()
       const auth = await startAuthentication({ optionsJSON, useBrowserAutofill: auto })
       const redirect = await this.passkeyService.sendAuth(auth)
-      window.location.assign(redirect.location)
+      if (redirect) {
+        location.assign(redirect.location)
+      }
     } catch (error) {
       if (!auto) {
         this.snackbarService.error('Could not login with passkey.')

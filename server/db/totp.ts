@@ -6,6 +6,7 @@ import { decryptString, encryptString } from './key'
 import appConfig from '../util/config'
 import { randomUUID } from 'crypto'
 import { createExpiration } from './util'
+import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 
 function decryptTOTP(totp: TOTP | undefined): TOTP | null | undefined {
   if (!totp) {
@@ -43,13 +44,13 @@ async function getUserTOTPs(userId: string, includeExpiring = false) {
     }).andWhereNot('expiresAt', '<', new Date()))
 }
 
-export async function createTOTP(userId: string, label: string) {
+export async function createTOTP(userId: string, label: string): Promise<RegisterTotpResponse> {
   const otp = new OTPAuth.TOTP({
     issuer: appConfig.APP_TITLE,
     label,
   })
 
-  const secret = otp.secret.utf8
+  const secret = otp.secret.base32
   const uri = otp.toString()
 
   const totp: TOTP = {

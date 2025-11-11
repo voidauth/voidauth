@@ -83,7 +83,7 @@ export class PasskeyService {
   }
 
   async sendAuth(auth: AuthenticationResponseJSON) {
-    const result = firstValueFrom(this.http.post<Redirect>('/api/interaction/passkey/end', auth))
+    const result = firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/passkey/end', auth))
     localStorage.setItem('passkey_seen', Date())
     return result
   }

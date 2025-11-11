@@ -57,6 +57,7 @@ import type { IncomingMessage, ServerResponse } from 'http'
 import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
 import { userCouldMFA } from './api'
+import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 
 const registerUserValidator = {
   username: {
@@ -200,6 +201,7 @@ router.get('/', async (req, res) => {
     res.redirect(`${appConfig.APP_URL}/consent/${uid}`)
   } else {
     res.sendStatus(400)
+    return
   }
 })
 
@@ -640,9 +642,9 @@ router.post('/totp/registration',
       return
     }
 
-    const { uri, secret } = await createTOTP(user.id, user.name ?? user.username)
+    const response: RegisterTotpResponse = await createTOTP(user.id, user.name ?? user.username)
 
-    res.send({ uri, secret })
+    res.send(response)
   },
 )
 
@@ -858,7 +860,8 @@ router.post('/totp',
     const { token } = validatorData<{ token: string }>(req)
 
     if (!await validateTOTP(user.id, token)) {
-      res.sendStatus(400)
+      res.sendStatus(401)
+      return
     }
 
     const redir = await interactionResult(req, res, {

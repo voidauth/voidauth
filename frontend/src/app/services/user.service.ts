@@ -28,7 +28,7 @@ export class UserService {
   }
 
   passkeySession(user: CurrentUserDetails) {
-    return !!user.amr?.includes('webauthn')
+    return user.amr.includes('webauthn')
   }
 
   async updateProfile(profile: UpdateProfile) {

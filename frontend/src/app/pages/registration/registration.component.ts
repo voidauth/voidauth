@@ -143,7 +143,7 @@ export class RegistrationComponent implements OnInit {
       })
 
       // See if we want to ask the user to register a passkey
-      if (redirect.success && this.passkeySupport?.enabled) {
+      if (redirect?.success && this.passkeySupport?.enabled) {
         try {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
@@ -152,7 +152,9 @@ export class RegistrationComponent implements OnInit {
         }
       }
 
-      location.assign(redirect.location)
+      if (redirect) {
+        location.assign(redirect.location)
+      }
     } catch (e) {
       console.error(e)
 
@@ -188,7 +190,9 @@ export class RegistrationComponent implements OnInit {
         challenge: this.invitation?.challenge,
         ...registration,
       })
-      location.assign(redirect.location)
+      if (redirect) {
+        location.assign(redirect.location)
+      }
     } catch (e) {
       console.error(e)
 

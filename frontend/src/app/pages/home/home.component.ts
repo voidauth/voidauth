@@ -10,11 +10,12 @@ import { PasswordSetComponent } from '../../components/password-reset/password-s
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
-import { ActivatedRoute, Router } from '@angular/router'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
+import { AuthService } from '../../services/auth.service'
+import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
 
 @Component({
   selector: 'app-home',
@@ -73,10 +74,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   })
 
-  private route = inject(ActivatedRoute)
-  private router = inject(Router)
   private configService = inject(ConfigService)
   private userService = inject(UserService)
+  private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   passkeyService = inject(PasskeyService)
@@ -177,7 +177,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       } else {
         this.snackbarService.message('Email updated.')
       }
-    } catch (_e) {
+    } catch (e) {
+      console.error(e)
       this.snackbarService.error('Could not update email.')
     } finally {
       await this.loadUser()
@@ -201,6 +202,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     } finally {
       this.spinnerService.hide()
     }
+  }
+
+  addAuthenticator() {
+    const dialogRef = this.dialog.open(TotpRegisterComponent)
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.snackbarService.message('Authenticator added successfully.')
+      }
+    })
   }
 
   removeAllPasskeys() {
@@ -255,6 +266,10 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.spinnerService.hide()
       }
     })
+  }
+
+  remolveAllAuthenticators() {
+
   }
 
   deleteUser() {

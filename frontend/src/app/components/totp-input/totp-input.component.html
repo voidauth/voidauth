@@ -1,0 +1,39 @@
+<div class="totp-input-container">
+  @if (qrcodeData) {
+    <img width="260" height="260" [src]="qrcodeData" />
+
+    <mat-accordion>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title> Show Secret </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p>
+          <b>{{ secret() }}</b>
+        </p>
+      </mat-expansion-panel>
+    </mat-accordion>
+
+    <p style="padding: 0px 16px">Scan the QRCode or Enter the Secret in your Authenticator</p>
+
+    <app-text-divider text="then"></app-text-divider>
+  }
+
+  <div class="totp-digit-container">
+    @for (digit of code; let i = $index; track i) {
+      <mat-form-field class="totp-field">
+        <input
+          matInput
+          type="text"
+          maxlength="1"
+          [disabled]="disabled()"
+          [id]="'totp-digit-' + i"
+          (input)="onDigitInput($event, i)"
+          (keydown)="onKeyDown($event)"
+          class="totp-digit-input"
+          pattern="\d*"
+        />
+      </mat-form-field>
+    }
+  </div>
+  <p style="margin-top: 0px">Enter Token from Authenticator</p>
+</div>
