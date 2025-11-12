@@ -169,6 +169,7 @@ export class UpsertClientComponent implements OnInit {
       } catch (e) {
         console.error(e)
         this.snackbarService.error('Error loading Client.')
+        this.form.disable()
       } finally {
         this.spinnerService.hide()
       }
