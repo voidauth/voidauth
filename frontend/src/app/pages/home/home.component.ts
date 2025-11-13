@@ -11,7 +11,6 @@ import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
@@ -23,7 +22,6 @@ import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register
     MaterialModule,
     ValidationErrorPipe,
     PasswordSetComponent,
-    TextDividerComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
