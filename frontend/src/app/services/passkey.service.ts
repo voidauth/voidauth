@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http'
 import { Component, inject, Injectable, type OnInit } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import {
-  browserSupportsWebAuthn, platformAuthenticatorIsAvailable, startRegistration, WebAuthnError, type AuthenticationResponseJSON,
+  browserSupportsWebAuthn, platformAuthenticatorIsAvailable,
+  startAuthentication, startRegistration, WebAuthnError, type AuthenticationResponseJSON,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/browser'
@@ -78,14 +79,20 @@ export class PasskeyService {
     }
   }
 
-  async getAuthOptions() {
+  private async getAuthOptions() {
     return firstValueFrom(this.http.post<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey/start', null))
   }
 
-  async sendAuth(auth: AuthenticationResponseJSON) {
+  private async sendAuth(auth: AuthenticationResponseJSON) {
     const result = firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/passkey/end', auth))
     localStorage.setItem('passkey_seen', Date())
     return result
+  }
+
+  async login(auto: boolean = false) {
+    const optionsJSON = await this.getAuthOptions()
+    const auth = await startAuthentication({ optionsJSON, useBrowserAutofill: auto })
+    return await this.sendAuth(auth)
   }
 
   async register() {

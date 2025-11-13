@@ -120,4 +120,56 @@ export class TotpInputComponent implements AfterViewInit {
         break
     }
   }
+
+  onPaste(event: ClipboardEvent) {
+    event.preventDefault()
+
+    // Get pasted text
+    const pastedText = event.clipboardData?.getData('text') || ''
+
+    // Remove non-numeric characters
+    const cleanedText = pastedText.replace(/[^\d]/g, '')
+
+    // Distribute pasted characters across inputs
+    this.distributePastedCode(cleanedText)
+
+    this.checkFinished()
+  }
+
+  distributePastedCode(pastedCode: string) {
+    // Limit to total input length
+    const trimmedCode = pastedCode.slice(0, 6)
+
+    // Convert to array of characters
+    const codeChars = trimmedCode.split('')
+
+    // Update code array
+    this.code = ['', '', '', '', '', '']
+
+    // Populate inputs
+    codeChars.forEach((char, index) => {
+      if (index < 6) {
+        const input = document.getElementById(`totp-digit-${String(index)}`) as HTMLInputElement
+        input.value = char
+        this.code[index] = char
+      }
+    })
+
+    // Focus on last filled input
+    this.focusLastFilledInput()
+  }
+
+  focusLastFilledInput() {
+    // Wait for view to update
+    setTimeout(() => {
+      // Find last non-empty input
+      for (let i = 6 - 1; i >= 0; i--) {
+        const nextInput = document.getElementById(`totp-digit-${String(Math.min(i + 1, 6 - 1))}`)
+        if (this.code[i]) {
+          nextInput?.focus()
+          break
+        }
+      }
+    })
+  }
 }

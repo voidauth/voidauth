@@ -27,6 +27,10 @@ export class AuthService {
     return firstValueFrom(this.http.get<Redirect | null>('/api/interaction/exists'))
   }
 
+  async cancelInteraction() {
+    return firstValueFrom(this.http.delete<null>('/api/interaction/current'))
+  }
+
   async register(body: Nullable<RegisterUser>) {
     return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/register', body))
   }

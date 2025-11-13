@@ -14,7 +14,6 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
-import { AuthService } from '../../services/auth.service'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
 
 @Component({
@@ -76,7 +75,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private configService = inject(ConfigService)
   private userService = inject(UserService)
-  private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   passkeyService = inject(PasskeyService)
@@ -207,8 +205,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   addAuthenticator() {
     const dialogRef = this.dialog.open(TotpRegisterComponent)
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
+        await this.loadUser()
         this.snackbarService.message('Authenticator added successfully.')
       }
     })
@@ -268,8 +267,30 @@ export class HomeComponent implements OnInit, OnDestroy {
     })
   }
 
-  remolveAllAuthenticators() {
+  removeAllAuthenticators() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to remove your account Authenticators? Multi-factor authentication will no longer be enabled on your account.`,
+        header: 'Remove',
+      },
+    })
 
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.userService.removeAllAuthenticators()
+        this.snackbarService.message('Removed authenticators.')
+      } catch (_e) {
+        this.snackbarService.error('Could not remove authenticators.')
+      } finally {
+        await this.loadUser()
+        this.spinnerService.hide()
+      }
+    })
   }
 
   deleteUser() {

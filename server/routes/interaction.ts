@@ -135,7 +135,7 @@ router.get('/', async (req, res) => {
       return
     } else if (prompt.reasons.includes('user_mfa_required')) {
       // User has MFA required, direct them to MFA page
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}?cm=${String(userCouldMFA(user))}`)
       res.send()
       return
     }
@@ -225,6 +225,24 @@ router.get('/exists', async (req, res) => {
       }
     : null
   res.send(redir)
+})
+
+router.delete('/current', async (req, res) => {
+  const interaction = await getInteractionDetails(req, res)
+  if (!interaction) {
+    res.sendStatus(404)
+    return
+  }
+
+  await interaction.destroy()
+
+  // If session is not fully logged in, destroy that too
+  const session = await getSession(req, res)
+  if (session && !req.loggedInUser) {
+    await session.destroy()
+  }
+
+  res.send()
 })
 
 /**
@@ -642,7 +660,7 @@ router.post('/totp/registration',
       return
     }
 
-    const response: RegisterTotpResponse = await createTOTP(user.id, user.name ?? user.username)
+    const response: RegisterTotpResponse = await createTOTP(user.id, user.username)
 
     res.send(response)
   },
@@ -719,9 +737,12 @@ router.post('/passkey/start',
       return
     }
 
+    const userId = interaction?.result?.login?.accountId || session?.accountId
+    const passkeys = userId ? await getUserPasskeys(userId) : []
+
     const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
       rpID: passkeyRpId,
-      allowCredentials: [],
+      allowCredentials: passkeys,
     })
 
     // (Pseudocode) Remember this challenge for this user

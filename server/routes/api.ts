@@ -157,6 +157,6 @@ export function userCanLogin(user: UserDetails | undefined, amr: string[]): user
   return !!user && !amrRequired(user.hasTotp, amr) && !isUnapproved(user) && !isUnverified(user)
 }
 
-export function userCouldMFA(user: CurrentUserDetails | undefined) {
-  return !!user && !user.hasPasskeys && !user.hasTotp
+export function userCouldMFA(user: UserDetails | undefined) {
+  return !!user && (user.hasPasskeys || user.hasTotp)
 }

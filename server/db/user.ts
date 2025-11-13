@@ -53,11 +53,11 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy('name', 'asc')).map(g => g.name)
 
-  const mfaEnabled = await hasTOTP(id)
+  const hasTotp = await hasTOTP(id)
   const hasPasskeys = !!(await getUserPasskeys(user.id)).length
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPasskeys, hasTotp: mfaEnabled, hasPassword: !!passwordHash }
+  return { ...userWithoutPassword, groups, hasPasskeys, hasTotp: hasTotp, hasPassword: !!passwordHash }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {

@@ -7,9 +7,11 @@
   <mat-drawer-container class="container">
     <mat-drawer (click)="drawer.close()" #drawer position="end">
       <mat-nav-list>
-        <div mat-subheader>{{ user?.username }}</div>
-        <a mat-list-item routerLink="/"><mat-icon fontSet="material-icons-round" matListItemIcon>account_circle</mat-icon>Profile</a>
-        <mat-divider></mat-divider>
+        @if (user) {
+          <div mat-subheader>{{ user.username }}</div>
+          <a mat-list-item routerLink="/"><mat-icon fontSet="material-icons-round" matListItemIcon>account_circle</mat-icon>Profile</a>
+          <mat-divider></mat-divider>
+        }
         @if (isAdmin) {
           <div mat-subheader>Admin</div>
           <a mat-list-item routerLink="/admin/clients"><mat-icon fontSet="material-icons-round" matListItemIcon>security</mat-icon>OIDC</a>

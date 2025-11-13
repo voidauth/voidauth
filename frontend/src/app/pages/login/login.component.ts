@@ -12,7 +12,7 @@ import { UserService } from '../../services/user.service'
 import { oidcLoginPath } from '@shared/oidc'
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
-import { startAuthentication, WebAuthnAbortService } from '@simplewebauthn/browser'
+import { WebAuthnAbortService } from '@simplewebauthn/browser'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 
 @Component({
@@ -150,9 +150,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   async passkeyLogin(auto: boolean) {
     try {
-      const optionsJSON = await this.passkeyService.getAuthOptions()
-      const auth = await startAuthentication({ optionsJSON, useBrowserAutofill: auto })
-      const redirect = await this.passkeyService.sendAuth(auth)
+      const redirect = await this.passkeyService.login()
       if (redirect) {
         location.assign(redirect.location)
       }

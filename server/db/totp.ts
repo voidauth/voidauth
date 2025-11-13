@@ -28,7 +28,7 @@ function decryptTOTPs(totps: TOTP[]): TOTP[] {
   return totps.reduce<TOTP[]>((arr, t) => {
     const d = decryptTOTP(t)
     if (d) {
-      arr.push()
+      arr.push(d)
     }
     return arr
   }, [])
@@ -36,12 +36,13 @@ function decryptTOTPs(totps: TOTP[]): TOTP[] {
 
 async function getUserTOTPs(userId: string, includeExpiring = false) {
   return decryptTOTPs(await db().table<TOTP>(TABLES.TOTP)
-    .where((w) => {
-      w.where({ userId })
-      if (!includeExpiring) {
-        w.andWhere({ expiresAt: null })
+    .where({ userId })
+    .andWhere((w) => {
+      w.where({ expiresAt: null })
+      if (includeExpiring) {
+        w.orWhere('expiresAt', '>', new Date())
       }
-    }).andWhereNot('expiresAt', '<', new Date()))
+    }))
 }
 
 export async function createTOTP(userId: string, label: string): Promise<RegisterTotpResponse> {
