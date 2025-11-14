@@ -41,7 +41,7 @@ export class AdminService {
   }
 
   async client(client_id: string) {
-    return firstValueFrom(this.http.get<ClientResponse>(`/api/admin/client/${client_id}`))
+    return firstValueFrom(this.http.get<ClientResponse>(`/api/admin/client/${encodeURIComponent(client_id)}`))
   }
 
   async addClient(client: Nullable<ClientUpsert>) {
@@ -53,7 +53,7 @@ export class AdminService {
   }
 
   async deleteClient(client_id: string) {
-    return firstValueFrom(this.http.delete<null>(`/api/admin/client/${client_id}`))
+    return firstValueFrom(this.http.delete<null>(`/api/admin/client/${encodeURIComponent(client_id)}`))
   }
 
   async proxyAuths() {

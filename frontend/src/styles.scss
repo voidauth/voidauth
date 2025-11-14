@@ -132,11 +132,11 @@ mat-card.form-card {
 
       width: 100%;
       padding: 16px;
+    }
 
-      .invalid {
-        border-color: var(--mat-sys-error);
-        color: var(--mat-sys-error);
-      }
+    mat-list.invalid {
+      border-color: var(--mat-sys-error);
+      color: var(--mat-sys-error);
     }
   }
 
