@@ -16,6 +16,7 @@ export const REDIRECT_PATHS = {
   VERIFY_EMAIL: 'verify_email',
   REGISTER: 'register',
   INVITE: 'invite', // registration page also
+  MFA: 'mfa',
 } as const
 
 // Key types for the key table
@@ -37,6 +38,7 @@ export const TTLs = {
   CONSENT: 1 * YEAR,
   PASSKEY_REGISTRATION: 10 * MINUTE,
   PASSKEY_AUTHN: 5 * MINUTE,
+  TOTP_VERIFICATION: 10 * MINUTE,
 
   // OIDC TTLs
   INTERACTION: 1 * HOUR,
@@ -67,6 +69,7 @@ export const TABLES = {
   PASSKEY_AUTHENTICATION: 'passkey_authentication',
   EMAIL_LOG: 'email_log',
   OIDC_GROUP: 'oidc_group',
+  TOTP: 'totp',
 } as const
 
 export const TABLES_ORDER: valueof<typeof TABLES>[] = [
@@ -88,6 +91,7 @@ export const TABLES_ORDER: valueof<typeof TABLES>[] = [
   TABLES.PASSKEY_AUTHENTICATION,
   TABLES.EMAIL_LOG,
   TABLES.OIDC_GROUP,
+  TABLES.TOTP,
 ] as const
 
 if (!Object.values(TABLES).every(t => TABLES_ORDER.includes(t))) {

@@ -82,7 +82,6 @@ export class ClientsComponent implements AfterViewInit {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('Client delete cancelled.')
         return
       }
 

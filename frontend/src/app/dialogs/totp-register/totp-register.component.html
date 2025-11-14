@@ -1,0 +1,3 @@
+<h1 matDialogTitle>Add Authenticator</h1>
+<app-totp-input [uri]="uri()" [secret]="secret()" [disabled]="disabled()" (codeFinished)="verifyToken($event)"></app-totp-input>
+<button style="margin-top: 24px; margin-bottom: 24px" mat-button mat-dialog-close>Cancel</button>

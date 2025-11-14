@@ -1,0 +1,27 @@
+.totp-input-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow-x: hidden;
+
+  > * {
+    margin: 12px;
+  }
+}
+
+.totp-field {
+  text-align: center;
+}
+
+.totp-digit-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 300px;
+}
+
+.totp-digit-input {
+  text-align: center;
+}

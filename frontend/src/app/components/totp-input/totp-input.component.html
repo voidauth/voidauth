@@ -1,0 +1,44 @@
+<div class="totp-input-container">
+  @if (qrcodeData) {
+    <p style="text-align: center; margin-top: -4px"><small>This will enable Multi-Factor Authentication on your account.</small></p>
+
+    <img style="border-radius: 4px" width="240" height="240" [src]="qrcodeData" />
+
+    <mat-accordion>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title> Show Secret </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p style="text-align: center; margin: 0px">
+          <small
+            ><b>{{ secret() }}</b></small
+          >
+        </p>
+      </mat-expansion-panel>
+    </mat-accordion>
+
+    <p style="padding: 0px 16px; text-align: center">Scan the QRCode or Enter the Secret in your Authenticator</p>
+
+    <app-text-divider text="then"></app-text-divider>
+  }
+
+  <div class="totp-digit-container">
+    @for (digit of code; let i = $index; track i) {
+      <mat-form-field class="totp-field">
+        <input
+          matInput
+          type="text"
+          maxlength="1"
+          [disabled]="disabled()"
+          [id]="'totp-digit-' + i"
+          (input)="onDigitInput($event, i)"
+          (keydown)="onKeyDown($event)"
+          (paste)="onPaste($event)"
+          class="totp-digit-input"
+          pattern="\d*"
+        />
+      </mat-form-field>
+    }
+  </div>
+  <p style="text-align: center; margin-top: 0px">Enter Token from Authenticator to Continue</p>
+</div>

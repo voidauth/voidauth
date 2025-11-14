@@ -11,6 +11,8 @@ export const routes: Routes = [
 
   { path: REDIRECT_PATHS.LOGIN, loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) },
 
+  { path: REDIRECT_PATHS.MFA, loadComponent: () => import('./pages/mfa/mfa.component').then(m => m.MfaComponent) },
+
   { path: REDIRECT_PATHS.FORGOT_PASSWORD, loadComponent: () => import('./pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) },
 
   { path: REDIRECT_PATHS.RESET_PASSWORD, loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },

@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, type Request, type Response } from 'express'
 import { provider } from '../oidc/provider'
 import { checkPasswordHash, getUserById, getUserByInput, isUnapproved } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
@@ -16,10 +16,12 @@ import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
 import { REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
-import { type Interaction, type Session } from 'oidc-provider'
-import { unlessNull, emailValidation, nameValidation,
+import { type Interaction } from 'oidc-provider'
+import {
+  unlessNull, emailValidation, nameValidation,
   newPasswordValidation,
-  stringValidation, usernameValidation, uuidValidation } from '../util/validators'
+  stringValidation, usernameValidation, uuidValidation,
+} from '../util/validators'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { createExpiration } from '../db/util'
 import { getInvitation } from '../db/invitations'
@@ -28,25 +30,34 @@ import type { Consent } from '@shared/db/Consent'
 import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
 import { getClient } from '../db/client'
 import type { InvitationGroup, UserGroup } from '@shared/db/Group'
-import { generateAuthenticationOptions,
+import {
+  generateAuthenticationOptions,
   verifyAuthenticationResponse,
   type AuthenticationResponseJSON,
-  type RegistrationResponseJSON } from '@simplewebauthn/server'
-import { deleteAuthenticationOptions, getAuthenticationOptions,
+  type RegistrationResponseJSON,
+} from '@simplewebauthn/server'
+import {
+  deleteAuthenticationOptions, getAuthenticationOptions,
   getPasskey,
   getUserPasskeys,
   saveAuthenticationOptions,
-  updatePasskeyCounter } from '../db/passkey'
-import { passkeyRegistrationValidator,
+  updatePasskeyCounter,
+} from '../db/passkey'
+import {
+  passkeyRegistrationValidator,
   passkeyRpId,
   passkeyRpOrigin,
   createPasskeyRegistrationOptions,
   getRegistrationInfo,
-  createPasskey } from '../util/passkey'
-import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
+  createPasskey,
+} from '../util/passkey'
+import type { UserDetails } from '@shared/api-response/UserDetails'
 import { getEmailVerification } from '../db/emailVerification'
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { createTOTP, validateTOTP } from '../db/totp'
+import { userCouldMFA } from './api'
+import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 
 const registerUserValidator = {
   username: {
@@ -79,25 +90,15 @@ const registerUserValidator = {
 
 export const router = Router()
 
-router.get('/exists', async (req, res) => {
-  const interaction = await getInteractionDetails(req, res)
-  if (!interaction) {
-    res.sendStatus(404)
-    return
-  }
+/**
+ *
+ * Meta Interaction Routes
+ *
+ */
 
-  // send redirect if interaction is already logged in
-  const location = interaction.returnTo
-  const success = !!interaction.result?.login?.accountId
-  const redir: Redirect | null = success
-    ? {
-        success,
-        location: location,
-      }
-    : null
-  res.send(redir)
-})
-
+/**
+ * Direct user to correct page to finish login or consent
+ */
 router.get('/', async (req, res) => {
   const interaction = await getInteractionDetails(req, res)
   if (!interaction) {
@@ -106,8 +107,7 @@ router.get('/', async (req, res) => {
   }
   const { uid, prompt, params } = interaction
 
-  const ctx = provider.createContext(req, res)
-  const session = await provider.Session.get(ctx) as Session | undefined
+  const session = await getSession(req, res)
   const accountId = session?.accountId ?? interaction.result?.login?.accountId
   const user = accountId ? await getUserById(accountId) : undefined
 
@@ -131,6 +131,11 @@ router.get('/', async (req, res) => {
       }
 
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user?.id ?? ''}?sent=${verificationSent ? 'true' : 'false'}`)
+      res.send()
+      return
+    } else if (prompt.reasons.includes('user_mfa_required')) {
+      // User has MFA required, direct them to MFA page
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}?cm=${String(userCouldMFA(user))}`)
       res.send()
       return
     }
@@ -196,9 +201,53 @@ router.get('/', async (req, res) => {
     res.redirect(`${appConfig.APP_URL}/consent/${uid}`)
   } else {
     res.sendStatus(400)
+    return
   }
 })
 
+/**
+ * Gets interaction details that are less specific, no uid required
+ */
+router.get('/exists', async (req, res) => {
+  const interaction = await getInteractionDetails(req, res)
+  if (!interaction) {
+    res.sendStatus(404)
+    return
+  }
+
+  // send redirect if interaction is already logged in
+  const location = interaction.returnTo
+  const success = !!interaction.result?.login?.accountId
+  const redir: Redirect | null = success
+    ? {
+        success,
+        location: location,
+      }
+    : null
+  res.send(redir)
+})
+
+router.delete('/current', async (req, res) => {
+  const interaction = await getInteractionDetails(req, res)
+  if (!interaction) {
+    res.sendStatus(404)
+    return
+  }
+
+  await interaction.destroy()
+
+  // If session is not fully logged in, destroy that too
+  const session = await getSession(req, res)
+  if (session && !req.loggedInUser) {
+    await session.destroy()
+  }
+
+  res.send()
+})
+
+/**
+ * Get information about current interaction
+ */
 router.get('/:uid/detail',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
@@ -221,211 +270,9 @@ router.get('/:uid/detail',
   },
 )
 
-router.post('/login',
-  ...validate<LoginUser>({
-    input: {
-      ...stringValidation,
-      isLength: { options: { min: 4, max: 32 } },
-      toLowerCase: true,
-    },
-    password: stringValidation,
-    remember: {
-      optional: true,
-      isBoolean: true,
-    },
-  }),
-  async (req, res) => {
-    const interaction = await getInteractionDetails(req, res)
-    if (!interaction) {
-      res.status(419).send({
-        message: 'Login page too old, refresh the page.',
-      })
-      return
-    }
-    const { prompt: { name } } = interaction
-
-    const { input, password, remember } = validatorData<LoginUser>(req)
-
-    if (name !== 'login') {
-      res.sendStatus(400)
-      return
-    }
-
-    const user = await getUserByInput(input)
-    if (!user) {
-      res.sendStatus(401)
-      return
-    }
-
-    // check user password
-    if (!await checkPasswordHash(user.id, password)) {
-      res.sendStatus(401)
-      return
-    }
-
-    // check if email verification or approval needed, if not log in
-    const redir: Redirect = {
-      success: true,
-      location: await provider.interactionResult(req, res, {
-        login: {
-          accountId: user.id,
-          remember: remember,
-          amr: ['pwd'],
-        },
-      },
-      { mergeWithLastSubmission: true }),
-    }
-
-    res.send(redir)
-  },
-)
-
-router.post('/passkey/start',
-  async (req, res) => {
-    const interaction = await getInteractionDetails(req, res)
-    if (!interaction) {
-      res.status(419).send({
-        message: 'Login page too old, refresh the page.',
-      })
-      return
-    }
-    const { prompt: { name } } = interaction
-
-    if (name !== 'login') {
-      res.sendStatus(400)
-      return
-    }
-
-    const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
-      rpID: passkeyRpId,
-      allowCredentials: [],
-    })
-
-    // (Pseudocode) Remember this challenge for this user
-    await saveAuthenticationOptions(interaction.uid, options)
-
-    res.send(options)
-    return
-  },
-)
-
-router.post('/passkey/end',
-  ...validate<AuthenticationResponseJSON>({
-    id: stringValidation,
-    rawId: stringValidation,
-    'response.clientDataJSON': stringValidation,
-    'response.authenticatorData': stringValidation,
-    'response.signature': stringValidation,
-    'response.userHandle': {
-      optional: true,
-      ...stringValidation,
-    },
-    authenticatorAttachment: {
-      optional: true,
-      ...stringValidation,
-    },
-    'clientExtensionResults.appid': {
-      optional: true,
-      isBoolean: true,
-    },
-    'clientExtensionResults.credProps.rk': {
-      optional: true,
-      isBoolean: true,
-    },
-    'clientExtensionResults.hmacCreateSecret': {
-      optional: true,
-      isBoolean: true,
-    },
-    type: stringValidation,
-  }),
-  async (req, res) => {
-    const interaction = await getInteractionDetails(req, res)
-    if (!interaction) {
-      res.status(419).send({
-        message: 'Login page too old, refresh the page.',
-      })
-      return
-    }
-    const { prompt: { name } } = interaction
-
-    const body = validatorData<AuthenticationResponseJSON>(req)
-
-    if (name !== 'login') {
-      res.sendStatus(400)
-      return
-    }
-
-    const authOptions = await getAuthenticationOptions(interaction.uid)
-
-    if (!authOptions) {
-      res.sendStatus(404)
-      return
-    }
-
-    await deleteAuthenticationOptions(interaction.uid)
-
-    const currentOptions = JSON.parse(authOptions.value) as PublicKeyCredentialRequestOptionsJSON
-
-    const passkey = await getPasskey(body.id)
-
-    if (!passkey) {
-      res.sendStatus(404)
-      return
-    }
-
-    let verification
-    try {
-      verification = await verifyAuthenticationResponse({
-        response: body,
-        expectedChallenge: currentOptions.challenge,
-        expectedOrigin: passkeyRpOrigin,
-        expectedRPID: passkeyRpId,
-        requireUserVerification: false,
-        credential: {
-          id: passkey.id,
-          publicKey: passkey.publicKey,
-          counter: passkey.counter,
-          transports: passkey.transports,
-        },
-      })
-    } catch (_error) {
-      res.sendStatus(401)
-      return
-    }
-
-    const { verified, authenticationInfo } = verification
-    if (!verified) {
-      res.sendStatus(400)
-      return
-    }
-
-    await updatePasskeyCounter(passkey.id, authenticationInfo.newCounter)
-
-    const user = await getUserById(passkey.userId)
-
-    // check user
-    if (!user) {
-      res.sendStatus(401)
-      return
-    }
-
-    // check if email verification or approval needed, if not log in
-    const redir: Redirect = {
-      success: true,
-      location: await provider.interactionResult(req, res, {
-        login: {
-          accountId: user.id,
-          remember: false,
-          amr: ['webauthn'],
-        },
-      },
-      { mergeWithLastSubmission: true }),
-    }
-
-    res.send(redir)
-  },
-)
-
+/**
+ * Consent to oidc client
+ */
 router.post('/:uid/confirm/',
   ...validate<{ uid: string }>({
     uid: stringValidation,
@@ -461,6 +308,15 @@ router.post('/:uid/confirm/',
   },
 )
 
+/**
+ *
+ * User Registration Routes
+ *
+ */
+
+/**
+ * Register new user with password, finishes login and adds pwd to amr
+ */
 router.post('/register',
   ...validate<RegisterUser>({
     ...registerUserValidator,
@@ -550,21 +406,18 @@ router.post('/register',
     }
 
     // See where we need to redirect the user to, depending on config
-    const redirect: Redirect = {
-      success: true,
-      location: await provider.interactionResult(req, res, {
-        login: {
-          accountId: user.id,
-          remember: false,
-          amr: ['pwd'],
-        },
-      }, { mergeWithLastSubmission: true }),
-    }
+    const redir = await interactionResult(req, res, {
+      userId: user.id,
+      amr: ['pwd'],
+    })
 
-    res.send(redirect)
+    res.send(redir)
   },
 )
 
+/**
+ * Start user registration using a passkey instead of password
+ */
 router.post('/register/passkey/start',
   ...validate<{ inviteId?: Invitation['id'], challenge?: Invitation['challenge'] }>({
     inviteId: {
@@ -583,8 +436,9 @@ router.post('/register/passkey/start',
 
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
+      const action = invite.inviteId ? 'Invite' : 'Registration'
       res.status(419).send({
-        message: `Page too old, refresh the page.`,
+        message: `${action} page too old, refresh the page.`,
       })
       return
     }
@@ -604,6 +458,9 @@ router.post('/register/passkey/start',
   },
 )
 
+/**
+ * Finish user registration using a passkey instead of password, finishes login and adds webauthn to amr
+ */
 router.post('/register/passkey/end',
   ...validate<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>({
     ...passkeyRegistrationValidator,
@@ -701,31 +558,33 @@ router.post('/register/passkey/end',
     await createPasskey(createdUser.id, registrationInfo, currentOptions)
 
     // See where we need to redirect the user to, depending on config
-    const redirect: Redirect = {
-      success: true,
-      location: await provider.interactionResult(req, res, {
-        login: {
-          accountId: createdUser.id,
-          remember: false, // non-password logins are never remembered
-          amr: ['webauthn'],
-        },
-      }, { mergeWithLastSubmission: true }),
-    }
+    const redir = await interactionResult(req, res, {
+      userId: user.id,
+      amr: ['webauthn'],
+    })
 
-    res.send(redirect)
+    res.send(redir)
   },
 )
 
+/**
+ *
+ * Register AMR Routes
+ *
+ */
+
+/**
+ * Start registering a passkey
+ */
 router.post('/passkey/registration/start',
   async (req, res) => {
-    // user could actually be missing here since we are not checking with middleware before this
-    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+    // Should only be able to register if fully logged in,
+    // OR could not otherwise MFA
+    // partially logged in users may be prompted to add MFA
+    let user = req.loggedInUser
 
-    if (!user) {
-      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
+    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
+      user = req.sessionUser
     }
 
     if (!user) {
@@ -741,20 +600,21 @@ router.post('/passkey/registration/start',
   },
 )
 
+/**
+ * Finish registering a passkey, finishes login and adds webauthn to amr
+ */
 router.post('/passkey/registration/end',
   ...validate<RegistrationResponseJSON>(passkeyRegistrationValidator),
   async (req, res) => {
     const body = validatorData<RegistrationResponseJSON>(req)
 
-    // Retrieve the logged-in user
-    // user could actually be missing here since we are not checking with middleware before this
-    let user: UserDetails | undefined = req.user as CurrentUserDetails | undefined
+    // Should only be able to register if fully logged in,
+    // OR could not otherwise MFA
+    // partially logged in users may be prompted to add MFA
+    let user = req.loggedInUser
 
-    if (!user) {
-      const accountId = (await getInteractionDetails(req, res))?.result?.login?.accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-      }
+    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
+      user = req.sessionUser
     }
 
     if (!user) {
@@ -772,37 +632,271 @@ router.post('/passkey/registration/end',
 
     await createPasskey(user.id, registrationInfo, currentOptions)
 
-    // Try to add webauthn to session amr
-    try {
-      const ctx = provider.createContext(req, res)
-      const session = await provider.Session.get(ctx)
-      const amr = session.amr ?? []
-      if (!amr.includes('webauthn')) {
-        amr.push('webauthn')
-      }
-      session.amr = amr
-      await session.save(TTLs.SESSION)
-    } catch (e) {
-      console.error(e)
-    }
+    const redir = await interactionResult(req, res, {
+      userId: user.id,
+      amr: ['webauthn'],
+    })
 
-    // Try to add webauthn to interaction amr
-    try {
-      const interaction = await getInteractionDetails(req, res)
-      if (interaction?.result?.login?.accountId && !interaction.result.login.amr?.includes('webauthn')) {
-        const amr = interaction.result.login.amr ?? []
-        amr.push('webauthn')
-        interaction.result.login.amr = amr
-        await interaction.save(TTLs.INTERACTION)
-      }
-    } catch (e) {
-      console.error(e)
-    }
-
-    res.send()
+    res.send(redir)
   },
 )
 
+/**
+ * Register a new totp, needs to be verified afterwards or it expires
+ */
+router.post('/totp/registration',
+  async (req, res) => {
+    // Should only be able to register if fully logged in,
+    // OR could not otherwise MFA
+    // partially logged in users may be prompted to add MFA
+    let user = req.loggedInUser
+
+    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
+      user = req.sessionUser
+    }
+
+    if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    const response: RegisterTotpResponse = await createTOTP(user.id, user.username)
+
+    res.send(response)
+  },
+)
+
+/**
+ *
+ * AMR Action Routes
+ *
+ */
+
+/**
+ * Login with password, finishes login and adds pwd to amr
+ */
+router.post('/login',
+  ...validate<LoginUser>({
+    input: {
+      ...stringValidation,
+      isLength: { options: { min: 4, max: 32 } },
+      toLowerCase: true,
+    },
+    password: stringValidation,
+    remember: {
+      optional: true,
+      isBoolean: true,
+    },
+  }),
+  async (req, res) => {
+    const interaction = await getInteractionDetails(req, res)
+    const session = await getSession(req, res)
+    if (!interaction && !session) {
+      res.status(419).send({
+        message: 'Login page too old, refresh the page.',
+      })
+      return
+    }
+
+    const { input, password, remember } = validatorData<LoginUser>(req)
+
+    const user = await getUserByInput(input)
+    if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    // check user password
+    if (!await checkPasswordHash(user.id, password)) {
+      res.sendStatus(401)
+      return
+    }
+
+    // check if email verification or approval needed, if not log in
+    const redir = await interactionResult(req, res, {
+      userId: user.id,
+      amr: ['pwd'],
+      remember,
+    })
+
+    res.send(redir)
+  },
+)
+
+/**
+ * Start login with passkey
+ */
+router.post('/passkey/start',
+  async (req, res) => {
+    const interaction = await getInteractionDetails(req, res)
+    const session = await getSession(req, res)
+    if (!interaction && !session) {
+      res.status(419).send({
+        message: 'Login page too old, refresh the page.',
+      })
+      return
+    }
+
+    const userId = interaction?.result?.login?.accountId || session?.accountId
+    const passkeys = userId ? await getUserPasskeys(userId) : []
+
+    const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
+      rpID: passkeyRpId,
+      allowCredentials: passkeys,
+    })
+
+    // (Pseudocode) Remember this challenge for this user
+    await saveAuthenticationOptions((interaction?.uid ?? session?.uid) as string, options)
+
+    res.send(options)
+    return
+  },
+)
+
+/**
+ * Finish login with passkey, finishes login and adds webauthn to amr
+ */
+router.post('/passkey/end',
+  ...validate<AuthenticationResponseJSON>({
+    id: stringValidation,
+    rawId: stringValidation,
+    'response.clientDataJSON': stringValidation,
+    'response.authenticatorData': stringValidation,
+    'response.signature': stringValidation,
+    'response.userHandle': {
+      optional: true,
+      ...stringValidation,
+    },
+    authenticatorAttachment: {
+      optional: true,
+      ...stringValidation,
+    },
+    'clientExtensionResults.appid': {
+      optional: true,
+      isBoolean: true,
+    },
+    'clientExtensionResults.credProps.rk': {
+      optional: true,
+      isBoolean: true,
+    },
+    'clientExtensionResults.hmacCreateSecret': {
+      optional: true,
+      isBoolean: true,
+    },
+    type: stringValidation,
+  }),
+  async (req, res) => {
+    const interaction = await getInteractionDetails(req, res)
+    const session = await getSession(req, res)
+    if (!interaction && !session) {
+      res.status(419).send({
+        message: 'Login page too old, refresh the page.',
+      })
+      return
+    }
+
+    const body = validatorData<AuthenticationResponseJSON>(req)
+
+    const authOptions = await getAuthenticationOptions((interaction?.uid ?? session?.uid) as string)
+
+    if (!authOptions) {
+      res.sendStatus(404)
+      return
+    }
+
+    await deleteAuthenticationOptions((interaction?.uid ?? session?.uid) as string)
+
+    const currentOptions = JSON.parse(authOptions.value) as PublicKeyCredentialRequestOptionsJSON
+
+    const passkey = await getPasskey(body.id)
+
+    if (!passkey) {
+      res.sendStatus(404)
+      return
+    }
+
+    let verification
+    try {
+      verification = await verifyAuthenticationResponse({
+        response: body,
+        expectedChallenge: currentOptions.challenge,
+        expectedOrigin: passkeyRpOrigin,
+        expectedRPID: passkeyRpId,
+        requireUserVerification: false,
+        credential: {
+          id: passkey.id,
+          publicKey: passkey.publicKey,
+          counter: passkey.counter,
+          transports: passkey.transports,
+        },
+      })
+    } catch (_error) {
+      res.sendStatus(401)
+      return
+    }
+
+    const { verified, authenticationInfo } = verification
+    if (!verified) {
+      res.sendStatus(400)
+      return
+    }
+
+    await updatePasskeyCounter(passkey.id, authenticationInfo.newCounter)
+
+    const user = await getUserById(passkey.userId)
+
+    // check user
+    if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    const redir = await interactionResult(req, res, {
+      userId: user.id,
+      amr: ['webauthn'],
+    })
+
+    res.send(redir)
+  },
+)
+
+/**
+ * Validate totp and add totp to amr
+ */
+router.post('/totp',
+  ...validate<{ token: string }>({
+    token: {
+      ...stringValidation,
+    },
+  }),
+  async (req, res) => {
+    // get user from req without checking user can login already
+    const user = req.sessionUser
+
+    if (!user || isUnapproved(user)) {
+      res.sendStatus(401)
+      return
+    }
+
+    const { token } = validatorData<{ token: string }>(req)
+
+    if (!await validateTOTP(user.id, token)) {
+      res.sendStatus(401)
+      return
+    }
+
+    const redir = await interactionResult(req, res, {
+      userId: user.id,
+      amr: ['totp'],
+    })
+
+    res.send(redir)
+  },
+)
+
+/**
+ * Verify an email, finishes login adds email to amr
+ */
 router.post('/verify_email',
   ...validate<VerifyUserEmail>({
     userId: uuidValidation,
@@ -812,7 +906,8 @@ router.post('/verify_email',
     const { userId, challenge } = validatorData<VerifyUserEmail>(req)
 
     const interaction = await getInteractionDetails(req, res)
-    if (!interaction) {
+    const session = await getSession(req, res)
+    if (!interaction && !session) {
       const redir: Redirect = {
         success: false,
         location: oidcLoginPath(appConfig.APP_URL + '/api/cb', 'verify_email', userId, challenge),
@@ -847,27 +942,75 @@ router.post('/verify_email',
 
     // Email verification should redirect to DEFAULT_REDIRECT if set
     const defaultRedirect = appConfig.DEFAULT_REDIRECT
-    if (defaultRedirect) {
+    if (defaultRedirect && interaction) {
       interaction.params.redirect_uri = defaultRedirect
       await interaction.save(TTLs.INTERACTION)
     }
 
-    const redir: Redirect = {
-      success: true,
-      location: await provider.interactionResult(req, res, {
-        login: {
-          accountId: user.id,
-          remember: false,
-          amr: ['email'],
-        },
-      },
-      { mergeWithLastSubmission: true }),
-    }
+    const redir = await interactionResult(req, res, {
+      userId: user.id,
+      amr: ['email'],
+    })
 
     res.send(redir)
     return
   },
 )
+
+export async function interactionResult(req: Request, res: Response, options: {
+  amr: string[]
+  userId: string
+  remember?: boolean
+}): Promise<Redirect | undefined> {
+  let { amr } = options
+  const { userId, remember = false } = options
+
+  try {
+    const session = await getSession(req, res)
+    if (session?.accountId === userId) {
+      amr = [...new Set([...amr, ...(session.amr ?? [])])]
+      session.amr = amr
+      await session.save(TTLs.SESSION)
+    }
+  } catch (e) {
+    console.error(e)
+  }
+
+  try {
+    const interaction = await getInteractionDetails(req, res)
+
+    if (interaction) {
+      if (interaction.result?.login?.accountId === userId) {
+        amr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
+        interaction.result.login.amr = amr
+        await interaction.save(TTLs.INTERACTION)
+      }
+
+      return {
+        success: true,
+        location: await provider.interactionResult(req, res, {
+          login: {
+            accountId: userId,
+            remember: interaction.result?.login?.remember || remember,
+            amr: amr,
+          },
+        },
+        { mergeWithLastSubmission: true }),
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+export async function getSession(req: IncomingMessage, res: ServerResponse) {
+  try {
+    const ctx = provider.createContext(req, res)
+    return await provider.Session.get(ctx)
+  } catch (_e) {
+    return null
+  }
+}
 
 export async function getInteractionDetails(req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) {
   try {

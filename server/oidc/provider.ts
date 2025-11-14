@@ -1,5 +1,5 @@
 import Provider, { type Configuration } from 'oidc-provider'
-import { findAccount, getUserById, isUnapproved, isUnverified } from '../db/user'
+import { amrRequired, findAccount, getUserById, isUnapproved, isUnverified } from '../db/user'
 import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
@@ -12,21 +12,8 @@ import * as psl from 'psl'
 import { createExpiration } from '../db/util'
 import { interactionPolicy } from 'oidc-provider'
 import { getClient } from '../db/client'
-import type { UserDetails } from '@shared/api-response/UserDetails'
 
 // Modify consent interaction policy to check for user and client groups
-let userCheckCache: Record<string, Promise<UserDetails | undefined>> = {}
-let userCheckCacheExpires: number = 0
-const getUserWithCache = async (accountId: string) => {
-  if (userCheckCacheExpires < new Date().getTime()) {
-    userCheckCache = {}
-    userCheckCacheExpires = new Date().getTime() + 30000 // 30 seconds
-  }
-  if (!userCheckCache[accountId]) {
-    userCheckCache[accountId] = getUserById(accountId)
-  }
-  return userCheckCache[accountId]
-}
 const { Check, base } = interactionPolicy
 const modifiedInteractionPolicy = base()
 const loginPromptPolicy = modifiedInteractionPolicy.get('login') as interactionPolicy.Prompt
@@ -36,7 +23,7 @@ loginPromptPolicy.checks.add(new Check('user_not_approved',
     const { oidc } = ctx
     if (oidc.account?.accountId) {
       // using a short cache
-      const user = await getUserWithCache(oidc.account.accountId)
+      const user = await getUserById(oidc.account.accountId)
       if (user && isUnapproved(user)) {
         return Check.REQUEST_PROMPT
       }
@@ -50,7 +37,7 @@ loginPromptPolicy.checks.add(new Check('user_email_not_validated',
   'user_email_not_validated', async (ctx) => {
     const { oidc } = ctx
     if (oidc.account?.accountId && appConfig.EMAIL_VERIFICATION) {
-      const user = await getUserWithCache(oidc.account.accountId)
+      const user = await getUserById(oidc.account.accountId)
       if (user && isUnverified(user)) {
         return Check.REQUEST_PROMPT
       }
@@ -59,6 +46,35 @@ loginPromptPolicy.checks.add(new Check('user_email_not_validated',
     return Check.NO_NEED_TO_PROMPT
   },
 ))
+loginPromptPolicy.checks.add(new Check('user_mfa_required',
+  'user login requires mfa',
+  'user_mfa_required', async (ctx) => {
+    const { oidc } = ctx
+    if (oidc.account?.accountId) {
+      const user = await getUserById(oidc.account.accountId)
+      if (user && amrRequired(user.hasTotp, oidc.session?.amr ?? []) === 'mfa') {
+        return Check.REQUEST_PROMPT
+      }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
+loginPromptPolicy.checks.add(new Check('user_login_required',
+  'user requires login',
+  'user_login_required', async (ctx) => {
+    const { oidc } = ctx
+    if (oidc.account?.accountId) {
+      const user = await getUserById(oidc.account.accountId)
+      if (user && amrRequired(user.hasTotp, oidc.session?.amr ?? []) === 'login') {
+        return Check.REQUEST_PROMPT
+      }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
+
 const consentPromptPolicy = modifiedInteractionPolicy.get('consent') as interactionPolicy.Prompt
 consentPromptPolicy.checks.add(new Check('user_group_missing',
   'missing any security group that would give access to the resource',

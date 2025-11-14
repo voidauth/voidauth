@@ -21,8 +21,7 @@ const options = {
 zxcvbnOptions.setOptions(options)
 
 export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!req.user) {
+  if (!req.loggedInUser) {
     res.sendStatus(401)
     return
   }
@@ -30,7 +29,7 @@ export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
 }
 
 export function checkAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!isAdmin(req.user)) {
+  if (!isAdmin(req.loggedInUser)) {
     res.sendStatus(403)
     return
   }

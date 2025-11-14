@@ -245,7 +245,6 @@ export class UpsertClientComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('Client delete cancelled.')
         return
       }
 

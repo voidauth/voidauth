@@ -14,6 +14,7 @@ import { checkPasswordHash } from '../db/user'
 import { deleteUserPasskeys } from '../db/passkey'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/constants'
+import type { TOTP } from '@shared/db/TOTP'
 
 export const userRouter = Router()
 
@@ -21,7 +22,7 @@ userRouter.use(checkLoggedIn)
 
 userRouter.get('/me',
   (req, res) => {
-    res.send(req.user)
+    res.send(req.loggedInUser)
   },
 )
 
@@ -30,7 +31,12 @@ userRouter.patch('/profile',
     name: nameValidation,
   }),
   async (req, res) => {
-    const user = req.user
+    const user = req.loggedInUser
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+
     const profile = validatorData<UpdateProfile>(req)
 
     await db().table<User>(TABLES.USER).update(profile).where({ id: user.id })
@@ -44,7 +50,11 @@ userRouter.patch('/email',
     email: emailValidation,
   }),
   async (req, res) => {
-    const user = req.user
+    const user = req.loggedInUser
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
 
     const { email } = validatorData<UpdateEmail>(req)
 
@@ -68,7 +78,12 @@ userRouter.patch('/password',
     newPassword: newPasswordValidation,
   }),
   async (req, res) => {
-    const user = req.user
+    const user = req.loggedInUser
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+
     const { oldPassword, newPassword } = validatorData<UpdatePassword>(req)
 
     if (user.hasPassword && (!oldPassword || !await checkPasswordHash(user.id, oldPassword))) {
@@ -82,10 +97,19 @@ userRouter.patch('/password',
 )
 
 userRouter.delete('/passkeys', async (req, res) => {
-  const user = req.user
+  const user = req.loggedInUser
+  if (!user) {
+    res.sendStatus(500)
+    return
+  }
 
   if (!user.hasPassword) {
     res.sendStatus(400)
+    return
+  }
+
+  if (!user.hasPasskeys) {
+    res.sendStatus(404)
     return
   }
 
@@ -94,19 +118,49 @@ userRouter.delete('/passkeys', async (req, res) => {
 })
 
 userRouter.delete('/password', async (req, res) => {
-  const user = req.user
+  const user = req.loggedInUser
+  if (!user) {
+    res.sendStatus(500)
+    return
+  }
 
   if (!user.hasPasskeys) {
     res.sendStatus(400)
     return
   }
 
+  if (!user.hasPassword) {
+    res.sendStatus(404)
+    return
+  }
+
   await db().table<User>(TABLES.USER).update({ passwordHash: null }).where({ id: user.id })
+  await db().table<TOTP>(TABLES.TOTP).delete().where({ userId: user.id })
+  res.send()
+})
+
+userRouter.delete('/totp', async (req, res) => {
+  const user = req.loggedInUser
+  if (!user) {
+    res.sendStatus(500)
+    return
+  }
+
+  if (!user.hasTotp) {
+    res.sendStatus(404)
+    return
+  }
+
+  await db().table<TOTP>(TABLES.TOTP).delete().where({ userId: user.id })
   res.send()
 })
 
 userRouter.delete('/user', async (req, res) => {
-  const user = req.user
+  const user = req.loggedInUser
+  if (!user) {
+    res.sendStatus(500)
+    return
+  }
 
   await db().table<User>(TABLES.USER).delete().where({ id: user.id })
   await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).delete().where({ accountId: user.id })

@@ -73,11 +73,22 @@
           {{ user?.hasPassword ? "Change " : "Set " }} Password
         </button>
 
-        <app-text-divider text="or"></app-text-divider>
+        <mat-divider class="disabled"></mat-divider>
+
+        <p style="text-align: center">You have {{ user?.hasPasskeys ? "at least one registered passkey" : "no registered passkeys" }}.</p>
 
         <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
           Register Passkey
           <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
+        </button>
+
+        <mat-divider class="disabled"></mat-divider>
+
+        <p style="text-align: center">You have {{ user?.hasTotp ? "at least one authenticator" : "no authenticators" }}.</p>
+
+        <button mat-flat-button type="button" (click)="addAuthenticator()">
+          Add Authenticator
+          <mat-icon fontSet="material-icons-round" matSuffix>lock</mat-icon>
         </button>
       </mat-card-actions>
     </form>
@@ -86,6 +97,7 @@
 
 <mat-divider></mat-divider>
 
+<!-- account card -->
 <mat-card class="form-card">
   <mat-card-header>
     <mat-card-title> Account </mat-card-title>
@@ -116,6 +128,12 @@
             [disabled]="!user?.hasPasskeys || !user?.hasPassword"
           >
             Remove All Passkeys
+          </button></span
+        >
+
+        <span [matTooltip]="!user?.hasTotp ? 'You have no authenticators to remove' : null"
+          ><button mat-flat-button type="button" class="error-button" (click)="removeAllAuthenticators()" [disabled]="!user?.hasTotp">
+            Remove All Authenticators
           </button></span
         >
 

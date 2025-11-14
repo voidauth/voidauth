@@ -28,7 +28,7 @@ export class UserService {
   }
 
   passkeySession(user: CurrentUserDetails) {
-    return !!user.amr?.includes('webauthn')
+    return user.amr.includes('webauthn')
   }
 
   async updateProfile(profile: UpdateProfile) {
@@ -49,6 +49,10 @@ export class UserService {
 
   async removePassword() {
     return firstValueFrom(this.http.delete<null>('/api/user/password'))
+  }
+
+  async removeAllAuthenticators() {
+    return firstValueFrom(this.http.delete<null>('/api/user/totp'))
   }
 
   async deleteUser() {

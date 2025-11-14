@@ -14,11 +14,11 @@
   <span class="right-actions">
     <app-theme-toggle></app-theme-toggle>
     <span>
-      @if (!user && loginRedirect && !location.pathname.includes("login")) {
+      @if (!user && loginRedirect && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {
         <span>
           <a mat-flat-button [href]="loginRedirect">Login</a>
         </span>
-      } @else if (user) {
+      } @else if (!location.pathname.endsWith("/login") && !location.pathname.endsWith("/register")) {
         <button mat-icon-button (click)="toggleSidenav.emit()">
           <mat-icon>menu</mat-icon>
         </button>

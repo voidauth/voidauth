@@ -55,8 +55,9 @@ export class VerifyComponent implements OnInit {
 
       // Not always verified email
       // interaction session might not exist and redirect is to get it
-
-      location.assign(redirect.location)
+      if (redirect) {
+        location.assign(redirect.location)
+      }
     } catch (e) {
       console.error(e)
       let error: string

@@ -11,6 +11,7 @@ import { type Nullable } from '@shared/utils'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import { type RegistrationResponseJSON, type PublicKeyCredentialCreationOptionsJSON, WebAuthnError } from '@simplewebauthn/browser'
+import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 
 @Injectable({
   providedIn: 'root',
@@ -26,8 +27,12 @@ export class AuthService {
     return firstValueFrom(this.http.get<Redirect | null>('/api/interaction/exists'))
   }
 
+  async cancelInteraction() {
+    return firstValueFrom(this.http.delete<null>('/api/interaction/current'))
+  }
+
   async register(body: Nullable<RegisterUser>) {
-    return firstValueFrom(this.http.post<Redirect>('/api/interaction/register', body))
+    return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/register', body))
   }
 
   async startPasskeySignup(inviteId?: string, challenge?: string) {
@@ -39,7 +44,7 @@ export class AuthService {
 
   async endPasskeySignup(body: Nullable<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>) {
     try {
-      const result = await firstValueFrom(this.http.post<Redirect>('/api/interaction/register/passkey/end', body))
+      const result = await firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/register/passkey/end', body))
       localStorage.setItem('passkey_seen', 'true')
       return result
     } catch (error) {
@@ -51,7 +56,7 @@ export class AuthService {
   }
 
   async login(body: LoginUser) {
-    return firstValueFrom(this.http.post<Redirect>('/api/interaction/login', body))
+    return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/login', body))
   }
 
   async consent(uid: string) {
@@ -59,11 +64,11 @@ export class AuthService {
   }
 
   async verifyEmail(body: VerifyUserEmail) {
-    return firstValueFrom(this.http.post<Redirect>('/api/interaction/verify_email', body))
+    return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/verify_email', body))
   }
 
   async sendEmailVerification(body: { id: string }) {
-    return firstValueFrom(this.http.post<Redirect>('/api/auth/send_verify_email', body))
+    return firstValueFrom(this.http.post<Redirect | undefined>('/api/auth/send_verify_email', body))
   }
 
   async getInviteDetails(id: string, challenge: string) {
@@ -93,5 +98,13 @@ export class AuthService {
       }
       throw error
     }
+  }
+
+  async registerTotp() {
+    return firstValueFrom(this.http.post<RegisterTotpResponse>('/api/interaction/totp/registration', null))
+  }
+
+  async verifyTotp(token: string) {
+    return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/totp', { token }))
   }
 }

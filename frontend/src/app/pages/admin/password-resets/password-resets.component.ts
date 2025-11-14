@@ -108,7 +108,6 @@ export class PasswordResetsComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('Password reset link delete cancelled.')
         return
       }
 

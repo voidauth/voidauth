@@ -128,7 +128,6 @@ export class UsersComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('User delete cancelled.')
         return
       }
       try {
@@ -162,7 +161,6 @@ export class UsersComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('Approval Cancelled.')
         return
       }
       try {
@@ -197,7 +195,6 @@ export class UsersComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('Delete Cancelled.')
         return
       }
       try {

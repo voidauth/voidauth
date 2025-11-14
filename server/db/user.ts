@@ -11,6 +11,8 @@ import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
 import appConfig from '../util/config'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
+import { hasTOTP } from './totp'
+import { getUserPasskeys } from './passkey'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -51,25 +53,22 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy('name', 'asc')).map(g => g.name)
 
+  const hasTotp = await hasTOTP(id)
+  const hasPasskeys = !!(await getUserPasskeys(user.id)).length
+
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPassword: !!passwordHash }
+  return { ...userWithoutPassword, groups, hasPasskeys, hasTotp, hasPassword: !!passwordHash }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
-  const user = await db().table<User>(TABLES.USER).select()
-    .whereRaw('lower("username") = lower(?) or lower("email") = lower(?)', [input, input]).first()
+  const userId = (await db().table<User>(TABLES.USER).select('id')
+    .whereRaw('lower("username") = lower(?) or lower("email") = lower(?)', [input, input]).first())?.id
 
-  if (!user) {
+  if (!userId) {
     return undefined
   }
 
-  const groups = (await db().select('name')
-    .table<Group>(TABLES.GROUP)
-    .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
-    .orderBy('name', 'asc')).map(g => g.name)
-
-  const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPassword: !!passwordHash }
+  return await getUserById(userId)
 }
 
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
@@ -77,8 +76,8 @@ export async function checkPasswordHash(userId: string, password: string): Promi
   return !!user && !!password && !!user.passwordHash && await argon2.verify(user.passwordHash, password)
 }
 
-export function isAdmin(user: Pick<UserDetails, 'groups'>) {
-  return user.groups.includes(ADMIN_GROUP)
+export function isAdmin(user: Pick<UserDetails, 'groups'> | undefined) {
+  return !!user?.groups.includes(ADMIN_GROUP)
 }
 
 export function isUnapproved(user: Pick<UserDetails, 'approved' | 'groups'>) {
@@ -87,6 +86,27 @@ export function isUnapproved(user: Pick<UserDetails, 'approved' | 'groups'>) {
 
 export function isUnverified(user: Pick<UserDetails, 'email' | 'emailVerified' | 'groups'>) {
   return !isAdmin(user) && appConfig.EMAIL_VERIFICATION && (!user.email || !user.emailVerified)
+}
+
+export function amrRequired(mfaRequired: boolean, amr: string[]) {
+  const multiFactors = ['email', 'webauthn'] // something that should already require mfa to access
+  const firstFactors = ['pwd'] // something you know (password, PIN)
+  const secondFactors = ['totp'] // something you have or are (device, biometrics)
+
+  // Multi-factor AMRs allow access always
+  if (amr.some(f => multiFactors.includes(f))) {
+    return false
+  }
+
+  // Single-factor AMRs allow access if mfa is not required, or if there is a second factor
+  if (amr.some(f => firstFactors.includes(f))) {
+    if (!mfaRequired || amr.some(f => secondFactors.includes(f))) {
+      return false
+    }
+    return 'mfa'
+  }
+
+  return 'login'
 }
 
 export async function endSessions(userId: string) {

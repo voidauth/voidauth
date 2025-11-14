@@ -10,11 +10,10 @@ import { PasswordSetComponent } from '../../components/password-reset/password-s
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
-import { ActivatedRoute, Router } from '@angular/router'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
+import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
 
 @Component({
   selector: 'app-home',
@@ -23,7 +22,6 @@ import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
     MaterialModule,
     ValidationErrorPipe,
     PasswordSetComponent,
-    TextDividerComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -73,8 +71,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   })
 
-  private route = inject(ActivatedRoute)
-  private router = inject(Router)
   private configService = inject(ConfigService)
   private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
@@ -177,7 +173,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       } else {
         this.snackbarService.message('Email updated.')
       }
-    } catch (_e) {
+    } catch (e) {
+      console.error(e)
       this.snackbarService.error('Could not update email.')
     } finally {
       await this.loadUser()
@@ -190,6 +187,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     try {
       await this.passkeyService.register()
       await this.loadUser()
+      this.snackbarService.message('Passkey registered successfully.')
     } catch (error) {
       if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
         this.snackbarService.error('Passkey already registered.')
@@ -202,6 +200,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  addAuthenticator() {
+    const dialogRef = this.dialog.open(TotpRegisterComponent, {
+      panelClass: 'overflow-auto',
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (result) {
+        await this.loadUser()
+        this.snackbarService.message('Authenticator added successfully.')
+      }
+    })
+  }
+
   removeAllPasskeys() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
@@ -212,7 +223,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.message('Passkey removal cancelled.')
         return
       }
 
@@ -234,14 +244,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   removePassword() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. unless you set a password again.`,
+        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. unless you set a password again.${this.user?.hasTotp ? ' This will also remove any Authenticators on your account.' : ''}`,
         header: 'Remove',
       },
     })
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.message('Password removal cancelled.')
         return
       }
 
@@ -251,6 +260,32 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.snackbarService.message('Removed password.')
       } catch (_e) {
         this.snackbarService.error('Could not remove password.')
+      } finally {
+        await this.loadUser()
+        this.spinnerService.hide()
+      }
+    })
+  }
+
+  removeAllAuthenticators() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to remove your account Authenticators? Multi-factor authentication will no longer be enabled on your account.`,
+        header: 'Remove',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.userService.removeAllAuthenticators()
+        this.snackbarService.message('Removed authenticators.')
+      } catch (_e) {
+        this.snackbarService.error('Could not remove authenticators.')
       } finally {
         await this.loadUser()
         this.spinnerService.hide()
@@ -269,7 +304,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.message('Account deletion cancelled.')
         return
       }
 

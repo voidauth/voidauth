@@ -2,10 +2,6 @@
   flex: 1 1 auto;
 }
 
-mat-toolbar {
-  background-color: color-mix(in oklab, var(--mat-sys-surface) 90%, #000 10%);
-}
-
 .header-logo {
   display: block;
   height: 100%;

@@ -75,7 +75,6 @@ export class InvitationsComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (!result) {
-        this.snackbarService.error('Invitation delete cancelled.')
         return
       }
 
