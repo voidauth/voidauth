@@ -22,7 +22,10 @@ body {
   --form-min-width: 300px;
 
   // Material component theme overrides
-  @include mat.sidenav-overrides((container-width: var(--form-min-width)));
+  @include mat.sidenav-overrides((
+    container-width: var(--form-min-width),
+    container-shape: 0px,
+  ));
 
   @include mat.list-overrides((active-indicator-shape: 14px));
 }
@@ -56,6 +59,10 @@ body.light {
     filled-container-color: var(--mat-sys-on-error-container),
     filled-label-text-color: var(--mat-sys-error-container),
   ));
+}
+
+.overflow-auto {
+  overflow: auto;
 }
 
 .container {

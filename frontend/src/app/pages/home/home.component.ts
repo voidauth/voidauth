@@ -201,7 +201,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   addAuthenticator() {
-    const dialogRef = this.dialog.open(TotpRegisterComponent)
+    const dialogRef = this.dialog.open(TotpRegisterComponent, {
+      panelClass: 'overflow-auto',
+    })
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {

@@ -1,13 +1,15 @@
 <div class="totp-input-container">
   @if (qrcodeData) {
-    <img width="260" height="260" [src]="qrcodeData" />
+    <p style="text-align: center; margin-top: -4px"><small>This will enable Multi-Factor Authentication on your account.</small></p>
+
+    <img style="border-radius: 4px" width="240" height="240" [src]="qrcodeData" />
 
     <mat-accordion>
       <mat-expansion-panel>
         <mat-expansion-panel-header>
           <mat-panel-title> Show Secret </mat-panel-title>
         </mat-expansion-panel-header>
-        <p>
+        <p style="text-align: center; margin: 0px">
           <small
             ><b>{{ secret() }}</b></small
           >
@@ -15,7 +17,7 @@
       </mat-expansion-panel>
     </mat-accordion>
 
-    <p style="padding: 0px 16px">Scan the QRCode or Enter the Secret in your Authenticator</p>
+    <p style="padding: 0px 16px; text-align: center">Scan the QRCode or Enter the Secret in your Authenticator</p>
 
     <app-text-divider text="then"></app-text-divider>
   }
@@ -38,5 +40,5 @@
       </mat-form-field>
     }
   </div>
-  <p style="margin-top: 0px">Enter Token from Authenticator to Continue</p>
+  <p style="text-align: center; margin-top: 0px">Enter Token from Authenticator to Continue</p>
 </div>

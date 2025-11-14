@@ -27,6 +27,7 @@ export class TotpInputComponent implements AfterViewInit {
       if (uri) {
         QRCode.toDataURL(uri, {
           margin: 1,
+          width: 240 * 3,
         }).then((d) => {
           this.qrcodeData = d
         }).catch((e: unknown) => {

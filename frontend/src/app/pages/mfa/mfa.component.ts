@@ -3,7 +3,7 @@ import { TotpInputComponent } from '../../components/totp-input/totp-input.compo
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { MatButtonModule } from '@angular/material/button'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { ConfigService } from '../../services/config.service'
+import { ConfigService, getBaseHrefPath } from '../../services/config.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { MaterialModule } from '../../material-module'
 import { SnackbarService } from '../../services/snackbar.service'
@@ -73,7 +73,11 @@ export class MfaComponent implements OnInit {
     this.disabled.set(true)
     try {
       await this.authService.cancelInteraction()
-      window.history.back()
+      if (history.length) {
+        window.history.back()
+      } else {
+        window.location.assign(getBaseHrefPath())
+      }
     } catch (e) {
       console.error(e)
       this.snackbarService.error('Something went wrong. Try logout from dropdown menu in header.')

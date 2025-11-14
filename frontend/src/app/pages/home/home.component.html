@@ -75,7 +75,7 @@
 
         <mat-divider class="disabled"></mat-divider>
 
-        <p>You have {{ user?.hasPasskeys ? "at least one registered passkey" : "no registered passkeys" }}.</p>
+        <p style="text-align: center">You have {{ user?.hasPasskeys ? "at least one registered passkey" : "no registered passkeys" }}.</p>
 
         <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
           Register Passkey
@@ -84,7 +84,7 @@
 
         <mat-divider class="disabled"></mat-divider>
 
-        <p>You have {{ user?.hasTotp ? "at least one authenticator" : "no authenticators" }}.</p>
+        <p style="text-align: center">You have {{ user?.hasTotp ? "at least one authenticator" : "no authenticators" }}.</p>
 
         <button mat-flat-button type="button" (click)="addAuthenticator()">
           Add Authenticator
@@ -97,6 +97,7 @@
 
 <mat-divider></mat-divider>
 
+<!-- account card -->
 <mat-card class="form-card">
   <mat-card-header>
     <mat-card-title> Account </mat-card-title>
