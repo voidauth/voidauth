@@ -57,7 +57,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const hasPasskeys = !!(await getUserPasskeys(user.id)).length
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPasskeys, hasTotp: hasTotp, hasPassword: !!passwordHash }
+  return { ...userWithoutPassword, groups, hasPasskeys, hasTotp, hasPassword: !!passwordHash }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
@@ -89,7 +89,7 @@ export function isUnverified(user: Pick<UserDetails, 'email' | 'emailVerified' |
 }
 
 export function amrRequired(mfaRequired: boolean, amr: string[]) {
-  const multiFactors = ['email', 'webauthn'] // something that should already required mfa to access
+  const multiFactors = ['email', 'webauthn'] // something that should already require mfa to access
   const firstFactors = ['pwd'] // something you know (password, PIN)
   const secondFactors = ['totp'] // something you have or are (device, biometrics)
 

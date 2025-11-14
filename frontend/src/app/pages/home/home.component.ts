@@ -244,7 +244,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   removePassword() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. unless you set a password again. This will also remove any MFA codes you have registered.`,
+        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. unless you set a password again.${this.user?.hasTotp ? ' This will also remove any Authenticators on your account.' : ''}`,
         header: 'Remove',
       },
     })

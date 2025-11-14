@@ -9,7 +9,6 @@ import { MatListModule } from '@angular/material/list'
 import { MatCardModule } from '@angular/material/card'
 import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatCheckboxModule } from '@angular/material/checkbox'
-import { DragDropModule } from '@angular/cdk/drag-drop'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatTableModule } from '@angular/material/table'
@@ -22,7 +21,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatDialogModule } from '@angular/material/dialog'
 import { NgxSpinnerModule } from 'ngx-spinner'
-import { CdkAccordionModule } from '@angular/cdk/accordion'
 
 @NgModule({
   exports: [
@@ -38,8 +36,6 @@ import { CdkAccordionModule } from '@angular/cdk/accordion'
     MatCardModule,
     MatPaginatorModule,
     MatCheckboxModule,
-    DragDropModule,
-    CdkAccordionModule,
     MatMenuModule,
     MatTabsModule,
     MatTableModule,
