@@ -253,3 +253,73 @@ Token Endpoint Auth Method: client_secret_post
 ```
 Screenshot(s):
 <img width="1400" src="/public/screenshots/f7cf9712-4259-43ce-bde1-fbe22a447763.png" />
+
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/seafile.svg" width="28" /> Seafile
+
+In Seafile, add these lines to the configuration file named `seahub_settings.py`:
+
+```
+ENABLE_OAUTH = True
+OAUTH_CREATE_UNKNOWN_USER = True          #To create users not yet known to Seafile
+OAUTH_ACTIVATE_USER_AFTER_CREATION = True #To auto-activate new users
+OAUTH_ENABLE_INSECURE_TRANSPORT = False   #To allow http without ssl between Seafile and VoidAuth
+
+OAUTH_CLIENT_ID = "your-client-id"
+OAUTH_CLIENT_SECRET = "your-client-secret"
+OAUTH_REDIRECT_URL = 'https://seafile.example.com/oauth/callback/'
+OAUTH_PROVIDER_DOMAIN = 'voidauth.example.com' #Deprecated, replaced by OAUTH_PROVIDER, filled just in case.
+OAUTH_PROVIDER = 'voidauth.example.com'
+OAUTH_AUTHORIZATION_URL = 'https://voidauth.example.com/oidc/auth'
+OAUTH_TOKEN_URL = 'https://voidauth.example.com/oidc/token'
+OAUTH_USER_INFO_URL = 'https://voidauth.example.com/oidc/me'
+OAUTH_SCOPE = ["openid","profile","email",]
+OAUTH_ATTRIBUTE_MAP = {
+    "sub": (True, "uid"),
+    "email": (False, "email"),
+    "name": (False, "name"),
+}
+```
+> [!NOTE]
+> You will need to reboot seafile server to take the modifications into account.
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://seafile.example.com/oauth/callback/
+Token Endpoint Auth Method: client_secret_basic
+```
+
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/wiki-js.svg" width="28" /> WikiJS
+
+1. Connect to WikiJS portal as an admin
+2. Go to Configuration Panel, and then Authentication Tab
+3. Create a new authentication strategy using "Generic OpenID Connect / OAuth 2"
+4. Fill, customize and save these fields in the new configuration view:
+
+```
+Client ID : your-client-id
+Client Secret : your-client-secret
+Authorization Endpoint URL : https://voidauth.example.com/oidc/auth
+Token Endpoint URL : https://voidauth.example.com/oidc/token
+User Info Endpoint URL : https://voidauth.example.com/oidc/me
+Issuer: https://voidauth.example.com/oidc
+Email Claim : email
+Display Name Claim : name
+Groups Claim : groups
+Logout URL : https://voidauth.example.com/oidc/session/end
+```
+> [!NOTE]
+> Make sure you enabled the authentication strategy.
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://wikijs.example.com/login/token-given-on-wikijs-authentication-strategy-view-check-below/callback
+Token Endpoint Auth Method: client_secret_post
+```
