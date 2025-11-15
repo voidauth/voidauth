@@ -10,6 +10,7 @@ import { als } from '../util/als'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import appConfig from '../util/config'
+import { provider } from '../oidc/provider'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -137,6 +138,18 @@ async function getUserSessionInteraction(req: Request, res: Response) {
     }
     if (user && user.id === interaction.result?.login?.accountId) {
       amr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
+    }
+  }
+
+  // If session user cannot be found in session, check for sessionUid to handle ProxyAuth
+  if (!user) {
+    const ctx = provider.createContext(req, res)
+    const sessionId = ctx.cookies.get('x-voidauth-session-uid')
+    const uidSession = sessionId ? await provider.Session.adapter.findByUid(sessionId) : undefined
+    const accountId = uidSession?.accountId
+    if (accountId) {
+      amr = [...new Set([...amr, ...(uidSession.amr ?? [])])]
+      user = await getUserById(accountId)
     }
   }
 
