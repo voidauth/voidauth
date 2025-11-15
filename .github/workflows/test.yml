@@ -46,6 +46,7 @@ jobs:
       # runs for PRs from the same repo (or non-PR runs) and uses registry cache
       - name: Build Push (with registry cache)
         if: ${{ github.event.pull_request == null || !github.event.pull_request.head.repo.fork }}
+        uses: docker/build-push-action@v6
         id: docker-build
         with:
           context: .
