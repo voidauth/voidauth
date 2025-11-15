@@ -679,7 +679,7 @@ router.post('/login',
   ...validate<LoginUser>({
     input: {
       ...stringValidation,
-      isLength: { options: { min: 4, max: 32 } },
+      isLength: { options: { min: 1, max: 32 } },
       toLowerCase: true,
     },
     password: stringValidation,

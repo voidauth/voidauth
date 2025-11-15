@@ -76,7 +76,7 @@ export const nameValidation = {
   ...stringValidation,
   isLength: {
     options: {
-      min: 4,
+      min: 3,
       max: 64,
     },
   },
