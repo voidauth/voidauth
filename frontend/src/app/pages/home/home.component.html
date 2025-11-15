@@ -75,6 +75,8 @@
 
         <mat-divider class="disabled"></mat-divider>
 
+        <h2 style="margin-top: -16px">Passkeys</h2>
+
         <p style="text-align: center">You have {{ user?.hasPasskeys ? "at least one registered passkey" : "no registered passkeys" }}.</p>
 
         <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
@@ -84,10 +86,14 @@
 
         <mat-divider class="disabled"></mat-divider>
 
-        <p style="text-align: center">You have {{ user?.hasTotp ? "at least one authenticator" : "no authenticators" }}.</p>
+        <h2 style="margin-top: -16px">Multi-Factor Authentication</h2>
+
+        <p style="text-align: center">
+          Multi-Factor Authentication is <b>{{ !user?.hasTotp ? "not" : "" }} enabled</b>.
+        </p>
 
         <button mat-flat-button type="button" (click)="addAuthenticator()">
-          Add Authenticator
+          {{ user?.hasTotp ? "Add Authenticator" : "Enable MFA" }}
           <mat-icon fontSet="material-icons-round" matSuffix>lock</mat-icon>
         </button>
       </mat-card-actions>
@@ -131,9 +137,9 @@
           </button></span
         >
 
-        <span [matTooltip]="!user?.hasTotp ? 'You have no authenticators to remove' : null"
+        <span [matTooltip]="!user?.hasTotp ? 'Multi-Factor Authentication is not enabled' : null"
           ><button mat-flat-button type="button" class="error-button" (click)="removeAllAuthenticators()" [disabled]="!user?.hasTotp">
-            Remove All Authenticators
+            Disable MFA
           </button></span
         >
 
