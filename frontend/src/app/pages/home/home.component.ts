@@ -207,8 +207,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
+        const hadTotp = this.user?.hasTotp
         await this.loadUser()
-        this.snackbarService.message('Authenticator added successfully.')
+        this.snackbarService.message(hadTotp ? 'Authenticator added successfully.' : 'Multi-Factor Authentication enabled.')
       }
     })
   }
@@ -244,7 +245,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   removePassword() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. unless you set a password again.${this.user?.hasTotp ? ' This will also remove any Authenticators on your account.' : ''}`,
+        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. until you set a password again.${this.user?.hasTotp ? ' This will also disable Multi-Factor Authentication and remove any Authenticators on your account.' : ''}`,
         header: 'Remove',
       },
     })
@@ -270,7 +271,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   removeAllAuthenticators() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove your account Authenticators? Multi-factor authentication will no longer be enabled on your account.`,
+        message: `Are you sure you want to disable Multi-Factor Authentication? This will also remove any Authenticators on your account.`,
         header: 'Remove',
       },
     })
@@ -283,9 +284,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       try {
         this.spinnerService.show()
         await this.userService.removeAllAuthenticators()
-        this.snackbarService.message('Removed authenticators.')
+        this.snackbarService.message('Multi-Factor Authentication disabled.')
       } catch (_e) {
-        this.snackbarService.error('Could not remove authenticators.')
+        this.snackbarService.error('Could not disable Multi-Factor Authentication.')
       } finally {
         await this.loadUser()
         this.spinnerService.hide()
