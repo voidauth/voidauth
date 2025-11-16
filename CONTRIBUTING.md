@@ -26,7 +26,7 @@ All paths and actions are in the project root directory unless otherwise specifi
 
 1. Run `npm install` in your terminal to install backend dependencies.
 2. In the `./frontend` directory, run `npm install` in your terminal to install frontend dependencies.
-3. Configure a `.env` file  use the `.example.env` file as a template. All variables in `.example.env` are required in `.env`, though you can add additional variables as well.
+3. Configure a `.env` file using the `.example.env` file as a template. All variables in `.example.env` are required in `.env`, though you can add additional variables as well.
 4. Run `docker compose up -d voidauth-db` or equivalent in your terminal to start the VoidAuth database locally.
 5. Run `npm start` to build and start the project.
 6. Visit `localhost:3000` or your configured `APP_URL` to view the VoidAuth web UI.
