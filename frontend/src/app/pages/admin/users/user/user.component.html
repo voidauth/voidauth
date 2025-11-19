@@ -55,7 +55,7 @@
             <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g.name)" matTooltip="Remove">
               cancel
             </mat-icon>
-            <a matListItemIcon style="margin-left: 0px" [routerLink]="['/admin', 'group', g.id]" matTooltip="Open">
+            <a matListItemIcon style="margin-left: 0px" [routerLink]="['/admin', 'group', g.id]" target="_blank" matTooltip="Open">
               <mat-icon fontSet="material-icons-round">open_in_new</mat-icon>
             </a>
             <div matListItemTitle>{{ g.name }}</div>
