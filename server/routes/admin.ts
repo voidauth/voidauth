@@ -442,7 +442,8 @@ adminRouter.patch('/user',
     groups: {
       isArray: true,
     },
-    'groups.*': stringValidation,
+    'groups.*.name': stringValidation,
+    'groups.*.id': uuidValidation,
   }),
   async (req, res) => {
     const currentUser = req.loggedInUser
@@ -461,7 +462,7 @@ adminRouter.patch('/user',
 
     const { groups: _, ...user } = userUpdate
     const ucount = await db().table<User>(TABLES.USER).update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
-    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userUpdate.groups)
+    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userUpdate.groups.map(g => g.name))
     const userGroups: UserGroup[] = groups.map((g) => {
       return {
         groupId: g.id,

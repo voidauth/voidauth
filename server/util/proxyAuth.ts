@@ -80,7 +80,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   }
 
   // Check user groups for access if not an admin
-  if (!user.groups.includes(ADMIN_GROUP)) {
+  if (!user.groups.some(g => g.name === ADMIN_GROUP)) {
     // check if user may access url
     // using a short cache
     if (proxyAuthCacheExpires < new Date().getTime()) {
@@ -91,7 +91,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
     const match = proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
 
-    if (!match || (match.groups.length && !user.groups.some(g => match.groups.includes(g)))) {
+    if (!match || (match.groups.length && !user.groups.some(g => match.groups.includes(g.name)))) {
       res.sendStatus(403)
       return
     }
@@ -105,7 +105,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     res.setHeader('Remote-Name', user.name)
   }
   if (user.groups.length) {
-    res.setHeader('Remote-Groups', user.groups.join(','))
+    res.setHeader('Remote-Groups', user.groups.map(g => g.name).join(','))
   }
   res.send()
 }

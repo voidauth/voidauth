@@ -24,7 +24,7 @@ export class UserService {
   }
 
   userIsAdmin(user: Pick<UserDetails, 'groups'>) {
-    return user.groups.some(g => g === ADMIN_GROUP)
+    return user.groups.some(g => g.name === ADMIN_GROUP)
   }
 
   passkeySession(user: CurrentUserDetails) {

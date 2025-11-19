@@ -164,6 +164,10 @@ mat-divider.disabled {
   border: 0px;
 }
 
+mat-icon.disabled {
+  opacity: 0.38;
+}
+
 a {
   text-decoration: none;
   color: unset;

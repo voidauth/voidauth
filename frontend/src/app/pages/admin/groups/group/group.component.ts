@@ -4,7 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { AdminService } from '../../../../services/admin.service'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
@@ -23,6 +23,7 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
+    RouterLink,
   ],
   templateUrl: './group.component.html',
   styleUrl: './group.component.scss',
