@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express'
 import { getInteractionDetails, getSession, router as interactionRouter } from './interaction'
 import { commit, transaction, rollback } from '../db/db'
-import { amrRequired, getUserById, isUnapproved, isUnverified } from '../db/user'
+import { amrRequired, getUserById, isUnapproved, isUnverified, userRequiresMfa } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
 import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
@@ -167,9 +167,5 @@ async function getUserSessionInteraction(req: Request, res: Response) {
 }
 
 export function userCanLogin(user: UserDetails | undefined, amr: string[]): user is UserDetails {
-  return !!user && !amrRequired(user.hasTotp, amr) && !isUnapproved(user) && !isUnverified(user)
-}
-
-export function userCouldMFA(user: UserDetails | undefined) {
-  return !!user && (user.hasPasskeys || user.hasTotp)
+  return !!user && !amrRequired(userRequiresMfa(user), amr) && !isUnapproved(user) && !isUnverified(user)
 }

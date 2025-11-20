@@ -34,6 +34,7 @@ publicRouter.get('/config', (_req, res) => {
     registration: appConfig.SIGNUP,
     contactEmail: appConfig.CONTACT_EMAIL,
     defaultRedirect: appConfig.DEFAULT_REDIRECT,
+    mfaRequired: appConfig.MFA_REQUIRED,
   }
 
   res.send(configResponse)

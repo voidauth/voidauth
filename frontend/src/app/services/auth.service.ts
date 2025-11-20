@@ -104,7 +104,7 @@ export class AuthService {
     return firstValueFrom(this.http.post<RegisterTotpResponse>('/api/interaction/totp/registration', null))
   }
 
-  async verifyTotp(token: string) {
-    return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/totp', { token }))
+  async verifyTotp(token: string, enableMfa: boolean) {
+    return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/totp', { token, enableMfa }))
   }
 }

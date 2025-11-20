@@ -176,6 +176,9 @@
       </mat-form-field>
 
       <mat-checkbox formControlName="skip_consent" matTooltip="Skip user confirmation for this client."> Skip Consent </mat-checkbox>
+      <mat-checkbox formControlName="require_mfa" matTooltip="Users will have to use mfa to access this client.">
+        MFA Required
+      </mat-checkbox>
 
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{ this.client_id ? "Update" : "Create" }}</button>

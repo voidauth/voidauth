@@ -89,11 +89,14 @@
         <h2 style="margin-top: -16px">Multi-Factor Authentication</h2>
 
         <p style="text-align: center">
-          Multi-Factor Authentication is <b>{{ !user?.hasTotp ? "not" : "" }} enabled</b>.
+          Multi-Factor Authentication is <b>{{ user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired ? "" : "not" }} enabled</b>.
+        </p>
+        <p style="text-align: center">
+          You have {{ user?.hasTotp ? "at least one registered Authenticator" : "no registered Authenticators" }}.
         </p>
 
         <button mat-flat-button type="button" (click)="addAuthenticator()">
-          {{ user?.hasTotp ? "Add Authenticator" : "Enable MFA" }}
+          {{ user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired ? "Add Authenticator" : "Enable MFA" }}
           <mat-icon fontSet="material-icons-round" matSuffix>lock</mat-icon>
         </button>
       </mat-card-actions>
@@ -137,9 +140,20 @@
           </button></span
         >
 
-        <span [matTooltip]="!user?.hasTotp ? 'Multi-Factor Authentication is not enabled' : null"
-          ><button mat-flat-button type="button" class="error-button" (click)="removeAllAuthenticators()" [disabled]="!user?.hasTotp">
-            Disable MFA
+        <span
+          [matTooltip]="
+            user?.hasTotp || user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired
+              ? null
+              : 'Multi-Factor Authentication is not enabled'
+          "
+          ><button
+            mat-flat-button
+            type="button"
+            class="error-button"
+            (click)="removeAllAuthenticators()"
+            [disabled]="!user?.hasTotp && (!user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired)"
+          >
+            {{ user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired ? "Disable MFA" : "Remove Authenticators" }}
           </button></span
         >
 

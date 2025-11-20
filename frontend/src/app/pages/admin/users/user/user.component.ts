@@ -62,6 +62,7 @@ export class UserComponent {
       value: false,
       disabled: false,
     }, [Validators.required]),
+    mfaRequired: new FormControl<boolean>(false),
     groups: new FormControl<UserDetails['groups']>([], []),
   })
 
@@ -94,6 +95,7 @@ export class UserComponent {
           email: user.email ?? '',
           emailVerified: user.emailVerified,
           approved: user.approved,
+          mfaRequired: user.mfaRequired,
           groups: user.groups,
         })
 

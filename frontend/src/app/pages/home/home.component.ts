@@ -201,13 +201,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   addAuthenticator() {
-    const dialogRef = this.dialog.open(TotpRegisterComponent, {
+    const hadTotp = this.user?.hasTotp
+    const dialogRef = this.dialog.open<TotpRegisterComponent, { enableMfa: boolean } | undefined>(TotpRegisterComponent, {
+      data: { enableMfa: true },
       panelClass: 'overflow-auto',
     })
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
-        const hadTotp = this.user?.hasTotp
         await this.loadUser()
         this.snackbarService.message(hadTotp ? 'Authenticator added successfully.' : 'Multi-Factor Authentication enabled.')
       }
@@ -245,7 +246,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   removePassword() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. until you set a password again.${this.user?.hasTotp ? ' This will also disable Multi-Factor Authentication and remove any Authenticators on your account.' : ''}`,
+        message: `Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. until you set a password again.`,
         header: 'Remove',
       },
     })
@@ -271,7 +272,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   removeAllAuthenticators() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to disable Multi-Factor Authentication? This will also remove any Authenticators on your account.`,
+        message: `Are you sure you want to disable Multi-Factor Authentication and remove any Authenticators on your account?`,
         header: 'Remove',
       },
     })

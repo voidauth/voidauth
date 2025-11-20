@@ -2,20 +2,21 @@ import { oidcLoginPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { isMatch } from 'matcher'
 import { getProxyAuths } from '../db/proxyAuth'
-import { checkPasswordHash, getUserByInput } from '../db/user'
+import { amrRequired, checkPasswordHash, getUserByInput } from '../db/user'
 import { provider } from '../oidc/provider'
 import appConfig from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
 import { userCanLogin } from '../routes/api'
+import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 
 // proxy auth cache
-let proxyAuthCache: { domain: string, groups: string[] }[] = []
+let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups'>[] = []
 let proxyAuthCacheExpires: number = 0
 
 // proxy auth common
 export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request', req: Request, res: Response) {
-  const formattedUrl = `${url.hostname}${url.pathname}`
+  const formattedUrl = formatProxyAuthDomain(url)
   const redirCode = method === 'auth-request' ? 401 : 302
 
   const ctx = provider.createContext(req, res)
@@ -79,18 +80,20 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     return
   }
 
+  // check if user may access url
+  // using a short cache
+  const match = await getProxyAuthWithCache(url)
+
+  // Check that proxyAuth domain does not require MFA or user is logged in with MFA already
+  if (amrRequired(!!match?.mfaRequired, amr) === 'mfa') {
+    // If not, redirect to login flow, which will send to correct redirect
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href, 'mfa')}`)
+    res.send()
+    return
+  }
+
   // Check user groups for access if not an admin
   if (!user.groups.some(g => g.name === ADMIN_GROUP)) {
-    // check if user may access url
-    // using a short cache
-    if (proxyAuthCacheExpires < new Date().getTime()) {
-      proxyAuthCache = await getProxyAuths()
-
-      proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
-    }
-
-    const match = proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
-
     if (!match || (match.groups.length && !user.groups.some(g => match.groups.includes(g.name)))) {
       res.sendStatus(403)
       return
@@ -108,4 +111,19 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     res.setHeader('Remote-Groups', user.groups.map(g => g.name).join(','))
   }
   res.send()
+}
+
+async function getProxyAuthWithCache(url: URL) {
+  const formattedUrl = formatProxyAuthDomain(url)
+  if (proxyAuthCacheExpires < new Date().getTime()) {
+    proxyAuthCache = await getProxyAuths()
+
+    proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
+  }
+
+  return proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
+}
+
+function formatProxyAuthDomain(url: URL) {
+  return `${url.hostname}${url.pathname}`
 }

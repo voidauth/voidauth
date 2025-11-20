@@ -8,4 +8,5 @@ export type User = Pick<Audit, 'createdAt' | 'updatedAt'> & {
   name?: string | null
   emailVerified: boolean | number
   approved: boolean | number
+  mfaRequired: boolean | number
 }

@@ -7,6 +7,7 @@ import type { OIDCPayload } from './OIDCPayload'
 export type Group = Audit & {
   id: string
   name: string
+  mfaRequired: boolean | number
 }
 
 export type UserGroup = Audit & {

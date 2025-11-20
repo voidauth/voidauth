@@ -75,6 +75,8 @@
 
       <mat-checkbox formControlName="approved">Approved</mat-checkbox>
 
+      <mat-checkbox formControlName="mfaRequired" matTooltip="Requires user MFA during login.">MFA Required</mat-checkbox>
+
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">Update</button>
         @if (id !== me?.id) {

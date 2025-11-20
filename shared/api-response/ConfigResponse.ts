@@ -7,4 +7,5 @@ export type ConfigResponse = {
   registration: boolean
   contactEmail?: string
   defaultRedirect?: string
+  mfaRequired: boolean
 }

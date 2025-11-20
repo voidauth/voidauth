@@ -44,6 +44,7 @@ export class GroupComponent {
       disabled: false,
     }, [Validators.required]),
     users: new FormControl<GroupUsers['users']>([], []),
+    mfaRequired: new FormControl<boolean>(false),
   })
 
   private adminService = inject(AdminService)
@@ -64,6 +65,7 @@ export class GroupComponent {
           const group = await this.adminService.group(this.id)
           this.form.reset({
             name: group.name,
+            mfaRequired: group.mfaRequired,
             users: group.users.map((u) => {
               return { id: u.id, username: u.username }
             }),
