@@ -229,7 +229,7 @@ if (appConfig.STORAGE_KEY.length < 32) {
   exit(1)
 }
 
-// check PASSWORD_STRENGTH is between 2 and 4
+// check PASSWORD_STRENGTH is between 0 and 4
 if (appConfig.PASSWORD_STRENGTH < 0 || appConfig.PASSWORD_STRENGTH > 4) {
   console.error('PASSWORD_STRENGTH must be between 0 and 4.')
   exit(1)

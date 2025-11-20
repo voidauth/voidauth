@@ -34,7 +34,7 @@ export class RegistrationComponent implements OnInit {
     username: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.required, Validators.minLength(4), Validators.pattern(USERNAME_REGEX)]),
+    }, [Validators.required, Validators.minLength(3), Validators.pattern(USERNAME_REGEX)]),
 
     email: new FormControl<string>({
       value: '',
@@ -44,7 +44,7 @@ export class RegistrationComponent implements OnInit {
     name: new FormControl<string | null>({
       value: null,
       disabled: false,
-    }, [Validators.minLength(4)]),
+    }, [Validators.minLength(3)]),
 
     password: new FormControl<string>({
       value: '',
