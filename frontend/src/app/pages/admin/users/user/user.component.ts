@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { AdminService } from '../../../../services/admin.service'
@@ -15,12 +15,14 @@ import { UserService } from '../../../../services/user.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
+import type { itemIn } from '@shared/utils'
 
 @Component({
   selector: 'app-user',
   imports: [
     CommonModule,
     MaterialModule,
+    RouterLink,
     ValidationErrorPipe,
     ReactiveFormsModule,
   ],
@@ -31,9 +33,9 @@ export class UserComponent {
   public me?: UserDetails
   public id: string | null = null
 
-  public groups: string[] = []
-  public unselectedGroups: string[] = []
-  public selectableGroups: string[] = []
+  public groups: itemIn<UserDetails['groups']>[] = []
+  public unselectedGroups: itemIn<UserDetails['groups']>[] = []
+  public selectableGroups: itemIn<UserDetails['groups']>[] = []
   groupSelect = new FormControl<string>({
     value: '',
     disabled: false,
@@ -60,10 +62,7 @@ export class UserComponent {
       value: false,
       disabled: false,
     }, [Validators.required]),
-    groups: new FormControl<string[]>({
-      value: [],
-      disabled: false,
-    }, []),
+    groups: new FormControl<UserDetails['groups']>([], []),
   })
 
   private adminService = inject(AdminService)
@@ -98,7 +97,7 @@ export class UserComponent {
           groups: user.groups,
         })
 
-        this.groups = (await this.adminService.groups()).map(g => g.name)
+        this.groups = await this.adminService.groups()
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
@@ -111,10 +110,10 @@ export class UserComponent {
 
   groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.groups.filter((g) => {
-      return !this.form.controls.groups.value?.includes(g)
+      return !this.form.controls.groups.value?.some(f => f.name === g.name)
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
-      return g.toLowerCase().includes(value.toLowerCase())
+      return g.name.toLowerCase().includes(value.toLowerCase())
     }).slice(0, 5)
     if (this.unselectedGroups.length) {
       this.groupSelect.enable()
@@ -124,18 +123,19 @@ export class UserComponent {
   }
 
   addGroup(event: MatAutocompleteSelectedEvent) {
-    const value = event.option.value as string
+    const value = event.option.value as itemIn<UserDetails['groups']> | null
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value ?? []).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value ?? [])
+      .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value ?? []).filter(g => g !== value))
+    this.form.controls.groups.setValue((this.form.controls.groups.value ?? []).filter(g => g.name !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }

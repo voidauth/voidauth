@@ -46,7 +46,7 @@ export function serve() {
   const rateWindowS = 10 * 60 // 10 minutes
   app.use(rateLimit({
     windowMs: rateWindowS * 1000,
-    max: rateWindowS * 10, // max 10 requests per second
+    max: rateWindowS * 100, // max 100 requests per second
     validate: { trustProxy: false },
   }))
 

@@ -48,10 +48,10 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     return undefined
   }
 
-  const groups = (await db().select('name')
+  const groups = (await db().select('name', 'id')
     .table<Group>(TABLES.GROUP)
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
-    .orderBy('name', 'asc')).map(g => g.name)
+    .orderBy('name', 'asc'))
 
   const hasTotp = await hasTOTP(id)
   const hasPasskeys = !!(await getUserPasskeys(user.id)).length
@@ -77,7 +77,7 @@ export async function checkPasswordHash(userId: string, password: string): Promi
 }
 
 export function isAdmin(user: Pick<UserDetails, 'groups'> | undefined) {
-  return !!user?.groups.includes(ADMIN_GROUP)
+  return !!user?.groups.map(g => g.name).includes(ADMIN_GROUP)
 }
 
 export function isUnapproved(user: Pick<UserDetails, 'approved' | 'groups'>) {

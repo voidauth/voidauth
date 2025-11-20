@@ -84,7 +84,7 @@ consentPromptPolicy.checks.add(new Check('user_group_missing',
       const client = await getClient(oidc.client.clientId)
       if (client?.groups.length) {
         const user = await getUserById(oidc.account.accountId)
-        if (user && !user.groups.includes(ADMIN_GROUP) && !user.groups.some(g => client.groups.includes(g))) {
+        if (user && !user.groups.some(g => g.name === ADMIN_GROUP) && !user.groups.some(g => client.groups.includes(g.name))) {
           // Throw oidc error
           const error: errors.OIDCProviderError = {
             statusCode: 403,

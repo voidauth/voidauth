@@ -35,17 +35,19 @@
 
         <div mat-subheader>Users:</div>
         @for (u of form.value.users; track u) {
-          @if (form.controls.name.value === ADMIN_GROUP && (!form.controls.users.value || 2 > form.controls.users.value.length)) {
-            <mat-list-item disabled>
-              <mat-icon fontSet="material-icons-round" matListItemIcon>cancel</mat-icon>
-              <div matListItemTitle>{{ u.username }}</div>
-            </mat-list-item>
-          } @else {
-            <mat-list-item>
-              <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeUser(u.id)">cancel</mat-icon>
-              <div matListItemTitle>{{ u.username }}</div>
-            </mat-list-item>
-          }
+          <mat-list-item>
+            @if (form.controls.name.value === ADMIN_GROUP && (!form.controls.users.value || 2 > form.controls.users.value.length)) {
+              <mat-icon class="disabled" fontSet="material-icons-round" matListItemIcon>cancel</mat-icon>
+            } @else {
+              <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeUser(u.id)" matTooltip="Remove">
+                cancel
+              </mat-icon>
+            }
+            <a matListItemIcon style="margin-left: 0px" [routerLink]="['/admin', 'user', u.id]" target="_blank" matTooltip="Open">
+              <mat-icon fontSet="material-icons-round">open_in_new</mat-icon>
+            </a>
+            <div matListItemTitle>{{ u.username }}</div>
+          </mat-list-item>
         }
         @if (!form.value.users?.length) {
           <mat-list-item> </mat-list-item>

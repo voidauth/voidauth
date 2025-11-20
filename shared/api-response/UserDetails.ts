@@ -11,7 +11,7 @@ export type UserWithAdminIndicator = UserWithoutPassword & {
 }
 
 export type UserDetails = UserWithoutPassword & {
-  groups: Group['name'][]
+  groups: Pick<Group, 'id' | 'name'>[]
   hasTotp: boolean
   hasPasskeys: boolean
 }
