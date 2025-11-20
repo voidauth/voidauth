@@ -57,6 +57,7 @@ import type { IncomingMessage, ServerResponse } from 'http'
 import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
+import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 
 const registerUserValidator = {
   username: {
@@ -110,8 +111,6 @@ router.get('/', async (req, res) => {
   const accountId = session?.accountId ?? interaction.result?.login?.accountId
   const user = accountId ? await getUserById(accountId) : undefined
 
-  const mfaRedirect = `${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}?t=${String(user?.hasTotp)}&p=${String(user?.hasPasskeys)}`
-
   if (prompt.name === 'login') {
     // Check for prompt reasons that cause special redirects
     if (prompt.reasons.includes('user_not_approved')) {
@@ -134,7 +133,7 @@ router.get('/', async (req, res) => {
       return
     } else if (prompt.reasons.includes('user_mfa_required')) {
       // User has MFA required, direct them to MFA page
-      res.redirect(mfaRedirect)
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
       return
     }
 
@@ -155,7 +154,7 @@ router.get('/', async (req, res) => {
 
       case 'mfa':
         // Redirect is specifically requesting MFA, direct there
-        res.redirect(mfaRedirect)
+        res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
         return
 
       case 'login':
@@ -166,7 +165,7 @@ router.get('/', async (req, res) => {
   } else if (prompt.name === 'consent') {
     if (prompt.reasons.includes('client_mfa_required')) {
       // client requires mfa
-      res.redirect(mfaRedirect)
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
       return
     }
 
@@ -233,7 +232,20 @@ router.get('/exists', async (req, res) => {
         location: location,
       }
     : null
-  res.send(redir)
+
+  const session = await getSession(req, res)
+  const accountId = session?.accountId ?? interaction.result?.login?.accountId
+  const user = accountId ? await getUserById(accountId) : undefined
+
+  const info: InteractionInfo = {
+    redirect: redir,
+    user: {
+      hasPasskeys: user?.hasPasskeys,
+      hasTotp: user?.hasTotp,
+    },
+  }
+
+  res.send(info)
 })
 
 router.delete('/current', async (req, res) => {
@@ -884,8 +896,7 @@ router.post('/totp',
 
     if (!user
       && req.sessionUser
-      && !amrRequired(false, req.sessionUser.amr)
-      && !req.sessionUser.hasTotp) {
+      && !amrRequired(false, req.sessionUser.amr)) {
       user = req.sessionUser
     }
 

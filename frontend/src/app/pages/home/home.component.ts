@@ -285,9 +285,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       try {
         this.spinnerService.show()
         await this.userService.removeAllAuthenticators()
-        this.snackbarService.message('Multi-Factor Authentication disabled.')
+        this.snackbarService.message('Multi-Factor Authentication disabled and Authenticators removed.')
       } catch (_e) {
-        this.snackbarService.error('Could not disable Multi-Factor Authentication.')
+        this.snackbarService.error('Could not disable Multi-Factor Authentication or remove Authenticators.')
       } finally {
         await this.loadUser()
         this.spinnerService.hide()

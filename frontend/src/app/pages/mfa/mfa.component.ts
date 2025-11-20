@@ -13,6 +13,7 @@ import { HttpErrorResponse } from '@angular/common/http'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../services/user.service'
 import { ActivatedRoute } from '@angular/router'
+import { WebAuthnError } from '@simplewebauthn/browser'
 
 @Component({
   selector: 'app-mfa',
@@ -45,14 +46,19 @@ export class MfaComponent implements OnInit {
       try {
         this.user = await this.userService.getMyUser(true)
       } catch (_e) {
-      // If user cannot be loaded, do nothing
+        // If user cannot be loaded, do nothing
+      }
+
+      try {
+        const info = await this.authService.interactionExists()
+        this.canTotp = !!info.user.hasTotp
+        this.canPasskey = !!info.user.hasPasskeys
+      } catch (_e) {
+        // If interaction does not seem to exist do nothing
       }
 
       this.passkeySupport = await this.passkeyService.getPasskeySupport()
       this.config = await this.configService.getConfig()
-      const params = this.route.snapshot.queryParamMap
-      this.canTotp = params.get('t') === 'true'
-      this.canPasskey = params.get('p') === 'true'
 
       if (!this.canTotp) {
         try {
@@ -91,17 +97,37 @@ export class MfaComponent implements OnInit {
     }
   }
 
-  async passkeyLogin(auto: boolean) {
+  async passkeyLogin() {
+    this.spinnerService.show()
     try {
       const redirect = await this.passkeyService.login()
       if (redirect) {
         location.assign(redirect.location)
       }
     } catch (error) {
-      if (!auto) {
-        this.snackbarService.error('Could not authenticate with passkey.')
+      this.snackbarService.error('Could not authenticate with passkey.')
+      console.error(error)
+    } finally {
+      this.spinnerService.hide()
+    }
+  }
+
+  async passkeyRegister() {
+    this.spinnerService.show()
+    try {
+      const redirect = await this.passkeyService.register()
+      if (redirect) {
+        location.assign(redirect.location)
+      }
+    } catch (error) {
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        this.snackbarService.error('Passkey already registered.')
+      } else {
+        this.snackbarService.error('Could not register Passkey.')
       }
       console.error(error)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 
@@ -110,7 +136,7 @@ export class MfaComponent implements OnInit {
     this.disabled.set(true)
     try {
       try {
-        if (await this.authService.interactionExists()) {
+        if ((await this.authService.interactionExists()).redirect) {
           await this.authService.cancelInteraction()
         }
       } catch (_e) {

@@ -102,7 +102,7 @@ export class PasskeyService {
     ))
     const reg = await startRegistration({ optionsJSON: options })
     try {
-      const result = await firstValueFrom(this.http.post<null>('/api/interaction/passkey/registration/end', reg))
+      const result = await firstValueFrom(this.http.post<Redirect | null>('/api/interaction/passkey/registration/end', reg))
       localStorage.setItem('passkey_seen', Date())
       return result
     } catch (error) {
