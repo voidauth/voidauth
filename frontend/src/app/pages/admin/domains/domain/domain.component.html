@@ -61,6 +61,8 @@
         </mat-error>
       }
 
+      <mat-checkbox formControlName="mfaRequired">MFA Required</mat-checkbox>
+
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{ id ? "Update" : "Create" }}</button>
         <button mat-button type="button" (click)="remove()">Delete</button>

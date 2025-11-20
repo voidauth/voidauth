@@ -113,6 +113,13 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     },
     isBoolean: true,
   },
+  require_mfa: {
+    optional: true,
+    default: {
+      options: false,
+    },
+    isBoolean: true,
+  },
   logo_uri: {
     default: {
       options: undefined,
@@ -316,6 +323,10 @@ adminRouter.post('/proxyAuth',
         },
       },
     },
+    mfaRequired: {
+      isBoolean: true,
+      toBoolean: true,
+    },
     groups: {
       isArray: true,
     },
@@ -328,7 +339,7 @@ adminRouter.post('/proxyAuth',
       return
     }
 
-    const { id, domain, groups } = validatorData<ProxyAuthUpsert>(req)
+    const { id, domain, mfaRequired, groups } = validatorData<ProxyAuthUpsert>(req)
 
     // Check for domain conflict
     const conflicting = await db().select()
@@ -345,6 +356,7 @@ adminRouter.post('/proxyAuth',
     const proxyAuth: ProxyAuth = {
       id: proxyAuthId,
       domain,
+      mfaRequired,
       createdBy: user.id,
       updatedBy: user.id,
       createdAt: new Date(),
@@ -438,6 +450,10 @@ adminRouter.patch('/user',
     },
     approved: {
       isBoolean: true,
+    },
+    mfaRequired: {
+      isBoolean: true,
+      toBoolean: true,
     },
     groups: {
       isArray: true,
@@ -682,6 +698,10 @@ adminRouter.post('/group',
       ...uuidValidation,
     },
     name: stringValidation,
+    mfaRequired: {
+      isBoolean: true,
+      toBoolean: true,
+    },
     users: {
       isArray: true,
     },
@@ -697,7 +717,7 @@ adminRouter.post('/group',
       return
     }
 
-    const { id, name, users } = validatorData<GroupUpsert>(req)
+    const { id, name, mfaRequired, users } = validatorData<GroupUpsert>(req)
 
     // Check for name conflict
     const conflictingGroup = await db().select()
@@ -716,6 +736,7 @@ adminRouter.post('/group',
       const group: Group = {
         id: groupId,
         name,
+        mfaRequired,
         createdBy: currentUser.id,
         updatedBy: currentUser.id,
         createdAt: new Date(),

@@ -1,5 +1,5 @@
 export type OIDCExtraParams = {
-  login_type: 'login' | 'register' | 'verify_email'
+  login_type: 'login' | 'register' | 'verify_email' | 'mfa' // allows redirects to request specific required flows
   login_id: string
   login_challenge: string
 }

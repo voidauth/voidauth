@@ -71,6 +71,7 @@ export class UpsertClientComponent implements OnInit {
       return null
     }]),
     skip_consent: new FormControl<boolean>(true),
+    require_mfa: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     groups: new FormControl<ClientUpsert['groups']>([]),
   })
@@ -146,6 +147,7 @@ export class UpsertClientComponent implements OnInit {
             grant_types: client.grant_types ?? ['authorization_code', 'refresh_token'],
             post_logout_redirect_uris: client.post_logout_redirect_uris ?? [],
             skip_consent: client['skip_consent'] ?? true,
+            require_mfa: client['require_mfa'] ?? false,
             logo_uri: client.logo_uri,
             groups: client.groups,
           })

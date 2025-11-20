@@ -135,7 +135,6 @@ userRouter.delete('/password', async (req, res) => {
   }
 
   await db().table<User>(TABLES.USER).update({ passwordHash: null }).where({ id: user.id })
-  await db().table<TOTP>(TABLES.TOTP).delete().where({ userId: user.id })
   res.send()
 })
 
@@ -152,6 +151,8 @@ userRouter.delete('/totp', async (req, res) => {
   }
 
   await db().table<TOTP>(TABLES.TOTP).delete().where({ userId: user.id })
+  await db().table<User>(TABLES.USER).update({ mfaRequired: false }).where({ id: user.id })
+
   res.send()
 })
 

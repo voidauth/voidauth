@@ -10,6 +10,10 @@ import { SnackbarService } from '../../services/snackbar.service'
 import { SpinnerService } from '../../services/spinner.service'
 import { AuthService } from '../../services/auth.service'
 import { HttpErrorResponse } from '@angular/common/http'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import { UserService } from '../../services/user.service'
+import { ActivatedRoute } from '@angular/router'
+import { WebAuthnError } from '@simplewebauthn/browser'
 
 @Component({
   selector: 'app-mfa',
@@ -19,25 +23,64 @@ import { HttpErrorResponse } from '@angular/common/http'
 })
 export class MfaComponent implements OnInit {
   config?: ConfigResponse
+  user?: CurrentUserDetails
   passkeySupport?: PasskeySupport
   disabled = signal<boolean>(false)
+  secret = signal<string | undefined>(undefined)
+  uri = signal<string | undefined>(undefined)
+  canTotp: boolean = true
+  canPasskey: boolean = false
 
   private configService = inject(ConfigService)
   private passkeyService = inject(PasskeyService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private authService = inject(AuthService)
+  private userService = inject(UserService)
+  private route = inject(ActivatedRoute)
 
   async ngOnInit() {
-    this.passkeySupport = await this.passkeyService.getPasskeySupport()
-    this.config = await this.configService.getConfig()
+    this.spinnerService.show()
+    this.disabled.set(true)
+    try {
+      try {
+        this.user = await this.userService.getMyUser(true)
+      } catch (_e) {
+        // If user cannot be loaded, do nothing
+      }
+
+      try {
+        const info = await this.authService.interactionExists()
+        this.canTotp = !!info.user.hasTotp
+        this.canPasskey = !!info.user.hasPasskeys
+      } catch (_e) {
+        // If interaction does not seem to exist do nothing
+      }
+
+      this.passkeySupport = await this.passkeyService.getPasskeySupport()
+      this.config = await this.configService.getConfig()
+
+      if (!this.canTotp) {
+        try {
+          const { secret, uri } = await this.authService.registerTotp()
+          this.secret.set(secret)
+          this.uri.set(uri)
+        } catch (e) {
+          console.error(e)
+          this.snackbarService.error('Could not get authenticator options.')
+        }
+      }
+    } finally {
+      this.spinnerService.hide()
+      this.disabled.set(false)
+    }
   }
 
   async totpVerify(token: string) {
     this.spinnerService.show()
     this.disabled.set(true)
     try {
-      const redirect = await this.authService.verifyTotp(token)
+      const redirect = await this.authService.verifyTotp(token, false)
       if (redirect) {
         location.assign(redirect.location)
       }
@@ -54,17 +97,37 @@ export class MfaComponent implements OnInit {
     }
   }
 
-  async passkeyLogin(auto: boolean) {
+  async passkeyLogin() {
+    this.spinnerService.show()
     try {
       const redirect = await this.passkeyService.login()
       if (redirect) {
         location.assign(redirect.location)
       }
     } catch (error) {
-      if (!auto) {
-        this.snackbarService.error('Could not authenticate with passkey.')
+      this.snackbarService.error('Could not authenticate with passkey.')
+      console.error(error)
+    } finally {
+      this.spinnerService.hide()
+    }
+  }
+
+  async passkeyRegister() {
+    this.spinnerService.show()
+    try {
+      const redirect = await this.passkeyService.register()
+      if (redirect) {
+        location.assign(redirect.location)
+      }
+    } catch (error) {
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        this.snackbarService.error('Passkey already registered.')
+      } else {
+        this.snackbarService.error('Could not register Passkey.')
       }
       console.error(error)
+    } finally {
+      this.spinnerService.hide()
     }
   }
 
@@ -72,7 +135,14 @@ export class MfaComponent implements OnInit {
     this.spinnerService.show()
     this.disabled.set(true)
     try {
-      await this.authService.cancelInteraction()
+      try {
+        if ((await this.authService.interactionExists()).redirect) {
+          await this.authService.cancelInteraction()
+        }
+      } catch (_e) {
+        // If interaction does not still exist do nothing
+      }
+
       if (history.length) {
         window.history.back()
       } else {

@@ -51,6 +51,7 @@ export class DomainComponent {
       value: [],
       disabled: false,
     }, []),
+    mfaRequired: new FormControl<boolean>(false),
   })
 
   private adminService = inject(AdminService)
@@ -84,7 +85,7 @@ export class DomainComponent {
   }
 
   resetForm(proxyAuth: ProxyAuthResponse) {
-    this.form.reset({ domain: proxyAuth.domain, groups: proxyAuth.groups })
+    this.form.reset({ domain: proxyAuth.domain, groups: proxyAuth.groups, mfaRequired: proxyAuth.mfaRequired })
   }
 
   groupAutoFilter(value: string = '') {

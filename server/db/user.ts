@@ -48,16 +48,18 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     return undefined
   }
 
-  const groups = (await db().select('name', 'id')
+  const groups = (await db().select('name', 'id', 'mfaRequired')
     .table<Group>(TABLES.GROUP)
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy('name', 'asc'))
+
+  const hasMfaGroup = groups.some(g => g.mfaRequired)
 
   const hasTotp = await hasTOTP(id)
   const hasPasskeys = !!(await getUserPasskeys(user.id)).length
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasPasskeys, hasTotp, hasPassword: !!passwordHash }
+  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
@@ -107,6 +109,10 @@ export function amrRequired(mfaRequired: boolean, amr: string[]) {
   }
 
   return 'login'
+}
+
+export function userRequiresMfa(user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup'>) {
+  return appConfig.MFA_REQUIRED || !!user.mfaRequired || user.hasMfaGroup
 }
 
 export async function endSessions(userId: string) {
@@ -162,11 +168,13 @@ await als.run({}, async () => {
       approved: true,
       createdAt: new Date(),
       updatedAt: new Date(),
+      mfaRequired: false,
     }
 
     const initialAdminGroup: Group = {
       id: randomUUID(),
       name: ADMIN_GROUP,
+      mfaRequired: false,
       createdBy: initialAdminUser.id,
       updatedBy: initialAdminUser.id,
       createdAt: new Date(),

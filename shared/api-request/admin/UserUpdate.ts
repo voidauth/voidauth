@@ -7,5 +7,6 @@ type UserUpdateFields = 'id'
   | 'emailVerified'
   | 'approved'
   | 'groups'
+  | 'mfaRequired'
 
 export type UserUpdate = Pick<UserDetails, UserUpdateFields>

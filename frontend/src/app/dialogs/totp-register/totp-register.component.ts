@@ -1,5 +1,5 @@
 import { Component, inject, signal, type OnInit } from '@angular/core'
-import { MatDialogRef } from '@angular/material/dialog'
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { MaterialModule } from '../../material-module'
 import { TotpInputComponent } from '../../components/totp-input/totp-input.component'
 import { AuthService } from '../../services/auth.service'
@@ -15,7 +15,7 @@ import { HttpErrorResponse } from '@angular/common/http'
 })
 export class TotpRegisterComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<TotpRegisterComponent>)
-  // readonly data = inject<{ message: string, header?: string, requiredText?: string }>(MAT_DIALOG_DATA)
+  readonly data = inject<{ enableMfa?: boolean } | undefined>(MAT_DIALOG_DATA)
 
   secret = signal<string | undefined>(undefined)
   uri = signal<string | undefined>(undefined)
@@ -34,7 +34,7 @@ export class TotpRegisterComponent implements OnInit {
       this.uri.set(totpOptions.uri)
     } catch (e) {
       console.error(e)
-      this.snackbarService.error('Could not add authenticator.')
+      this.snackbarService.error('Could not get authenticator info.')
       this.dialogRef.close(false)
     } finally {
       this.spinnerService.hide()
@@ -46,14 +46,14 @@ export class TotpRegisterComponent implements OnInit {
     this.spinnerService.show()
     this.disabled.set(true)
     try {
-      await this.authService.verifyTotp(token)
+      await this.authService.verifyTotp(token, !!this.data?.enableMfa)
       this.dialogRef.close(true)
     } catch (e) {
       console.error(e)
       if (e instanceof HttpErrorResponse && e.status === 401) {
         this.snackbarService.error('Invalid code entered.')
       } else {
-        this.snackbarService.error('Could not add authenticator.')
+        this.snackbarService.error(this.data?.enableMfa ? 'Could not enable Multi-Factor Authentication.' : 'Could not add authenticator.')
       }
     } finally {
       this.spinnerService.hide()
@@ -61,7 +61,3 @@ export class TotpRegisterComponent implements OnInit {
     }
   }
 }
-
-// export type TotpRegisterDialogData = {
-
-// }

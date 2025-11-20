@@ -14,6 +14,7 @@ export type UserDetails = UserWithoutPassword & {
   groups: Pick<Group, 'id' | 'name'>[]
   hasTotp: boolean
   hasPasskeys: boolean
+  hasMfaGroup: boolean
 }
 
 // UserDetails and info about current session

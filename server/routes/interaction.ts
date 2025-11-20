@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { provider } from '../oidc/provider'
-import { checkPasswordHash, getUserById, getUserByInput, isUnapproved } from '../db/user'
+import { amrRequired, checkPasswordHash, getUserById, getUserByInput, isUnapproved } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
 import { validate, validatorData } from '../util/validate'
 import type { Redirect } from '@shared/api-response/Redirect'
@@ -56,8 +56,8 @@ import { getEmailVerification } from '../db/emailVerification'
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
-import { userCouldMFA } from './api'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
+import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 
 const registerUserValidator = {
   username: {
@@ -120,7 +120,6 @@ router.get('/', async (req, res) => {
         await session.destroy()
       }
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`)
-      res.send()
       return
     } else if (prompt.reasons.includes('user_email_not_validated')) {
       // User does not have a validated email and needs one
@@ -131,12 +130,10 @@ router.get('/', async (req, res) => {
       }
 
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user?.id ?? ''}?sent=${verificationSent ? 'true' : 'false'}`)
-      res.send()
       return
     } else if (prompt.reasons.includes('user_mfa_required')) {
       // User has MFA required, direct them to MFA page
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}?cm=${String(userCouldMFA(user))}`)
-      res.send()
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
       return
     }
 
@@ -155,12 +152,23 @@ router.get('/', async (req, res) => {
         res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFY_EMAIL}/${extraParams.login_id}/${extraParams.login_challenge}`)
         return
 
+      case 'mfa':
+        // Redirect is specifically requesting MFA, direct there
+        res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+        return
+
       case 'login':
       default:
         res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGIN}`)
         return
     }
   } else if (prompt.name === 'consent') {
+    if (prompt.reasons.includes('client_mfa_required')) {
+      // client requires mfa
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      return
+    }
+
     // Check conditions to skip consent, after provider has already determined it is required
     const { redirect_uri, client_id, scope } = params
     if (typeof redirect_uri === 'string' && typeof client_id === 'string' && typeof scope === 'string') {
@@ -224,7 +232,20 @@ router.get('/exists', async (req, res) => {
         location: location,
       }
     : null
-  res.send(redir)
+
+  const session = await getSession(req, res)
+  const accountId = session?.accountId ?? interaction.result?.login?.accountId
+  const user = accountId ? await getUserById(accountId) : undefined
+
+  const info: InteractionInfo = {
+    redirect: redir,
+    user: {
+      hasPasskeys: user?.hasPasskeys,
+      hasTotp: user?.hasTotp,
+    },
+  }
+
+  res.send(info)
 })
 
 router.delete('/current', async (req, res) => {
@@ -352,6 +373,7 @@ router.post('/register',
       passwordHash,
       approved: !!invitationValid, // invited users are approved by default
       emailVerified: !!invitation?.email && invitation.emailVerified,
+      mfaRequired: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -502,6 +524,7 @@ router.post('/register/passkey/end',
       email: invitation?.email || registration.email,
       approved: !!invitationValid, // invited users are approved by default
       emailVerified: !!invitation?.email && invitation.emailVerified,
+      mfaRequired: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -578,14 +601,8 @@ router.post('/register/passkey/end',
  */
 router.post('/passkey/registration/start',
   async (req, res) => {
-    // Should only be able to register if fully logged in,
-    // OR could not otherwise MFA
-    // partially logged in users may be prompted to add MFA
-    let user = req.loggedInUser
-
-    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
-      user = req.sessionUser
-    }
+    // Should only be able to register if fully logged in
+    const user = req.loggedInUser
 
     if (!user) {
       res.sendStatus(401)
@@ -608,14 +625,8 @@ router.post('/passkey/registration/end',
   async (req, res) => {
     const body = validatorData<RegistrationResponseJSON>(req)
 
-    // Should only be able to register if fully logged in,
-    // OR could not otherwise MFA
-    // partially logged in users may be prompted to add MFA
-    let user = req.loggedInUser
-
-    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
-      user = req.sessionUser
-    }
+    // Should only be able to register if fully logged in
+    const user = req.loggedInUser
 
     if (!user) {
       res.sendStatus(401)
@@ -651,7 +662,10 @@ router.post('/totp/registration',
     // partially logged in users may be prompted to add MFA
     let user = req.loggedInUser
 
-    if (!user && req.sessionUser && !userCouldMFA(req.sessionUser)) {
+    if (!user
+      && req.sessionUser
+      && !amrRequired(false, req.sessionUser.amr)
+      && !req.sessionUser.hasTotp) {
       user = req.sessionUser
     }
 
@@ -864,25 +878,42 @@ router.post('/passkey/end',
  * Validate totp and add totp to amr
  */
 router.post('/totp',
-  ...validate<{ token: string }>({
+  ...validate<{ token: string, enableMfa?: boolean }>({
+    enableMfa: {
+      optional: true,
+      isBoolean: true,
+      toBoolean: true,
+    },
     token: {
       ...stringValidation,
     },
   }),
   async (req, res) => {
-    // get user from req without checking user can login already
-    const user = req.sessionUser
+    // Should only be able to register if fully logged in,
+    // OR could not otherwise MFA
+    // partially logged in users may be prompted to add MFA
+    let user = req.loggedInUser
 
-    if (!user || isUnapproved(user)) {
+    if (!user
+      && req.sessionUser
+      && !amrRequired(false, req.sessionUser.amr)) {
+      user = req.sessionUser
+    }
+
+    if (!user) {
       res.sendStatus(401)
       return
     }
 
-    const { token } = validatorData<{ token: string }>(req)
+    const { token, enableMfa } = validatorData<{ token: string, enableMfa?: boolean }>(req)
 
     if (!await validateTOTP(user.id, token)) {
       res.sendStatus(401)
       return
+    }
+
+    if (enableMfa) {
+      await db().table<User>(TABLES.USER).update({ mfaRequired: true }).where({ id: user.id })
     }
 
     const redir = await interactionResult(req, res, {

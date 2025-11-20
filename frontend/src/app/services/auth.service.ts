@@ -12,6 +12,7 @@ import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswor
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import { type RegistrationResponseJSON, type PublicKeyCredentialCreationOptionsJSON, WebAuthnError } from '@simplewebauthn/browser'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
+import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,7 @@ export class AuthService {
   }
 
   async interactionExists() {
-    return firstValueFrom(this.http.get<Redirect | null>('/api/interaction/exists'))
+    return firstValueFrom(this.http.get<InteractionInfo>('/api/interaction/exists'))
   }
 
   async cancelInteraction() {
@@ -104,7 +105,7 @@ export class AuthService {
     return firstValueFrom(this.http.post<RegisterTotpResponse>('/api/interaction/totp/registration', null))
   }
 
-  async verifyTotp(token: string) {
-    return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/totp', { token }))
+  async verifyTotp(token: string, enableMfa: boolean) {
+    return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/totp', { token, enableMfa }))
   }
 }

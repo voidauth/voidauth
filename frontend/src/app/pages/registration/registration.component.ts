@@ -71,9 +71,9 @@ export class RegistrationComponent implements OnInit {
       const challenge = queryParams.get('challenge')
       try {
         this.spinnerService.show()
-        const redirect = await this.authService.interactionExists()
-        if (redirect) {
-          window.location.assign(redirect.location)
+        const info = await this.authService.interactionExists()
+        if (info.redirect) {
+          window.location.assign(info.redirect.location)
         }
         this.config = await this.configService.getConfig()
         this.passkeySupport = await this.passkeyService.getPasskeySupport()

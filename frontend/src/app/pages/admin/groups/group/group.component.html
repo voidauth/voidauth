@@ -59,6 +59,8 @@
         </mat-error>
       }
 
+      <mat-checkbox formControlName="mfaRequired">MFA Required</mat-checkbox>
+
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{ id ? "Update" : "Create" }}</button>
         @if (id && form.controls.name.value !== ADMIN_GROUP) {

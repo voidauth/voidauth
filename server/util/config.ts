@@ -13,6 +13,7 @@ class Config {
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
   EMAIL_VERIFICATION: boolean | null = null
+  MFA_REQUIRED: boolean = false
 
   APP_COLOR = '#906bc7'
 
@@ -69,6 +70,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SMTP_SECURE':
     case 'SIGNUP':
     case 'SIGNUP_REQUIRES_APPROVAL':
+    case 'MFA_REQUIRED':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 

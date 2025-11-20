@@ -1,5 +1,5 @@
 import Provider, { type Configuration } from 'oidc-provider'
-import { amrRequired, findAccount, getUserById, isUnapproved, isUnverified } from '../db/user'
+import { amrRequired, findAccount, getUserById, isUnapproved, isUnverified, userRequiresMfa } from '../db/user'
 import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
 import type { OIDCExtraParams } from '@shared/oidc'
@@ -52,7 +52,7 @@ loginPromptPolicy.checks.add(new Check('user_mfa_required',
     const { oidc } = ctx
     if (oidc.account?.accountId) {
       const user = await getUserById(oidc.account.accountId)
-      if (user && amrRequired(user.hasTotp, oidc.session?.amr ?? []) === 'mfa') {
+      if (user && amrRequired(userRequiresMfa(user), oidc.session?.amr ?? []) === 'mfa') {
         return Check.REQUEST_PROMPT
       }
     }
@@ -66,7 +66,7 @@ loginPromptPolicy.checks.add(new Check('user_login_required',
     const { oidc } = ctx
     if (oidc.account?.accountId) {
       const user = await getUserById(oidc.account.accountId)
-      if (user && amrRequired(user.hasTotp, oidc.session?.amr ?? []) === 'login') {
+      if (user && amrRequired(userRequiresMfa(user), oidc.session?.amr ?? []) === 'login') {
         return Check.REQUEST_PROMPT
       }
     }
@@ -99,6 +99,17 @@ consentPromptPolicy.checks.add(new Check('user_group_missing',
           throw error
         }
       }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
+consentPromptPolicy.checks.add(new Check('client_mfa_required',
+  'client requires mfa',
+  'client_mfa_required', (ctx) => {
+    const { oidc } = ctx
+    if (oidc.client && amrRequired(!!oidc.client.require_mfa, oidc.session?.amr ?? []) === 'mfa') {
+      return Check.REQUEST_PROMPT
     }
 
     return Check.NO_NEED_TO_PROMPT
@@ -273,7 +284,7 @@ const configuration: Configuration = {
     'none',
   ],
   conformIdTokenClaims: false,
-  extraClientMetadata: { properties: ['skip_consent'] },
+  extraClientMetadata: { properties: ['skip_consent', 'require_mfa'] },
   renderError: (ctx, out, error) => {
     console.error(error)
     ctx.status = 500

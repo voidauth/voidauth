@@ -2,14 +2,29 @@
 <mat-card class="form-card">
   <mat-card-content>
     <form>
-      <app-totp-input [disabled]="disabled()" (codeFinished)="totpVerify($event)"></app-totp-input>
+      <app-totp-input
+        style="width: 100%"
+        [uri]="uri()"
+        [secret]="secret()"
+        [disabled]="disabled()"
+        (codeFinished)="totpVerify($event)"
+      ></app-totp-input>
 
       @if (passkeySupport?.enabled) {
-        <app-text-divider text="or" disabled></app-text-divider>
-        <button mat-flat-button type="button" (click)="passkeyLogin(false)">
-          {{ passkeySupport?.platformName ?? "Passkey" }}
-          <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
-        </button>
+        @if (canPasskey) {
+          <app-text-divider text="or" disabled></app-text-divider>
+          <button mat-flat-button type="button" (click)="passkeyLogin()">
+            {{ passkeySupport?.platformName ?? "Passkey" }}
+            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+          </button>
+        }
+        @if (user?.id) {
+          <app-text-divider text="or" disabled></app-text-divider>
+          <button mat-flat-button type="button" (click)="passkeyRegister()">
+            {{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}
+            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+          </button>
+        }
       }
 
       <app-text-divider text="or" disabled></app-text-divider>
