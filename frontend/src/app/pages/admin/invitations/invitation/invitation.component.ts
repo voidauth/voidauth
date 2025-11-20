@@ -47,7 +47,7 @@ export class InvitationComponent {
     username: new FormControl<string | null>({
       value: null,
       disabled: false,
-    }, [Validators.minLength(4), Validators.pattern(USERNAME_REGEX)]),
+    }, [Validators.minLength(3), Validators.pattern(USERNAME_REGEX)]),
     email: new FormControl<string | null>({
       value: null,
       disabled: false,
@@ -55,7 +55,7 @@ export class InvitationComponent {
     name: new FormControl<string | null>({
       value: null,
       disabled: false,
-    }, [Validators.minLength(4)]),
+    }, [Validators.minLength(3)]),
     emailVerified: new FormControl<boolean>({ value: true, disabled: true }),
     groups: new FormControl<string[]>({
       value: [],
