@@ -50,6 +50,11 @@ export function serve() {
     validate: { trustProxy: false },
   }))
 
+  app.use(`/healthcheck`, (_req, res) => {
+    res.sendStatus(200)
+    return
+  })
+
   app.use(`${basePath()}/oidc`, provider.callback())
 
   app.use(express.json({ limit: '1Mb' }))

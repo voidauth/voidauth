@@ -45,6 +45,8 @@ VOLUME ["/app/db"]
 EXPOSE 3000
 ENTRYPOINT [ "npx", "tsx", "server/index.ts" ]
 
+HEALTHCHECK CMD node -e "fetch('http://localhost:'+process.env.APP_PORT+'/healthcheck').then(r=>process.exit(r.status===200?0:1)).catch(e=>process.exit(1))"
+
 # Basic Typescript Checking
 FROM serve AS test
 
