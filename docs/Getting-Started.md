@@ -25,7 +25,8 @@ services:
       DB_PASSWORD: # required
       DB_HOST: voidauth-db # required
     depends_on:
-      - voidauth-db
+      voidauth-db:
+        condition: service_healthy
 
   voidauth-db:
     image: postgres:18
@@ -34,6 +35,8 @@ services:
       POSTGRES_PASSWORD: # required
     volumes:
       - db:/var/lib/postgresql/18/docker
+    healthcheck:
+      test: pg_isready
 
 volumes:
   db:
