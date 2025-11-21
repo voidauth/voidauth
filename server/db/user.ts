@@ -128,7 +128,13 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
   return {
     accountId: id,
     claims(_use, scope, _claims, _rejected) {
-      const accountClaims: AccountClaims & Partial<UserDetails> = { sub: id }
+      const accountClaims: AccountClaims & {
+        email?: string | null
+        email_verified?: boolean
+        preferred_username?: string
+        name?: string | null
+        groups?: string[]
+      } = { sub: id }
 
       if (scope.includes('email')) {
         accountClaims.email = user.email ?? null
@@ -141,7 +147,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
       }
 
       if (scope.includes('groups')) {
-        accountClaims.groups = user.groups
+        accountClaims.groups = user.groups.map(g => g.name)
       }
 
       return accountClaims
