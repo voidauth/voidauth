@@ -293,6 +293,13 @@ const configuration: Configuration = {
     }
   },
   extraParams: extraParams,
+  // Copied from node-oidc-provider documentation, exact same as default but prevents warning
+  clientBasedCORS: (ctx, origin, client) => {
+    if (ctx.oidc.route === 'userinfo' || client.clientAuthMethod === 'none') {
+      return !!client.redirectUris?.some(uri => URL.parse(uri)?.origin === origin)
+    }
+    return false
+  },
   findAccount: findAccount,
   adapter: KnexAdapter,
 }

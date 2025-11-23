@@ -22,10 +22,6 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",
-    "lib": [
-      "ES2022",
-      "dom"
-    ],
     "typeRoots": ["node_modules/@types"],
     "paths": {
       "@shared/*": [

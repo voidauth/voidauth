@@ -103,6 +103,7 @@ router.get('/', async (req, res) => {
   const interaction = await getInteractionDetails(req, res)
   if (!interaction) {
     res.redirect(`${appConfig.APP_URL}/`)
+    res.send()
     return
   }
   const { uid, prompt, params } = interaction
@@ -120,6 +121,7 @@ router.get('/', async (req, res) => {
         await session.destroy()
       }
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`)
+      res.send()
       return
     } else if (prompt.reasons.includes('user_email_not_validated')) {
       // User does not have a validated email and needs one
@@ -130,10 +132,12 @@ router.get('/', async (req, res) => {
       }
 
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user?.id ?? ''}?sent=${verificationSent ? 'true' : 'false'}`)
+      res.send()
       return
     } else if (prompt.reasons.includes('user_mfa_required')) {
       // User has MFA required, direct them to MFA page
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.send()
       return
     }
 
@@ -143,29 +147,36 @@ router.get('/', async (req, res) => {
       case 'register':
         if (params.login_id) {
           res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.INVITE}?invite=${extraParams.login_id}&challenge=${extraParams.login_challenge}`)
+          res.send()
+          return
         } else {
           res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.REGISTER}`)
+          res.send()
+          return
         }
-        return
 
       case 'verify_email':
         res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFY_EMAIL}/${extraParams.login_id}/${extraParams.login_challenge}`)
+        res.send()
         return
 
       case 'mfa':
         // Redirect is specifically requesting MFA, direct there
         res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+        res.send()
         return
 
       case 'login':
       default:
         res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGIN}`)
+        res.send()
         return
     }
   } else if (prompt.name === 'consent') {
     if (prompt.reasons.includes('client_mfa_required')) {
       // client requires mfa
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.send()
       return
     }
 
@@ -180,6 +191,7 @@ router.get('/', async (req, res) => {
         })
         // manually set redirect location for auth_internal_client
         res.redirect(redirect_uri)
+        res.send()
         return
       }
 
@@ -191,6 +203,7 @@ router.get('/', async (req, res) => {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
+        res.send()
         return
       }
 
@@ -202,11 +215,14 @@ router.get('/', async (req, res) => {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
+        res.send()
         return
       }
     }
 
     res.redirect(`${appConfig.APP_URL}/consent/${uid}`)
+    res.send()
+    return
   } else {
     res.sendStatus(400)
     return
@@ -325,6 +341,7 @@ router.post('/:uid/confirm/',
       mergeWithLastSubmission: true,
     })
     res.redirect(redir)
+    res.send()
     return
   },
 )

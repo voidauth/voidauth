@@ -98,6 +98,8 @@ router.get('/cb', (req, res) => {
   }
 
   res.redirect(`${appConfig.APP_URL}/`)
+  res.send()
+  return
 })
 
 router.use('/public', publicRouter)

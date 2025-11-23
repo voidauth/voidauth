@@ -115,6 +115,7 @@ export function serve() {
   // frontend
   app.use(`${basePath()}/`, express.static(FE_ROOT, {
     index: false,
+    fallthrough: true,
   }))
 
   // Unresolved GET requests should return index
