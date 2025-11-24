@@ -4,8 +4,7 @@ import type { UpdateProfile } from '@shared/api-request/UpdateProfile'
 import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 import { firstValueFrom } from 'rxjs'
-import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
-import { ADMIN_GROUP } from '@shared/constants'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 
 @Injectable({
   providedIn: 'root',
@@ -15,16 +14,14 @@ export class UserService {
 
   private me?: Promise<CurrentUserDetails>
 
-  async getMyUser(disableCache: boolean = false) {
-    if (!this.me || disableCache) {
-      this.me = firstValueFrom(this.http.get<CurrentUserDetails>('/api/user/me'))
+  async getMyUser(options?: {
+    disableCache?: boolean
+  }) {
+    if (!this.me || !!options?.disableCache) {
+      this.me = firstValueFrom(this.http.get<CurrentUserDetails>(`/api/user/me`))
     }
 
     return this.me
-  }
-
-  userIsAdmin(user: Pick<UserDetails, 'groups'>) {
-    return user.groups.some(g => g.name === ADMIN_GROUP)
   }
 
   passkeySession(user: CurrentUserDetails) {

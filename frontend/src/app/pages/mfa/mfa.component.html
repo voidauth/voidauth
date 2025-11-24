@@ -11,18 +11,18 @@
       ></app-totp-input>
 
       @if (passkeySupport?.enabled) {
-        @if (canPasskey) {
+        @if (user?.hasPasskeys) {
           <app-text-divider text="or" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyLogin()">
-            {{ passkeySupport?.platformName ?? "Passkey" }}
+            Use {{ passkeySupport?.platformName ?? "Passkey" }}
             <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
           </button>
         }
-        @if (user?.id) {
+        @if (user?.isPrivileged) {
           <app-text-divider text="or" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyRegister()">
-            {{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName : "Register Passkey" }}
-            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+            Register Passkey
+            <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
           </button>
         }
       }

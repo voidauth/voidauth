@@ -4,6 +4,7 @@ export type ConfigResponse = {
   zxcvbnMin: number
   emailActive: boolean
   emailVerification: boolean
+  signupRequiresApproval: boolean
   registration: boolean
   contactEmail?: string
   defaultRedirect?: string

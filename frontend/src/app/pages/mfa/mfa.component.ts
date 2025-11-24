@@ -12,8 +12,8 @@ import { AuthService } from '../../services/auth.service'
 import { HttpErrorResponse } from '@angular/common/http'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../services/user.service'
-import { ActivatedRoute } from '@angular/router'
 import { WebAuthnError } from '@simplewebauthn/browser'
+import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 
 @Component({
   selector: 'app-mfa',
@@ -28,8 +28,6 @@ export class MfaComponent implements OnInit {
   disabled = signal<boolean>(false)
   secret = signal<string | undefined>(undefined)
   uri = signal<string | undefined>(undefined)
-  canTotp: boolean = true
-  canPasskey: boolean = false
 
   private configService = inject(ConfigService)
   private passkeyService = inject(PasskeyService)
@@ -37,30 +35,23 @@ export class MfaComponent implements OnInit {
   private spinnerService = inject(SpinnerService)
   private authService = inject(AuthService)
   private userService = inject(UserService)
-  private route = inject(ActivatedRoute)
 
   async ngOnInit() {
     this.spinnerService.show()
     this.disabled.set(true)
     try {
       try {
-        this.user = await this.userService.getMyUser(true)
+        this.user = await this.userService.getMyUser()
       } catch (_e) {
         // If user cannot be loaded, do nothing
-      }
-
-      try {
-        const info = await this.authService.interactionExists()
-        this.canTotp = !!info.user.hasTotp
-        this.canPasskey = !!info.user.hasPasskeys
-      } catch (_e) {
-        // If interaction does not seem to exist do nothing
       }
 
       this.passkeySupport = await this.passkeyService.getPasskeySupport()
       this.config = await this.configService.getConfig()
 
-      if (!this.canTotp) {
+      // User does not have a totp, but should be able to register one
+      if (this.user && !this.user.hasTotp && !!loginFactors(this.user.amr)
+        && !isUnapproved(this.user, this.config.signupRequiresApproval) && !isUnverified(this.user, this.config.emailVerification)) {
         try {
           const { secret, uri } = await this.authService.registerTotp()
           this.secret.set(secret)

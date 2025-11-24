@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express'
 import { getInteractionDetails, getSession, router as interactionRouter } from './interaction'
 import { commit, transaction, rollback } from '../db/db'
-import { amrRequired, getUserById, isUnapproved, isUnverified, userRequiresMfa } from '../db/user'
+import { getUserById, userRequiresMfa } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
 import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
@@ -11,13 +11,13 @@ import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import appConfig from '../util/config'
 import { provider } from '../oidc/provider'
+import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      sessionUser: CurrentUserDetails | undefined // user indicated by the session
-      loggedInUser: CurrentUserDetails | undefined // sessionUser if canLogin
+      user: CurrentUserDetails | undefined // user indicated by the session
     }
   }
 }
@@ -48,14 +48,10 @@ router.use(async (req, res, next) => {
 // Set user on request
 router.use(async (req: Request, res: Response, next) => {
   try {
-    const { user, amr } = await getUserSessionInteraction(req, res)
+    const user = await getUserSessionInteraction(req, res)
 
     if (user) {
-      req.sessionUser = user
-    }
-
-    if (userCanLogin(user, amr)) {
-      req.loggedInUser = user
+      req.user = user
     }
   } catch (_e) {
     // do nothing
@@ -155,19 +151,38 @@ async function getUserSessionInteraction(req: Request, res: Response) {
     }
   }
 
+  const canLogin = userCanLogin(user, amr)
+
   const currentUser: CurrentUserDetails | undefined = user
     ? {
         ...user,
         amr,
+        canLogin: canLogin,
+        isPrivileged: canLogin && (!user.hasTotp || loginFactors(amr) > 1),
       }
     : undefined
 
-  return {
-    amr,
-    user: currentUser,
-  }
+  return currentUser
 }
 
 export function userCanLogin(user: UserDetails | undefined, amr: string[]): user is UserDetails {
-  return !!user && !amrRequired(userRequiresMfa(user), amr) && !isUnapproved(user) && !isUnverified(user)
+  if (!user) {
+    return false
+  }
+
+  const factors = loginFactors(amr)
+
+  if (factors === 0) {
+    return false
+  }
+
+  if (userRequiresMfa(user) && factors < 2) {
+    return false
+  }
+
+  if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) || isUnverified(user, !!appConfig.EMAIL_VERIFICATION)) {
+    return false
+  }
+
+  return true
 }

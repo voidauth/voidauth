@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { provider } from '../oidc/provider'
-import { amrRequired, checkPasswordHash, getUserById, getUserByInput, isUnapproved } from '../db/user'
+import { checkPasswordHash, getUserById, getUserByInput } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
 import { validate, validatorData } from '../util/validate'
 import type { Redirect } from '@shared/api-response/Redirect'
@@ -58,6 +58,7 @@ import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
+import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 
 const registerUserValidator = {
   username: {
@@ -186,11 +187,11 @@ router.get('/', async (req, res) => {
       // Check if the client_id is auth_internal_client
       if (client_id === 'auth_internal_client') {
         const grantId = await applyConsent(interaction)
-        await provider.interactionResult(req, res, { consent: { grantId } }, {
+        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
         // manually set redirect location for auth_internal_client
-        res.redirect(redirect_uri)
+        res.redirect(redir)
         res.send()
         return
       }
@@ -275,7 +276,7 @@ router.delete('/current', async (req, res) => {
 
   // If session is not fully logged in, destroy that too
   const session = await getSession(req, res)
-  if (session && !req.loggedInUser) {
+  if (session && !req.user?.canLogin) {
     await session.destroy()
   }
 
@@ -445,7 +446,7 @@ router.post('/register',
     }
 
     // See where we need to redirect the user to, depending on config
-    const redir = await interactionResult(req, res, {
+    const redir = await loginResult(req, res, {
       userId: user.id,
       amr: ['pwd'],
     })
@@ -598,7 +599,7 @@ router.post('/register/passkey/end',
     await createPasskey(createdUser.id, registrationInfo, currentOptions)
 
     // See where we need to redirect the user to, depending on config
-    const redir = await interactionResult(req, res, {
+    const redir = await loginResult(req, res, {
       userId: user.id,
       amr: ['webauthn'],
     })
@@ -619,9 +620,9 @@ router.post('/register/passkey/end',
 router.post('/passkey/registration/start',
   async (req, res) => {
     // Should only be able to register if fully logged in
-    const user = req.loggedInUser
+    const user = req.user
 
-    if (!user) {
+    if (!user?.isPrivileged) {
       res.sendStatus(401)
       return
     }
@@ -643,9 +644,9 @@ router.post('/passkey/registration/end',
     const body = validatorData<RegistrationResponseJSON>(req)
 
     // Should only be able to register if fully logged in
-    const user = req.loggedInUser
+    const user = req.user
 
-    if (!user) {
+    if (!user?.isPrivileged) {
       res.sendStatus(401)
       return
     }
@@ -660,7 +661,7 @@ router.post('/passkey/registration/end',
 
     await createPasskey(user.id, registrationInfo, currentOptions)
 
-    const redir = await interactionResult(req, res, {
+    const redir = await loginResult(req, res, {
       userId: user.id,
       amr: ['webauthn'],
     })
@@ -677,16 +678,17 @@ router.post('/totp/registration',
     // Should only be able to register if fully logged in,
     // OR could not otherwise MFA
     // partially logged in users may be prompted to add MFA
-    let user = req.loggedInUser
-
-    if (!user
-      && req.sessionUser
-      && !amrRequired(false, req.sessionUser.amr)
-      && !req.sessionUser.hasTotp) {
-      user = req.sessionUser
-    }
+    const user = req.user
 
     if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    const firstTotpAllowed = !user.hasTotp && !!loginFactors(user.amr)
+      && !isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) && !isUnverified(user, !!appConfig.EMAIL_VERIFICATION)
+
+    if (!user.isPrivileged && !firstTotpAllowed) {
       res.sendStatus(401)
       return
     }
@@ -722,7 +724,7 @@ router.post('/login',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
-    if (!interaction && !session) {
+    if (!interaction && !session?.accountId) {
       res.status(419).send({
         message: 'Login page too old, refresh the page.',
       })
@@ -744,7 +746,7 @@ router.post('/login',
     }
 
     // check if email verification or approval needed, if not log in
-    const redir = await interactionResult(req, res, {
+    const redir = await loginResult(req, res, {
       userId: user.id,
       amr: ['pwd'],
       remember,
@@ -761,7 +763,7 @@ router.post('/passkey/start',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
-    if (!interaction && !session) {
+    if (!interaction && !session?.accountId) {
       res.status(419).send({
         message: 'Login page too old, refresh the page.',
       })
@@ -819,7 +821,7 @@ router.post('/passkey/end',
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
-    if (!interaction && !session) {
+    if (!interaction && !session?.accountId) {
       res.status(419).send({
         message: 'Login page too old, refresh the page.',
       })
@@ -882,7 +884,7 @@ router.post('/passkey/end',
       return
     }
 
-    const redir = await interactionResult(req, res, {
+    const redir = await loginResult(req, res, {
       userId: user.id,
       amr: ['webauthn'],
     })
@@ -909,15 +911,15 @@ router.post('/totp',
     // Should only be able to register if fully logged in,
     // OR could not otherwise MFA
     // partially logged in users may be prompted to add MFA
-    let user = req.loggedInUser
-
-    if (!user
-      && req.sessionUser
-      && !amrRequired(false, req.sessionUser.amr)) {
-      user = req.sessionUser
-    }
+    const user = req.user
 
     if (!user) {
+      res.sendStatus(401)
+      return
+    }
+
+    if (!loginFactors(user.amr)
+      || isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) || isUnverified(user, !!appConfig.EMAIL_VERIFICATION)) {
       res.sendStatus(401)
       return
     }
@@ -933,7 +935,7 @@ router.post('/totp',
       await db().table<User>(TABLES.USER).update({ mfaRequired: true }).where({ id: user.id })
     }
 
-    const redir = await interactionResult(req, res, {
+    const redir = await loginResult(req, res, {
       userId: user.id,
       amr: ['totp'],
     })
@@ -955,7 +957,7 @@ router.post('/verify_email',
 
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
-    if (!interaction && !session) {
+    if (!interaction && !session?.accountId) {
       const redir: Redirect = {
         success: false,
         location: oidcLoginPath(appConfig.APP_URL + '/api/cb', 'verify_email', userId, challenge),
@@ -995,7 +997,7 @@ router.post('/verify_email',
       await interaction.save(TTLs.INTERACTION)
     }
 
-    const redir = await interactionResult(req, res, {
+    const redir = await loginResult(req, res, {
       userId: user.id,
       amr: ['email'],
     })
@@ -1005,7 +1007,7 @@ router.post('/verify_email',
   },
 )
 
-export async function interactionResult(req: Request, res: Response, options: {
+export async function loginResult(req: Request, res: Response, options: {
   amr: string[]
   userId: string
   remember?: boolean
@@ -1117,7 +1119,7 @@ export async function createEmailVerification(
   user: UserDetails,
   email?: string | null) {
   // Do not create an email verification for an unapproved user
-  if (isUnapproved(user)) {
+  if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
     return false
   }
 

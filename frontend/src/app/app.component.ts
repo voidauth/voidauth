@@ -3,9 +3,10 @@ import { RouterLink, RouterOutlet } from '@angular/router'
 import { HeaderComponent } from './components/header/header.component'
 import { MaterialModule } from './material-module'
 import { UserService } from './services/user.service'
-import type { UserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { SpinnerService } from './services/spinner.service'
 import { getCurrentHost } from './services/config.service'
+import { isAdmin } from '@shared/user'
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,7 @@ import { getCurrentHost } from './services/config.service'
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  user?: UserDetails
+  user?: CurrentUserDetails
   isAdmin: boolean = false
   host = getCurrentHost()
 
@@ -30,7 +31,7 @@ export class AppComponent implements OnInit {
     try {
       this.spinnerService.show()
       this.user = await this.userService.getMyUser()
-      this.isAdmin = this.userService.userIsAdmin(this.user)
+      this.isAdmin = isAdmin(this.user)
     } catch (_e) {
       // user just isn't logged in
     } finally {

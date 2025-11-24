@@ -4,6 +4,7 @@ import { UserService } from '../services/user.service'
 import { oidcLoginPath } from '@shared/oidc'
 import { getBaseHrefPath, getCurrentHost } from '../services/config.service'
 import { SpinnerService } from '../services/spinner.service'
+import { isAdmin } from '@shared/user'
 
 export const isAdminGuard: CanActivateFn = async (_route, _state) => {
   const userService = inject(UserService)
@@ -12,7 +13,8 @@ export const isAdminGuard: CanActivateFn = async (_route, _state) => {
   try {
     spinnerService.show()
     const user = await userService.getMyUser()
-    if (!userService.userIsAdmin(user)) {
+    if (!user.isPrivileged || !isAdmin(user)) {
+      // redirect back to home page
       window.location.assign(getBaseHrefPath())
       return false
     }

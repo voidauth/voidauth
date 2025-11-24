@@ -1,8 +1,8 @@
 import Provider, { type Configuration } from 'oidc-provider'
-import { amrRequired, findAccount, getUserById, isUnapproved, isUnverified, userRequiresMfa } from '../db/user'
+import { findAccount, getUserById, userRequiresMfa } from '../db/user'
 import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
-import type { OIDCExtraParams } from '@shared/oidc'
+import { type OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
 import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
@@ -12,6 +12,7 @@ import * as psl from 'psl'
 import { createExpiration } from '../db/util'
 import { interactionPolicy } from 'oidc-provider'
 import { getClient } from '../db/client'
+import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 
 // Modify consent interaction policy to check for user and client groups
 const { Check, base } = interactionPolicy
@@ -24,7 +25,7 @@ loginPromptPolicy.checks.add(new Check('user_not_approved',
     if (oidc.account?.accountId) {
       // using a short cache
       const user = await getUserById(oidc.account.accountId)
-      if (user && isUnapproved(user)) {
+      if (user && isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
         return Check.REQUEST_PROMPT
       }
     }
@@ -38,21 +39,7 @@ loginPromptPolicy.checks.add(new Check('user_email_not_validated',
     const { oidc } = ctx
     if (oidc.account?.accountId && appConfig.EMAIL_VERIFICATION) {
       const user = await getUserById(oidc.account.accountId)
-      if (user && isUnverified(user)) {
-        return Check.REQUEST_PROMPT
-      }
-    }
-
-    return Check.NO_NEED_TO_PROMPT
-  },
-))
-loginPromptPolicy.checks.add(new Check('user_mfa_required',
-  'user login requires mfa',
-  'user_mfa_required', async (ctx) => {
-    const { oidc } = ctx
-    if (oidc.account?.accountId) {
-      const user = await getUserById(oidc.account.accountId)
-      if (user && amrRequired(userRequiresMfa(user), oidc.session?.amr ?? []) === 'mfa') {
+      if (user && isUnverified(user, appConfig.EMAIL_VERIFICATION)) {
         return Check.REQUEST_PROMPT
       }
     }
@@ -66,7 +53,23 @@ loginPromptPolicy.checks.add(new Check('user_login_required',
     const { oidc } = ctx
     if (oidc.account?.accountId) {
       const user = await getUserById(oidc.account.accountId)
-      if (user && amrRequired(userRequiresMfa(user), oidc.session?.amr ?? []) === 'login') {
+      const amr = oidc.session?.amr ?? []
+      if (user && loginFactors(amr) === 0) {
+        return Check.REQUEST_PROMPT
+      }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
+loginPromptPolicy.checks.add(new Check('user_mfa_required',
+  'user login requires mfa',
+  'user_mfa_required', async (ctx) => {
+    const { oidc } = ctx
+    if (oidc.account?.accountId) {
+      const user = await getUserById(oidc.account.accountId)
+      const amr = oidc.session?.amr ?? []
+      if (user && userRequiresMfa(user) && loginFactors(amr) < 2) {
         return Check.REQUEST_PROMPT
       }
     }
@@ -106,10 +109,31 @@ consentPromptPolicy.checks.add(new Check('user_group_missing',
 ))
 consentPromptPolicy.checks.add(new Check('client_mfa_required',
   'client requires mfa',
-  'client_mfa_required', (ctx) => {
+  'client_mfa_required', async (ctx) => {
     const { oidc } = ctx
-    if (oidc.client && amrRequired(!!oidc.client.require_mfa, oidc.session?.amr ?? []) === 'mfa') {
+    const amr = oidc.session?.amr ?? []
+    if (oidc.client && !!oidc.client.require_mfa && loginFactors(amr) < 2) {
       return Check.REQUEST_PROMPT
+    }
+
+    if (!oidc.params?.redirect_uri) {
+      return Check.NO_NEED_TO_PROMPT
+    }
+
+    const redirectUri = URL.parse(oidc.params.redirect_uri as string)
+
+    // Auth Internal Client when actually redirecting to admin or profile management
+    // should require MFA if user has TOTP code to use
+    // otherwise Clients/Domains requiring MFA would not be secure.
+    // This access is checked elsewhere, but this improves UX
+    if (oidc.client?.clientId === 'auth_internal_client'
+      && redirectUri?.hostname === appUrl().hostname
+      && redirectUri.pathname.startsWith(appUrl().pathname)) {
+      const user = oidc.account?.accountId ? await getUserById(oidc.account.accountId) : null
+      const amr = oidc.session?.amr ?? []
+      if (user?.hasTotp && loginFactors(amr) < 2) {
+        return Check.REQUEST_PROMPT
+      }
     }
 
     return Check.NO_NEED_TO_PROMPT

@@ -5,13 +5,16 @@ import { UserService } from '../services/user.service'
 import { getBaseHrefPath, getCurrentHost } from '../services/config.service'
 import { SpinnerService } from '../services/spinner.service'
 
-export const loggedInGuard: CanActivateFn = async (_route, _state) => {
+export const PrivilegedGuard: CanActivateFn = async (_route, _state) => {
   const userService = inject(UserService)
   const spinnerService = inject(SpinnerService)
 
   try {
     spinnerService.show()
-    await userService.getMyUser()
+    const user = await userService.getMyUser()
+    if (!user.isPrivileged) {
+      throw new Error('User does not have AMR required to use admin or account management features.')
+    }
   } catch (_e) {
     // user isn't logged in
     window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost() + '/api/cb'))

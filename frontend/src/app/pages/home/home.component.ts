@@ -94,7 +94,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.spinnerService.show()
 
       try {
-        this.user = await this.userService.getMyUser(true)
+        this.user = await this.userService.getMyUser({
+          disableCache: true,
+        })
       } catch (_e) {
         // If user cannot be loaded, refresh page
         location.reload()

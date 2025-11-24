@@ -78,39 +78,6 @@ export async function checkPasswordHash(userId: string, password: string): Promi
   return !!user && !!password && !!user.passwordHash && await argon2.verify(user.passwordHash, password)
 }
 
-export function isAdmin(user: Pick<UserDetails, 'groups'> | undefined) {
-  return !!user?.groups.map(g => g.name).includes(ADMIN_GROUP)
-}
-
-export function isUnapproved(user: Pick<UserDetails, 'approved' | 'groups'>) {
-  return !isAdmin(user) && appConfig.SIGNUP_REQUIRES_APPROVAL && !user.approved
-}
-
-export function isUnverified(user: Pick<UserDetails, 'email' | 'emailVerified' | 'groups'>) {
-  return !isAdmin(user) && appConfig.EMAIL_VERIFICATION && (!user.email || !user.emailVerified)
-}
-
-export function amrRequired(mfaRequired: boolean, amr: string[]) {
-  const multiFactors = ['email', 'webauthn'] // something that should already require mfa to access
-  const firstFactors = ['pwd'] // something you know (password, PIN)
-  const secondFactors = ['totp'] // something you have or are (device, biometrics)
-
-  // Multi-factor AMRs allow access always
-  if (amr.some(f => multiFactors.includes(f))) {
-    return false
-  }
-
-  // Single-factor AMRs allow access if mfa is not required, or if there is a second factor
-  if (amr.some(f => firstFactors.includes(f))) {
-    if (!mfaRequired || amr.some(f => secondFactors.includes(f))) {
-      return false
-    }
-    return 'mfa'
-  }
-
-  return 'login'
-}
-
 export function userRequiresMfa(user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup'>) {
   return appConfig.MFA_REQUIRED || !!user.mfaRequired || user.hasMfaGroup
 }

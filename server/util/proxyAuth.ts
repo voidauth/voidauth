@@ -2,13 +2,14 @@ import { oidcLoginPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { isMatch } from 'matcher'
 import { getProxyAuths } from '../db/proxyAuth'
-import { amrRequired, checkPasswordHash, getUserByInput } from '../db/user'
+import { checkPasswordHash, getUserByInput } from '../db/user'
 import { provider } from '../oidc/provider'
 import appConfig from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
 import { userCanLogin } from '../routes/api'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
+import { loginFactors } from '@shared/user'
 
 // proxy auth cache
 let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups'>[] = []
@@ -27,16 +28,16 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   let amr: string[] = []
 
   if (sessionId) {
-    const sessionUser = req.sessionUser
+    const reqUser = req.user
 
-    if (!sessionUser) {
+    if (!reqUser) {
       res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
       res.send()
       return
     }
 
-    user = sessionUser
-    amr = sessionUser.amr
+    user = reqUser
+    amr = reqUser.amr
   } else if (proxyAuthorizationHeader) {
     // Proxy-Authorization header flow
     // Decode the Basic Authorization header
@@ -85,7 +86,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   const match = await getProxyAuthWithCache(url)
 
   // Check that proxyAuth domain does not require MFA or user is logged in with MFA already
-  if (amrRequired(!!match?.mfaRequired, amr) === 'mfa') {
+  if (!!match?.mfaRequired && loginFactors(amr) < 2) {
     // If not, redirect to login flow, which will send to correct redirect
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href, 'mfa')}`)
     res.send()

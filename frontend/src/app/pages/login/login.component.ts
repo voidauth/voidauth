@@ -69,12 +69,14 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.passkeySupport = await this.passkeyService.getPasskeySupport()
 
       try {
-        await this.userService.getMyUser()
-        // The user is already logged in
-        await this.router.navigate(['/'], {
-          replaceUrl: true,
-        })
-        return
+        const user = await this.userService.getMyUser()
+        if (user.canLogin) {
+          // The user is already logged in
+          await this.router.navigate(['/'], {
+            replaceUrl: true,
+          })
+          return
+        }
       } catch (_e) {
         // This is expected, that the user is not logged in
       }

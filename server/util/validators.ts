@@ -4,7 +4,7 @@ import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import appConfig from './config'
-import { isAdmin } from '../db/user'
+import { isAdmin } from '@shared/user'
 
 const options = {
   // recommended
@@ -20,8 +20,8 @@ const options = {
 
 zxcvbnOptions.setOptions(options)
 
-export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
-  if (!req.loggedInUser) {
+export function checkPrivileged(req: Request, res: Response, next: NextFunction) {
+  if (!req.user || !req.user.isPrivileged) {
     res.sendStatus(401)
     return
   }
@@ -29,7 +29,7 @@ export function checkLoggedIn(req: Request, res: Response, next: NextFunction) {
 }
 
 export function checkAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!isAdmin(req.loggedInUser)) {
+  if (!isAdmin(req.user)) {
     res.sendStatus(403)
     return
   }
