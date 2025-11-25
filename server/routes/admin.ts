@@ -7,7 +7,7 @@ import type { User } from '@shared/db/User'
 import { randomUUID } from 'crypto'
 import {
   unlessNull,
-  checkAdmin, checkLoggedIn, emailValidation,
+  checkAdmin, checkPrivileged, emailValidation,
   nameValidation, stringValidation, usernameValidation, uuidValidation,
 } from '../util/validators'
 import { getClient, getClients, removeClient, upsertClient } from '../db/client'
@@ -142,7 +142,7 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
 
 export const adminRouter = Router()
 
-adminRouter.use(checkLoggedIn, checkAdmin)
+adminRouter.use(checkPrivileged, checkAdmin)
 
 adminRouter.get('/clients', async (_req, res) => {
   const clients = await getClients()
@@ -171,7 +171,7 @@ adminRouter.get('/client/:client_id',
 adminRouter.post('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req, res) => {
-    if (!req.loggedInUser) {
+    if (!req.user) {
       res.sendStatus(500)
       return
     }
@@ -200,7 +200,7 @@ adminRouter.post('/client',
       }
       clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
 
-      await upsertClient(provider, clientMetadata, req.loggedInUser, provider.createContext(req, res))
+      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
       res.send()
     } catch (e) {
       res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
@@ -211,7 +211,7 @@ adminRouter.post('/client',
 adminRouter.patch('/client',
   ...validate<ClientUpsert>(clientMetadataValidator),
   async (req, res) => {
-    if (!req.loggedInUser) {
+    if (!req.user) {
       res.sendStatus(500)
       return
     }
@@ -240,7 +240,7 @@ adminRouter.patch('/client',
       }
       clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
 
-      await upsertClient(provider, clientMetadata, req.loggedInUser, provider.createContext(req, res))
+      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
       res.send()
     } catch (e) {
       if (isOIDCProviderError(e)) {
@@ -333,7 +333,7 @@ adminRouter.post('/proxyAuth',
     'groups.*': stringValidation,
   }),
   async (req, res) => {
-    const user = req.loggedInUser
+    const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
@@ -462,7 +462,7 @@ adminRouter.patch('/user',
     'groups.*.id': uuidValidation,
   }),
   async (req, res) => {
-    const currentUser = req.loggedInUser
+    const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
@@ -526,7 +526,7 @@ adminRouter.delete('/user/:id',
     id: uuidValidation,
   }),
   async (req, res) => {
-    const currentUser = req.loggedInUser
+    const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
@@ -556,7 +556,7 @@ adminRouter.post('/user/signout/:id',
     id: uuidValidation,
   }),
   async (req, res) => {
-    const currentUser = req.loggedInUser
+    const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
@@ -624,7 +624,7 @@ adminRouter.post('/users/delete',
     },
   }),
   async (req, res) => {
-    const currentUser = req.loggedInUser
+    const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
@@ -711,7 +711,7 @@ adminRouter.post('/group',
     },
   }),
   async (req, res) => {
-    const currentUser = req.loggedInUser
+    const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
@@ -852,7 +852,7 @@ adminRouter.post('/invitation',
     'groups.*': stringValidation,
   }),
   async (req, res) => {
-    const currentUser = req.loggedInUser
+    const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return

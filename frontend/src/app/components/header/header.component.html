@@ -14,7 +14,7 @@
   <span class="right-actions">
     <app-theme-toggle></app-theme-toggle>
     <span>
-      @if (!user && loginRedirect && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {
+      @if (!user?.canLogin && loginRedirect && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {
         <span>
           <a mat-flat-button [href]="loginRedirect">Login</a>
         </span>

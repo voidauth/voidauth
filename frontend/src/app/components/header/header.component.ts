@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router'
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component'
 import { MaterialModule } from '../../material-module'
 import { UserService } from '../../services/user.service'
-import type { UserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { ConfigService, getBaseHrefPath, getCurrentHost } from '../../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
 import { SpinnerService } from '../../services/spinner.service'
@@ -22,8 +22,7 @@ import { LogoComponent } from './logo.component'
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit {
-  public user?: UserDetails
-  public isAdmin: boolean = false
+  public user?: CurrentUserDetails
   public loginRedirect?: string
   public config?: ConfigResponse
   public location = window.location
@@ -40,7 +39,6 @@ export class HeaderComponent implements OnInit {
     try {
       this.spinnerService.show()
       this.user = await this.userService.getMyUser()
-      this.isAdmin = this.userService.userIsAdmin(this.user)
       this.config = await this.configService.getConfig()
     } catch (_e) {
       // user just isn't logged in

@@ -8,7 +8,7 @@ import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
-import { checkLoggedIn, emailValidation, nameValidation, newPasswordValidation, stringValidation, unlessNull } from '../util/validators'
+import { checkPrivileged, emailValidation, nameValidation, newPasswordValidation, stringValidation, unlessNull } from '../util/validators'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
 import { deleteUserPasskeys } from '../db/passkey'
@@ -18,20 +18,28 @@ import type { TOTP } from '@shared/db/TOTP'
 
 export const userRouter = Router()
 
-userRouter.use(checkLoggedIn)
-
 userRouter.get('/me',
   (req, res) => {
-    res.send(req.loggedInUser)
+    const user = req.user
+
+    if (!user) {
+      res.sendStatus(401)
+    }
+
+    res.send(user)
+    return
   },
 )
 
+userRouter.use(checkPrivileged)
+
+// Update user profile information
 userRouter.patch('/profile',
   ...validate<UpdateProfile>({
     name: nameValidation,
   }),
   async (req, res) => {
-    const user = req.loggedInUser
+    const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
@@ -45,12 +53,13 @@ userRouter.patch('/profile',
   },
 )
 
+// Update user email address
 userRouter.patch('/email',
   ...validate<UpdateEmail>({
     email: emailValidation,
   }),
   async (req, res) => {
-    const user = req.loggedInUser
+    const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
@@ -68,6 +77,7 @@ userRouter.patch('/email',
   },
 )
 
+// Change user password
 userRouter.patch('/password',
   ...validate<UpdatePassword>({
     oldPassword: {
@@ -78,7 +88,7 @@ userRouter.patch('/password',
     newPassword: newPasswordValidation,
   }),
   async (req, res) => {
-    const user = req.loggedInUser
+    const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
@@ -96,8 +106,9 @@ userRouter.patch('/password',
   },
 )
 
+// Delete all user passkeys
 userRouter.delete('/passkeys', async (req, res) => {
-  const user = req.loggedInUser
+  const user = req.user
   if (!user) {
     res.sendStatus(500)
     return
@@ -117,8 +128,9 @@ userRouter.delete('/passkeys', async (req, res) => {
   res.send()
 })
 
+// Delete user password
 userRouter.delete('/password', async (req, res) => {
-  const user = req.loggedInUser
+  const user = req.user
   if (!user) {
     res.sendStatus(500)
     return
@@ -138,8 +150,9 @@ userRouter.delete('/password', async (req, res) => {
   res.send()
 })
 
+// Delete user authenticators
 userRouter.delete('/totp', async (req, res) => {
-  const user = req.loggedInUser
+  const user = req.user
   if (!user) {
     res.sendStatus(500)
     return
@@ -156,8 +169,9 @@ userRouter.delete('/totp', async (req, res) => {
   res.send()
 })
 
+// Delete a user
 userRouter.delete('/user', async (req, res) => {
-  const user = req.loggedInUser
+  const user = req.user
   if (!user) {
     res.sendStatus(500)
     return
