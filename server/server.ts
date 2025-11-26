@@ -20,6 +20,7 @@ const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
 
 export function serve() {
+  // Do not wait for theme to generate before starting
   void generateTheme()
 
   const app = express()
@@ -138,7 +139,7 @@ export function serve() {
 
   // Last chance error handler
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error(err)
+    console.error(err) // log here, ideally this will never be called
     res.sendStatus(500)
   })
 

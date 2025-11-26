@@ -88,7 +88,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it
-        window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost() + '/api/cb'))
+        window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost()))
       }
     } finally {
       this.spinnerService.hide()
