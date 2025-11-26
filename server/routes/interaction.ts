@@ -27,7 +27,7 @@ import { createExpiration } from '../db/util'
 import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
-import { type OIDCExtraParams, oidcLoginPath } from '@shared/oidc'
+import { oidcLoginPath } from '@shared/oidc'
 import { getClient } from '../db/client'
 import type { InvitationGroup, UserGroup } from '@shared/db/Group'
 import {
@@ -142,37 +142,9 @@ router.get('/', async (req, res) => {
       return
     }
 
-    // Determine which 'login' type page to redirect to
-    const extraParams: OIDCExtraParams = params as OIDCExtraParams
-    switch (extraParams.login_type) {
-      case 'register':
-        if (params.login_id) {
-          res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.INVITE}?invite=${extraParams.login_id}&challenge=${extraParams.login_challenge}`)
-          res.send()
-          return
-        } else {
-          res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.REGISTER}`)
-          res.send()
-          return
-        }
-
-      case 'verify_email':
-        res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFY_EMAIL}/${extraParams.login_id}/${extraParams.login_challenge}`)
-        res.send()
-        return
-
-      case 'mfa':
-        // Redirect is specifically requesting MFA, direct there
-        res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
-        res.send()
-        return
-
-      case 'login':
-      default:
-        res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGIN}`)
-        res.send()
-        return
-    }
+    res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGIN}`)
+    res.send()
+    return
   } else if (prompt.name === 'consent') {
     if (prompt.reasons.includes('client_mfa_required')) {
       // client requires mfa
@@ -190,7 +162,6 @@ router.get('/', async (req, res) => {
         const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
-        // manually set redirect location for auth_internal_client
         res.redirect(redir)
         res.send()
         return
@@ -960,7 +931,7 @@ router.post('/verify_email',
     if (!interaction && !session?.accountId) {
       const redir: Redirect = {
         success: false,
-        location: oidcLoginPath(appConfig.APP_URL + '/api/cb', 'verify_email', userId, challenge),
+        location: oidcLoginPath(appConfig.APP_URL, `${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFY_EMAIL}/${userId}/${challenge}`),
       }
       res.send(redir)
       return

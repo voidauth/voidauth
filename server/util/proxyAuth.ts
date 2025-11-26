@@ -4,12 +4,13 @@ import { isMatch } from 'matcher'
 import { getProxyAuths } from '../db/proxyAuth'
 import { checkPasswordHash, getUserByInput } from '../db/user'
 import { provider } from '../oidc/provider'
-import appConfig from './config'
+import appConfig, { appUrl } from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
 import { userCanLogin } from '../routes/api'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { loginFactors } from '@shared/user'
+import * as psl from 'psl'
 
 // proxy auth cache
 let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups'>[] = []
@@ -27,11 +28,16 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   let user: UserDetails | undefined
   let amr: string[] = []
 
+  if (psl.get(url.hostname) !== psl.get(appUrl().hostname)) {
+    res.status(400).send({ error: `ProxyAuth root hostname ${url.hostname} does not equal APP_URL root hostname ${appUrl().hostname}` })
+    return
+  }
+
   if (sessionId) {
     const reqUser = req.user
 
     if (!reqUser) {
-      res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+      res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
       res.send()
       return
     }
@@ -47,7 +53,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
       res.setHeader('Proxy-Authenticate', `Basic realm="${formattedUrl}"`)
-      res.redirect(407, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+      res.redirect(407, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
       res.send()
       return
     }
@@ -61,14 +67,14 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
       res.setHeader('WWW-Authenticate', `Basic realm="${formattedUrl}"`)
-      res.redirect(401, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+      res.redirect(401, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
       res.send()
       return
     }
     amr = ['pwd']
   } else {
     // User not logged in, redirect to login
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
     res.send()
     return
   }
@@ -76,7 +82,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // Check that user is approved and verified and should be able to continue
   if (!userCanLogin(user, amr)) {
     // If not, redirect to login flow, which will send to correct redirect
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href)}`)
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
     res.send()
     return
   }
@@ -88,7 +94,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // Check that proxyAuth domain does not require MFA or user is logged in with MFA already
   if (!!match?.mfaRequired && loginFactors(amr) < 2) {
     // If not, redirect to login flow, which will send to correct redirect
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(url.href, 'mfa')}`)
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
     res.send()
     return
   }
@@ -114,7 +120,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   res.send()
 }
 
-async function getProxyAuthWithCache(url: URL) {
+export async function getProxyAuthWithCache(url: URL) {
   const formattedUrl = formatProxyAuthDomain(url)
   if (proxyAuthCacheExpires < new Date().getTime()) {
     proxyAuthCache = await getProxyAuths()

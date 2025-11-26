@@ -1,19 +1,14 @@
 export type OIDCExtraParams = {
-  login_type: 'login' | 'register' | 'verify_email' | 'mfa' // allows redirects to request specific required flows
-  login_id: string
-  login_challenge: string
+  proxyauth_url?: string
 }
 
 export function oidcLoginPath(
-  redirectUrl: string,
-  type: OIDCExtraParams['login_type'] = 'login',
-  id?: OIDCExtraParams['login_id'] | null,
-  challenge?: OIDCExtraParams['login_challenge'] | null) {
-  const url = new URL(redirectUrl)
-  const redirectParam = `redirect_uri=${url.href}`
+  baseUrl: string,
+  redirectUrl?: string | null,
+  isProxyAuth: boolean = false) {
+  const encodedRedirect = redirectUrl ? encodeURIComponent((new URL(redirectUrl)).href) : ''
+  const redirectParam = `redirect_uri=${encodeURIComponent(baseUrl + `/api/cb${redirectUrl ? '?redir=' + encodedRedirect : ''}`)}`
   let queryParams = `client_id=auth_internal_client&response_type=none&scope=openid&${redirectParam}`
-  queryParams += `&login_type=${type}`
-  queryParams += id ? `&login_id=${id}` : ''
-  queryParams += challenge ? `&login_challenge=${challenge}` : ''
+  queryParams += isProxyAuth ? `&proxyauth_url=${encodedRedirect}` : ''
   return `/oidc/auth?${queryParams}`
 }

@@ -6,7 +6,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router'
 import { HttpErrorResponse } from '@angular/common/http'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
-import { USERNAME_REGEX } from '@shared/constants'
+import { REDIRECT_PATHS, USERNAME_REGEX } from '@shared/constants'
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import { ConfigService, getBaseHrefPath, getCurrentHost } from '../../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
@@ -83,11 +83,11 @@ export class RegistrationComponent implements OnInit {
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it
-        window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost() + '/api/cb',
-          'register',
-          inviteId,
-          challenge,
-        ))
+        const query: string[] = []
+        if (inviteId) query.push(`invite=${inviteId}`)
+        if (challenge) query.push(`challenge=${challenge}`)
+
+        window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost(), `${getCurrentHost()}/${REDIRECT_PATHS.INVITE}${query.length ? `?${query.join('&')}` : ''}`))
         return
       } finally {
         this.spinnerService.hide()
