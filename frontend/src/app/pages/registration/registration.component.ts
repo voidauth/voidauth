@@ -93,6 +93,16 @@ export class RegistrationComponent implements OnInit {
         this.spinnerService.hide()
       }
 
+      try {
+        this.spinnerService.show()
+        if (this.config.emailVerification) {
+          this.form.controls.email.addValidators(Validators.required)
+          this.form.controls.email.updateValueAndValidity()
+        }
+      } finally {
+        this.spinnerService.hide()
+      }
+
       if (inviteId && challenge) {
         try {
           this.spinnerService.show()
@@ -118,16 +128,6 @@ export class RegistrationComponent implements OnInit {
         if (this.invitation.name) {
           this.form.controls.name.reset(this.invitation.name)
           this.form.controls.name.disable()
-        }
-
-        try {
-          this.spinnerService.show()
-          if (this.config.emailVerification) {
-            this.form.controls.email.addValidators(Validators.required)
-            this.form.controls.email.updateValueAndValidity()
-          }
-        } finally {
-          this.spinnerService.hide()
         }
       }
     })

@@ -334,6 +334,12 @@ router.post('/register',
   }),
   async (req, res) => {
     const registration = validatorData<RegisterUser>(req)
+
+    if (appConfig.EMAIL_VERIFICATION && !registration.email) {
+      res.status(400).send({ message: 'EMAIL_VERIFICATION is enabled but no email address was provided during registration.' })
+      return
+    }
+
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
       const action = registration.inviteId ? 'Invite' : 'Registration'
@@ -479,6 +485,11 @@ router.post('/register/passkey/end',
   }),
   async (req, res) => {
     const registration = validatorData<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>(req)
+
+    if (appConfig.EMAIL_VERIFICATION && !registration.email) {
+      res.status(400).send({ message: 'EMAIL_VERIFICATION is enabled but no email address was provided during registration.' })
+      return
+    }
 
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
@@ -993,8 +1004,8 @@ export async function loginResult(req: Request, res: Response, options: {
       session.amr = amr
       await session.save(TTLs.SESSION)
     }
-  } catch (e) {
-    console.error(e)
+  } catch (_e) {
+    // if no session, there is no error
   }
 
   try {
@@ -1019,8 +1030,8 @@ export async function loginResult(req: Request, res: Response, options: {
         { mergeWithLastSubmission: true }),
       }
     }
-  } catch (e) {
-    console.error(e)
+  } catch (_e) {
+    // if there is no interaction, there is no error
   }
 }
 

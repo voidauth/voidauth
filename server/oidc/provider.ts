@@ -305,8 +305,7 @@ const configuration: Configuration = {
   ],
   conformIdTokenClaims: false,
   extraClientMetadata: { properties: ['skip_consent', 'require_mfa'] },
-  renderError: (ctx, out, error) => {
-    console.error(error)
+  renderError: (ctx, out, _error) => {
     ctx.status = 500
     ctx.body = {
       error: out,
