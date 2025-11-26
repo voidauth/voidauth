@@ -245,9 +245,9 @@ router.delete('/current', async (req, res) => {
 
   await interaction.destroy()
 
-  // If session is not fully logged in, destroy that too
+  // If session exists, destroy that too
   const session = await getSession(req, res)
-  if (session && !req.user?.canLogin) {
+  if (session) {
     await session.destroy()
   }
 
