@@ -20,7 +20,7 @@ export const isAdminGuard: CanActivateFn = async (_route, _state) => {
     }
   } catch (_e) {
     // user isn't logged in
-    window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost() + '/api/cb'))
+    window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost()))
     return false
   } finally {
     spinnerService.hide()

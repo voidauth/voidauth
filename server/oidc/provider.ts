@@ -13,6 +13,7 @@ import { createExpiration } from '../db/util'
 import { interactionPolicy } from 'oidc-provider'
 import { getClient } from '../db/client'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import { getProxyAuthWithCache } from '../util/proxyAuth'
 
 // Modify consent interaction policy to check for user and client groups
 const { Check, base } = interactionPolicy
@@ -116,23 +117,18 @@ consentPromptPolicy.checks.add(new Check('client_mfa_required',
       return Check.REQUEST_PROMPT
     }
 
-    if (!oidc.params?.redirect_uri) {
-      return Check.NO_NEED_TO_PROMPT
-    }
-
-    const redirectUri = URL.parse(oidc.params.redirect_uri as string)
-
-    // Auth Internal Client when actually redirecting to admin or profile management
-    // should require MFA if user has TOTP code to use
-    // otherwise Clients/Domains requiring MFA would not be secure.
-    // This access is checked elsewhere, but this improves UX
-    if (oidc.client?.clientId === 'auth_internal_client'
-      && redirectUri?.hostname === appUrl().hostname
-      && redirectUri.pathname.startsWith(appUrl().pathname)) {
-      const user = oidc.account?.accountId ? await getUserById(oidc.account.accountId) : null
-      const amr = oidc.session?.amr ?? []
-      if (user?.hasTotp && loginFactors(amr) < 2) {
-        return Check.REQUEST_PROMPT
+    if (oidc.client?.clientId === 'auth_internal_client') {
+      if (typeof oidc.params?.proxyauth_url === 'string') {
+        const proxyAuthURL = URL.parse(oidc.params.proxyauth_url)
+        const domain = proxyAuthURL && await getProxyAuthWithCache(proxyAuthURL)
+        if ((domain || undefined)?.mfaRequired && loginFactors(amr) < 2) {
+          return Check.REQUEST_PROMPT
+        }
+      } else {
+        const user = oidc.account?.accountId ? await getUserById(oidc.account.accountId) : null
+        if (user?.hasTotp && loginFactors(amr) < 2) {
+          return Check.REQUEST_PROMPT
+        }
       }
     }
 
@@ -152,7 +148,7 @@ export function isOIDCProviderError(e: unknown): e is errors.OIDCProviderError {
     && 'error_description' in e
 }
 
-const extraParams: (keyof OIDCExtraParams)[] = ['login_type', 'login_id', 'login_challenge']
+const extraParams: (keyof OIDCExtraParams)[] = ['proxyauth_url']
 export const initialJwks = { keys: (await getJWKs()).map(k => k.jwk) }
 export const providerCookieKeys = (await getCookieKeys()).map(k => k.value)
 
@@ -309,8 +305,7 @@ const configuration: Configuration = {
   ],
   conformIdTokenClaims: false,
   extraClientMetadata: { properties: ['skip_consent', 'require_mfa'] },
-  renderError: (ctx, out, error) => {
-    console.error(error)
+  renderError: (ctx, out, _error) => {
     ctx.status = 500
     ctx.body = {
       error: out,

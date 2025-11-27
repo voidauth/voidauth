@@ -127,9 +127,8 @@ export class MfaComponent implements OnInit {
     this.disabled.set(true)
     try {
       try {
-        if ((await this.authService.interactionExists()).redirect) {
-          await this.authService.cancelInteraction()
-        }
+        await this.authService.interactionExists()
+        await this.authService.cancelInteraction()
       } catch (_e) {
         // If interaction does not still exist do nothing
       }

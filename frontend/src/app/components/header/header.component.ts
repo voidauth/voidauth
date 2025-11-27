@@ -34,7 +34,7 @@ export class HeaderComponent implements OnInit {
   private spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
-    this.loginRedirect = getBaseHrefPath() + oidcLoginPath(getCurrentHost() + '/api/cb')
+    this.loginRedirect = getBaseHrefPath() + oidcLoginPath(getCurrentHost())
 
     try {
       this.spinnerService.show()

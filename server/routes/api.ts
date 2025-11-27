@@ -9,9 +9,10 @@ import { authRouter } from './auth'
 import { als } from '../util/als'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
-import appConfig from '../util/config'
+import appConfig, { appUrl } from '../util/config'
 import { provider } from '../oidc/provider'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import * as psl from 'psl'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -83,7 +84,7 @@ router.get('/authz/auth-request', async (req: Request, res) => {
 })
 
 router.get('/cb', (req, res) => {
-  const { error, error_description, iss } = req.query
+  const { error, error_description, iss, redir } = req.query
   if (error) {
     res.status(500).send({
       error,
@@ -93,7 +94,14 @@ router.get('/cb', (req, res) => {
     return
   }
 
-  res.redirect(`${appConfig.APP_URL}/`)
+  const r = (redir && typeof redir === 'string' && URL.parse(redir)) || undefined
+
+  if (r && psl.get(r.hostname) !== psl.get(appUrl().hostname)) {
+    res.status(400).send({ error: `ProxyAuth root hostname ${r.hostname} does not equal APP_URL root hostname ${appUrl().hostname}` })
+    return
+  }
+
+  res.redirect(r?.href || appConfig.APP_URL)
   res.send()
   return
 })

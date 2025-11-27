@@ -7,6 +7,17 @@ Users are directed to the login portal if they are not already signed into VoidA
 <img align=center src="/public/screenshots/2f8c15db-28fd-4b0e-a266-1dddd9cf9e3a.png" width="375" />
 </p>
 
+## Multi-Factor Authentication (MFA)
+Users are sent to the Multi-Factor Authentication page if they require MFA due to global policy, group membership, or the security policy of the OIDC Client or ProxyAuth Domain they are visiting. If a user does not have a MFA method available on their account but one is required, they will have the opportunity to set one up on this page.
+
+<p align=center>
+<img align=center src="/public/screenshots/mfa_required.png" width="375" />
+</p>
+
+<p align=center>
+<img align=center src="/public/screenshots/mfa_required_register.png" width="375" />
+</p>
+
 ## Sign Up
 If the **SIGNUP** environment variable is set, there will be an option on the [Login](#login) page to Sign Up. A username is required, and so is an email if the **EMAIL_VERIFICATION** environment variable is set. Password strength requirements are set by the **PASSWORD_STRENGTH** environment variable. Password strength is calculated with [zxcvbn-ts](https://zxcvbn-ts.github.io/zxcvbn/).
 

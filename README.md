@@ -109,7 +109,7 @@ Please read the CONTRIBUTING.md
 
 ## Disclaimer
 
-I am not a security expert! Please do not use VoidAuth for any purpose that is security critical or high risk. VoidAuth has not been audited and uses 3rd party packages for much of its functionality.
+VoidAuth has not been audited and uses 3rd party packages for much of its functionality, use at your own risk.
 
 ## Credits
 
