@@ -23,8 +23,8 @@
     ]
   },
   "dependencies": {
-    "@angular/cli": "^21.0.0",
-    "@angular/material": "^21.0.0",
+    "@angular/cli": "^21.0.1",
+    "@angular/material": "^21.0.1",
     "@simplewebauthn/server": "^13.2.2",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
@@ -36,12 +36,12 @@
     "generate-password": "^1.7.1",
     "helmet": "^8.1.0",
     "husky": "^9.1.7",
-    "isomorphic-dompurify": "^2.32.0",
+    "isomorphic-dompurify": "^2.33.0",
     "jose": "^6.1.2",
     "keygrip": "^1.1.0",
     "knex": "^3.1.0",
     "matcher": "^6.0.0",
-    "nodemailer": "^7.0.10",
+    "nodemailer": "^7.0.11",
     "oidc-provider": "^9.5.2",
     "otpauth": "^9.4.1",
     "pg": "^8.16.3",
@@ -68,6 +68,6 @@
     "lint-staged": "^16.2.7",
     "nodemon": "^3.1.11",
     "prettier": "^3.6.2",
-    "typescript-eslint": "^8.47.0"
+    "typescript-eslint": "^8.48.0"
   }
 }
