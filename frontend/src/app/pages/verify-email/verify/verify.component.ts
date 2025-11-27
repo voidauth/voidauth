@@ -6,7 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { MaterialModule } from '../../../material-module'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
-import { ConfigService, getBaseHrefPath } from '../../../services/config.service'
+import { ConfigService } from '../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Component({
@@ -37,6 +37,15 @@ export class VerifyComponent implements OnInit {
 
       this.spinnerService.show()
 
+      try {
+        this.spinnerService.show()
+        await this.authService.interactionExists()
+      } catch (_e) {
+        await this.authService.createInteraction()
+      } finally {
+        this.spinnerService.hide()
+      }
+
       this.config = await this.configService.getConfig()
 
       const id = params.get('id')
@@ -55,8 +64,6 @@ export class VerifyComponent implements OnInit {
 
       if (redirect) {
         location.assign(redirect.location)
-      } else {
-        window.location.assign(getBaseHrefPath())
       }
     } catch (e) {
       console.error(e)

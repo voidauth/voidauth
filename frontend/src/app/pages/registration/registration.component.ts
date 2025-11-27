@@ -6,10 +6,9 @@ import { ActivatedRoute, RouterLink } from '@angular/router'
 import { HttpErrorResponse } from '@angular/common/http'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
-import { REDIRECT_PATHS, USERNAME_REGEX } from '@shared/constants'
+import { USERNAME_REGEX } from '@shared/constants'
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
-import { ConfigService, getBaseHrefPath, getCurrentHost } from '../../services/config.service'
-import { oidcLoginPath } from '@shared/oidc'
+import { ConfigService } from '../../services/config.service'
 import { NewPasswordInputComponent } from '../../components/new-password-input/new-password-input.component'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
@@ -75,20 +74,21 @@ export class RegistrationComponent implements OnInit {
         if (info.redirect) {
           window.location.assign(info.redirect.location)
         }
+      } catch (_e) {
+        // interaction session is missing, could not log in without it
+        await this.authService.createInteraction()
+      } finally {
+        this.spinnerService.hide()
+      }
+
+      try {
+        this.spinnerService.show()
         this.config = await this.configService.getConfig()
         this.passkeySupport = await this.passkeyService.getPasskeySupport()
         if (!this.passkeySupport.enabled) {
           this.form.controls.password.addValidators(Validators.required)
           this.form.controls.password.updateValueAndValidity()
         }
-      } catch (_e) {
-        // interaction session is missing, could not log in without it
-        const query: string[] = []
-        if (inviteId) query.push(`invite=${inviteId}`)
-        if (challenge) query.push(`challenge=${challenge}`)
-
-        window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost(), `${getCurrentHost()}/${REDIRECT_PATHS.INVITE}${query.length ? `?${query.join('&')}` : ''}`))
-        return
       } finally {
         this.spinnerService.hide()
       }

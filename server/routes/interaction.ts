@@ -27,7 +27,6 @@ import { createExpiration } from '../db/util'
 import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
-import { oidcLoginPath } from '@shared/oidc'
 import { getClient } from '../db/client'
 import type { InvitationGroup, UserGroup } from '@shared/db/Group'
 import {
@@ -221,16 +220,8 @@ router.get('/exists', async (req, res) => {
       }
     : null
 
-  const session = await getSession(req, res)
-  const accountId = session?.accountId ?? interaction.result?.login?.accountId
-  const user = accountId ? await getUserById(accountId) : undefined
-
   const info: InteractionInfo = {
     redirect: redir,
-    user: {
-      hasPasskeys: user?.hasPasskeys,
-      hasTotp: user?.hasTotp,
-    },
   }
 
   res.send(info)
@@ -940,11 +931,9 @@ router.post('/verify_email',
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
     if (!interaction && !session?.accountId) {
-      const redir: Redirect = {
-        success: false,
-        location: oidcLoginPath(appConfig.APP_URL, `${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFY_EMAIL}/${userId}/${challenge}`),
-      }
-      res.send(redir)
+      res.status(419).send({
+        message: 'Email Verification page too old, refresh the page.',
+      })
       return
     }
 

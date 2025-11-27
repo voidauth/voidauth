@@ -13,6 +13,8 @@ import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import { type RegistrationResponseJSON, type PublicKeyCredentialCreationOptionsJSON, WebAuthnError } from '@simplewebauthn/browser'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
+import { oidcLoginPath } from '@shared/oidc'
+import { getCurrentHost } from './config.service'
 
 @Injectable({
   providedIn: 'root',
@@ -26,6 +28,16 @@ export class AuthService {
 
   async interactionExists() {
     return firstValueFrom(this.http.get<InteractionInfo>('/api/interaction/exists'))
+  }
+
+  async createInteraction() {
+    try {
+      await firstValueFrom(this.http.get<null>(oidcLoginPath(getCurrentHost()), {
+        redirect: 'manual',
+      }))
+    } catch (_e) {
+      // do nothing
+    }
   }
 
   async cancelInteraction() {
