@@ -42,21 +42,28 @@ if (appConfig.SMTP_HOST) {
 // move default email templates to email templates dir
 fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, path.join('./config', 'email_templates'), {
   recursive: true,
-  force: false,
+  force: true,
 })
 
 // compile email pug templates
 function compileTemplates(name: string) {
   const templates: { subject?: pug.compileTemplate, html?: pug.compileTemplate, text?: pug.compileTemplate } = {}
   const template_dir = path.join('./config', 'email_templates', name)
+  // Use *.pug files if they exist, otherwise use *.default.pug
   if (fs.existsSync(path.join(template_dir, 'subject.pug'))) {
     templates.subject = pug.compileFile(path.join(template_dir, 'subject.pug'))
+  } else if (fs.existsSync(path.join(template_dir, 'subject.default.pug'))) {
+    templates.subject = pug.compileFile(path.join(template_dir, 'subject.default.pug'))
   }
   if (fs.existsSync(path.join(template_dir, 'html.pug'))) {
     templates.html = pug.compileFile(path.join(template_dir, 'html.pug'))
+  } else if (fs.existsSync(path.join(template_dir, 'html.default.pug'))) {
+    templates.html = pug.compileFile(path.join(template_dir, 'html.default.pug'))
   }
   if (fs.existsSync(path.join(template_dir, 'text.pug'))) {
     templates.text = pug.compileFile(path.join(template_dir, 'text.pug'))
+  } else if (fs.existsSync(path.join(template_dir, 'text.default.pug'))) {
+    templates.text = pug.compileFile(path.join(template_dir, 'text.default.pug'))
   }
   return (locals: pug.LocalsObject) => {
     return {
@@ -264,6 +271,17 @@ export async function sendAdminNotifications() {
     return
   }
 
+  // Get an admin notification email sent within the timeframe in ADMIN_EMAILS
+  const recentAdminEmail = await db().select().table<EmailLog>(TABLES.EMAIL_LOG)
+    .where({ type: 'admin_notification' })
+    .orderBy('createdAt', 'desc').first()
+
+  // If an admin notification has been recently sent, do not send more
+  if (recentAdminEmail
+    && recentAdminEmail.createdAt >= new Date(new Date().getTime() - (appConfig.ADMIN_EMAILS * 1000))) {
+    return
+  }
+
   const adminUsers: User[] = await db().select<User[]>('user.*').table<User>(TABLES.USER)
     .innerJoin(TABLES.USER_GROUP, 'user_group.userId', 'user.id')
     .innerJoin(TABLES.GROUP, 'group.id', 'user_group.groupId')
@@ -275,89 +293,80 @@ export async function sendAdminNotifications() {
   }
 
   // Reasons for admin notification
-  // Checking that the events happened in the span after the last admin notification email could have
-  // been sent, which is an approximation
-  const approvalsNeeded = appConfig.SIGNUP_REQUIRES_APPROVAL ? await db().select().table<User>(TABLES.USER).where({ approved: false }) : []
+  const approvalsNeeded = appConfig.SIGNUP_REQUIRES_APPROVAL
+    ? await db().select().table<User>(TABLES.USER).where({ approved: false })
+    : []
 
   if (!approvalsNeeded.length) {
     return
   }
 
-  const approvalEmailsSent = await db().select('toUser', 'reasons', 'to').table<EmailLog>(TABLES.EMAIL_LOG)
+  const approvalEmailsSent = await db().select('reasons').table<EmailLog>(TABLES.EMAIL_LOG)
     .where({ type: 'admin_notification' })
     .andWhere((w) => {
-      let count = 0
-      for (const approval of approvalsNeeded) {
-        if (count === 0) {
+      for (const [i, approval] of approvalsNeeded.entries()) {
+        if (i === 0) {
           w.whereLike('reasons', `%${approval.id}%`)
         } else {
           w.orWhereLike('reasons', `%${approval.id}%`)
         }
-        count++
       }
     })
+
+  const approvalsNotNotified = approvalsNeeded.filter((u) => {
+    return !approvalEmailsSent.some((e) => {
+      return e.reasons?.includes(u.id)
+    })
+  })
+
+  if (!approvalsNotNotified.length) {
+    return
+  }
+
+  // New Users since last admin email sent
+  const newUsers = recentAdminEmail
+    ? await db().select().table<User>(TABLES.USER).where('createdAt', '>', recentAdminEmail.createdAt)
+    : []
 
   for (const admin of adminUsers) {
     const email = admin.email as string // will be string, filtered null out in query
 
-    const previousSend = new Date(new Date().getTime() - (appConfig.ADMIN_EMAILS * 1000))
-
-    // Get the latest admin notification email sent for this user/email
-    const recentAdminEmail = await db().select().table<EmailLog>(TABLES.EMAIL_LOG).where((w) => {
-      w.where({ toUser: admin.id })
-      w.orWhere({ to: email })
-    }).andWhere({ type: 'admin_notification' })
-      .andWhere('createdAt', '>=', previousSend)
-      .orderBy('createdAt', 'desc').first()
-
-    if (recentAdminEmail) {
-      continue
-    }
-
-    const approvalNotifications = approvalsNeeded.filter((u) => {
-      return !approvalEmailsSent.some((e) => {
-        return (e.toUser === admin.id || e.to === admin.email) && e.reasons?.includes(u.id)
-      })
+    const { subject, html, text } = adminNotificationTemplate({
+      primary_color: PRIMARY_COLOR,
+      primary_contrast_color: PRIMARY_CONTRAST_COLOR,
+      app_title: appConfig.APP_TITLE,
+      app_url: appConfig.APP_URL,
+      unapproved_users: approvalsNeeded, // unapproved users
+      new_users: newUsers, // users that have been created since the last admin_notification
+      users_url: `${appConfig.APP_URL}/admin/users`,
     })
 
-    // If there was no previous email, or if it was longer than ADMIN_EMAILS ago, send
-    if (approvalNotifications.length) {
-      const { subject, html, text } = adminNotificationTemplate({
-        primary_color: PRIMARY_COLOR,
-        primary_contrast_color: PRIMARY_CONTRAST_COLOR,
-        app_title: appConfig.APP_TITLE,
-        app_url: appConfig.APP_URL,
-        users: approvalNotifications.map(u => u.username),
-        users_url: `${appConfig.APP_URL}/admin/users`,
-      })
-
-      if (!subject || (!html && !text)) {
-        throw new Error('Missing email template.')
-      }
-
-      await transporter.sendMail({
-        from: {
-          name: appConfig.APP_TITLE,
-          address: appConfig.SMTP_FROM,
-        },
-        to: email,
-        subject: subject,
-        html: html,
-        text: text,
-      })
-
-      const emailLog: EmailLog = {
-        id: randomUUID(),
-        type: 'admin_notification',
-        to: email,
-        toUser: admin.id,
-        subject: subject,
-        body: html ?? text,
-        reasons: approvalNotifications.map(a => a.id).join(','),
-        createdAt: new Date(),
-      }
-
-      await db().table<EmailLog>(TABLES.EMAIL_LOG).insert(emailLog)
+    if (!subject || (!html && !text)) {
+      throw new Error('Missing email template.')
     }
+
+    await transporter.sendMail({
+      from: {
+        name: appConfig.APP_TITLE,
+        address: appConfig.SMTP_FROM,
+      },
+      to: email,
+      subject: subject,
+      html: html,
+      text: text,
+    })
+
+    const emailLog: EmailLog = {
+      id: randomUUID(),
+      type: 'admin_notification',
+      to: email,
+      toUser: admin.id,
+      subject: subject,
+      body: html ?? text,
+      reasons: approvalsNeeded.map(a => a.id).join(','),
+      createdAt: new Date(),
+    }
+
+    await db().table<EmailLog>(TABLES.EMAIL_LOG).insert(emailLog)
   }
 }

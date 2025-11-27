@@ -5,10 +5,15 @@ div(style='margin:0;border:0;padding:16px;padding-top:48px;')
   p(align='center') As an administrator of #{app_title} you have the following new notifications at #{app_url}
   br
   p(align='center') 
-    if users.length > 1
-      | There are #{users.length} user accounts that await approval or deletion. 
+    if unapproved_users.length > 1
+      | There are <b>#{unapproved_users.length}</b> user accounts that await approval or deletion. 
     else
-      | There is a user account, #{users[0]}, that awaits approval or deletion.
+      | There is a user account, <b>#{unapproved_users[0].username}</b>, that awaits approval or deletion.
+  br
+  if (new_users.length > 0)
+    p(align='center') 
+      | <b>#{unapproved_users.length}</b> new user account(s) have recently joined.
+    br
   br
   div(align='center')
     a(style=`background-color:${primary_color};color:${primary_contrast_color};text-decoration:none;padding:1rem;border-radius:100px;` href=`${users_url}`)
