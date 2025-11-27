@@ -6,7 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { MaterialModule } from '../../../material-module'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
-import { ConfigService } from '../../../services/config.service'
+import { ConfigService, getBaseHrefPath } from '../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Component({
@@ -53,10 +53,10 @@ export class VerifyComponent implements OnInit {
         challenge: challenge,
       })
 
-      // Not always verified email
-      // interaction session might not exist and redirect is to get it
       if (redirect) {
         location.assign(redirect.location)
+      } else {
+        window.location.assign(getBaseHrefPath())
       }
     } catch (e) {
       console.error(e)
