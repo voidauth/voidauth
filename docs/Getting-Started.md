@@ -158,7 +158,7 @@ Your own branding can be applied to the app by mounting the **/app/config** dire
 
 The logo and favicon of the web interface can be customized by placing your own **logo.svg**/**logo.png** and **favicon.svg**/**favicon.png** in the mounted **/app/config/branding** directory. You can also add an **apple-touch-icon.png** file to **/app/config/branding**.
 
-The email templates for email verification, invitations, and password resets can be changed by modifying the files in the **/app/config/email_templates** directory. The files are [pug](https://pugjs.org/api/getting-started.html) template format and text, which should be updated together when changed. To reset your changes to the email templates, just delete (or move) your **/app/config/email_templates** directory and it will be regenerated on app restart.
+For information on how to change the email templates used for invitations, password resets, email verification, etc. see the documentation page for [Email Templates](Email-Templates.md).
 
 ### Customization
 > [!IMPORTANT]
