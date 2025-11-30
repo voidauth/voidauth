@@ -71,8 +71,8 @@ export class RegistrationComponent implements OnInit {
       try {
         this.spinnerService.show()
         const info = await this.authService.interactionExists()
-        if (info.redirect) {
-          window.location.assign(info.redirect.location)
+        if (info.successRedirect) {
+          window.location.assign(info.successRedirect.location)
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it

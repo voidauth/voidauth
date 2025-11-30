@@ -14,6 +14,7 @@ import { randomUUID } from 'node:crypto'
 import type { User } from '@shared/db/User'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import DOMPurify from 'isomorphic-dompurify'
+import ejs from 'ejs'
 
 export let SMTP_VERIFIED = false
 const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
@@ -47,25 +48,35 @@ fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, path.join('./config', 'email_templates'), 
 
 // compile email pug templates
 function compileTemplates(name: string) {
-  const templates: { subject?: pug.compileTemplate, html?: pug.compileTemplate, text?: pug.compileTemplate } = {}
+  const templates: {
+    subject?: pug.compileTemplate | ejs.TemplateFunction
+    html?: pug.compileTemplate | ejs.TemplateFunction
+    text?: pug.compileTemplate | ejs.TemplateFunction
+  } = {}
   const template_dir = path.join('./config', 'email_templates', name)
-  // Use *.pug files if they exist, otherwise use *.default.pug
-  if (fs.existsSync(path.join(template_dir, 'subject.pug'))) {
+  // Use *.ejs, then *.pug, otherwise use *.default.ejs
+  if (fs.existsSync(path.join(template_dir, 'subject.ejs'))) {
+    templates.subject = ejs.compile(fs.readFileSync(path.join(template_dir, 'subject.ejs'), 'utf-8'))
+  } else if (fs.existsSync(path.join(template_dir, 'subject.pug'))) {
     templates.subject = pug.compileFile(path.join(template_dir, 'subject.pug'))
-  } else if (fs.existsSync(path.join(template_dir, 'subject.default.pug'))) {
-    templates.subject = pug.compileFile(path.join(template_dir, 'subject.default.pug'))
+  } else if (fs.existsSync(path.join(template_dir, 'subject.default.ejs'))) {
+    templates.subject = ejs.compile(fs.readFileSync(path.join(template_dir, 'subject.default.ejs'), 'utf-8'))
   }
-  if (fs.existsSync(path.join(template_dir, 'html.pug'))) {
+  if (fs.existsSync(path.join(template_dir, 'html.ejs'))) {
+    templates.html = ejs.compile(fs.readFileSync(path.join(template_dir, 'html.ejs'), 'utf-8'))
+  } else if (fs.existsSync(path.join(template_dir, 'html.pug'))) {
     templates.html = pug.compileFile(path.join(template_dir, 'html.pug'))
-  } else if (fs.existsSync(path.join(template_dir, 'html.default.pug'))) {
-    templates.html = pug.compileFile(path.join(template_dir, 'html.default.pug'))
+  } else if (fs.existsSync(path.join(template_dir, 'html.default.ejs'))) {
+    templates.html = ejs.compile(fs.readFileSync(path.join(template_dir, 'html.default.ejs'), 'utf-8'))
   }
-  if (fs.existsSync(path.join(template_dir, 'text.pug'))) {
+  if (fs.existsSync(path.join(template_dir, 'text.ejs'))) {
+    templates.text = ejs.compile(fs.readFileSync(path.join(template_dir, 'text.ejs'), 'utf-8'))
+  } else if (fs.existsSync(path.join(template_dir, 'text.pug'))) {
     templates.text = pug.compileFile(path.join(template_dir, 'text.pug'))
-  } else if (fs.existsSync(path.join(template_dir, 'text.default.pug'))) {
-    templates.text = pug.compileFile(path.join(template_dir, 'text.default.pug'))
+  } else if (fs.existsSync(path.join(template_dir, 'text.default.ejs'))) {
+    templates.text = ejs.compile(fs.readFileSync(path.join(template_dir, 'text.default.ejs'), 'utf-8'))
   }
-  return (locals: pug.LocalsObject) => {
+  return (locals: pug.LocalsObject | ejs.Data) => {
     return {
       subject: templates.subject ? DOMPurify.sanitize(templates.subject(locals)) : undefined,
       html: templates.html ? DOMPurify.sanitize(templates.html(locals)) : undefined,
@@ -336,6 +347,7 @@ export async function sendAdminNotifications() {
       primary_contrast_color: PRIMARY_CONTRAST_COLOR,
       app_title: appConfig.APP_TITLE,
       app_url: appConfig.APP_URL,
+      users: approvalsNeeded.map(u => u.username), // backwards compatibility, unused in default template
       unapproved_users: approvalsNeeded, // unapproved users
       new_users: newUsers, // users that have been created since the last admin_notification
       users_url: `${appConfig.APP_URL}/admin/users`,

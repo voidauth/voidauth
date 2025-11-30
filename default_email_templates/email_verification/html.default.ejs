@@ -1,0 +1,119 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Confirm your Email Address</title>
+    <style type="text/css">
+      body,
+      table,
+      td,
+      a {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      img {
+        -ms-interpolation-mode: bicubic;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: Arial, sans-serif">
+    <table border="0"
+      cellpadding="0"
+      cellspacing="0"
+      width="100%"
+      style="max-width: 600px; margin: 0 auto">
+      <tr>
+        <td align="center" style="padding: 20px 0">
+          <table border="0"
+            cellpadding="0"
+            cellspacing="0"
+            width="100%"
+            style="
+              background-color: #ffffff;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <tr>
+              <td align="center" style="padding: 40px 20px 20px">
+                <h1 style="color: #333333; margin: 0; font-size: 24px">
+                  Confirm your Email Address
+                </h1>
+                <h2
+                style="color: #333333; margin: 10px 0 0; font-size: 18px">
+                  At <%= locals.app_title %>
+                </h2>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding: 20px">
+                <p style="color: #666666; margin: 0">
+                  <%= locals.name ? locals.name+', ' : '' %>please verify your email by clicking the button below:
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding: 20px">
+                <table border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td
+                      align="center"
+                      style="border-radius: 50px"
+                      bgcolor=<%= locals.primary_color %>>
+                      <a
+                        href="<%= locals.verification_url %>"
+                        style="font-size: 16px;
+                          font-family: Arial, sans-serif;
+                          color: <%= locals.primary_contrast_color %>;
+                          text-decoration: none;
+                          border-radius: 50px;
+                          padding: 12px 24px;
+                          border: 1px solid <%= locals.primary_color %>;
+                          display: inline-block;">
+                        Verify Email
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding: 20px">
+                <p style="color: #666666; margin: 0">
+                  Or, paste the following link into your browser:
+                </p>
+                <a
+                  href="<%= locals.verification_url %>"
+                  style="
+                    word-break: break-all;
+                    font-size: 14px;
+                    text-decoration: none;
+                  ">
+                  <%= locals.verification_url %>
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding: 20px">
+                <p style="color: #666666; margin: 0">
+                  <small>This email verification is valid for 12 hours.</small>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding: 20px">
+                <p style="color: #666666; margin: 0;margin-top: 160px">
+                  <small>
+                    You received this email because you signed up or changed your email at <%= locals.app_title %>. If you didn't, please ignore this notification and do not click any buttons or links.
+                  </small>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

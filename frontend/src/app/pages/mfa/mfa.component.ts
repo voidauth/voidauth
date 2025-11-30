@@ -3,7 +3,7 @@ import { TotpInputComponent } from '../../components/totp-input/totp-input.compo
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { MatButtonModule } from '@angular/material/button'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { ConfigService, getBaseHrefPath } from '../../services/config.service'
+import { ConfigService } from '../../services/config.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { MaterialModule } from '../../material-module'
 import { SnackbarService } from '../../services/snackbar.service'
@@ -14,6 +14,7 @@ import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../services/user.service'
 import { WebAuthnError } from '@simplewebauthn/browser'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import { Router } from '@angular/router'
 
 @Component({
   selector: 'app-mfa',
@@ -35,6 +36,7 @@ export class MfaComponent implements OnInit {
   private spinnerService = inject(SpinnerService)
   private authService = inject(AuthService)
   private userService = inject(UserService)
+  private router = inject(Router)
 
   async ngOnInit() {
     this.spinnerService.show()
@@ -136,7 +138,9 @@ export class MfaComponent implements OnInit {
       if (history.length) {
         window.history.back()
       } else {
-        window.location.assign(getBaseHrefPath())
+        await this.router.navigate(['/'], {
+          replaceUrl: true,
+        })
       }
     } catch (e) {
       console.error(e)

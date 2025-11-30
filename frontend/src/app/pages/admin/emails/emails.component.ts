@@ -32,7 +32,7 @@ export class EmailsComponent {
     {
       columnDef: 'createdAt',
       header: 'Sent',
-      cell: element => String(element.createdAt),
+      cell: element => new Date(element.createdAt).toDateString(),
     },
     {
       columnDef: 'to',

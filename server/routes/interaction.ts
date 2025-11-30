@@ -221,7 +221,7 @@ router.get('/exists', async (req, res) => {
     : null
 
   const info: InteractionInfo = {
-    redirect: redir,
+    successRedirect: redir,
   }
 
   res.send(info)
