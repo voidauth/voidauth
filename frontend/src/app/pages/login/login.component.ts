@@ -83,8 +83,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       try {
         const info = await this.authService.interactionExists()
-        if (info.redirect) {
-          window.location.assign(info.redirect.location)
+        if (info.successRedirect) {
+          window.location.assign(info.successRedirect.location)
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it

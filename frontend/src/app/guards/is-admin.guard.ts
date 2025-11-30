@@ -1,5 +1,5 @@
 import { inject } from '@angular/core'
-import { type CanActivateFn } from '@angular/router'
+import { Router, type CanActivateFn } from '@angular/router'
 import { UserService } from '../services/user.service'
 import { oidcLoginPath } from '@shared/oidc'
 import { getBaseHrefPath, getCurrentHost } from '../services/config.service'
@@ -9,13 +9,16 @@ import { isAdmin } from '@shared/user'
 export const isAdminGuard: CanActivateFn = async (_route, _state) => {
   const userService = inject(UserService)
   const spinnerService = inject(SpinnerService)
+  const router = inject(Router)
 
   try {
     spinnerService.show()
     const user = await userService.getMyUser()
     if (!user.isPrivileged || !isAdmin(user)) {
       // redirect back to home page
-      window.location.assign(getBaseHrefPath())
+      await router.navigate(['/'], {
+        replaceUrl: true,
+      })
       return false
     }
   } catch (_e) {
