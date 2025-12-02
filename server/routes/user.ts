@@ -18,19 +18,6 @@ import type { TOTP } from '@shared/db/TOTP'
 
 export const userRouter = Router()
 
-userRouter.get('/me',
-  (req, res) => {
-    const user = req.user
-
-    if (!user) {
-      res.sendStatus(401)
-    }
-
-    res.send(user)
-    return
-  },
-)
-
 userRouter.use(checkPrivileged)
 
 // Update user profile information
