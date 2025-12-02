@@ -11,7 +11,7 @@
     <app-copy-field [value]="currentHost + '/oidc/session/end'" label="Logout Endpoint"></app-copy-field>
     <app-copy-field [value]="oidcConfig?.jwks_uri" label="JWKs Endpoint"></app-copy-field>
     <mat-action-row>
-      <a mat-button target="_blank" href="/oidc/.well-known/openid-configuration">All Info</a>
+      <a mat-button target="_blank" [href]="currentHost + '/oidc/.well-known/openid-configuration'">All Info</a>
     </mat-action-row>
   </mat-expansion-panel>
 </span>
