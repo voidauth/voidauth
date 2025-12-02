@@ -1,7 +1,7 @@
 # Getting Started
 
 ## Initial Setup
-VoidAuth currently only supports setup through docker. The container image expects a mounted volume for configuration, and a postgres database connection. There are additional required environment variables listed in the example below, a simple Docker Compose setup using a postgres database:
+VoidAuth currently only supports setup through docker. The container image expects a mounted volume for configuration, and either a postgres database connection or mounted volume for a SQLite database. There are additional required environment variables listed in the example below, a simple Docker Compose setup using a postgres database:
 
 ```yaml
 services:

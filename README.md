@@ -40,8 +40,8 @@ Key Features:
 - 🔄 Proxy ForwardAuth
 - 👤 User Management
 - 📨 User Self-Registration and Invitations
-- 🎨 Customizable Branding (Logo, Title, Theme Color, Email Templates)
-- 🔑 Passkeys and Passkey-Only Accounts
+- 🎨 Customizable (Logo, Title, Theme Color, Email Templates)
+- 🔑 Multi-factor Authentication, Passkeys, and Passkey-Only Accounts
 - 📧 Secure Password Reset with Email Verification
 - 🔒 Encryption-At-Rest with Postgres or SQLite Database
 
@@ -124,3 +124,7 @@ This project would not be possible without the incredible work of others includi
 [Knex](https://knexjs.org/) Database connection and query builder
 
 [zxcvbn-ts](https://zxcvbn-ts.github.io/zxcvbn/) Password strength calculator
+
+## Sponsors
+
+[![](https://github.com/GitTimeraider.png?size=50)](https://github.com/GitTimeraider)
