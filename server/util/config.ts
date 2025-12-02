@@ -10,6 +10,8 @@ class Config {
   APP_URL = ''
   APP_PORT = 3000
 
+  DEBUG: boolean = false
+
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
   EMAIL_VERIFICATION: boolean | null = null
@@ -50,6 +52,7 @@ class Config {
   SMTP_SECURE = false
   SMTP_USER?: string
   SMTP_PASS?: string
+  SMTP_IGNORE_CERT: boolean = false
 }
 const appConfig = new Config()
 
@@ -68,9 +71,11 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
 
     // booleans
     case 'SMTP_SECURE':
+    case 'SMTP_IGNORE_CERT':
     case 'SIGNUP':
     case 'SIGNUP_REQUIRES_APPROVAL':
     case 'MFA_REQUIRED':
+    case 'DEBUG':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 
