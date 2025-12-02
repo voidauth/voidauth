@@ -22,7 +22,20 @@ try {
 
 const _db = knex(connectionOptions)
 
-const migrations = await runMigrations(_db)
+const migrationConnectionOptions = getConnectionOptions({
+  DB_ADAPTER: appConfig.DB_ADAPTER,
+  DB_HOST: appConfig.DB_HOST,
+  DB_PORT: appConfig.DB_PORT,
+  DB_USER: appConfig.DB_USER,
+  DB_NAME: appConfig.DB_NAME,
+  DB_PASSWORD: appConfig.DB_PASSWORD,
+})
+if (appConfig.DB_ADAPTER === 'sqlite') {
+  delete migrationConnectionOptions.pool?.afterCreate
+}
+const migrationConnection = knex(migrationConnectionOptions)
+const migrations = await runMigrations(migrationConnection)
+await migrationConnection.destroy()
 if (migrations.length) {
   console.log('Database schema updated.')
 }
