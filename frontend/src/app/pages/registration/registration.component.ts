@@ -15,6 +15,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
+import { UserService } from '../../services/user.service'
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
@@ -59,6 +60,7 @@ export class RegistrationComponent implements OnInit {
 
   private snackbarService = inject(SnackbarService)
   private authService = inject(AuthService)
+  private userService = inject(UserService)
   private configService = inject(ConfigService)
   private passkeyService = inject(PasskeyService)
   private route = inject(ActivatedRoute)
@@ -143,13 +145,17 @@ export class RegistrationComponent implements OnInit {
       })
 
       // See if we want to ask the user to register a passkey
-      if (redirect?.success && this.passkeySupport?.enabled) {
-        try {
+      try {
+        this.spinnerService.show()
+        const user = await this.userService.getMyUser({
+          disableCache: true,
+        })
+        if (await this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
-        } catch (e) {
-          console.error(e)
         }
+      } catch (_e) {
+        // do nothing
       }
 
       if (redirect) {

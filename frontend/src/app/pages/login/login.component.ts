@@ -110,16 +110,18 @@ export class LoginComponent implements OnInit, OnDestroy {
       const redirect = await this.authService.login({ input: email, password, remember: !!remember })
 
       // See if we want to ask the user to register a passkey
-      if (redirect?.success
-        && this.passkeySupport?.enabled
-        && !this.passkeyService.localPasskeySeen()
-        && !this.passkeyService.localPasskeySkipped()) {
-        try {
+      try {
+        this.spinnerService.show()
+        const user = await this.userService.getMyUser({
+          disableCache: true,
+        })
+        if (await this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
-        } catch (e) {
-          console.error(e)
         }
+      } catch (_e) {
+        // do nothing
+        console.error(_e)
       }
 
       if (redirect) {

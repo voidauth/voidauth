@@ -13,6 +13,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { SnackbarService } from './snackbar.service'
 import { SpinnerService } from './spinner.service'
 import { MaterialModule } from '../material-module'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 
 @Injectable({
   providedIn: 'root',
@@ -112,6 +113,14 @@ export class PasskeyService {
       }
       throw error
     }
+  }
+
+  async shouldAskPasskey(user: CurrentUserDetails) {
+    const passkeySupported = (await this.getPasskeySupport()).enabled
+    return user.isPrivileged
+      && passkeySupported
+      && !this.localPasskeySeen()
+      && !this.localPasskeySkipped()
   }
 
   async dialogRegistration() {

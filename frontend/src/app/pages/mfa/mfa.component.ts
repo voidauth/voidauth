@@ -74,6 +74,21 @@ export class MfaComponent implements OnInit {
     this.disabled.set(true)
     try {
       const redirect = await this.authService.verifyTotp(token, false)
+
+      // See if we want to ask the user to register a passkey
+      try {
+        this.spinnerService.show()
+        const user = await this.userService.getMyUser({
+          disableCache: true,
+        })
+        if (await this.passkeyService.shouldAskPasskey(user)) {
+          this.spinnerService.hide()
+          await this.passkeyService.dialogRegistration()
+        }
+      } catch (_e) {
+        // do nothing
+      }
+
       if (redirect) {
         location.assign(redirect.location)
       }

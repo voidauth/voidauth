@@ -28,8 +28,10 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   let user: UserDetails | undefined
   let amr: string[] = []
 
-  if (psl.get(url.hostname) !== psl.get(appUrl().hostname)) {
-    res.status(400).send({ error: `ProxyAuth root hostname ${url.hostname} does not equal APP_URL root hostname ${appUrl().hostname}` })
+  const baseUrlDomain = psl.get(url.hostname)
+  const baseAPP_URLDomain = psl.get(appUrl().hostname)
+  if (baseUrlDomain !== baseAPP_URLDomain) {
+    res.status(400).send({ error: `ProxyAuth Domain base domain ${String(baseUrlDomain)} does not equal $APP_URL base domain ${String(baseAPP_URLDomain)}. Base domain names must match.` })
     return
   }
 

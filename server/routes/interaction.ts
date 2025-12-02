@@ -91,6 +91,23 @@ const registerUserValidator = {
 export const router = Router()
 
 /**
+ * Utility Requiring Interaction Cookie
+ */
+
+router.get('/user/me',
+  (req, res) => {
+    const user = req.user
+
+    if (!user) {
+      res.sendStatus(401)
+    }
+
+    res.send(user)
+    return
+  },
+)
+
+/**
  *
  * Meta Interaction Routes
  *

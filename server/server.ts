@@ -1,4 +1,4 @@
-import appConfig, { basePath } from './util/config'
+import appConfig, { appUrl, basePath } from './util/config'
 import * as _ from '../custom_typings/type_validator'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import path from 'node:path'
@@ -51,16 +51,36 @@ export function serve() {
     validate: { trustProxy: false },
   }))
 
-  app.use(`/healthcheck`, (_req, res) => {
+  function noCache(_req: Request, res: Response, next: NextFunction) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    res.setHeader('Pragma', 'no-cache')
+    res.setHeader('Expires', '0')
+    res.setHeader('Surrogate-Control', 'no-store')
+
+    next()
+  }
+
+  function checkAPPUrl(req: Request, res: Response, next: NextFunction) {
+    if (req.hostname !== appUrl().hostname) {
+      res.status(400).send({
+        error: `Invalid hostname '${req.hostname}', this service must be accessed from '${appUrl().hostname}'`,
+      })
+      return
+    }
+
+    next()
+  }
+
+  app.use(`/healthcheck`, noCache, (_req, res) => {
     res.sendStatus(200)
     return
   })
 
-  app.use(`${basePath()}/oidc`, provider.callback())
+  app.use(`${basePath()}/oidc`, noCache, checkAPPUrl, provider.callback())
 
   app.use(express.json({ limit: '1Mb' }))
 
-  app.use(`${basePath()}/api`, router)
+  app.use(`${basePath()}/api`, noCache, router)
 
   // branding folder static assets
   if (!fs.existsSync(path.join('./config', 'branding'))) {
@@ -94,6 +114,7 @@ export function serve() {
     next()
   })
   app.use(`${basePath()}/`, express.static(path.join('./config', 'branding'), {
+    index: false,
     fallthrough: true,
   }))
 
@@ -104,6 +125,7 @@ export function serve() {
     })
   }
   app.use(`${basePath()}/`, express.static('./theme', {
+    index: false,
     fallthrough: true,
   }))
 
@@ -119,17 +141,16 @@ export function serve() {
     fallthrough: true,
   }))
 
-  // Unresolved GET requests should return index
-  app.get(new RegExp(`^${basePath()}(\\/.*)?$`), (_req, res) => {
-    const index = modifyIndex()
-    res.send(index)
-  })
-
-  // This GET request does not match the expected subdirectory of APP_URL
+  // Unresolved GET requests should return index if they start with it basePath
   app.get(new RegExp(`(.*)`), (req, res) => {
-    res.status(404).send({
-      error: `Invalid subdirectory. Expected a base path of ${basePath()}/ based on APP_URL, but got ${req.protocol}://${req.host}${req.originalUrl}`,
-    })
+    if (req.originalUrl.startsWith(basePath())) {
+      const index = modifyIndex()
+      res.send(index)
+    } else {
+      res.status(404).send({
+        error: `Invalid subdirectory. Expected a base path of ${basePath()}/ based on APP_URL, but got ${req.protocol}://${req.host}${req.originalUrl}`,
+      })
+    }
   })
 
   // All other unresolved are not found
