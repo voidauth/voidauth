@@ -1,4 +1,5 @@
 import { generate } from 'generate-password'
+import type knex from 'knex'
 import fs from 'node:fs'
 
 export function getConnectionOptions(options: {
@@ -8,7 +9,7 @@ export function getConnectionOptions(options: {
   DB_PORT?: number
   DB_NAME?: string
   DB_USER?: string
-}, isMigration: boolean = false) {
+}, isMigration: boolean = false): knex.Knex.Config {
   if (options.DB_ADAPTER === 'postgres') {
     return connectionPg({
       DB_HOST: options.DB_HOST,
