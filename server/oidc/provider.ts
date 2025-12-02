@@ -345,7 +345,7 @@ provider.on('session.saved', (session) => {
   if (!ctx || !sessionCookie) {
     return
   }
-  // domain should be sld
+  // domain should be sld + tld
   const domain = psl.get(ctx.request.hostname)
   const expires = new Date((ctx.oidc.session?.exp ?? 0) * 1000 || createExpiration(TTLs.SESSION))
   ctx.cookies.set('x-voidauth-session-uid', sessionCookie, {

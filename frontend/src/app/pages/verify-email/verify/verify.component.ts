@@ -8,6 +8,8 @@ import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
 import { ConfigService } from '../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { UserService } from '../../../services/user.service'
+import { PasskeyService } from '../../../services/passkey.service'
 
 @Component({
   selector: 'app-verify',
@@ -25,6 +27,8 @@ export class VerifyComponent implements OnInit {
 
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
+  private userService = inject(UserService)
+  private passkeyService = inject(PasskeyService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private configService = inject(ConfigService)
@@ -61,6 +65,20 @@ export class VerifyComponent implements OnInit {
         userId: this.userid,
         challenge: challenge,
       })
+
+      // See if we want to ask the user to register a passkey
+      try {
+        this.spinnerService.show()
+        const user = await this.userService.getMyUser({
+          disableCache: true,
+        })
+        if (await this.passkeyService.shouldAskPasskey(user)) {
+          this.spinnerService.hide()
+          await this.passkeyService.dialogRegistration()
+        }
+      } catch (_e) {
+        // do nothing
+      }
 
       if (redirect) {
         location.assign(redirect.location)
