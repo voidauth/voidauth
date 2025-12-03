@@ -3,7 +3,6 @@ import { type Request, type Response } from 'express'
 import { isMatch } from 'matcher'
 import { getProxyAuths } from '../db/proxyAuth'
 import { checkPasswordHash, getUserByInput } from '../db/user'
-import { provider } from '../oidc/provider'
 import appConfig, { appUrl } from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
@@ -21,8 +20,6 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   const formattedUrl = formatProxyAuthDomain(url)
   const redirCode = method === 'auth-request' ? 401 : 302
 
-  const ctx = provider.createContext(req, res)
-  const sessionId = ctx.cookies.get('x-voidauth-session-uid')
   const proxyAuthorizationHeader = req.headersDistinct['proxy-authorization']?.[0]
   const authorizationHeader = req.headersDistinct['authorization']?.[0]
   let user: UserDetails | undefined
@@ -35,17 +32,9 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     return
   }
 
-  if (sessionId) {
-    const reqUser = req.user
-
-    if (!reqUser) {
-      res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
-      res.send()
-      return
-    }
-
-    user = reqUser
-    amr = reqUser.amr
+  if (req.user) {
+    user = req.user
+    amr = req.user.amr
   } else if (proxyAuthorizationHeader) {
     // Proxy-Authorization header flow
     // Decode the Basic Authorization header

@@ -239,11 +239,13 @@ const configuration: Configuration = {
       httpOnly: true,
       sameSite: 'lax',
       secure: appUrl().protocol === 'https:',
+      domain: psl.get(appUrl().hostname) ?? undefined,
     },
     short: {
       httpOnly: true,
       sameSite: 'lax',
       secure: appUrl().protocol === 'https:',
+      domain: psl.get(appUrl().hostname) ?? undefined,
     },
   },
   jwks: initialJwks,
@@ -347,7 +349,7 @@ provider.on('session.saved', (session) => {
   }
   // domain should be sld + tld
   const domain = psl.get(ctx.request.hostname)
-  const expires = new Date((ctx.oidc.session?.exp ?? 0) * 1000 || createExpiration(TTLs.SESSION))
+  const expires = session.transient ? undefined : new Date(session.exp * 1000 || createExpiration(TTLs.SESSION))
   ctx.cookies.set('x-voidauth-session-uid', sessionCookie, {
     httpOnly: true,
     sameSite: 'lax',
