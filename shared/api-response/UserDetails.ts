@@ -20,7 +20,6 @@ export type UserDetails = UserWithoutPassword & {
 // UserDetails and info about current session
 export type CurrentUserDetails = UserDetails & {
   amr: string[]
-  source: 'session' | 'interaction' | 'session-uid' | null
   canLogin: boolean
   isPrivileged: boolean // has all amr to make account changes
 }

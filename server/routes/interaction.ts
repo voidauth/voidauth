@@ -232,7 +232,9 @@ router.get('/exists', async (req, res) => {
 
   const info: InteractionInfo = {
     successRedirect: redir,
-    user: req.user,
+    user: {
+      isPrivileged: req.user?.isPrivileged,
+    },
   }
 
   res.send(info)

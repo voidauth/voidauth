@@ -126,7 +126,7 @@ async function getUserSessionInteraction(req: Request, res: Response) {
   // get user from session or interaction
   let user: UserDetails | undefined
   let amr: string[] = []
-  let source: CurrentUserDetails['source'] = null
+  let source: string | null = null
 
   const session = await getSession(req, res)
   const accountId = session?.accountId
@@ -155,7 +155,6 @@ async function getUserSessionInteraction(req: Request, res: Response) {
   const currentUser: CurrentUserDetails | undefined = user
     ? {
         ...user,
-        source,
         amr,
         canLogin: canLogin,
         isPrivileged: canLogin && (!user.hasTotp || loginFactors(amr) > 1),

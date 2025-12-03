@@ -9,7 +9,6 @@ import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs } from '../db/key'
 import Keygrip from 'keygrip'
 import * as psl from 'psl'
-import { createExpiration } from '../db/util'
 import { interactionPolicy } from 'oidc-provider'
 import { getClient } from '../db/client'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
@@ -338,39 +337,3 @@ provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
   }
   return redirectUriAllowed.call(this, redirectUri)
 }
-
-// If session cookie assigned, assign a session-id cookie as well with samesite=none on base domain
-// Used for proxy auth
-provider.on('session.saved', (session) => {
-  const sessionCookie = session.uid
-  const ctx = Provider.ctx
-  if (!ctx || !sessionCookie) {
-    return
-  }
-  // domain should be sld + tld
-  const domain = psl.get(ctx.request.hostname)
-  const expires = session.transient ? undefined : new Date(session.exp * 1000 || createExpiration(TTLs.SESSION))
-  ctx.cookies.set('x-voidauth-session-uid', sessionCookie, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: ctx.request.secure,
-    expires,
-    domain: domain ?? undefined,
-  })
-})
-
-provider.on('session.destroyed', (_session) => {
-  const ctx = Provider.ctx
-  if (!ctx) {
-    return
-  }
-  // domain should be sld
-  const domain = psl.get(ctx.request.hostname)
-  ctx.cookies.set('x-voidauth-session-uid', '', {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: ctx.request.secure,
-    maxAge: 0,
-    domain: domain ?? undefined,
-  })
-})
