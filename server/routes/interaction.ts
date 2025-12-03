@@ -58,6 +58,7 @@ import { createTOTP, validateTOTP } from '../db/totp'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import { logger } from '../util/logger'
 
 const registerUserValidator = {
   username: {
@@ -91,23 +92,6 @@ const registerUserValidator = {
 export const router = Router()
 
 /**
- * Utility Requiring Interaction Cookie
- */
-
-router.get('/user/me',
-  (req, res) => {
-    const user = req.user
-
-    if (!user) {
-      res.sendStatus(401)
-    }
-
-    res.send(user)
-    return
-  },
-)
-
-/**
  *
  * Meta Interaction Routes
  *
@@ -128,6 +112,15 @@ router.get('/', async (req, res) => {
   const session = await getSession(req, res)
   const accountId = session?.accountId ?? interaction.result?.login?.accountId
   const user = accountId ? await getUserById(accountId) : undefined
+
+  const logInfo = {
+    prompt: prompt.name,
+    reasons: prompt.reasons,
+    client_id: params.client_id,
+    username: user?.username ?? null,
+    proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
+  }
+  logger.info(`interaction required: ${JSON.stringify(logInfo)}`)
 
   if (prompt.name === 'login') {
     // Check for prompt reasons that cause special redirects
@@ -239,6 +232,7 @@ router.get('/exists', async (req, res) => {
 
   const info: InteractionInfo = {
     successRedirect: redir,
+    user: req.user,
   }
 
   res.send(info)

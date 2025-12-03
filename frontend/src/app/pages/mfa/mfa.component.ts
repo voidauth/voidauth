@@ -78,10 +78,8 @@ export class MfaComponent implements OnInit {
       // See if we want to ask the user to register a passkey
       try {
         this.spinnerService.show()
-        const user = await this.userService.getMyUser({
-          disableCache: true,
-        })
-        if (await this.passkeyService.shouldAskPasskey(user)) {
+        const user = (await this.authService.interactionExists()).user
+        if (user && await this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }

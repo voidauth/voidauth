@@ -18,7 +18,7 @@ export class UserService {
     disableCache?: boolean
   }) {
     if (!this.me || !!options?.disableCache) {
-      this.me = firstValueFrom(this.http.get<CurrentUserDetails>(`/api/interaction/user/me`))
+      this.me = firstValueFrom(this.http.get<CurrentUserDetails>(`/api/user/me`))
     }
 
     return this.me

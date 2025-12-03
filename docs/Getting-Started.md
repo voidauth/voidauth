@@ -100,6 +100,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |
 | EMAIL_VERIFICATION | `true` if SMTP_HOST is set, otherwise `false` | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should be set to true. | | |
 | MFA_REQUIRED | `false` | If true, users must use a second security factor while logging in such as an Authenticator Token or Passkey | | |
+| DEBUG  | `false` | Enables debug logging. WARNING! This will cause the activity of users to be printed in the logs  | | |
 
 #### App Customization
 | Name | Default | Description | Required | Recommended |
@@ -144,6 +145,7 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | SMTP_SECURE | `false` | SMTP has TLS/SSL enabled. |
 | SMTP_USER | | SMTP username used to sign into email provider; ex `user@example.com` |
 | SMTP_PASS | | SMTP password used to sign into email provider |
+| SMTP_IGNORE_CERT | `false` | SMTP Connection will ignore invalid and self-signed certificates from SMTP providers |
 
 #### Misc.
 | Name | Default | Description | Required | Recommended |

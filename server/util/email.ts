@@ -27,6 +27,9 @@ const transportOptions: SMTPTransport.Options = {
     user: appConfig.SMTP_USER,
     pass: appConfig.SMTP_PASS,
   },
+  tls: {
+    rejectUnauthorized: !appConfig.SMTP_IGNORE_CERT,
+  },
 }
 
 const transporter = nodemailer.createTransport(transportOptions)
