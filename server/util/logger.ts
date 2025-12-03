@@ -1,6 +1,6 @@
 import appConfig from './config'
 
-function info(input: unknown) {
+function debug(input: unknown) {
   if (appConfig.DEBUG) {
     console.log(input)
   }
@@ -15,6 +15,6 @@ function error(input: unknown) {
 }
 
 export const logger = {
-  info,
+  debug,
   error,
 }

@@ -13,6 +13,7 @@ import appConfig, { appUrl } from '../util/config'
 import { provider } from '../oidc/provider'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import * as psl from 'psl'
+import { logger } from '../util/logger'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -126,12 +127,14 @@ async function getUserSessionInteraction(req: Request, res: Response) {
   // get user from session or interaction
   let user: UserDetails | undefined
   let amr: string[] = []
+  let source: CurrentUserDetails['source'] = null
 
   const session = await getSession(req, res)
   const accountId = session?.accountId
   if (accountId) {
     amr = [...new Set([...amr, ...(session.amr ?? [])])]
     user = await getUserById(accountId)
+    source = 'session'
   }
 
   const interaction = await getInteractionDetails(req, res)
@@ -140,6 +143,7 @@ async function getUserSessionInteraction(req: Request, res: Response) {
       const accountId = interaction.result?.login?.accountId
       if (accountId) {
         user = await getUserById(accountId)
+        source = 'interaction'
       }
     }
     if (user && user.id === interaction.result?.login?.accountId) {
@@ -156,6 +160,7 @@ async function getUserSessionInteraction(req: Request, res: Response) {
     if (accountId) {
       amr = [...new Set([...amr, ...(uidSession.amr ?? [])])]
       user = await getUserById(accountId)
+      source = 'session-uid'
     }
   }
 
@@ -164,11 +169,16 @@ async function getUserSessionInteraction(req: Request, res: Response) {
   const currentUser: CurrentUserDetails | undefined = user
     ? {
         ...user,
+        source,
         amr,
         canLogin: canLogin,
         isPrivileged: canLogin && (!user.hasTotp || loginFactors(amr) > 1),
       }
     : undefined
+
+  if (currentUser) {
+    logger.debug(`user found in getUserSessionInteraction; source = ${String(source)}`)
+  }
 
   return currentUser
 }

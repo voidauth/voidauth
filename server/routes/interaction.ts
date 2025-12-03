@@ -120,7 +120,7 @@ router.get('/', async (req, res) => {
     username: user?.username ?? null,
     proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
   }
-  logger.info(`interaction required: ${JSON.stringify(logInfo)}`)
+  logger.debug(`interaction required: ${JSON.stringify(logInfo)}`)
 
   if (prompt.name === 'login') {
     // Check for prompt reasons that cause special redirects
