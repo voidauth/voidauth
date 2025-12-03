@@ -32,14 +32,14 @@
     "@zxcvbn-ts/language-en": "^3.0.2",
     "argon2": "^0.44.0",
     "ejs": "^3.1.10",
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",
     "generate-password": "^1.7.1",
     "helmet": "^8.1.0",
     "husky": "^9.1.7",
     "isomorphic-dompurify": "^2.33.0",
-    "jose": "^6.1.2",
+    "jose": "^6.1.3",
     "keygrip": "^1.1.0",
     "knex": "^3.1.0",
     "matcher": "^6.0.0",
@@ -51,14 +51,14 @@
     "pug": "^3.0.3",
     "sass": "^1.94.2",
     "sqlite3": "^5.1.7",
-    "tsx": "^4.20.6",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "@stylistic/eslint-plugin": "^5.6.1",
-    "@types/express": "^5.0.5",
+    "@types/express": "^5.0.6",
     "@types/node": "^24.10.1",
     "@types/nodemailer": "^7.0.4",
     "@types/oidc-provider": "^9.5.0",
@@ -69,7 +69,7 @@
     "eslint": "^9.39.1",
     "lint-staged": "^16.2.7",
     "nodemon": "^3.1.11",
-    "prettier": "^3.6.2",
-    "typescript-eslint": "^8.48.0"
+    "prettier": "^3.7.3",
+    "typescript-eslint": "^8.48.1"
   }
 }
