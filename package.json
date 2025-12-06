@@ -23,8 +23,8 @@
     ]
   },
   "dependencies": {
-    "@angular/cli": "^21.0.1",
-    "@angular/material": "^21.0.1",
+    "@angular/cli": "^21.0.2",
+    "@angular/material": "^21.0.2",
     "@simplewebauthn/server": "^13.2.2",
     "@types/ejs": "^3.1.5",
     "@zxcvbn-ts/core": "^3.0.4",
@@ -69,7 +69,7 @@
     "eslint": "^9.39.1",
     "lint-staged": "^16.2.7",
     "nodemon": "^3.1.11",
-    "prettier": "^3.7.3",
+    "prettier": "^3.7.4",
     "typescript-eslint": "^8.48.1"
   }
 }
