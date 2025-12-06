@@ -313,11 +313,16 @@ const configuration: Configuration = {
     }
   },
   extraParams: extraParams,
-  // Copied from node-oidc-provider documentation, exact same as default but prevents warning
-  clientBasedCORS: (ctx, origin, client) => {
-    if (ctx.oidc.route === 'userinfo' || client.clientAuthMethod === 'none') {
-      return !!client.redirectUris?.some(uri => URL.parse(uri)?.origin === origin)
+  clientBasedCORS: (_ctx, origin, client) => {
+    const originUrl = URL.parse(origin)
+    if (originUrl?.protocol === 'https:') {
+      return true
     }
+
+    if (client.redirectUris?.some(uri => URL.parse(uri)?.origin === origin)) {
+      return true
+    }
+
     return false
   },
   findAccount: findAccount,
