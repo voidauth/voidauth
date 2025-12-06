@@ -97,11 +97,8 @@ Redirect URLs:
   - https://immich.example.com/auth/login
   - https://immich.example.com/user-settings
   - app.immich:///oauth-callback
-Application Type: native
 Token Endpoint Auth Method: client_secret_post
 ```
-> [!NOTE]
-> Because Immich requires a custom scheme for the mobile app (app.immich:///) you must set the **Application Type** in VoidAuth to 'native'. This has the side-effect that immich must be on a secure `https://` url, since insecure `http://` urls are not supported by the 'native' Application Type.
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyfin.svg" width="28" /> Jellyfin
 In Jellyfin:
