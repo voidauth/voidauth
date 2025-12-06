@@ -238,7 +238,7 @@ Scopes: openid profile groups email
 Auth Style: In Params
 ```
 > [!NOTE]
-> Scopes are seperated by spaces, **not** by commas
+> Scopes are separated by spaces, **not** by commas
 
 In VoidAuth Create OIDC Client:
 
@@ -318,5 +318,37 @@ In VoidAuth OIDC Client Page:
 Client ID: your-client-id
 Client Secret: your-client-secret
 Redirect URLs: https://wikijs.example.com/login/token-given-on-wikijs-authentication-strategy-view-check-below/callback
+Token Endpoint Auth Method: client_secret_post
+```
+
+
+## <img src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/logo-rounded.png" width="28" /> Memos
+
+1. Connect to Memos as an admin user
+2. Click on the *user icon* at the bottom left, then on *Settings*, and finally on *SSO*
+3. Click on the *Create* button and select *Custom* from the *Template* menu
+4. Fill, customize and save these fields in the new configuration:
+
+```
+Client ID : your-client-id
+Client Secret : your-client-secret
+Authorization endpoint : https://voidauth.example.com/oidc/auth
+Token endpoint : https://voidauth.example.com/oidc/token
+User endpoint : https://voidauth.example.com/oidc/me
+Scopes : openid profile email offline_access
+Identifier : preferred_username
+Display Name : name
+Email : email
+```
+
+> [!NOTE]
+> Scopes are separated by spaces, **not** by commas
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URLs: https://memos.example.com/auth/callback
 Token Endpoint Auth Method: client_secret_post
 ```
