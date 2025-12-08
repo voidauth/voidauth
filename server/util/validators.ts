@@ -1,24 +1,8 @@
 import { USERNAME_REGEX } from '@shared/constants'
 import type { NextFunction, Request, Response } from 'express'
-import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
-import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
-import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import appConfig from './config'
 import { isAdmin } from '@shared/user'
-
-const options = {
-  // recommended
-  dictionary: {
-    ...zxcvbnCommonPackage.dictionary,
-    ...zxcvbnEnPackage.dictionary,
-  },
-  // recommended
-  graphs: zxcvbnCommonPackage.adjacencyGraphs,
-  // recommended
-  useLevenshteinDistance: true,
-}
-
-zxcvbnOptions.setOptions(options)
+import { passwordStrength } from './zxcvbn'
 
 export function checkPrivileged(req: Request, res: Response, next: NextFunction) {
   if (!req.user || !req.user.isPrivileged) {
@@ -86,7 +70,7 @@ export const newPasswordValidation = {
   ...stringValidation,
   zxcvbn: {
     custom: (value: unknown) => {
-      return typeof value === 'string' && zxcvbn(value).score >= appConfig.PASSWORD_STRENGTH
+      return typeof value === 'string' && passwordStrength(value).score >= appConfig.PASSWORD_STRENGTH
     },
   },
 } as const

@@ -23,10 +23,9 @@
     ]
   },
   "dependencies": {
-    "@angular/cli": "^21.0.2",
+    "@angular-devkit/schematics": "^21.0.2",
     "@angular/material": "^21.0.2",
     "@simplewebauthn/server": "^13.2.2",
-    "@types/ejs": "^3.1.5",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
@@ -52,12 +51,12 @@
     "sass": "^1.94.2",
     "sqlite3": "^5.1.7",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "@stylistic/eslint-plugin": "^5.6.1",
+    "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.6",
     "@types/node": "^24.10.1",
     "@types/nodemailer": "^7.0.4",
@@ -70,6 +69,7 @@
     "lint-staged": "^16.2.7",
     "nodemon": "^3.1.11",
     "prettier": "^3.7.4",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1"
   }
 }

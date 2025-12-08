@@ -50,10 +50,10 @@ HEALTHCHECK CMD node -e "fetch('http://localhost:'+(process.env.APP_PORT||3000)+
 # Basic Typescript Checking
 FROM serve AS test
 
-RUN npm ci
+# Copy all frontend from the build step
+COPY --from=build /app/frontend ./frontend
 
-COPY ./frontend ./frontend
-RUN cd frontend && npm ci
+RUN npm ci
 
 COPY ./eslint.config.js ./
 RUN npx eslint .
