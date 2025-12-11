@@ -9,7 +9,7 @@ export const argv = yargs(hideBin(process.argv))
   .command(['serve', '$0'], 'Default, serve voidauth application.', {}, async () => {
     try {
       const server = await import('./server')
-      server.serve()
+      void server.serve()
     } catch (e) {
       console.error(typeof e === 'object' && e != null && 'message' in e ? e.message : e)
       exit(1)

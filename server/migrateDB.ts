@@ -1,10 +1,9 @@
-import knex from 'knex'
-import { getConnectionOptions } from './db/connection'
-import { commit, db, rollback, runMigrations, transaction } from './db/db'
+import { commit, db, rollback, transaction } from './db/db'
 import { als } from './util/als'
 import appConfig from './util/config'
 import { exit } from 'process'
 import { TABLES_ORDER } from '@shared/constants'
+import { createDB } from './db/connection'
 
 export async function migrate() {
   if (appConfig.DB_ADAPTER === appConfig.MIGRATE_TO_DB_ADAPTER) {
@@ -19,25 +18,15 @@ export async function migrate() {
 
     try {
       // Get connected to new DB
-      let newConnectionOptions: knex.Knex.Config
-      try {
-        newConnectionOptions = getConnectionOptions({
-          DB_ADAPTER: appConfig.MIGRATE_TO_DB_ADAPTER,
-          DB_HOST: appConfig.MIGRATE_TO_DB_HOST,
-          DB_PORT: appConfig.MIGRATE_TO_DB_PORT,
-          DB_USER: appConfig.MIGRATE_TO_DB_USER,
-          DB_NAME: appConfig.MIGRATE_TO_DB_NAME,
-          DB_PASSWORD: appConfig.MIGRATE_TO_DB_PASSWORD,
-        }, true)
-      } catch (e) {
-        console.error(typeof e === 'object' && e != null && 'message' in e ? e.message : e)
-        exit(1)
-      }
-
-      const newDB = knex(newConnectionOptions)
-
-      // run migrations on new DB
-      await runMigrations(newDB)
+      const newDB = await createDB({
+        DB_ADAPTER: appConfig.MIGRATE_TO_DB_ADAPTER,
+        DB_HOST: appConfig.MIGRATE_TO_DB_HOST,
+        DB_PORT: appConfig.MIGRATE_TO_DB_PORT,
+        DB_USER: appConfig.MIGRATE_TO_DB_USER,
+        DB_NAME: appConfig.MIGRATE_TO_DB_NAME,
+        DB_PASSWORD: appConfig.MIGRATE_TO_DB_PASSWORD,
+        isMigration: true,
+      })
 
       // clear data from new DB
       for (const tableName of TABLES_ORDER.toReversed()) {

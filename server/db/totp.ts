@@ -2,10 +2,9 @@ import * as OTPAuth from 'otpauth'
 import { db } from './db'
 import type { TOTP } from '@shared/db/TOTP'
 import { TABLES, TTLs } from '@shared/constants'
-import { decryptString, encryptString } from './key'
 import appConfig from '../util/config'
 import { randomUUID } from 'crypto'
-import { createExpiration } from './util'
+import { createExpiration, decryptString, encryptString } from './util'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 
 function decryptTOTP(totp: TOTP | undefined): TOTP | null | undefined {

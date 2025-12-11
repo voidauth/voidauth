@@ -9,17 +9,18 @@ import { router } from './routes/api'
 import helmet from 'helmet'
 import { getCookieKeys, getJWKs, makeKeysValid } from './db/key'
 import { randomInt } from 'node:crypto'
-import initialize from 'oidc-provider/lib/helpers/initialize_keystore'
-import { clearAllExpiredEntries, updateEncryptedTables } from './db/util'
+import initialize from 'oidc-provider/lib/helpers/initialize_keystore.js'
 import { transaction, commit, rollback } from './db/db'
 import { als } from './util/als'
 import { rateLimit } from 'express-rate-limit'
 import { sendAdminNotifications } from './util/email'
+import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMaintenance'
+import { createInitialAdmin } from './db/user'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
 
-export function serve() {
+export async function serve() {
   // Do not wait for theme to generate before starting
   void generateTheme()
 
@@ -205,8 +206,7 @@ export function serve() {
 
   // interval to delete expired db entries and keep keys up to date
   let previousJwks = initialJwks
-  setInterval(async () => {
-  // Do initial key setup and cleanup
+  async function doMaintenance() {
     await als.run({}, async () => {
       await transaction()
       try {
@@ -218,6 +218,10 @@ export function serve() {
 
         // make DB keys all valid
         await makeKeysValid()
+
+        // ensure that initial user is properly setup
+        // Create initial admin user and group
+        await createInitialAdmin()
 
         // update provider cookie keys
         const cookieKeys = (await getCookieKeys()).map(k => k.value)
@@ -254,5 +258,11 @@ export function serve() {
         console.error(e)
       }
     })
+  }
+
+  await doMaintenance()
+  setInterval(async () => {
+    // Do initial key setup and cleanup
+    await doMaintenance()
   }, ((8 * 60) + randomInt(2 * 60)) * 1000)
 }

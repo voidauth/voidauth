@@ -70,10 +70,11 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           push: true
-          target: serve
           cache-from: |
             type=registry,ref=voidauth/voidauth-cache:test
             type=registry,ref=voidauth/voidauth-cache:release
+            type=registry,ref=voidauth/voidauth:latest
+            type=registry,ref=voidauth/voidauth:edge
           cache-to: type=registry,mode=max,ref=voidauth/voidauth-cache:release
 
       - name: Docker Hub Description Update

@@ -6,10 +6,10 @@ import { checkPasswordHash, getUserByInput } from '../db/user'
 import appConfig, { appUrl } from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
-import { userCanLogin } from '../routes/api'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { loginFactors } from '@shared/user'
 import * as psl from 'psl'
+import { userCanLogin } from './auth'
 
 // proxy auth cache
 let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups'>[] = []

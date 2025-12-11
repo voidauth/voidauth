@@ -7,14 +7,19 @@ function debug(input: unknown) {
 }
 
 function error(input: unknown) {
-  if (appConfig.DEBUG) {
-    console.error(input)
-  } else if (input instanceof Error) {
+  if (!appConfig.DEBUG && input instanceof Error) {
     console.error(input.message)
+  } else {
+    console.error(input)
   }
+}
+
+function info(input: unknown) {
+  console.log(input)
 }
 
 export const logger = {
   debug,
+  info,
   error,
 }

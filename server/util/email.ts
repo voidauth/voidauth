@@ -15,6 +15,7 @@ import type { User } from '@shared/db/User'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import DOMPurify from 'isomorphic-dompurify'
 import ejs from 'ejs'
+import { logger } from './logger'
 
 export let SMTP_VERIFIED = false
 const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
@@ -36,10 +37,10 @@ const transporter = nodemailer.createTransport(transportOptions)
 if (appConfig.SMTP_HOST) {
   transporter.verify().then(() => {
     SMTP_VERIFIED = true
-    console.log('SMTP Email Connection Verified.')
+    logger.info('SMTP email connection verified.')
   }).catch((e: unknown) => {
-    console.error('SMTP Email Connection ERROR:')
-    console.error(e)
+    logger.error('SMTP email connection ERROR:')
+    logger.error(e)
   })
 }
 

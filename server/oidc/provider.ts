@@ -4,15 +4,16 @@ import appConfig, { appUrl, basePath } from '../util/config'
 import { KnexAdapter } from './adapter'
 import { type OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
-import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
-import { getCookieKeys, getJWKs } from '../db/key'
+import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import Keygrip from 'keygrip'
 import * as psl from 'psl'
 import { interactionPolicy } from 'oidc-provider'
-import { getClient } from '../db/client'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { getProxyAuthWithCache } from '../util/proxyAuth'
+import { db } from '../db/db'
+import type { OIDCGroup, Group } from '@shared/db/Group'
 
 // Modify consent interaction policy to check for user and client groups
 const { Check, base } = interactionPolicy
@@ -84,7 +85,7 @@ consentPromptPolicy.checks.add(new Check('user_group_missing',
   'user_group_missing', async (ctx) => {
     const { oidc } = ctx
     if (oidc.client?.clientId && oidc.account?.accountId) {
-      const client = await getClient(oidc.client.clientId)
+      const client = await getProviderClient(oidc.client.clientId)
       if (client?.groups.length) {
         const user = await getUserById(oidc.account.accountId)
         if (user && !user.groups.some(g => g.name === ADMIN_GROUP) && !user.groups.some(g => client.groups.includes(g.name))) {
@@ -148,6 +149,7 @@ export function isOIDCProviderError(e: unknown): e is errors.OIDCProviderError {
 }
 
 const extraParams: (keyof OIDCExtraParams)[] = ['proxyauth_url']
+await makeKeysValid()
 export const initialJwks = { keys: (await getJWKs()).map(k => k.jwk) }
 export const providerCookieKeys = (await getCookieKeys()).map(k => k.value)
 
@@ -341,4 +343,16 @@ provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
     return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(appUrl().hostname)
   }
   return redirectUriAllowed.call(this, redirectUri)
+}
+
+export async function getProviderClient(client_id: string) {
+  const client = (await provider.Client.find(client_id))?.metadata()
+  if (!client) {
+    return
+  }
+  const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)
+    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
+    .where({ oidcId: client_id }))
+    .map(g => g.name)
+  return { ...client, groups }
 }

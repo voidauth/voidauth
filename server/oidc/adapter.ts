@@ -1,10 +1,10 @@
 /* eslint-disable */
 import type { Adapter, ClientMetadata } from 'oidc-provider'
 import { db } from '../db/db'
-import { decryptString, encryptString } from '../db/key'
 import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
 import appConfig from '../util/config'
 import { TABLES } from '@shared/constants'
+import { decryptString, encryptString } from '../db/util'
 
 function getExpireAt(expiresIn: number) {
   return expiresIn
