@@ -45,7 +45,7 @@ await esbuild.build({
   outfile: path.join(outDir, 'index.mjs'),
   mainFields: ['module', 'main'],
   sourcemap: false,
-  minify: false,
+  minify: true,
   conditions: ['node'],
   define: {
     'process.env.NODE_ENV': `'production'`,
