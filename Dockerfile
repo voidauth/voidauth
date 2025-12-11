@@ -1,61 +1,73 @@
-FROM node:lts-alpine AS build
+#
+# Frontend Builder
+#
+FROM node:lts-alpine AS build-fe
 
-# Create app directory
 WORKDIR /app/frontend
 
-# Build the frontend
-COPY ./frontend/package-lock.json ./
-COPY ./frontend/package.json ./
+# Install the frontend
+COPY ./frontend/package*.json ./
 RUN npm ci
 
 # Copy frontend source
 COPY ./frontend ./
 COPY ./shared ../shared
 
-# Build the page
+# Build frontend
 RUN npm run build
 
+#
+# Backend Builder
+#
+FROM node:lts-alpine AS build-be
 
-# Serve files and api endpoints
-FROM node:lts-alpine AS serve
-
-# Create app directory
 WORKDIR /app
 
-# Copy server package json files
 COPY ./package*.json ./
 
-# Install the server
-RUN npm ci --omit=dev
+RUN npm ci
 
 # Copy server files
-COPY ./theme ./theme
-COPY ./default_email_templates ./default_email_templates
 COPY ./custom_typings ./custom_typings
-COPY ./tsconfig.json ./
-COPY ./migrations ./migrations
 COPY ./server ./server
 COPY ./shared ./shared
 
-# Copy web files from builder
-COPY --from=build /app/frontend/dist ./frontend/dist
+# Run checks for correctness
+COPY ./tsconfig.json ./
+RUN npx tsc
+COPY ./eslint.config.js ./
+RUN npx eslint ./
+
+# Build backend
+COPY ./esbuild.config.ts ./
+RUN npm run server:build
+
+# Install external dependencies in dist folder
+RUN cd ./dist && npm i
+
+#
+# Serve files and api endpoints
+#
+FROM node:lts-alpine AS serve
+
+WORKDIR /app
+
+# Copy build files
+COPY --from=build-fe /app/frontend/dist ./frontend/dist
+COPY --from=build-be /app/dist/index.mjs ./dist/index.mjs
+COPY --from=build-be /app/dist/node_modules ./node_modules
+
+# Copy supporting files
+COPY ./theme ./theme
+COPY ./default_email_templates ./default_email_templates
+COPY ./migrations ./migrations
+
+# VoidAuth help command to verify runnable
+RUN node ./dist/index.mjs --help
 
 VOLUME ["/app/config"]
 VOLUME ["/app/db"]
 EXPOSE 3000
-ENTRYPOINT [ "npx", "tsx", "server/index.ts" ]
+ENTRYPOINT [ "node", "./dist/index.mjs" ]
 
 HEALTHCHECK CMD node -e "fetch('http://localhost:'+(process.env.APP_PORT||3000)+'/healthcheck').then(r=>process.exit(r.status===200?0:1)).catch(e=>process.exit(1))"
-
-# Basic Typescript Checking
-FROM serve AS test
-
-RUN npm ci
-
-COPY ./frontend ./frontend
-RUN cd frontend && npm ci
-
-COPY ./eslint.config.js ./
-RUN npx eslint .
-
-RUN npx tsc

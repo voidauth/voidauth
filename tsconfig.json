@@ -26,6 +26,7 @@
     "server",
     "shared",
     "migrations",
-    "custom_typings"
+    "custom_typings",
+    "./esbuild.config.ts"
   ]
 }

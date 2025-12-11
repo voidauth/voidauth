@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express'
 import { getInteractionDetails, getSession, router as interactionRouter } from './interaction'
 import { commit, transaction, rollback } from '../db/db'
-import { getUserById, userRequiresMfa } from '../db/user'
+import { getUserById } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
 import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
@@ -10,9 +10,10 @@ import { als } from '../util/als'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import appConfig, { appUrl } from '../util/config'
-import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import { loginFactors } from '@shared/user'
 import * as psl from 'psl'
 import { logger } from '../util/logger'
+import { userCanLogin } from '../util/auth'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -166,26 +167,4 @@ async function getUserSessionInteraction(req: Request, res: Response) {
   }
 
   return currentUser
-}
-
-export function userCanLogin(user: UserDetails | undefined, amr: string[]): user is UserDetails {
-  if (!user) {
-    return false
-  }
-
-  const factors = loginFactors(amr)
-
-  if (factors === 0) {
-    return false
-  }
-
-  if (userRequiresMfa(user) && factors < 2) {
-    return false
-  }
-
-  if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) || isUnverified(user, !!appConfig.EMAIL_VERIFICATION)) {
-    return false
-  }
-
-  return true
 }

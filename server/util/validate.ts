@@ -55,7 +55,14 @@ export function validate<T extends object = any>(schema: TypedSchema<T>) {
 function handleValidatorError(req: Request, res: Response, next: NextFunction) {
   const result = validationResult(req).array()
   if (result.length) {
-    res.status(422).send(result)
+    res.status(422).send(result.map((r) => {
+      if ('value' in r) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const { value, ..._ } = r
+        return _
+      }
+      return r
+    }))
   } else {
     next()
   }

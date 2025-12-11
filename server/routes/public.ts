@@ -18,6 +18,7 @@ import { generate } from 'generate-password'
 import { createPasskey, createPasskeyRegistrationOptions, getRegistrationInfo, passkeyRegistrationValidator } from '../util/passkey'
 import { getUserPasskeys } from '../db/passkey'
 import type { RegistrationResponseJSON } from '@simplewebauthn/server'
+import { passwordStrength } from '../util/zxcvbn'
 
 /**
  * routes that do not require any auth
@@ -40,6 +41,16 @@ publicRouter.get('/config', (_req, res) => {
 
   res.send(configResponse)
 })
+
+publicRouter.post('/passwordStrength',
+  ...validate<{ password: string }>({
+    password: stringValidation,
+  }),
+  (req, res) => {
+    const { password } = validatorData<{ password: string }>(req)
+    res.send(passwordStrength(password))
+  },
+)
 
 publicRouter.post('/send_password_reset',
   ...validate<{ input: string }>({

@@ -6,7 +6,6 @@ import type { User } from '@shared/db/User'
 import { ADMIN_USER, ADMIN_GROUP, TABLES } from '@shared/constants'
 import { randomUUID } from 'crypto'
 import { generate } from 'generate-password'
-import { als } from '../util/als'
 import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
 import appConfig from '../util/config'
@@ -122,8 +121,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
   }
 }
 
-// Create initial admin user and group
-await als.run({}, async () => {
+export async function createInitialAdmin() {
   // Check if admin user and group have ever been created.
   const adminCreated = await db().table<Flag>(TABLES.FLAG).select().where({ name: 'ADMIN_CREATED' }).first()
   if (adminCreated?.value?.toLowerCase() !== 'true') {
@@ -179,4 +177,4 @@ await als.run({}, async () => {
     console.log(password)
     console.log('')
   }
-})
+}

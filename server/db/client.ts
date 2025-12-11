@@ -1,14 +1,13 @@
 import type { Client, ClientMetadata, Provider } from 'oidc-provider'
 import { db } from './db'
-import { provider } from '../oidc/provider'
-import add from 'oidc-provider/lib/helpers/add_client'
+import { getProviderClient, provider } from '../oidc/provider'
+import add from 'oidc-provider/lib/helpers/add_client.js'
 import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
-import { decryptString } from './key'
 import appConfig from '../util/config'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { Group, OIDCGroup } from '@shared/db/Group'
 import type { User } from '@shared/db/User'
-import { mergeKeys } from './util'
+import { decryptString, mergeKeys } from './util'
 import { TABLES } from '@shared/constants'
 
 const CLIENT_TYPE: PayloadType = 'Client'
@@ -51,15 +50,7 @@ export async function getClients(): Promise<ClientResponse[]> {
 }
 
 export async function getClient(client_id: string): Promise<ClientResponse | undefined> {
-  const client = (await provider.Client.find(client_id))?.metadata()
-  if (!client) {
-    return
-  }
-  const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)
-    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
-    .where({ oidcId: client_id }))
-    .map(g => g.name)
-  return { ...client, groups }
+  return getProviderClient(client_id)
 }
 
 export async function upsertClient(provider: Provider, clientMetadata: ClientResponse, user: Pick<User, 'id'>, ctx: unknown) {

@@ -1,17 +1,71 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type { Key } from '@shared/db/Key'
-import { db } from './db'
-import type { Consent } from '@shared/db/Consent'
-import type { EmailVerification } from '@shared/db/EmailVerification'
-import type { PasswordReset } from '@shared/db/PasswordReset'
-import type { Invitation } from '@shared/db/Invitation'
-import type { OIDCPayload } from '@shared/db/OIDCPayload'
+import { parseEncrypedData } from '@shared/db/Key'
 import appConfig from '../util/config'
-import { decryptString, encryptString, getCookieKeys, getJWKs } from './key'
-import type { ClientMetadata } from 'oidc-provider'
-import type { PasskeyAuthentication, PasskeyRegistration } from '@shared/db/Passkey'
-import { TABLES } from '@shared/constants'
-import type { TOTP } from '@shared/db/TOTP'
+import crypto from 'node:crypto'
+
+/**
+ * Encrypt a string
+ */
+export function encryptString(v: string) {
+  const iv = crypto.randomBytes(12).toString('base64url')
+  const alg = 'aes-256-gcm'
+  const cipher = crypto.createCipheriv(alg,
+    crypto.createHash('sha256').update(appConfig.STORAGE_KEY).digest(),
+    Buffer.from(iv, 'base64url'))
+
+  let value = cipher.update(v, 'utf8', 'base64url')
+  value += cipher.final('base64url')
+
+  const tag = cipher.getAuthTag().toString('base64url')
+
+  return JSON.stringify({
+    value,
+    metadata: {
+      alg, iv, tag,
+    },
+  })
+}
+
+/**
+ * Decrypt a key
+ * If key cannot be decrypted for any reason, returns null
+ */
+export function decryptString(input: string, storageKeys: (string | undefined)[]): string | null {
+  let value: string | null = null
+  const encrypted = parseEncrypedData(input)
+  if (!encrypted) {
+    return null
+  }
+
+  if (encrypted.metadata.alg === 'aes-256-gcm') {
+    if (!encrypted.metadata.iv || !encrypted.metadata.tag) {
+      console.error('Key metadata is missing required properties.')
+      return null
+    }
+
+    for (const encKey of storageKeys) {
+      try {
+        if (!encKey) {
+          continue
+        }
+        const decipher = crypto.createDecipheriv(encrypted.metadata.alg,
+          crypto.createHash('sha256').update(encKey).digest(),
+          Buffer.from(encrypted.metadata.iv, 'base64url'))
+        decipher.setAuthTag(Buffer.from(encrypted.metadata.tag, 'base64url'))
+        let decrypted = decipher.update(encrypted.value, 'base64url', 'utf8')
+        decrypted += decipher.final('utf-8')
+        value = decrypted
+        break
+      } catch (_e) {
+        // Try the other storage key
+      }
+    }
+  } else {
+    console.error('Encrypted storage algorithm not recognized.')
+    return null
+  }
+
+  return value
+}
 
 /**
  *
@@ -33,114 +87,4 @@ function timeToExpiration(expires: Date | number) {
 
 export function pastHalfExpired(ttl: number, expires: Date | number) {
   return timeToExpiration(expires) < (ttl * 1000 / 2)
-}
-
-export async function clearAllExpiredEntries() {
-  await db().delete().table<Key>(TABLES.KEY).where('expiresAt', '<', new Date())
-  await db().delete().table<Consent>(TABLES.CONSENT).where('expiresAt', '<', new Date())
-  await db().delete().table<EmailVerification>(TABLES.EMAIL_VERIFICATION).where('expiresAt', '<', new Date())
-  await db().delete().table<PasswordReset>(TABLES.PASSWORD_RESET).where('expiresAt', '<', new Date())
-  await db().delete().table<Invitation>(TABLES.INVITATION).where('expiresAt', '<', new Date())
-  await db().delete().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where('expiresAt', '<', new Date())
-  await db().delete().table<PasskeyRegistration>(TABLES.PASSKEY_REGISTRATION).where('expiresAt', '<', new Date())
-  await db().delete().table<PasskeyAuthentication>(TABLES.PASSKEY_AUTHENTICATION).where('expiresAt', '<', new Date())
-  await db().delete().table<TOTP>(TABLES.TOTP).where('expiresAt', '<', new Date())
-}
-
-export type EncryptedTable = {
-  id: string
-  value?: string
-}
-
-export async function updateEncryptedTables(enableWarnings: boolean = false) {
-  // update encrypted keys to use the latest storage encryption key
-  // get keys that are locked, and those decryptable with the secondary key
-  const { locked: lockedKeys, decryptable: decryptableKeys } = checkEncrypted(await db().select().table<Key>(TABLES.KEY))
-  // for those decryptable with STORAGE_KEY_SECONDARY, re-encrypt with STORAGE_KEY
-  for (const k of decryptableKeys) {
-    const value = encryptString(k.value)
-    await db().table<Key>(TABLES.KEY).update({
-      value,
-    }).where({ id: k.id })
-  }
-  const cookieKeys = await getCookieKeys()
-  const jwks = await getJWKs()
-  if (enableWarnings && lockedKeys.length > 0 && (cookieKeys.length === 0 || jwks.length === 0)) {
-    console.error(`WARNING!!!
-      You have key(s) that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
-      This could be due to a mistake while rotating the storage key.
-      New keys were generated to replace them, this invalidated all sessions and tokens.
-      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY and get your keys back.`)
-  }
-
-  // Do the same for clients
-  const { locked: lockedClients, decryptable: decryptableClients } = checkEncrypted(
-    (await db().select().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where({ type: 'Client' })).map((p) => {
-      const payload: ClientMetadata = JSON.parse(p.payload)
-      return {
-        id: p.id,
-        payload,
-        value: payload.client_secret,
-      }
-    }))
-  // for those decryptable with STORAGE_KEY_SECONDARY, re-encrypt with STORAGE_KEY
-  for (const k of decryptableClients) {
-    const client_secret = k.value != null ? encryptString(k.value) : k.value
-    const payload = JSON.stringify({ ...k.payload, client_secret: client_secret })
-    await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).update({
-      payload,
-    }).where({ id: k.id, type: 'Client' })
-  }
-  if (enableWarnings && lockedClients.length > 0) {
-    console.error(`WARNING!!!
-      You have OIDC Clients that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
-      This could be due to a mistake while rotating the storage key.
-      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.
-      Non-decryptable Clients: ${lockedClients.map(c => c.id).join(', ')}`)
-  }
-
-  // Do the same for TOTPs
-  const { locked: lockedTOTPs, decryptable: decryptableTOTPs } = checkEncrypted(await db().select().table<TOTP>(TABLES.TOTP))
-  // for those decryptable with STORAGE_KEY_SECONDARY, re-encrypt with STORAGE_KEY
-  for (const t of decryptableTOTPs) {
-    const secret = encryptString(t.secret)
-    await db().table<TOTP>(TABLES.TOTP).update({
-      secret: secret,
-    }).where({ id: t.id })
-  }
-  if (enableWarnings && lockedTOTPs.length > 0) {
-    console.error(`WARNING!!!
-      You have MFA TOTP codes that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
-      This could be due to a mistake while rotating the storage key.
-      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.`)
-  }
-
-  if (decryptableKeys.length || decryptableClients.length || decryptableTOTPs.length) {
-    console.log('A storage key rotation was detected, re-encrypted with new STORAGE_KEY.')
-  }
-}
-
-function checkEncrypted<T extends EncryptedTable>(entries: T[]) {
-  // find any that cannot be decrypted with STORAGE_KEY
-  const stale = entries.filter(d => d.value && decryptString(d.value, [appConfig.STORAGE_KEY]) === null)
-
-  // find those that CAN be decrypted with STORAGE_KEY_SECONDARY
-  const decryptable = stale.reduce<T[]>((ks, k) => {
-    if (k.value == null) {
-      return ks
-    }
-    const value = decryptString(k.value, [appConfig.STORAGE_KEY_SECONDARY])
-    if (value) {
-      ks.push({ ...k, value })
-    }
-    return ks
-  }, [])
-
-  // find keys that could not be decrypted
-  const locked = stale.filter(k => !decryptable.some(r => r.id === k.id))
-
-  return {
-    locked: locked,
-    decryptable: decryptable,
-  }
 }

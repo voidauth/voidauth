@@ -1,9 +1,9 @@
 import { Component, inject, input, model, type OnInit } from '@angular/core'
 import { ReactiveFormsModule, type FormControl } from '@angular/forms'
-import { zxcvbnOptions, zxcvbn } from '@zxcvbn-ts/core'
-import { debounceTime, map } from 'rxjs'
+import { catchError, debounceTime, distinctUntilChanged, from, map, of, switchMap } from 'rxjs'
 import { MaterialModule } from '../../material-module'
 import { ConfigService } from '../../services/config.service'
+import { UserService } from '../../services/user.service'
 
 @Component({
   selector: 'app-new-password-input',
@@ -25,25 +25,31 @@ export class NewPasswordInputComponent implements OnInit {
   minScore = 3
 
   configService = inject(ConfigService)
+  userService = inject(UserService)
 
-  async ngOnInit(): Promise<void> {
+  ngOnInit() {
     void this.configService.getConfig().then((c) => {
       this.minScore = c.zxcvbnMin + 1
     })
 
-    const options = await this.loadOptions()
-    zxcvbnOptions.setOptions(options)
-
-    this.password().valueChanges.pipe(map((value) => {
-      const c = this.password()
-      c.setErrors({ ...c.errors, strength: { min: this.minScore, current: 'pending' } })
-      return value
-    }), debounceTime(500)).subscribe((v) => {
-      if (!v) {
-        this.score = 0
-      } else {
-        this.score = zxcvbn(v).score + 1
-      }
+    this.password().valueChanges.pipe(
+      distinctUntilChanged(),
+      map((value) => {
+        const c = this.password()
+        c.setErrors({ ...c.errors, strength: { min: this.minScore, current: 'pending' } })
+        return value
+      }),
+      debounceTime(500),
+      switchMap((v) => {
+        if (!v) {
+          return of({ score: -1 })
+        }
+        return from(this.userService.passwordStrength(v)).pipe(
+          catchError(() => of({ score: -1 })),
+        )
+      }),
+    ).subscribe(({ score }) => {
+      this.score = score + 1
 
       if (this.score === 0) {
         this.message = 'lets make a strong password 😊'
@@ -75,25 +81,6 @@ export class NewPasswordInputComponent implements OnInit {
         }
       }
     })
-  }
-
-  async loadOptions() {
-    const zxcvbnCommonPackage = await import('@zxcvbn-ts/language-common')
-    const zxcvbnEnPackage = await import('@zxcvbn-ts/language-en')
-
-    return {
-      // recommended
-      dictionary: {
-        ...zxcvbnCommonPackage.dictionary,
-        ...zxcvbnEnPackage.dictionary,
-      },
-      // recommended
-      graphs: zxcvbnCommonPackage.adjacencyGraphs,
-      // recommended
-      useLevenshteinDistance: true,
-      // // optional
-      // translations: zxcvbnEnPackage.translations,
-    }
   }
 
   togglePwdShow() {

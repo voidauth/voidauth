@@ -1,15 +1,51 @@
 import { generate } from 'generate-password'
-import type knex from 'knex'
+import type { Knex } from 'knex'
+import knex from 'knex'
 import fs from 'node:fs'
+import { logger } from '../util/logger'
 
-export function getConnectionOptions(options: {
+async function runSchemaUpdates(connectionOptions: Knex.Config) {
+  if (connectionOptions.client === 'sqlite3' || connectionOptions.client === 'better-sqlite') {
+    const { pool, ...rest } = connectionOptions
+    connectionOptions = rest
+  }
+
+  const db = knex(connectionOptions)
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [,migrations]: [number, string[]] = await db.migrate.latest({
+    loadExtensions: ['.ts'],
+  })
+  await db.destroy()
+  return migrations
+}
+
+export async function createDB(options: {
   DB_ADAPTER: string
   DB_PASSWORD?: string
   DB_HOST?: string
   DB_PORT?: number
   DB_NAME?: string
   DB_USER?: string
-}, isMigration: boolean = false): knex.Knex.Config {
+  isMigration?: boolean
+}) {
+  const connOptions = getConnectionOptions(options)
+  const migrations = await runSchemaUpdates(connOptions)
+  if (migrations.length) {
+    logger.info('Database schema updated.')
+  }
+  return knex(connOptions)
+}
+
+function getConnectionOptions(options: {
+  DB_ADAPTER: string
+  DB_PASSWORD?: string
+  DB_HOST?: string
+  DB_PORT?: number
+  DB_NAME?: string
+  DB_USER?: string
+  isMigration?: boolean
+}): knex.Knex.Config {
   if (options.DB_ADAPTER === 'postgres') {
     return connectionPg({
       DB_HOST: options.DB_HOST,
@@ -17,11 +53,11 @@ export function getConnectionOptions(options: {
       DB_USER: options.DB_USER,
       DB_NAME: options.DB_NAME,
       DB_PASSWORD: options.DB_PASSWORD,
-    }, isMigration)
+    }, options.isMigration)
   } else if (options.DB_ADAPTER === 'sqlite') {
     return connectionSQLite()
   } else {
-    throw new Error(`${isMigration ? 'MIGRATE_TO_' : ''}DB_ADAPTER, if set, must be either 'postgres' or 'sqlite'.`)
+    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_ADAPTER, if set, must be either 'postgres' or 'sqlite'.`)
   }
 }
 
@@ -56,7 +92,7 @@ function connectionPg(options: {
   }
 }
 
-function connectionSQLite() {
+function connectionSQLite(): Knex.Config {
   if (!fs.existsSync('./db')) {
     fs.mkdirSync('./db', {
       recursive: true,

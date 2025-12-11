@@ -1,9 +1,6 @@
 import { generate } from 'generate-password'
 import { exit } from 'node:process'
 
-// NODE_ENV defaults to 'production' if not set
-process.env.NODE_ENV ??= 'production'
-
 // basic config for app
 class Config {
   APP_TITLE = 'VoidAuth'

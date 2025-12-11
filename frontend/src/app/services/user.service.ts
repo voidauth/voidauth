@@ -36,6 +36,10 @@ export class UserService {
     return firstValueFrom(this.http.patch<null>('/api/user/email', emailUpdate))
   }
 
+  async passwordStrength(password: string) {
+    return firstValueFrom(this.http.post<{ score: 0 | 1 | 2 | 3 | 4 }>('/api/public/passwordStrength', { password }))
+  }
+
   async updatePassword(passwordUpdate: UpdatePassword) {
     return firstValueFrom(this.http.patch<null>('/api/user/password', passwordUpdate))
   }

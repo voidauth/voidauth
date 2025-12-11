@@ -39,7 +39,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: voidauth/voidauth:test
           push: false
-          target: test
           cache-from: |
             type=gha
             type=registry,ref=voidauth/voidauth:latest
@@ -56,7 +55,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: voidauth/voidauth:test
           push: false
-          target: test
           cache-from: |
             type=gha
             type=registry,ref=voidauth/voidauth-cache:test
