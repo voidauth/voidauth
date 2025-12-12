@@ -1,7 +1,7 @@
 #
 # Frontend Builder
 #
-FROM node:lts-alpine AS build-fe
+FROM node:24-alpine AS build-fe
 
 WORKDIR /app/frontend
 
@@ -19,7 +19,7 @@ RUN npm run build
 #
 # Backend Builder
 #
-FROM node:lts-alpine AS build-be
+FROM node:24-alpine AS build-be
 
 WORKDIR /app
 
@@ -48,7 +48,7 @@ RUN cd ./dist && npm i
 #
 # Serve files and api endpoints
 #
-FROM node:lts-alpine AS serve
+FROM node:24-alpine AS serve
 
 WORKDIR /app
 

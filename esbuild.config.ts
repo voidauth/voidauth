@@ -42,10 +42,11 @@ await esbuild.build({
   platform: 'node',
   packages: 'bundle',
   format: 'esm',
+  target: 'node24',
   outfile: path.join(outDir, 'index.mjs'),
   mainFields: ['module', 'main'],
   sourcemap: false,
-  minify: true,
+  minifyWhitespace: true, // other minify options break things
   conditions: ['node'],
   define: {
     'process.env.NODE_ENV': `'production'`,
