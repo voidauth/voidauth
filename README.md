@@ -34,7 +34,7 @@
 
 VoidAuth is an open-source SSO authentication and user management provider that stands guard in front of your self-hosted applications. It is easy-to-use for admins and end-users, supports nice-to-have features like passkeys, user invitation, self-registration, email support, and more!
 
-Key Features:
+Features:
 
 - 🌐 OpenID Connect (OIDC) Provider
 - 🔄 Proxy ForwardAuth
@@ -47,7 +47,7 @@ Key Features:
 
 ### Admin Panel
 
-Administrators can access the Admin Panel in the sidebar menu, where they can manage users, groups, and settings of the VoidAuth instance.
+Administrators can access the Admin Panel in the sidebar menu, where they can manage users and settings.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/admin_panel.png" title="Admin Panel" alt="An Admin Page with the Admin Side Panel Open" width="600">
@@ -68,17 +68,18 @@ services:
     image: voidauth/voidauth:latest
     restart: unless-stopped
     volumes:
-      - /your/config/directory:/app/config
+      - ./voidauth/config:/app/config
     environment:
       # Required environment variables
       # More environment variable options can be found 
       #   on the Getting Started page.
-      APP_URL: # required
+      APP_URL: # required, ex. https://auth.example.com
       STORAGE_KEY: # required
       DB_PASSWORD: # required, same as voidauth-db POSTGRES_PASSWORD
       DB_HOST: voidauth-db # required
     depends_on:
-      - voidauth-db
+      voidauth-db:
+        condition: service_healthy
 
   voidauth-db:
     image: postgres:18
@@ -87,6 +88,8 @@ services:
       POSTGRES_PASSWORD: # required, same as voidauth DB_PASSWORD
     volumes:
       - db:/var/lib/postgresql/18/docker
+    healthcheck:
+      test: pg_isready
 
 volumes:
   db:
@@ -95,7 +98,10 @@ volumes:
 After creating/updating the compose.yml file and filling in the required environment variables, run `docker compose up -d` and visit your `APP_URL` to get started.
 
 > [!IMPORTANT]
-> After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`
+> After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`. Use these credentials to log in and change the default username and password or create a separate user for yourself.
+
+> [!TIP]
+> Users are created by administrators on the Invitations page by creating a new Invitation, then sending the resulting invitation link.
 
 Please see the [Getting Started](https://voidauth.app/#/Getting-Started) page for setup details and configuration options.
 

@@ -15,12 +15,12 @@ services:
     image: voidauth/voidauth:latest
     restart: unless-stopped
     volumes:
-      - /your/config/directory:/app/config
+      - ./voidauth/config:/app/config
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
       # Required environment variables
-      APP_URL: # required
+      APP_URL: # required, ex. https://auth.example.com
       STORAGE_KEY: # required
       DB_PASSWORD: # required
       DB_HOST: voidauth-db # required
@@ -56,13 +56,13 @@ services:
     image: voidauth/voidauth:latest
     restart: unless-stopped
     volumes:
-      - /your/config/directory:/app/config
+      - ./voidauth/config:/app/config
       - db:/app/db # volume for SQLite file
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
       # Required environment variables
-      APP_URL: # required
+      APP_URL: # required, ex. https://auth.example.com
       STORAGE_KEY: # required
       DB_ADAPTER: sqlite
 

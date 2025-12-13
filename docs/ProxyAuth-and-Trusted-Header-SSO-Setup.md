@@ -308,10 +308,10 @@ services:
   voidauth: 
     image: voidauth/voidauth:latest
     volumes:
-      - /your/config/directory:/app/config
+      - ./voidauth/config:/app/config
     environment:
       # Required environment variables
-      APP_URL: # required
+      APP_URL: # required, ex. https://auth.example.com
       STORAGE_KEY: # required
       DB_PASSWORD: # required
       DB_HOST: voidauth-db
