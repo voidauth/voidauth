@@ -98,7 +98,7 @@ router.get('/cb', (req, res) => {
   const r = (redir && typeof redir === 'string' && URL.parse(redir)) || undefined
 
   if (r && psl.get(r.hostname) !== psl.get(appUrl().hostname)) {
-    res.status(400).send({ error: `ProxyAuth root hostname ${r.hostname} does not equal APP_URL root hostname ${appUrl().hostname}` })
+    res.status(400).send({ message: `ProxyAuth root hostname ${r.hostname} does not equal APP_URL root hostname ${appUrl().hostname}` })
     return
   }
 

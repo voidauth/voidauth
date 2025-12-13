@@ -10,11 +10,11 @@ export const GRANT_TYPES = ['implicit', 'authorization_code', 'refresh_token'] a
 
 export type ClientUpsert = Required<Pick<ClientMetadata,
   'client_id'
-  | 'redirect_uris'
-  | 'client_secret'>>
+  | 'redirect_uris'>>
   // Optional
   & Partial<Pick<ClientMetadata,
-  'token_endpoint_auth_method'
+  'client_secret'
+  | 'token_endpoint_auth_method'
   | 'response_types'
   | 'grant_types'
   | 'logo_uri'

@@ -5,6 +5,7 @@ import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
 import appConfig from '../util/config'
 import { TABLES } from '@shared/constants'
 import { decryptString, encryptString } from '../db/util'
+import { logger } from '../util/logger'
 
 function getExpireAt(expiresIn: number) {
   return expiresIn
@@ -14,7 +15,7 @@ function getExpireAt(expiresIn: number) {
 
 function parsePayload(payload: string, pt: string) {
   let parsed = JSON.parse(payload)
-  if (pt === 'Client') {
+  if (pt === 'Client' && parsed.client_secret != null) {
     const client_secret = decryptString(parsed.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
     if (client_secret == null) {
       throw new Error("Cannot decrypt client_secret")
@@ -25,7 +26,7 @@ function parsePayload(payload: string, pt: string) {
 }
 
 function stringifyPayload(payload: any, pt: string) {
-  if (pt === 'Client') {
+  if (pt === 'Client' && payload.client_secret != null) {
     const client_secret = encryptString(payload.client_secret)
     return JSON.stringify({ ...payload, client_secret })
   }
@@ -62,7 +63,7 @@ export class KnexAdapter implements Adapter {
           }
           : undefined
       } catch (e) {
-        console.error(typeof e === 'object' && e !== null && 'message' in e ? e.message : e)
+        logger.error(e)
         return undefined
       }
     })

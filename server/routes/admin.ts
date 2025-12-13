@@ -38,6 +38,7 @@ import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import DOMPurify from 'isomorphic-dompurify'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
+import { logger } from '../util/logger'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -73,6 +74,11 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     trim: true,
   },
   client_secret: {
+    optional: {
+      options: {
+        values: 'null',
+      },
+    },
     ...stringValidation,
     isLength: {
       options: {
@@ -178,6 +184,12 @@ adminRouter.post('/client',
 
     const clientUpsert = validatorData<ClientUpsert>(req)
     const clientMetadata: ClientResponse = { ...clientUpsert }
+
+    if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
+      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'none'.` })
+      return
+    }
+
     try {
       // check that existing client does not exist with client_id
       const existingClient = await getClient(clientMetadata.client_id)
@@ -218,6 +230,12 @@ adminRouter.patch('/client',
 
     const clientUpsert = validatorData<ClientUpsert>(req)
     const clientMetadata: ClientResponse = { ...clientUpsert }
+
+    if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
+      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'none'.` })
+      return
+    }
+
     try {
       // check that existing client exists with client_id
       const existingClient = await getClient(clientMetadata.client_id)
@@ -512,7 +530,7 @@ adminRouter.patch('/user',
         try {
           await sendApproved(userUpdate, userUpdate.email)
         } catch (e) {
-          console.error(e)
+          logger.error(e)
         }
       }
     }
@@ -605,7 +623,7 @@ adminRouter.patch('/users/approve',
         try {
           await sendApproved(user, user.email)
         } catch (e) {
-          console.error(e)
+          logger.error(e)
         }
       }
     }
