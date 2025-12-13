@@ -1,13 +1,13 @@
-import appConfig from './config'
+import { booleanString } from './util'
 
 function debug(input: unknown) {
-  if (appConfig.DEBUG) {
+  if (booleanString(process.env.DEBUG)) {
     console.log(input)
   }
 }
 
 function error(input: unknown) {
-  if (!appConfig.DEBUG && input instanceof Error) {
+  if (!booleanString(process.env.DEBUG) && input instanceof Error) {
     console.error(input.message)
   } else {
     console.error(input)

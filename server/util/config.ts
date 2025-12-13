@@ -1,13 +1,13 @@
 import { generate } from 'generate-password'
 import { exit } from 'node:process'
+import { booleanString } from './util'
+import { logger } from './logger'
 
 // basic config for app
 class Config {
   APP_TITLE = 'VoidAuth'
   APP_URL = ''
   APP_PORT = 3000
-
-  DEBUG: boolean = false
 
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
@@ -72,7 +72,6 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SIGNUP':
     case 'SIGNUP_REQUIRES_APPROVAL':
     case 'MFA_REQUIRED':
-    case 'DEBUG':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 
@@ -125,22 +124,6 @@ function posInt(value: unknown): number | null {
   return typeof value === 'string' && Number.isInteger(Number.parseFloat(value)) && Number.parseInt(value) > 0
     ? Number.parseInt(value)
     : null
-}
-
-function booleanString(value: unknown): boolean | null {
-  if (typeof value === 'boolean') {
-    return value
-  }
-
-  if (typeof value === 'string') {
-    if (value.toLowerCase() === 'true') {
-      return true
-    } else if (value.toLowerCase() === 'false') {
-      return false
-    }
-  }
-
-  return null
 }
 
 function stringDuration(durationStr: unknown) {
@@ -209,13 +192,13 @@ configKeys.forEach((key: keyof Config) => {
 
 // check APP_URL is set
 if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
-  console.error('APP_URL must be set and be a valid URL, starting with http(s)://')
+  logger.error('APP_URL must be set and be a valid URL, starting with http(s)://')
   exit(1)
 }
 
 // check DEFAULT_REDIRECT is valid if set
 if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
-  console.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
+  logger.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
   exit(1)
 }
 // make sure APP_URL does not have trailing slash(es)
@@ -223,8 +206,8 @@ appConfig.APP_URL = appConfig.APP_URL.replace(/\/+$/, '')
 
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {
-  console.error('STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: ')
-  console.error(generate({
+  logger.error('STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: ')
+  logger.error(generate({
     length: 32,
     numbers: true,
   }))
