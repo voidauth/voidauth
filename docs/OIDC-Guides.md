@@ -221,22 +221,6 @@ Redirect URLs: https://mastodon.example.com/auth/auth/openid_connect/callback
 Auth Method: Client Secret Basic
 ```
 
-## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/netbird.svg" width="28" /> NetBird
-
-Mastodon OIDC Setup Environment Variables:
-
-In VoidAuth OIDC Client Page:
-
-```
-Client ID: your-client-id
-Client Secret: your-client-secret
-Redirect URLs:
-  - https://immich.example.com/auth/login
-  - https://immich.example.com/user-settings
-  - app.immich:///oauth-callback
-Auth Method: Client Secret Basic
-```
-
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/open-webui.svg" width="28" /> Open WebUI
 
 In the following example only users in VoidAuth with the group `users` or `admins` will be able to log in. Adjust these group names as needed.
