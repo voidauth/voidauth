@@ -1,6 +1,7 @@
 import { parseEncrypedData } from '@shared/db/Key'
 import appConfig from '../util/config'
 import crypto from 'node:crypto'
+import { logger } from '../util/logger'
 
 /**
  * Encrypt a string
@@ -38,7 +39,7 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
 
   if (encrypted.metadata.alg === 'aes-256-gcm') {
     if (!encrypted.metadata.iv || !encrypted.metadata.tag) {
-      console.error('Key metadata is missing required properties.')
+      logger.error('Encrypted metadata is missing required properties.')
       return null
     }
 
@@ -60,7 +61,7 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
       }
     }
   } else {
-    console.error('Encrypted storage algorithm not recognized.')
+    logger.error('Encrypted value storage algorithm not recognized.')
     return null
   }
 

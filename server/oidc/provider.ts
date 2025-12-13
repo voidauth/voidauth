@@ -14,6 +14,7 @@ import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { getProxyAuthWithCache } from '../util/proxyAuth'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
+import { logger } from '../util/logger'
 
 // Modify consent interaction policy to check for user and client groups
 const { Check, base } = interactionPolicy
@@ -308,7 +309,8 @@ const configuration: Configuration = {
   ],
   conformIdTokenClaims: false,
   extraClientMetadata: { properties: ['skip_consent', 'require_mfa'] },
-  renderError: (ctx, out, _error) => {
+  renderError: (ctx, out, error) => {
+    logger.error(error)
     ctx.status = 500
     ctx.body = {
       error: out,

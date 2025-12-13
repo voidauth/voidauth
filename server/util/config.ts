@@ -1,5 +1,6 @@
 import { generate } from 'generate-password'
 import { exit } from 'node:process'
+import { logger } from './logger'
 
 // basic config for app
 class Config {
@@ -209,13 +210,13 @@ configKeys.forEach((key: keyof Config) => {
 
 // check APP_URL is set
 if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
-  console.error('APP_URL must be set and be a valid URL, starting with http(s)://')
+  logger.error('APP_URL must be set and be a valid URL, starting with http(s)://')
   exit(1)
 }
 
 // check DEFAULT_REDIRECT is valid if set
 if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
-  console.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
+  logger.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
   exit(1)
 }
 // make sure APP_URL does not have trailing slash(es)
@@ -223,8 +224,8 @@ appConfig.APP_URL = appConfig.APP_URL.replace(/\/+$/, '')
 
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {
-  console.error('STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: ')
-  console.error(generate({
+  logger.error('STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: ')
+  logger.error(generate({
     length: 32,
     numbers: true,
   }))
@@ -233,7 +234,7 @@ if (appConfig.STORAGE_KEY.length < 32) {
 
 // check PASSWORD_STRENGTH is between 0 and 4
 if (appConfig.PASSWORD_STRENGTH < 0 || appConfig.PASSWORD_STRENGTH > 4) {
-  console.error('PASSWORD_STRENGTH must be between 0 and 4.')
+  logger.error('PASSWORD_STRENGTH must be between 0 and 4.')
   exit(1)
 }
 

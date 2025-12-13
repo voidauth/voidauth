@@ -56,6 +56,7 @@
       <mat-form-field class="client-secret">
         <mat-label>Client Secret</mat-label>
         <input #secret matInput [type]="pwdShow ? 'text' : 'password'" formControlName="client_secret" />
+
         <button
           class="field-suffix"
           type="button"
@@ -81,6 +82,12 @@
         >
           <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
         </button>
+        @if (
+          form.controls.token_endpoint_auth_method.value &&
+          nonClientSecretAuthMethods.includes(form.controls.token_endpoint_auth_method.value)
+        ) {
+          <mat-hint>Not required for current Auth Method.</mat-hint>
+        }
         @if (form.controls.client_secret.errors) {
           <mat-error>{{ form.controls.client_secret.errors | validationError }}</mat-error>
         }
@@ -122,14 +129,14 @@
       }
 
       <mat-form-field>
-        <mat-label>Token Endpoint Auth Method</mat-label>
+        <mat-label>Auth Method</mat-label>
         <mat-select formControlName="token_endpoint_auth_method">
           @for (method of authMethods; track method) {
-            <mat-option [value]="method">{{ method }}</mat-option>
+            <mat-option [value]="method.value">{{ method.name }}</mat-option>
           }
         </mat-select>
         @if (form.controls.token_endpoint_auth_method.value === "none") {
-          <mat-hint>If 'none', client must use PKCE</mat-hint>
+          <mat-hint>PKCE Required with this Auth Method.</mat-hint>
         }
         @if (form.controls.token_endpoint_auth_method.errors) {
           <mat-error>{{ form.controls.token_endpoint_auth_method.errors | validationError }}</mat-error>
@@ -167,9 +174,9 @@
       </mat-form-field>
 
       <mat-form-field>
-        <mat-label>Logo Url</mat-label>
+        <mat-label>Logo URL</mat-label>
         <input matInput type="text" formControlName="logo_uri" />
-        <mat-hint>Logo shown on client consent page, can be a remote url</mat-hint>
+        <mat-hint>Logo URL shown on client consent page.</mat-hint>
         @if (form.controls.logo_uri.errors) {
           <mat-error>{{ form.controls.logo_uri.errors | validationError }}</mat-error>
         }

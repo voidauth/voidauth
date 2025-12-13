@@ -3,6 +3,7 @@ import * as fs from 'node:fs'
 import * as path from 'path'
 import appConfig from './config.ts'
 import * as sass from 'sass'
+import { logger } from './logger.ts'
 
 export let PRIMARY_COLOR = '#000'
 export let PRIMARY_CONTRAST_COLOR = '#FFF'
@@ -50,6 +51,6 @@ export async function generateTheme() {
 
     fs.writeFileSync(path.join('./theme', 'generated-mat-theme.css'), compiled.css)
   } catch (error) {
-    console.error(error)
+    logger.error(error)
   }
 }

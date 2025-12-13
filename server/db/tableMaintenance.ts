@@ -12,6 +12,7 @@ import appConfig from '../util/config'
 import { getCookieKeys, getJWKs } from './key'
 import { decryptString, encryptString } from './util'
 import type { TOTP } from '@shared/db/TOTP'
+import { logger } from '../util/logger'
 
 export async function clearAllExpiredEntries() {
   await db().delete().table<Key>(TABLES.KEY).where('expiresAt', '<', new Date())
@@ -44,7 +45,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
   const cookieKeys = await getCookieKeys()
   const jwks = await getJWKs()
   if (enableWarnings && lockedKeys.length > 0 && (cookieKeys.length === 0 || jwks.length === 0)) {
-    console.error(`WARNING!!!
+    logger.error(`WARNING!!!
       You have key(s) that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
       This could be due to a mistake while rotating the storage key.
       New keys were generated to replace them, this invalidated all sessions and tokens.
@@ -71,7 +72,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
     }).where({ id: k.id, type: 'Client' })
   }
   if (enableWarnings && lockedClients.length > 0) {
-    console.error(`WARNING!!!
+    logger.error(`WARNING!!!
       You have OIDC Clients that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
       This could be due to a mistake while rotating the storage key.
       If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.
@@ -88,7 +89,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
     }).where({ id: t.id })
   }
   if (enableWarnings && lockedTOTPs.length > 0) {
-    console.error(`WARNING!!!
+    logger.error(`WARNING!!!
       You have MFA TOTP codes that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
       This could be due to a mistake while rotating the storage key.
       If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.`)

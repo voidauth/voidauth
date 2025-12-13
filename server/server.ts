@@ -16,6 +16,7 @@ import { rateLimit } from 'express-rate-limit'
 import { sendAdminNotifications } from './util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMaintenance'
 import { createInitialAdmin } from './db/user'
+import { logger } from './util/logger'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -64,7 +65,7 @@ export async function serve() {
   function checkAPPUrl(req: Request, res: Response, next: NextFunction) {
     if (req.hostname !== appUrl().hostname) {
       res.status(400).send({
-        error: `Invalid hostname '${req.hostname}', this service must be accessed from '${appUrl().hostname}'`,
+        message: `Invalid hostname '${req.hostname}', this service must be accessed from '${appUrl().hostname}'`,
       })
       return
     }
@@ -149,7 +150,7 @@ export async function serve() {
       res.send(index)
     } else {
       res.status(404).send({
-        error: `Invalid subdirectory. Expected a base path of ${basePath()}/ based on APP_URL, but got ${req.protocol}://${req.host}${req.originalUrl}`,
+        message: `Invalid subdirectory. Expected a base path of ${basePath()}/ based on APP_URL, but got ${req.protocol}://${req.host}${req.originalUrl}`,
       })
     }
   })
@@ -161,7 +162,7 @@ export async function serve() {
 
   // Last chance error handler
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error(err) // log here, ideally this will never be called
+    logger.error(err) // log here, ideally this will never be called
     res.sendStatus(500)
   })
 
@@ -210,7 +211,7 @@ export async function serve() {
     await als.run({}, async () => {
       await transaction()
       try {
-      // Remove all expired data from db
+        // Remove all expired data from db
         await clearAllExpiredEntries()
 
         // Update encrypted table values to the current STORAGE_KEY
@@ -248,14 +249,14 @@ export async function serve() {
         await commit()
       } catch (e) {
         await rollback()
-        console.error(e)
+        logger.error(e)
       }
 
       // Send admin notification emails
       try {
         await sendAdminNotifications()
       } catch (e) {
-        console.error(e)
+        logger.error(e)
       }
     })
   }

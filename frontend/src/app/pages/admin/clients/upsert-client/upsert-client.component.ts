@@ -9,7 +9,7 @@ import { SnackbarService } from '../../../../services/snackbar.service'
 import { isValidURL, isValidURLControl, isValidWebURLControl } from '../../../../validators/validators'
 import { generate } from 'generate-password-browser'
 import { GRANT_TYPES, RESPONSE_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
-import type { ResponseType } from 'oidc-provider'
+import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
 import type { itemIn } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../../../services/spinner.service'
@@ -35,13 +35,15 @@ export type TypedControls<T> = {
   styleUrl: './upsert-client.component.scss',
 })
 export class UpsertClientComponent implements OnInit {
-  public authMethods = [
-    'client_secret_basic',
-    'client_secret_jwt',
-    'client_secret_post',
+  public authMethods: { name: string, value: ClientAuthMethod }[] = [
+    { name: 'Client Secret Basic', value: 'client_secret_basic' },
+    { name: 'Client Secret JWT', value: 'client_secret_jwt' },
+    { name: 'Client Secret Post', value: 'client_secret_post' },
     // 'private_key_jwt', // do not enable until jwk_uri is ready
-    'none',
+    { name: 'None (Public)', value: 'none' },
   ]
+
+  public nonClientSecretAuthMethods: ClientAuthMethod[] = ['none']
 
   public uniqueResponseTypes = UNIQUE_RESPONSE_TYPES
 
@@ -52,7 +54,7 @@ export class UpsertClientComponent implements OnInit {
   form = new FormGroup<TypedControls<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
     redirect_uris: new FormControl<string[]>([], [Validators.required, Validators.minLength(1)]),
-    client_secret: new FormControl<string>('', [Validators.required, Validators.minLength(4)]),
+    client_secret: new FormControl<string | null>(null, [Validators.required, Validators.minLength(4)]),
     token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_post'),
     response_types: new FormControl<ResponseType[]>(['code'], [(c) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -140,7 +142,7 @@ export class UpsertClientComponent implements OnInit {
           const client = await this.adminService.client(this.client_id)
           this.form.reset({
             client_id: client.client_id,
-            client_secret: client.client_secret ?? '',
+            client_secret: client.client_secret ?? null,
             redirect_uris: client.redirect_uris ?? [],
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_post',
             response_types: client.response_types ?? ['code'],
@@ -200,6 +202,15 @@ export class UpsertClientComponent implements OnInit {
       }
       this.form.controls.post_logout_redirect_uris.markAsDirty()
     })
+
+    this.form.controls.token_endpoint_auth_method.valueChanges.subscribe((value) => {
+      if (value && this.nonClientSecretAuthMethods.includes(value)) {
+        this.form.controls.client_secret.removeValidators(Validators.required)
+      } else {
+        this.form.controls.client_secret.addValidators(Validators.required)
+      }
+      this.form.controls.client_secret.updateValueAndValidity()
+    })
   }
 
   async submit() {
@@ -207,9 +218,9 @@ export class UpsertClientComponent implements OnInit {
       this.spinnerService.show()
 
       if (this.client_id) {
-        await this.adminService.updateClient(this.form.getRawValue())
+        await this.adminService.updateClient({ ...this.form.getRawValue(), client_secret: this.form.value.client_secret || null })
       } else {
-        await this.adminService.addClient(this.form.getRawValue())
+        await this.adminService.addClient({ ...this.form.getRawValue(), client_secret: this.form.value.client_secret || null })
       }
 
       this.snackbarService.message(`Client ${this.client_id ? 'updated' : 'created'}.`)

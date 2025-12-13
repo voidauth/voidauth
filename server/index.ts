@@ -1,6 +1,7 @@
 import { exit } from 'process'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import { logger } from './util/logger.ts'
 
 export const argv = yargs(hideBin(process.argv))
   .version(false)
@@ -8,10 +9,10 @@ export const argv = yargs(hideBin(process.argv))
   .usage('Usage: voidauth <command> [options]')
   .command(['serve', '$0'], 'Default, serve voidauth application.', {}, async () => {
     try {
-      const server = await import('./server')
+      const server = await import('./server.ts')
       void server.serve()
     } catch (e) {
-      console.error(typeof e === 'object' && e != null && 'message' in e ? e.message : e)
+      logger.error(e)
       exit(1)
     }
   })
@@ -20,12 +21,12 @@ export const argv = yargs(hideBin(process.argv))
     {},
     async () => {
       try {
-        const migrate = await import('./migrateDB')
+        const migrate = await import('./migrateDB.ts')
         await migrate.migrate()
         console.log('Database migration completed successfully, adjust your DB_* environment variables and restart.')
         exit(0)
       } catch (e) {
-        console.error(typeof e === 'object' && e != null && 'message' in e ? e.message : e)
+        logger.error(e)
         exit(1)
       }
     })
