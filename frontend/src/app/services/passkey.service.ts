@@ -135,9 +135,7 @@ export class PasskeyService {
           return
         }
 
-        this.spinnerService.show()
-
-        void this.register().then(() => {
+        this.register().then(() => {
           this.snackbarService.message('Passkey added.')
         }).catch((error: unknown) => {
           if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {

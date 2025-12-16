@@ -38,7 +38,7 @@ Features:
 
 - 🌐 OpenID Connect (OIDC) Provider
 - 🔄 Proxy ForwardAuth
-- 👤 User Management
+- 👤 User and Groups Management
 - 📨 User Self-Registration and Invitations
 - 🎨 Customizable (Logo, Title, Theme Color, Email Templates)
 - 🔑 Multi-factor Authentication, Passkeys, and Passkey-Only Accounts

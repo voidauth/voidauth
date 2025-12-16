@@ -30,12 +30,9 @@ export function getBaseHrefPath(): string {
 
 export function getCurrentHost() {
   const currentUri = new URL(window.location.href)
-  let currentHost = currentUri.hostname
+  let currentHost = currentUri.host
   if (currentUri.protocol) {
     currentHost = `${currentUri.protocol}//${currentHost}`
-  }
-  if (currentUri.port) {
-    currentHost = `${currentHost}:${currentUri.port}`
   }
 
   return currentHost + getBaseHrefPath()

@@ -1,7 +1,17 @@
 import { exit } from 'process'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { logger } from './util/logger.ts'
+import { booleanString } from './util/util.ts'
+
+process.env.NODE_ENV ??= 'production'
+
+// determine correct DEBUG env var
+process.env.DEBUG_HIDE_DATE = 'true'
+if (booleanString(process.env.ENABLE_DEBUG) || booleanString(process.env.DEBUG)) {
+  process.env.DEBUG = 'voidauth:*,oidc-provider:*'
+} else {
+  process.env.DEBUG = 'voidauth:*error,oidc-provider:server_error'
+}
 
 export const argv = yargs(hideBin(process.argv))
   .version(false)
@@ -12,7 +22,7 @@ export const argv = yargs(hideBin(process.argv))
       const server = await import('./server.ts')
       void server.serve()
     } catch (e) {
-      logger.error(e)
+      console.error(e)
       exit(1)
     }
   })
@@ -26,7 +36,7 @@ export const argv = yargs(hideBin(process.argv))
         console.log('Database migration completed successfully, adjust your DB_* environment variables and restart.')
         exit(0)
       } catch (e) {
-        logger.error(e)
+        console.error(e)
         exit(1)
       }
     })
