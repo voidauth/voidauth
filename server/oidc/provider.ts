@@ -239,13 +239,11 @@ const configuration: Configuration = {
     long: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: appUrl().protocol === 'https:',
       domain: psl.get(appUrl().hostname) ?? undefined,
     },
     short: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: appUrl().protocol === 'https:',
       domain: psl.get(appUrl().hostname) ?? undefined,
     },
   },

@@ -3,8 +3,10 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { booleanString } from './util/util.ts'
 
+// Configure some env variables for dependencies in advance of importing them
+// For this to work, no static import statement in this file can import the following:
+// 'debug', 'express'
 process.env.NODE_ENV ??= 'production'
-
 // determine correct DEBUG env var
 process.env.DEBUG_HIDE_DATE = 'true'
 if (booleanString(process.env.ENABLE_DEBUG) || booleanString(process.env.DEBUG)) {

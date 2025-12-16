@@ -12,7 +12,6 @@ import { randomInt } from 'node:crypto'
 import initialize from 'oidc-provider/lib/helpers/initialize_keystore.js'
 import { transaction, commit, rollback } from './db/db'
 import { als } from './util/als'
-import { rateLimit } from 'express-rate-limit'
 import { sendAdminNotifications } from './util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMaintenance'
 import { createInitialAdmin } from './db/user'
@@ -33,7 +32,7 @@ export async function serve() {
 
   app.use(helmet({
     contentSecurityPolicy: {
-    // use safe defaults, and also...
+      // use safe defaults, and also...
       useDefaults: true,
       directives: {
         'script-src': ['\'self\'', '\'unsafe-inline\''], // angular uses inline scripts for loading
@@ -45,14 +44,6 @@ export async function serve() {
     },
   }))
 
-  // apply rate limiter to all requests
-  const rateWindowS = 10 * 60 // 10 minutes
-  app.use(rateLimit({
-    windowMs: rateWindowS * 1000,
-    max: rateWindowS * 100, // max 100 requests per second
-    validate: { trustProxy: false },
-  }))
-
   function noCache(_req: Request, res: Response, next: NextFunction) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     res.setHeader('Pragma', 'no-cache')
@@ -62,21 +53,29 @@ export async function serve() {
     next()
   }
 
+  app.use(`/healthcheck`, noCache, (_req, res) => {
+    res.sendStatus(200)
+    return
+  })
+
+  // Check inconsistencies that cause node-oidc-provider to throw errors
+  // And provide more clear errors instead
   function checkAPPUrl(req: Request, res: Response, next: NextFunction) {
+    // If hostname does not match, OIDC authorization endpoint will fail to set cookie that can persist
     if (req.hostname !== appUrl().hostname) {
+      const message = 'Invalid request hostname ' + req.hostname + ', '
+        + '$APP_URL hostname is ' + appUrl().hostname + ' . '
+        + 'If ' + req.hostname + ' does not match what is displayed in the browser URL bar '
+        + 'this may indicate a reverse-proxy misconfiguration.'
+      logger.debug(message)
       res.status(400).send({
-        message: `Invalid hostname '${req.hostname}', this service must be accessed from '${appUrl().hostname}'`,
+        message,
       })
       return
     }
 
     next()
   }
-
-  app.use(`/healthcheck`, noCache, (_req, res) => {
-    res.sendStatus(200)
-    return
-  })
 
   app.use(`${basePath()}/oidc`, noCache, checkAPPUrl, provider.callback())
 
