@@ -42,12 +42,9 @@ export class VerifyComponent implements OnInit {
       this.spinnerService.show()
 
       try {
-        this.spinnerService.show()
         await this.authService.interactionExists()
       } catch (_e) {
         await this.authService.createInteraction()
-      } finally {
-        this.spinnerService.hide()
       }
 
       this.config = await this.configService.getConfig()
@@ -68,7 +65,6 @@ export class VerifyComponent implements OnInit {
 
       // See if we want to ask the user to register a passkey
       try {
-        this.spinnerService.show()
         const user = (await this.authService.interactionExists()).user
         if (user && await this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()

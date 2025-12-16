@@ -48,9 +48,6 @@ await esbuild.build({
   sourcemap: false,
   minifyWhitespace: true, // other minify options break things
   conditions: ['node'],
-  define: {
-    'process.env.NODE_ENV': `'production'`,
-  },
   banner: {
     js: [
       `import { createRequire as topLevelCreateRequire } from 'module'`,

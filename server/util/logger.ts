@@ -1,16 +1,18 @@
-import { booleanString } from './util'
+import __debug from 'debug'
+
+const _debug = __debug('voidauth:debug')
+const _error = __debug('voidauth:error')
 
 function debug(input: unknown) {
-  if (booleanString(process.env.DEBUG)) {
-    console.log(input)
-  }
+  _debug(input)
 }
 
 function error(input: unknown) {
-  if (!booleanString(process.env.DEBUG) && input instanceof Error) {
-    console.error(input.message)
+  if (input instanceof Error) {
+    _error(input.message)
+    _debug(input.stack)
   } else {
-    console.error(input)
+    _error(input)
   }
 }
 
