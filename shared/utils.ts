@@ -8,20 +8,79 @@ export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefin
 
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 
-function urlFromWildcardDomain(input: string) {
-  const url = URL.parse(`http://${input.replaceAll(/\*+/g, '*').replaceAll('*', '__wildcard__')}`)
+type URLPatternGroups = {
+  protocol?: string
+  userinfo?: string
+  hostname?: string
+  port?: string
+  pathname?: string
+  search?: string
+  hash?: string
+}
+
+function urlFromWildcardHref(input: string) {
+  const pattern = new RegExp(
+    '^'
+    + '(?:(?<protocol>[^:/?#.]+:)(?://)?)?' // protocol, optionally match '//'
+    + '(?:' // wrap host portions in an optional match, allows matching path/query/hash only
+    + '(?:(?<userinfo>[^\\\\/?#]*)@)?' // username+password
+    + '(?<hostname>[^\\\\/?#:]*?)' // hostname
+    + '(?::(?<port>[0-9*]+))?' // port, ALLOW WILDCARDS, do not include ':'
+    + '(?=[\\\\/?#]|$)' // match everything else up to \, /, ?, #
+    + ')?'
+    + '(?<pathname>[^?#:]+)?' // pathname
+    + '(?:(?<search>\\?[^#]*))?' // search
+    + '(?:(?<hash>#.*))?' // hash
+    + '$')
+
+  const url: URLPatternGroups | undefined = pattern.exec(input)?.groups
+
   if (!url) {
     return null
   }
+
   return {
-    hostname: url.hostname.replaceAll('__wildcard__', '*'),
-    pathname: url.pathname.replaceAll('__wildcard__', '*'),
-    href: url.href.replaceAll('__wildcard__', '*'),
+    protocol: url.protocol,
+    hostname: url.hostname,
+    pathname: url.pathname,
+    port: url.port,
+    href: input,
     search: url.search,
     hash: url.hash,
-    password: url.password,
-    username: url.username,
+    username: url.userinfo?.split(':')[0],
+    password: url.userinfo?.split(':')[1],
   }
+}
+
+function urlFromWildcardDomain(input: string) {
+  // If the input does not start with http(s), add it so it can be later safely removed
+  if (!input.startsWith('http:') && !input.startsWith('https:')) {
+    input = 'http:' + input
+  }
+
+  const url = urlFromWildcardHref(input)
+
+  if (!url) {
+    return null
+  }
+
+  if (!url.hostname) {
+    url.hostname = '*'
+  }
+
+  if (!url.pathname) {
+    url.pathname = '/'
+  }
+
+  if (!url.pathname.startsWith('/')) {
+    url.pathname = '/' + url.pathname
+  }
+
+  if (url.pathname.endsWith('/')) {
+    url.pathname += '*'
+  }
+
+  return { ...url, hostname: url.hostname, pathname: url.pathname }
 }
 
 export function isValidWildcardDomain(input: string) {
@@ -38,12 +97,9 @@ export function isValidWildcardDomain(input: string) {
 
 export function formatWildcardDomain(input: string) {
   const url = urlFromWildcardDomain(input) as URL
-  const hostname = url.hostname
-  let pathname = url.pathname
-  if (!pathname.endsWith('*') && pathname.endsWith('/')) {
-    pathname += '*'
-  }
-  return `${hostname}${pathname}`
+  const host = url.host
+  const pathname = url.pathname
+  return `${host}${pathname}`
 }
 
 export function sortWildcardDomains(ad: string, bd: string) {
@@ -54,10 +110,9 @@ export function sortWildcardDomains(ad: string, bd: string) {
     return +!a - +!b
   }
 
+  // Check if one domain has more subdomains
   const ah = a.hostname
   const bh = b.hostname
-
-  // Check if one domain has more subdomains
   const aSubs = ah.split('.').filter(s => !!s).reverse()
   const bSubs = bh.split('.').filter(s => !!s).reverse()
   const subResult = sortWildcardParts(aSubs, bSubs)
@@ -65,11 +120,17 @@ export function sortWildcardDomains(ad: string, bd: string) {
     return subResult
   }
 
-  // Do the same for paths
-  const ap = a.pathname
-  const bp = b.pathname
+  // Check if one domain has more specific port number
+  const aPort = a.port != null ? [a.port] : []
+  const bPort = b.port != null ? [b.port] : []
+  const portResult = sortWildcardParts(aPort, bPort)
+  if (portResult) {
+    return portResult
+  }
 
   // Check if one path has more subpaths
+  const ap = a.pathname
+  const bp = b.pathname
   const aPaths = ap.split('/').filter(s => !!s)
   const bPaths = bp.split('/').filter(s => !!s)
   const pathResult = sortWildcardParts(aPaths, bPaths)

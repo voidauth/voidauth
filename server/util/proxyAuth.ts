@@ -123,5 +123,5 @@ export async function getProxyAuthWithCache(url: URL) {
 }
 
 function formatProxyAuthDomain(url: URL) {
-  return `${url.hostname}${url.pathname}`
+  return `${url.host}${url.pathname}`
 }
