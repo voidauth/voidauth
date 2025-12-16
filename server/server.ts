@@ -16,6 +16,7 @@ import { sendAdminNotifications } from './util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMaintenance'
 import { createInitialAdmin } from './db/user'
 import { logger } from './util/logger'
+import * as psl from 'psl'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -61,8 +62,8 @@ export async function serve() {
   // Check inconsistencies that cause node-oidc-provider to throw errors
   // And provide more clear errors instead
   function checkAPPUrl(req: Request, res: Response, next: NextFunction) {
-    // If hostname does not match, OIDC authorization endpoint will fail to set cookie that can persist
-    if (req.hostname !== appUrl().hostname) {
+    // If base hostname does not match, OIDC authorization endpoint will fail to set cookie that can persist
+    if (psl.get(req.hostname) !== psl.get(appUrl().hostname)) {
       const message = 'Invalid request hostname ' + req.hostname + ', '
         + '$APP_URL hostname is ' + appUrl().hostname + ' . '
         + 'If ' + req.hostname + ' does not match what is displayed in the browser URL bar '
