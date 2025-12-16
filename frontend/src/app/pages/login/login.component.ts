@@ -7,9 +7,8 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { ConfigService, getBaseHrefPath, getCurrentHost } from '../../services/config.service'
+import { ConfigService } from '../../services/config.service'
 import { UserService } from '../../services/user.service'
-import { oidcLoginPath } from '@shared/oidc'
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { WebAuthnAbortService } from '@simplewebauthn/browser'
@@ -88,7 +87,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it
-        window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost()))
+        await this.authService.createInteraction()
       }
     } finally {
       this.spinnerService.hide()

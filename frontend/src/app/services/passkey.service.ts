@@ -134,6 +134,8 @@ export class PasskeyService {
           return
         }
 
+        this.spinnerService.show()
+
         this.register().then(() => {
           this.snackbarService.message('Passkey added.')
         }).catch((error: unknown) => {
