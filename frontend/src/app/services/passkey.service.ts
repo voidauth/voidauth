@@ -117,9 +117,8 @@ export class PasskeyService {
   }
 
   async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged'>>) {
-    const passkeySupported = (await this.getPasskeySupport()).enabled
     return user.isPrivileged
-      && passkeySupported
+      && (await this.getPasskeySupport()).enabled
       && !this.localPasskeySeen()
       && !this.localPasskeySkipped()
   }
