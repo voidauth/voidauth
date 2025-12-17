@@ -9,7 +9,7 @@
         </th>
         <td mat-cell *matCellDef="let row">
           @if (column.isIcon) {
-            <mat-icon>{{ column.cell(row) }}</mat-icon>
+            <mat-icon fontSet="material-icons-round">{{ column.cell(row) }}</mat-icon>
           } @else {
             {{ column.cell(row) }}
           }
@@ -21,10 +21,10 @@
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
         <a mat-icon-button [routerLink]="['/admin', 'invitation', row.id]" matTooltip="Edit">
-          <mat-icon>edit</mat-icon>
+          <mat-icon fontSet="material-icons-round">edit</mat-icon>
         </a>
         <button mat-icon-button type="button" (click)="delete(row.id)" matTooltip="Delete">
-          <mat-icon>delete_forever</mat-icon>
+          <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
         </button>
       </td>
     </ng-container>

@@ -7,7 +7,7 @@
         </th>
         <td mat-cell *matCellDef="let row">
           @if (column.isIcon) {
-            <mat-icon>{{ column.cell(row) }}</mat-icon>
+            <mat-icon fontSet="material-icons-round">{{ column.cell(row) }}</mat-icon>
           } @else {
             {{ column.cell(row) }}
           }
@@ -19,10 +19,10 @@
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
         <a mat-icon-button matTooltip="Preview" (click)="previewEmail(row)">
-          <mat-icon>open_in_new</mat-icon>
+          <mat-icon fontSet="material-icons-round">open_in_new</mat-icon>
         </a>
         <a mat-icon-button matTooltip="View User" [disabled]="!row.toUser" target="_blank" [routerLink]="['/admin', 'user', row.toUser]">
-          <mat-icon>account_circle</mat-icon>
+          <mat-icon fontSet="material-icons-round">account_circle</mat-icon>
         </a>
       </td>
     </ng-container>
