@@ -16,6 +16,7 @@ import { sendAdminNotifications } from './util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMaintenance'
 import { createInitialAdmin } from './db/user'
 import { logger } from './util/logger'
+import { rateLimit } from 'express-rate-limit'
 import * as psl from 'psl'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
@@ -43,6 +44,15 @@ export async function serve() {
         'form-action': ['\'self\'', 'https:'], // must be able to form action to external site
       },
     },
+  }))
+
+  // apply rate limiter to all requests
+  const rateWindowS = 10 * 60 // 10 minutes
+  app.use(rateLimit({
+    windowMs: rateWindowS * 1000,
+    max: rateWindowS * 100, // max 100 requests per second
+    validate: { trustProxy: false },
+    legacyHeaders: false,
   }))
 
   function noCache(_req: Request, res: Response, next: NextFunction) {

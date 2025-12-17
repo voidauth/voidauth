@@ -98,7 +98,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | DEFAULT_REDIRECT | `${APP_URL}` | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
 | SIGNUP | `false` | Whether the app allows new users to self-register themselves without invitation. | | |
 | SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |
-| EMAIL_VERIFICATION | `true` if SMTP_HOST is set, otherwise `false` | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should be set to true. | | |
+| EMAIL_VERIFICATION | `true` if SMTP_HOST is set, otherwise `false` | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should probably be enabled. | | |
 | MFA_REQUIRED | `false` | If true, users must use a second security factor while logging in such as an Authenticator Token or Passkey | | |
 | ENABLE_DEBUG  | `false` | Enables debug logging. WARNING! This will cause the activity of users to be printed in the logs  | | |
 

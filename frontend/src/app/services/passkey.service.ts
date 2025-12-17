@@ -116,8 +116,9 @@ export class PasskeyService {
     }
   }
 
-  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged'>>) {
+  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged' | 'hasPasskeys'>>) {
     return user.isPrivileged
+      // && !user.hasPasskeys // Only ask to create a passkey if the user has none. Need to think about this.
       && (await this.getPasskeySupport()).enabled
       && !this.localPasskeySeen()
       && !this.localPasskeySkipped()
