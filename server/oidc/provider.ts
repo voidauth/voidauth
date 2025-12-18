@@ -14,6 +14,29 @@ import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { getProxyAuthWithCache } from '../util/proxyAuth'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
+import assert from 'assert'
+
+// Extend 'oidc-provider' where needed
+declare module 'oidc-provider' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Client {
+    interface Schema {
+      invalidate(message: string, code?: unknown): void
+    }
+  }
+
+  // static-side augmentation: tell TS that Client has a nested Schema constructor
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Client {
+    const Schema: {
+      prototype: Client.Schema
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      new (...args: any[]): Client.Schema
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      [k: string]: any
+    }
+  }
+}
 
 // Modify consent interaction policy to check for user and client groups
 const { Check, base } = interactionPolicy
@@ -330,15 +353,32 @@ const configuration: Configuration = {
 
 export const provider = new Provider(`${appConfig.APP_URL}/oidc`, configuration)
 
+// Intercept Client Schema errors and prevent some that we want to ignore
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const clientSchemaInvalidate = provider.Client.Schema.prototype.invalidate
+// Make sure this exists and library did not change
+assert.ok(clientSchemaInvalidate, 'oidc-provider provider.Client.Schema.prototype.invalidate does not exist.')
+provider.Client.Schema.prototype.invalidate = function newInvalidate(message, code) {
+  if (typeof message === 'string'
+    && message === 'redirect_uris for native clients using Custom URI scheme should use reverse domain name based scheme') {
+    return
+  }
+
+  clientSchemaInvalidate.call(this, message, code)
+}
+
 // allow any redirect_uri when using client auth_internal_client
 // this client is not used for actual oidc, only profile or admin management, or proxy auth
 // redirectUriAllowed on a client prototype checks whether a redirect_uri is allowed or not
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const { redirectUriAllowed } = provider.Client.prototype
-provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
+provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
   if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
+  // auth_internal_client redirect_uri is allowed if hostname matches APP_URL
     return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(appUrl().hostname)
   }
+
+  // Call the default redirectUriAllowed function
   return redirectUriAllowed.call(this, redirectUri)
 }
 

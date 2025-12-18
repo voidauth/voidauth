@@ -71,18 +71,15 @@ export async function serve() {
 
   // Check inconsistencies that cause node-oidc-provider to throw errors
   // And provide more clear errors instead
-  function checkAPPUrl(req: Request, res: Response, next: NextFunction) {
+  function checkAPPUrl(req: Request, _res: Response, next: NextFunction) {
     // If base hostname does not match, OIDC authorization endpoint will fail to set cookie that can persist
+    // Do not throw a hard error here, hostname might be getting mangled on the way in but still correct in browser
     if (psl.get(req.hostname) !== psl.get(appUrl().hostname)) {
       const message = 'Invalid request hostname ' + req.hostname + ', '
         + '$APP_URL hostname is ' + appUrl().hostname + ' . '
         + 'If ' + req.hostname + ' does not match what is displayed in the browser URL bar '
         + 'this may indicate a reverse-proxy misconfiguration.'
       logger.debug(message)
-      res.status(400).send({
-        message,
-      })
-      return
     }
 
     next()
