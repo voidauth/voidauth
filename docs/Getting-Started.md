@@ -74,7 +74,7 @@ volumes:
 > A bind mount as shown for VoidAuth `/app/config` is recommended to enable logo and email template customization.
 
 > [!WARNING]
-> VoidAuth does **NOT** provide https termination itself, but it is absolutely **required**. This means you will need a reverse-proxy with https support in front of VoidAuth, as well as your other services.
+> VoidAuth does **NOT** provide `https:` termination itself, but it is **highly recommended**. This means you will need a reverse-proxy with `https:` support in front of VoidAuth and your other services, and some method of acquiring certificates (many reverse-proxies handle this as well).
 
 > [!WARNING]
 > The **APP_URL** environment variable **must** be set to the full external url of the VoidAuth service, ex. `APP_URL: https://auth.example.com` or `APP_URL: https://example.com/auth`.

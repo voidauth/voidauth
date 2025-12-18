@@ -30,7 +30,6 @@
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
     "argon2": "^0.44.0",
-    "debug": "^4.4.3",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
@@ -57,7 +56,6 @@
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "@stylistic/eslint-plugin": "^5.6.1",
-    "@types/debug": "^4.1.12",
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.6",
     "@types/madge": "^5.0.3",

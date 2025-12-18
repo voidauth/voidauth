@@ -5,14 +5,16 @@ import { booleanString } from './util/util.ts'
 
 // Configure some env variables for dependencies in advance of importing them
 // For this to work, no static import statement in this file can import the following:
-// 'debug', 'express'
+// 'express', 'oidc-provider'
 process.env.NODE_ENV ??= 'production'
 // determine correct DEBUG env var
 process.env.DEBUG_HIDE_DATE = 'true'
 if (booleanString(process.env.ENABLE_DEBUG) || booleanString(process.env.DEBUG)) {
-  process.env.DEBUG = 'voidauth:*,oidc-provider:*'
+  process.env.ENABLE_DEBUG = 'true'
+  process.env.DEBUG = 'oidc-provider:*'
 } else {
-  process.env.DEBUG = 'voidauth:*error,oidc-provider:server_error'
+  process.env.ENABLE_DEBUG = 'false'
+  process.env.DEBUG = 'oidc-provider:server_error'
 }
 
 export const argv = yargs(hideBin(process.argv))

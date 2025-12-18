@@ -1,18 +1,17 @@
-import __debug from 'debug'
-
-const _debug = __debug('voidauth:debug')
-const _error = __debug('voidauth:error')
+import { booleanString } from './util'
 
 function debug(input: unknown) {
-  _debug(input)
+  if (booleanString(process.env.ENABLE_DEBUG)) {
+    console.log(input)
+  }
 }
 
 function error(input: unknown) {
-  if (input instanceof Error) {
-    _error(input.message)
-    _debug(input.stack)
+  // do not log error stack traces unless ENABLE_DEBUG
+  if (input instanceof Error && !booleanString(process.env.ENABLE_DEBUG)) {
+    console.error(input.message)
   } else {
-    _error(input)
+    console.error(input)
   }
 }
 
