@@ -16,13 +16,16 @@ import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
 import { isMatch } from 'matcher'
 import assert from 'assert'
+import { isValidWildcardURL } from '@shared/utils'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Client {
     interface Schema {
+      redirect_uris: string[]
       invalidate(message: string, code?: unknown): void
+      redirectUris(uris: string[], label: string): void
     }
   }
 
@@ -329,7 +332,9 @@ const configuration: Configuration = {
     'none',
   ],
   conformIdTokenClaims: false,
-  extraClientMetadata: { properties: ['skip_consent', 'require_mfa'] },
+  extraClientMetadata: {
+    properties: ['skip_consent', 'require_mfa'],
+  },
   renderError: (ctx, out, _error) => {
     ctx.body = {
       error: out,
@@ -361,11 +366,35 @@ const clientSchemaInvalidate = provider.Client.Schema.prototype.invalidate
 assert.ok(clientSchemaInvalidate, 'oidc-provider provider.Client.Schema.prototype.invalidate does not exist.')
 provider.Client.Schema.prototype.invalidate = function newInvalidate(message, code) {
   if (typeof message === 'string'
-    && message === 'redirect_uris for native clients using Custom URI scheme should use reverse domain name based scheme') {
-    return
+    && (message === 'redirect_uris for native clients using Custom URI scheme should use reverse domain name based scheme')) {
+    return // do not throw the error
   }
 
   clientSchemaInvalidate.call(this, message, code)
+}
+
+// Split the checks for valid redirectUris for creating Clients
+// into wildcard and non-wildcard
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const clientSchemaRedirectUris = provider.Client.Schema.prototype.redirectUris
+// Make sure this exists and library did not change
+assert.ok(clientSchemaRedirectUris, 'oidc-provider provider.Client.Schema.prototype.redirectUris does not exist.')
+provider.Client.Schema.prototype.redirectUris = function newRedirectUris(uris: string[], label: string = 'redirect_uris') {
+  // provide defaults here — use the instance property if caller omitted `uris`
+  if (typeof uris === 'undefined') {
+    uris = this.redirect_uris
+  }
+
+  const regularUris = uris.filter(u => !u.includes('*'))
+  const wildcardUris = uris.filter(u => u.includes('*'))
+
+  for (const wildcardUri of wildcardUris) {
+    if (!isValidWildcardURL(wildcardUri)) {
+      clientSchemaInvalidate.call(this, 'redirect_uris with wildcards must be able to match valid uris')
+    }
+  }
+
+  clientSchemaRedirectUris.call(this, regularUris, label)
 }
 
 // allow any redirect_uri when using client auth_internal_client

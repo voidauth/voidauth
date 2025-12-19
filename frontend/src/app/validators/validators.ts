@@ -1,4 +1,5 @@
 import type { AbstractControl } from '@angular/forms'
+import { isValidWildcardURL } from '@shared/utils'
 
 export function isValidWebURLControl(control: AbstractControl) {
   try {
@@ -36,6 +37,15 @@ export function isValidURLControl(control: AbstractControl) {
       isValidUrl: 'Must be a valid URL.',
     }
   }
+}
+
+export function isValidWildcardURLControl(control: AbstractControl) {
+  if (typeof control.value === 'string' && control.value && !isValidWildcardURL(control.value)) {
+    return {
+      isValidUrl: 'Must be a valid wildcard URL.',
+    }
+  }
+  return null
 }
 
 export function isValidURL(value: string) {

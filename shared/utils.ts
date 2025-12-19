@@ -18,7 +18,7 @@ type URLPatternGroups = {
   hash?: string
 }
 
-function urlFromWildcardHref(input: string) {
+export function urlFromWildcardHref(input: string) {
   const pattern = new RegExp(
     '^'
     + '(?:(?<protocol>[^:/?#.]+:)(?://)?)?' // protocol, optionally match '//'
@@ -83,6 +83,11 @@ function urlFromWildcardDomain(input: string) {
   return { ...url, hostname: url.hostname, pathname: url.pathname }
 }
 
+export function isValidWildcardURL(input: string) {
+  const uri = urlFromWildcardHref(input)
+  return !!uri?.hostname
+}
+
 export function isValidWildcardDomain(input: string) {
   try {
     const url = urlFromWildcardDomain(input)
@@ -95,11 +100,10 @@ export function isValidWildcardDomain(input: string) {
   }
 }
 
-export function formatWildcardDomain(input: string) {
+export function formatWildcardDomain(input: string, forcePort: boolean = false) {
   const url = urlFromWildcardDomain(input) as URL
-  const host = url.host
-  const pathname = url.pathname
-  return `${host}${pathname}`
+  const port = url.port || forcePort ? ':' + (url.port || '*') : ''
+  return `${url.hostname}${port}${url.pathname}`
 }
 
 export function sortWildcardDomains(ad: string, bd: string) {

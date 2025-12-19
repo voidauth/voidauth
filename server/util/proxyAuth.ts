@@ -10,6 +10,7 @@ import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResp
 import { loginFactors } from '@shared/user'
 import * as psl from 'psl'
 import { userCanLogin } from './auth'
+import { formatWildcardDomain } from '@shared/utils'
 
 // proxy auth cache
 let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups'>[] = []
@@ -119,9 +120,9 @@ export async function getProxyAuthWithCache(url: URL) {
     proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
   }
 
-  return proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
+  return proxyAuthCache.find(d => isMatch(formattedUrl, formatWildcardDomain(d.domain, true)))
 }
 
 function formatProxyAuthDomain(url: URL) {
-  return `${url.host}${url.pathname}`
+  return `${url.hostname}:${url.port || '*'}${url.pathname}`
 }

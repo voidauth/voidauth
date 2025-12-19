@@ -2,11 +2,11 @@ import { Component, inject, type OnInit } from '@angular/core'
 import { AdminService } from '../../../../services/admin.service'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import { isValidURL, isValidURLControl, isValidWebURLControl } from '../../../../validators/validators'
+import { isValidURL, isValidWebURLControl, isValidWildcardURLControl } from '../../../../validators/validators'
 import { generate } from 'generate-password-browser'
 import { GRANT_TYPES, RESPONSE_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
@@ -17,6 +17,7 @@ import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.co
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
+import { urlFromWildcardHref } from '@shared/utils'
 
 export type TypedControls<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
@@ -89,18 +90,20 @@ export class UpsertClientComponent implements OnInit {
   redirectUrlControl = new FormControl<string>({
     value: '',
     disabled: false,
-  }, [isValidURLControl, (c) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const value = c.value
-    const existing = this.form.controls.redirect_uris.value
-    if (typeof value !== 'string' || !isValidURL(value) || !existing?.length) {
+  }, [isValidWildcardURLControl, (c: AbstractControl<string>) => {
+    const value = urlFromWildcardHref(c.value)
+    const existing = this.form.controls.redirect_uris.value?.map(v => urlFromWildcardHref(v))
+    if (!value || !existing?.length) {
       return null
     }
     const all = existing.concat([value])
     let hasHttpProtocol = false
     let hasCustomProtocol = false
     for (const uri of all) {
-      const protocol = URL.parse(uri)?.protocol
+      if (!uri) {
+        continue
+      }
+      const protocol = uri.protocol
       hasHttpProtocol ||= protocol === 'http:'
       hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
     }
@@ -118,7 +121,7 @@ export class UpsertClientComponent implements OnInit {
     return null
   }])
 
-  postLogoutUrlControl = new FormControl<string | null>(null, [isValidURLControl])
+  postLogoutUrlControl = new FormControl<string | null>(null, [isValidWildcardURLControl])
 
   pwdShow = false
 
