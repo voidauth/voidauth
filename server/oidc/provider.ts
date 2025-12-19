@@ -14,8 +14,8 @@ import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { getProxyAuthWithCache } from '../util/proxyAuth'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
-import { logger } from '../util/logger'
 import { isMatch } from 'matcher'
+import assert from 'assert'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -263,13 +263,11 @@ const configuration: Configuration = {
     long: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: appUrl().protocol === 'https:',
       domain: psl.get(appUrl().hostname) ?? undefined,
     },
     short: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: appUrl().protocol === 'https:',
       domain: psl.get(appUrl().hostname) ?? undefined,
     },
   },
@@ -332,9 +330,7 @@ const configuration: Configuration = {
   ],
   conformIdTokenClaims: false,
   extraClientMetadata: { properties: ['skip_consent', 'require_mfa'] },
-  renderError: (ctx, out, error) => {
-    logger.error(error)
-    ctx.status = 500
+  renderError: (ctx, out, _error) => {
     ctx.body = {
       error: out,
     }
@@ -357,6 +353,20 @@ const configuration: Configuration = {
 }
 
 export const provider = new Provider(`${appConfig.APP_URL}/oidc`, configuration)
+
+// Intercept Client Schema errors and prevent some that we want to ignore
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const clientSchemaInvalidate = provider.Client.Schema.prototype.invalidate
+// Make sure this exists and library did not change
+assert.ok(clientSchemaInvalidate, 'oidc-provider provider.Client.Schema.prototype.invalidate does not exist.')
+provider.Client.Schema.prototype.invalidate = function newInvalidate(message, code) {
+  if (typeof message === 'string'
+    && message === 'redirect_uris for native clients using Custom URI scheme should use reverse domain name based scheme') {
+    return
+  }
+
+  clientSchemaInvalidate.call(this, message, code)
+}
 
 // allow any redirect_uri when using client auth_internal_client
 // this client is not used for actual oidc, only profile or admin management, or proxy auth

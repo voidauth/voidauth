@@ -3,19 +3,19 @@
     @if (this.selectEnabled) {
       <button mat-button [disabled]="!selected.length || currentUserSelected()" (click)="deleteSelected()">
         Delete
-        <mat-icon>delete_forever</mat-icon>
+        <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
       </button>
       <button mat-flat-button [disabled]="!selected.length" (click)="approveSelected()">
         Approve
-        <mat-icon>check</mat-icon>
+        <mat-icon fontSet="material-icons-round">check</mat-icon>
       </button>
       <button mat-icon-button (click)="toggleSelectEnabled()">
-        <mat-icon>cancel</mat-icon>
+        <mat-icon fontSet="material-icons-round">cancel</mat-icon>
       </button>
     } @else {
       <button mat-flat-button (click)="toggleSelectEnabled()">
         Select
-        <mat-icon>check</mat-icon>
+        <mat-icon fontSet="material-icons-round">check</mat-icon>
       </button>
     }
   </div>
@@ -23,7 +23,9 @@
   <mat-form-field>
     <mat-label>Search</mat-label>
     <input matInput type="text" [formControl]="search" />
-    <button class="field-suffix" mat-icon-button matSuffix (click)="search.setValue('')"><mat-icon>cancel</mat-icon></button>
+    <button class="field-suffix" mat-icon-button matSuffix (click)="search.setValue('')">
+      <mat-icon fontSet="material-icons-round">cancel</mat-icon>
+    </button>
   </mat-form-field>
 
   <table mat-table [dataSource]="dataSource" matSort>
@@ -41,7 +43,7 @@
         </th>
         <td mat-cell *matCellDef="let row">
           @if (column.isIcon) {
-            <mat-icon>{{ column.cell(row) }}</mat-icon>
+            <mat-icon fontSet="material-icons-round">{{ column.cell(row) }}</mat-icon>
           } @else {
             {{ column.cell(row) }}
           }
@@ -53,10 +55,10 @@
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
         <a mat-icon-button [routerLink]="['/admin', 'user', row.id]" matTooltip="Edit">
-          <mat-icon>edit</mat-icon>
+          <mat-icon fontSet="material-icons-round">edit</mat-icon>
         </a>
         <button mat-icon-button type="button" [disabled]="row.id === me?.id" (click)="delete(row.id)" matTooltip="Delete">
-          <mat-icon>delete_forever</mat-icon>
+          <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
         </button>
       </td>
     </ng-container>

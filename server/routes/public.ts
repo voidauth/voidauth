@@ -19,6 +19,7 @@ import { createPasskey, createPasskeyRegistrationOptions, getRegistrationInfo, p
 import { getUserPasskeys } from '../db/passkey'
 import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 import { passwordStrength } from '../util/zxcvbn'
+import { logger } from '../util/logger'
 
 /**
  * routes that do not require any auth
@@ -65,6 +66,7 @@ publicRouter.post('/send_password_reset',
       return
     }
 
+    // Create the password reset link even if email will not send
     const passwordReset: PasswordReset = {
       id: randomUUID(),
       userId: user.id,
@@ -78,11 +80,15 @@ publicRouter.post('/send_password_reset',
     await db().table<PasswordReset>(TABLES.PASSWORD_RESET).insert(passwordReset)
 
     // If possible, send email
-    const email = user.email
     const result: SendPasswordResetResponse = { emailSent: false }
-    if (email && SMTP_VERIFIED) {
-      await sendPasswordReset(passwordReset, user, email)
-      result.emailSent = true
+    try {
+      const email = user.email
+      if (email && SMTP_VERIFIED && (!appConfig.EMAIL_VERIFICATION || user.emailVerified)) {
+        await sendPasswordReset(passwordReset, user, email)
+        result.emailSent = true
+      }
+    } catch (e) {
+      logger.error(e)
     }
 
     res.send(result)

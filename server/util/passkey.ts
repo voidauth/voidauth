@@ -66,19 +66,13 @@ export async function createPasskeyRegistrationOptions(uniqueId: string, usernam
     rpID: passkeyRpId,
     userName: username ?? '',
     userDisplayName: username ?? '',
-    // Don't prompt users for additional information about the authenticator
-    // (Recommended for smoother UX)
-    attestationType: 'none',
+    attestationType: 'none', // attestation not supported
     // Prevent users from re-registering existing authenticators
     excludeCredentials: excludeCredentials,
-    // preferredAuthenticatorType: 'localDevice',
-    // See "Guiding use of authenticators via authenticatorSelection" below
     authenticatorSelection: {
       // Defaults
       residentKey: 'required',
       userVerification: 'preferred',
-      // Optional
-      // authenticatorAttachment: 'platform',
     },
   })
 

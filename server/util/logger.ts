@@ -1,13 +1,14 @@
 import { booleanString } from './util'
 
 function debug(input: unknown) {
-  if (booleanString(process.env.DEBUG)) {
+  if (booleanString(process.env.ENABLE_DEBUG)) {
     console.log(input)
   }
 }
 
 function error(input: unknown) {
-  if (!booleanString(process.env.DEBUG) && input instanceof Error) {
+  // do not log error stack traces unless ENABLE_DEBUG
+  if (input instanceof Error && !booleanString(process.env.ENABLE_DEBUG)) {
     console.error(input.message)
   } else {
     console.error(input)

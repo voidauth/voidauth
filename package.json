@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "concurrently \"npm run server:watch\" \"npm run frontend:watch\"",
-    "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && npm server:build && tsx --env-file-if-exists=.env ./server/index.ts\"",
+    "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && npm run server:build && tsx --env-file-if-exists=.env ./server/index.ts\"",
     "server:build": "tsx ./esbuild.config.ts",
     "frontend:watch": "cd frontend && npm run watch",
     "postinstall": "husky",

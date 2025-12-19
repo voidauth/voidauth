@@ -116,10 +116,10 @@ export class PasskeyService {
     }
   }
 
-  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged'>>) {
-    const passkeySupported = (await this.getPasskeySupport()).enabled
+  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged' | 'hasPasskeys'>>) {
     return user.isPrivileged
-      && passkeySupported
+      // && !user.hasPasskeys // Only ask to create a passkey if the user has none. Need to think about this.
+      && (await this.getPasskeySupport()).enabled
       && !this.localPasskeySeen()
       && !this.localPasskeySkipped()
   }
@@ -137,7 +137,7 @@ export class PasskeyService {
 
         this.spinnerService.show()
 
-        void this.register().then(() => {
+        this.register().then(() => {
           this.snackbarService.message('Passkey added.')
         }).catch((error: unknown) => {
           if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {

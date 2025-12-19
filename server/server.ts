@@ -12,11 +12,12 @@ import { randomInt } from 'node:crypto'
 import initialize from 'oidc-provider/lib/helpers/initialize_keystore.js'
 import { transaction, commit, rollback } from './db/db'
 import { als } from './util/als'
-import { rateLimit } from 'express-rate-limit'
 import { sendAdminNotifications } from './util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMaintenance'
 import { createInitialAdmin } from './db/user'
 import { logger } from './util/logger'
+import { rateLimit } from 'express-rate-limit'
+import * as psl from 'psl'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -33,7 +34,7 @@ export async function serve() {
 
   app.use(helmet({
     contentSecurityPolicy: {
-    // use safe defaults, and also...
+      // use safe defaults, and also...
       useDefaults: true,
       directives: {
         'script-src': ['\'self\'', '\'unsafe-inline\''], // angular uses inline scripts for loading
@@ -51,6 +52,7 @@ export async function serve() {
     windowMs: rateWindowS * 1000,
     max: rateWindowS * 100, // max 100 requests per second
     validate: { trustProxy: false },
+    legacyHeaders: false,
   }))
 
   function noCache(_req: Request, res: Response, next: NextFunction) {
@@ -62,21 +64,26 @@ export async function serve() {
     next()
   }
 
-  function checkAPPUrl(req: Request, res: Response, next: NextFunction) {
-    if (req.hostname !== appUrl().hostname) {
-      res.status(400).send({
-        message: `Invalid hostname '${req.hostname}', this service must be accessed from '${appUrl().hostname}'`,
-      })
-      return
-    }
-
-    next()
-  }
-
   app.use(`/healthcheck`, noCache, (_req, res) => {
     res.sendStatus(200)
     return
   })
+
+  // Check inconsistencies that cause node-oidc-provider to throw errors
+  // And provide more clear errors instead
+  function checkAPPUrl(req: Request, _res: Response, next: NextFunction) {
+    // If base hostname does not match, OIDC authorization endpoint will fail to set cookie that can persist
+    // Do not throw a hard error here, hostname might be getting mangled on the way in but still correct in browser
+    if (psl.get(req.hostname) !== psl.get(appUrl().hostname)) {
+      const message = 'Invalid request hostname ' + req.hostname + ', '
+        + '$APP_URL hostname is ' + appUrl().hostname + ' . '
+        + 'If ' + req.hostname + ' does not match what is displayed in the browser URL bar '
+        + 'this may indicate a reverse-proxy misconfiguration.'
+      logger.debug(message)
+    }
+
+    next()
+  }
 
   app.use(`${basePath()}/oidc`, noCache, checkAPPUrl, provider.callback())
 
