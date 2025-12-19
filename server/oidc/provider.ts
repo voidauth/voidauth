@@ -15,6 +15,29 @@ import { getProxyAuthWithCache } from '../util/proxyAuth'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
 import { logger } from '../util/logger'
+import { isMatch } from 'matcher'
+
+// Extend 'oidc-provider' where needed
+declare module 'oidc-provider' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Client {
+    interface Schema {
+      invalidate(message: string, code?: unknown): void
+    }
+  }
+
+  // static-side augmentation: tell TS that Client has a nested Schema constructor
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Client {
+    const Schema: {
+      prototype: Client.Schema
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      new (...args: any[]): Client.Schema
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      [k: string]: any
+    }
+  }
+}
 
 // Modify consent interaction policy to check for user and client groups
 const { Check, base } = interactionPolicy
@@ -338,13 +361,35 @@ export const provider = new Provider(`${appConfig.APP_URL}/oidc`, configuration)
 // allow any redirect_uri when using client auth_internal_client
 // this client is not used for actual oidc, only profile or admin management, or proxy auth
 // redirectUriAllowed on a client prototype checks whether a redirect_uri is allowed or not
+// allow for wildcard matches as well
 // eslint-disable-next-line @typescript-eslint/unbound-method
-const { redirectUriAllowed } = provider.Client.prototype
-provider.Client.prototype.redirectUriAllowed = function abc(redirectUri) {
+const { redirectUriAllowed, postLogoutRedirectUriAllowed } = provider.Client.prototype
+provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
   if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
+    // auth_internal_client redirect_uri is allowed if hostname matches APP_URL
     return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(appUrl().hostname)
   }
+
+  // Check if any client redirectUris are a wildcard match
+  if (this.redirectUris?.some((r: string) => {
+    return r.includes('*') && isMatch(redirectUri, r)
+  })) {
+    return true
+  }
+
+  // Call the default redirectUriAllowed function
   return redirectUriAllowed.call(this, redirectUri)
+}
+provider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutRedirectUriAllowed(postLogoutRedirectUri: string) {
+  // Check if any client postLogoutRedirectUris are a wildcard match
+  if (this.postLogoutRedirectUris?.some((r: string) => {
+    return r.includes('*') && isMatch(postLogoutRedirectUri, r)
+  })) {
+    return true
+  }
+
+  // Call the default postLogoutRedirectUriAllowed function
+  return postLogoutRedirectUriAllowed.call(this, postLogoutRedirectUri)
 }
 
 export async function getProviderClient(client_id: string) {
