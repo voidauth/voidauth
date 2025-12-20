@@ -1,5 +1,5 @@
 import type { AbstractControl } from '@angular/forms'
-import { isValidWildcardRedirect } from '@shared/utils'
+import { wildcardRedirect } from '@shared/utils'
 
 export function isValidWebURLControl(control: AbstractControl) {
   try {
@@ -42,7 +42,7 @@ export function isValidURLControl(control: AbstractControl) {
 export function isValidWildcardRedirectControl(control: AbstractControl<string>) {
   if (typeof control.value === 'string' && control.value) {
     try {
-      isValidWildcardRedirect(control.value)
+      wildcardRedirect(control.value)
     } catch (e) {
       return {
         isValidUrl: e instanceof Error ? e.message : 'Must be valid URL.',

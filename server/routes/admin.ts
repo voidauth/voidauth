@@ -25,7 +25,7 @@ import { sendApproved, sendInvitation, sendPasswordReset, SMTP_VERIFIED } from '
 import { generate } from 'generate-password'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
-import { formatWildcardDomain, isValidWildcardDomain, isValidWildcardRedirect } from '@shared/utils'
+import { formatWildcardDomain, isValidWildcardDomain, wildcardRedirect, urlFromWildcardHref } from '@shared/utils'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import { getProxyAuth, getProxyAuths } from '../db/proxyAuth'
@@ -55,20 +55,16 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   'redirect_uris.*': {
     isValidURL: {
       custom: (input) => {
-        return typeof input === 'string' && isValidWildcardRedirect(input)
+        return typeof input === 'string' && wildcardRedirect(input)
       },
     },
     trim: true,
   },
-  post_logout_redirect_uris: {
-    optional: true,
-    isArray: true,
-  },
-  'post_logout_redirect_uris.*': {
+  post_logout_redirect_uri: {
     optional: true,
     isValidURL: {
       custom: (input) => {
-        return typeof input === 'string' && isValidWildcardRedirect(input)
+        return typeof input === 'string' && wildcardRedirect(input)
       },
     },
     trim: true,
@@ -202,7 +198,7 @@ adminRouter.post('/client',
       let hasHttpProtocol = false
       let hasCustomProtocol = false
       for (const uri of clientUpsert.redirect_uris) {
-        const protocol = URL.parse(uri)?.protocol
+        const protocol = urlFromWildcardHref(uri)?.protocol
         hasHttpProtocol ||= protocol === 'http:'
         hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
       }
@@ -248,7 +244,7 @@ adminRouter.patch('/client',
       let hasHttpProtocol = false
       let hasCustomProtocol = false
       for (const uri of clientUpsert.redirect_uris) {
-        const protocol = URL.parse(uri)?.protocol
+        const protocol = urlFromWildcardHref(uri)?.protocol
         hasHttpProtocol ||= protocol === 'http:'
         hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
       }

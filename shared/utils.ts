@@ -76,7 +76,7 @@ function urlFromWildcardDomain(input: string) {
  * If input is a valid redirect (supporting wildcards) returns true. Otherwise throws an error with
  * message explaining why it is not
  */
-export function isValidWildcardRedirect(input: string) {
+export function wildcardRedirect(input: string) {
   const uri = urlFromWildcardHref(input)
 
   if (!uri) {
@@ -94,6 +94,31 @@ export function isValidWildcardRedirect(input: string) {
   }
 
   return uri
+}
+
+export function validateWildcardRedirects(inputs: string[]) {
+  try {
+    for (const input of inputs) {
+      wildcardRedirect(input)
+    }
+  } catch (_e) {
+    throw new TypeError('A Redirect URL is invalid.')
+  }
+
+  let hasHttpProtocol = false
+  let hasCustomProtocol = false
+  for (const input of inputs) {
+    const uri = urlFromWildcardHref(input)
+    if (!uri) {
+      continue
+    }
+    const protocol = uri.protocol
+    hasHttpProtocol ||= protocol === 'http:'
+    hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
+  }
+  if (hasCustomProtocol && hasHttpProtocol) {
+    throw new TypeError('Do not mix insecure and custom protocol Redirect URLs.')
+  }
 }
 
 export function isValidWildcardDomain(input: string) {

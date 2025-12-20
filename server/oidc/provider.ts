@@ -16,7 +16,7 @@ import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
 import { isMatch } from 'matcher'
 import assert from 'assert'
-import { isValidWildcardRedirect } from '@shared/utils'
+import { wildcardRedirect } from '@shared/utils'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -388,19 +388,21 @@ provider.Client.Schema.prototype.redirectUris = function newRedirectUris(uris: s
   }
 
   const regularUris = uris.filter(u => !u.includes('*'))
-  const wildcardUris = uris.filter(u => u.includes('*'))
+  clientSchemaRedirectUris.call(this, regularUris, label)
 
-  // Check each individual wildcardUri
-  for (const wildcardUri of wildcardUris) {
+  // Only allowed invalid URL property on wildcard redirect is port
+  // See if wildcard uris are valid with dummy port
+  const wildcardUris = uris.filter(u => u.includes('*')).map((u) => {
     try {
-      isValidWildcardRedirect(wildcardUri)
+      const url = wildcardRedirect(u)
+      return `${url.protocol}//${url.hostname}${url.port ? `:80` : ''}${url.pathname}${url.search}${url.hash}`
     } catch (e) {
       const message = `${label} ${e instanceof Error ? e.message : 'must be valid URL.'}`
       clientSchemaInvalidate.call(this, message)
+      return u
     }
-  }
-
-  clientSchemaRedirectUris.call(this, regularUris, label)
+  })
+  clientSchemaRedirectUris.call(this, wildcardUris, label)
 }
 
 // allow any redirect_uri when using client auth_internal_client
@@ -415,10 +417,6 @@ provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(re
     return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(appUrl().hostname)
   }
 
-  // Check redirect_uri as if it had been added to Client redirect_uris list
-  // Catches issues with wildcard matches that could not be caught earlier
-  clientSchemaRedirectUris.call(this, [redirectUri], 'redirect_uri')
-
   // Check if any client redirectUris are a wildcard match
   if (this.redirectUris?.some((r: string) => {
     return r.includes('*') && isMatch(redirectUri, r)
@@ -430,10 +428,6 @@ provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(re
   return redirectUriAllowed.call(this, redirectUri)
 }
 provider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutRedirectUriAllowed(postLogoutRedirectUri: string) {
-  // Check redirect_uri as if it had been added to Client redirect_uris list
-  // Catches issues with wildcard matches that could not be caught earlier
-  clientSchemaRedirectUris.call(this, [postLogoutRedirectUri], 'post_logout_redirect_uri')
-
   // Check if any client postLogoutRedirectUris are a wildcard match
   if (this.postLogoutRedirectUris?.some((r: string) => {
     return r.includes('*') && isMatch(postLogoutRedirectUri, r)
