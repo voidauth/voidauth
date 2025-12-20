@@ -101,7 +101,7 @@ router.get('/cb', (req, res) => {
     const baseRedirDomain = getBaseDomain(r.hostname)
     const baseAPP_URLDomain = getBaseDomain(appUrl().hostname)
     if (baseRedirDomain !== baseAPP_URLDomain) {
-      res.status(400).send({ message: `ProxyAuth root hostname ${String(baseRedirDomain)} does not equal APP_URL root hostname ${String(baseAPP_URLDomain)}` })
+      res.status(400).send({ message: `ProxyAuth root hostname '${String(baseRedirDomain)}' does not equal APP_URL root hostname '${String(baseAPP_URLDomain)}'` })
       return
     }
   }

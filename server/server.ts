@@ -75,9 +75,9 @@ export async function serve() {
     // If base hostname does not match, OIDC authorization endpoint will fail to set cookie that can persist
     // Do not throw a hard error here, hostname might be getting mangled on the way in but still correct in browser
     if (getBaseDomain(req.hostname) !== getBaseDomain(appUrl().hostname)) {
-      const message = 'Invalid request hostname ' + req.hostname + ', '
-        + '$APP_URL hostname is ' + appUrl().hostname + ' . '
-        + 'If ' + req.hostname + ' does not match what is displayed in the browser URL bar '
+      const message = 'Invalid request hostname \'' + req.hostname + '\', '
+        + '$APP_URL hostname is \'' + appUrl().hostname + '\' . '
+        + 'If \'' + req.hostname + '\' does not match what is displayed in the browser URL bar '
         + 'this may indicate a reverse-proxy misconfiguration.'
       logger.debug(message)
     }
