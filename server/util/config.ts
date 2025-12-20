@@ -203,7 +203,7 @@ if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
 // If APP_URL hostname seems to be a private dns zone, debug log that
 const pslParsedAppUrl = psl.parse(appUrl().hostname)
 if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
-  logger.debug('APP_URL appears to be a private DNS zone.')
+  logger.debug(`APP_URL: '${appConfig.APP_URL}' appears to be a private DNS zone.`)
 }
 
 // check DEFAULT_REDIRECT is valid if set
