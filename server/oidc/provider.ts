@@ -8,13 +8,13 @@ import { ADMIN_GROUP, REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import Keygrip from 'keygrip'
-import * as psl from 'psl'
 import { interactionPolicy } from 'oidc-provider'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { getProxyAuthWithCache } from '../util/proxyAuth'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
 import assert from 'assert'
+import { getBaseDomain } from '../util/cookies'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -262,12 +262,12 @@ const configuration: Configuration = {
     long: {
       httpOnly: true,
       sameSite: 'lax',
-      domain: psl.get(appUrl().hostname) ?? undefined,
+      domain: getBaseDomain(appUrl().hostname) ?? undefined,
     },
     short: {
       httpOnly: true,
       sameSite: 'lax',
-      domain: psl.get(appUrl().hostname) ?? undefined,
+      domain: getBaseDomain(appUrl().hostname) ?? undefined,
     },
   },
   jwks: initialJwks,
@@ -375,7 +375,7 @@ const { redirectUriAllowed } = provider.Client.prototype
 provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
   if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
   // auth_internal_client redirect_uri is allowed if hostname matches APP_URL
-    return psl.get(URL.parse(redirectUri)?.hostname ?? '') === psl.get(appUrl().hostname)
+    return getBaseDomain(URL.parse(redirectUri)?.hostname ?? '') === getBaseDomain(appUrl().hostname)
   }
 
   // Call the default redirectUriAllowed function
