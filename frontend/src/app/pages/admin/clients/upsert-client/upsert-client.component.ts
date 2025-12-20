@@ -17,7 +17,7 @@ import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.co
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
-import { validateWildcardRedirects } from '@shared/utils'
+import { isValidWildcardRedirect, validateWildcardRedirects } from '@shared/utils'
 
 export type TypedControls<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
@@ -71,7 +71,7 @@ export class UpsertClientComponent implements OnInit {
         const url = c.value
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const existing = this.form?.controls.redirect_uris.value
-        if (!url || !existing?.length) {
+        if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
           return null
         }
         const all = existing.concat([url])
@@ -104,7 +104,7 @@ export class UpsertClientComponent implements OnInit {
   }, [isValidWildcardRedirectControl, (c: AbstractControl<string>) => {
     const url = c.value
     const existing = this.form.controls.redirect_uris.value
-    if (!url || !existing?.length) {
+    if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
       return null
     }
     const all = existing.concat([url])

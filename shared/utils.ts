@@ -36,6 +36,7 @@ export function urlFromWildcardHref(input: string) {
   const url: URLPatternGroups | undefined = pattern.exec(input)?.groups
 
   // protocol and hostname are required
+  // TODO: base url parameter to match URL.parse
   if (!url || !url.protocol || !url.hostname) {
     return null
   }
@@ -94,6 +95,15 @@ export function wildcardRedirect(input: string) {
   }
 
   return uri
+}
+
+export function isValidWildcardRedirect(input: string) {
+  try {
+    wildcardRedirect(input)
+    return true
+  } catch (_e) {
+    return false
+  }
 }
 
 export function validateWildcardRedirects(inputs: string[]) {
