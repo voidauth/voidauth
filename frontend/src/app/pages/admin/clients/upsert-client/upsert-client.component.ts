@@ -6,7 +6,7 @@ import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validator
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import { isValidURL, isValidWebURLControl, isValidWildcardURLControl } from '../../../../validators/validators'
+import { isValidWebURLControl, isValidWildcardRedirectControl } from '../../../../validators/validators'
 import { generate } from 'generate-password-browser'
 import { GRANT_TYPES, RESPONSE_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
@@ -65,14 +65,7 @@ export class UpsertClientComponent implements OnInit {
       return null
     }]),
     grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(['authorization_code', 'refresh_token']),
-    post_logout_redirect_uris: new FormControl<ClientUpsert['post_logout_redirect_uris']>([], [(c) => {
-      if ((c.value as string[]).some(v => typeof v === 'string' && v && !isValidURL(v))) {
-        return {
-          isValidUrl: 'Must be a valid URL.',
-        }
-      }
-      return null
-    }]),
+    post_logout_redirect_uris: new FormControl<ClientUpsert['post_logout_redirect_uris']>([]),
     skip_consent: new FormControl<boolean>(true),
     require_mfa: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
@@ -90,13 +83,13 @@ export class UpsertClientComponent implements OnInit {
   redirectUrlControl = new FormControl<string>({
     value: '',
     disabled: false,
-  }, [isValidWildcardURLControl, (c: AbstractControl<string>) => {
-    const value = urlFromWildcardHref(c.value)
+  }, [isValidWildcardRedirectControl, (c: AbstractControl<string>) => {
+    const url = urlFromWildcardHref(c.value)
     const existing = this.form.controls.redirect_uris.value?.map(v => urlFromWildcardHref(v))
-    if (!value || !existing?.length) {
+    if (!url || !existing?.length) {
       return null
     }
-    const all = existing.concat([value])
+    const all = existing.concat([url])
     let hasHttpProtocol = false
     let hasCustomProtocol = false
     for (const uri of all) {
@@ -108,7 +101,7 @@ export class UpsertClientComponent implements OnInit {
       hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
     }
     if (hasCustomProtocol && hasHttpProtocol) {
-      return { invalid: 'You cannot mix insecure and custom protocol URLs in the Redirect URLs list.' }
+      return { invalid: 'You cannot mix insecure and custom protocol Redirect URLs.' }
     }
     return null
   }])
@@ -121,7 +114,7 @@ export class UpsertClientComponent implements OnInit {
     return null
   }])
 
-  postLogoutUrlControl = new FormControl<string | null>(null, [isValidWildcardURLControl])
+  postLogoutUrlControl = new FormControl<string | null>(null, [isValidWildcardRedirectControl])
 
   pwdShow = false
 
@@ -204,6 +197,8 @@ export class UpsertClientComponent implements OnInit {
         this.form.controls.post_logout_redirect_uris.setValue([])
       }
       this.form.controls.post_logout_redirect_uris.markAsDirty()
+      this.form.controls.post_logout_redirect_uris.markAsTouched()
+      this.form.controls.post_logout_redirect_uris.updateValueAndValidity()
     })
 
     this.form.controls.token_endpoint_auth_method.valueChanges.subscribe((value) => {

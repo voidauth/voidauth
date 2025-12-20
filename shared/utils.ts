@@ -35,20 +35,21 @@ export function urlFromWildcardHref(input: string) {
 
   const url: URLPatternGroups | undefined = pattern.exec(input)?.groups
 
-  if (!url) {
+  // protocol and hostname are required
+  if (!url || !url.protocol || !url.hostname) {
     return null
   }
 
   return {
     protocol: url.protocol,
     hostname: url.hostname,
-    pathname: url.pathname,
-    port: url.port,
+    pathname: url.pathname ?? '/',
+    port: url.port ?? '',
     href: input,
-    search: url.search,
-    hash: url.hash,
-    username: url.userinfo?.split(':')[0],
-    password: url.userinfo?.split(':')[1],
+    search: url.search ?? '',
+    hash: url.hash ?? '',
+    username: url.userinfo?.split(':')[0] ?? '',
+    password: url.userinfo?.split(':')[1] ?? '',
   }
 }
 
@@ -64,18 +65,6 @@ function urlFromWildcardDomain(input: string) {
     return null
   }
 
-  if (!url.hostname) {
-    url.hostname = '*'
-  }
-
-  if (!url.pathname) {
-    url.pathname = '/'
-  }
-
-  if (!url.pathname.startsWith('/')) {
-    url.pathname = '/' + url.pathname
-  }
-
   if (url.pathname.endsWith('/')) {
     url.pathname += '*'
   }
@@ -83,9 +72,28 @@ function urlFromWildcardDomain(input: string) {
   return { ...url, hostname: url.hostname, pathname: url.pathname }
 }
 
-export function isValidWildcardURL(input: string) {
+/**
+ * If input is a valid redirect (supporting wildcards) returns true. Otherwise throws an error with
+ * message explaining why it is not
+ */
+export function isValidWildcardRedirect(input: string) {
   const uri = urlFromWildcardHref(input)
-  return !!uri?.hostname
+
+  if (!uri) {
+    throw new TypeError('Could not be parsed, must include protocol and domain.')
+  }
+
+  // redirect_uri must not include hash
+  if (uri.hash) {
+    throw new TypeError('Must not include fragment.')
+  }
+
+  // protocol must not include wildcard
+  if (uri.protocol.includes('*')) {
+    throw new TypeError('Protocol must not include wildcard.')
+  }
+
+  return uri
 }
 
 export function isValidWildcardDomain(input: string) {
@@ -125,8 +133,8 @@ export function sortWildcardDomains(ad: string, bd: string) {
   }
 
   // Check if one domain has more specific port number
-  const aPort = a.port != null ? [a.port] : []
-  const bPort = b.port != null ? [b.port] : []
+  const aPort = a.port != '' ? [a.port] : []
+  const bPort = b.port != '' ? [b.port] : []
   const portResult = sortWildcardParts(aPort, bPort)
   if (portResult) {
     return portResult

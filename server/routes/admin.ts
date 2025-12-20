@@ -25,7 +25,7 @@ import { sendApproved, sendInvitation, sendPasswordReset, SMTP_VERIFIED } from '
 import { generate } from 'generate-password'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
-import { formatWildcardDomain, isValidWildcardDomain, isValidWildcardURL } from '@shared/utils'
+import { formatWildcardDomain, isValidWildcardDomain, isValidWildcardRedirect } from '@shared/utils'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import { getProxyAuth, getProxyAuths } from '../db/proxyAuth'
@@ -55,7 +55,7 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   'redirect_uris.*': {
     isValidURL: {
       custom: (input) => {
-        return typeof input === 'string' && isValidWildcardURL(input)
+        return typeof input === 'string' && isValidWildcardRedirect(input)
       },
     },
     trim: true,
@@ -68,7 +68,7 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     optional: true,
     isValidURL: {
       custom: (input) => {
-        return typeof input === 'string' && isValidWildcardURL(input)
+        return typeof input === 'string' && isValidWildcardRedirect(input)
       },
     },
     trim: true,
