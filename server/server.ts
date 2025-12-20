@@ -17,7 +17,7 @@ import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMainten
 import { createInitialAdmin } from './db/user'
 import { logger } from './util/logger'
 import { rateLimit } from 'express-rate-limit'
-import * as psl from 'psl'
+import { getBaseDomain } from './util/cookies'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -74,7 +74,7 @@ export async function serve() {
   function checkAPPUrl(req: Request, _res: Response, next: NextFunction) {
     // If base hostname does not match, OIDC authorization endpoint will fail to set cookie that can persist
     // Do not throw a hard error here, hostname might be getting mangled on the way in but still correct in browser
-    if (psl.get(req.hostname) !== psl.get(appUrl().hostname)) {
+    if (getBaseDomain(req.hostname) !== getBaseDomain(appUrl().hostname)) {
       const message = 'Invalid request hostname ' + req.hostname + ', '
         + '$APP_URL hostname is ' + appUrl().hostname + ' . '
         + 'If ' + req.hostname + ' does not match what is displayed in the browser URL bar '
