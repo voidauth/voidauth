@@ -2,6 +2,7 @@ import { generate } from 'generate-password'
 import { exit } from 'node:process'
 import { booleanString } from './util'
 import { logger } from './logger'
+import * as psl from 'psl'
 
 // basic config for app
 class Config {
@@ -190,10 +191,19 @@ configKeys.forEach((key: keyof Config) => {
  * Validations and Coercions
  */
 
+// make sure APP_URL does not have trailing slash(es)
+appConfig.APP_URL = appConfig.APP_URL.replace(/\/+$/, '')
+
 // check APP_URL is set
 if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
   logger.error('APP_URL must be set and be a valid URL, starting with http(s)://')
   exit(1)
+}
+
+// If APP_URL hostname seems to be a private dns zone, debug log that
+const pslParsedAppUrl = psl.parse(appUrl().hostname)
+if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
+  logger.debug(`APP_URL: '${appConfig.APP_URL}' appears to be a private DNS zone.`)
 }
 
 // check DEFAULT_REDIRECT is valid if set
@@ -201,8 +211,6 @@ if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
   logger.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
   exit(1)
 }
-// make sure APP_URL does not have trailing slash(es)
-appConfig.APP_URL = appConfig.APP_URL.replace(/\/+$/, '')
 
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {

@@ -11,9 +11,9 @@ import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import appConfig, { appUrl } from '../util/config'
 import { loginFactors } from '@shared/user'
-import * as psl from 'psl'
 import { logger } from '../util/logger'
 import { userCanLogin } from '../util/auth'
+import { getBaseDomain } from '../util/cookies'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -97,9 +97,13 @@ router.get('/cb', (req, res) => {
 
   const r = (redir && typeof redir === 'string' && URL.parse(redir)) || undefined
 
-  if (r && psl.get(r.hostname) !== psl.get(appUrl().hostname)) {
-    res.status(400).send({ message: `ProxyAuth root hostname ${r.hostname} does not equal APP_URL root hostname ${appUrl().hostname}` })
-    return
+  if (r) {
+    const baseRedirDomain = getBaseDomain(r.hostname)
+    const baseAPP_URLDomain = getBaseDomain(appUrl().hostname)
+    if (baseRedirDomain !== baseAPP_URLDomain) {
+      res.status(400).send({ message: `ProxyAuth root hostname '${String(baseRedirDomain)}' does not equal APP_URL root hostname '${String(baseAPP_URLDomain)}'` })
+      return
+    }
   }
 
   res.redirect(r?.href || appConfig.APP_URL)
