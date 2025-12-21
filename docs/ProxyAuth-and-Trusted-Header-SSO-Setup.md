@@ -27,10 +27,10 @@ When a user navigates to a protected domain their access will be checked against
 <img align=center src="/public/screenshots/3f0b0afc-5bcf-436c-8def-f45e68adb019.png" width="800" />
 </p>
 
-When creating ProxyAuth Domains, the trailing `/` and separators like `.` **ARE CHECKED**. Access to `*.example.com` does not give access to `example.com`, they must be added separately. The exception is ProxyAuth Domains ending in a `/*`, since a blank path is added to all request URLs. Because of this, the requested URL `example.com` would match the ProxyAuth Domain `example.com/*`. VoidAuth will attempt to automatically add wildcard matching to any ProxyAuth Domain that does not have a path or ends in a `/`.
+When creating ProxyAuth Domains, the trailing `/` and separators like `.` **ARE CHECKED**. Access to `*.example.com` does not give access to `example.com`, they must be added separately.
 
 > [!IMPORTANT]
-> You can set up a wildcard ProxyAuth Domain `*/*` which will cover any domain not specifically listed in your ProxyAuth Domain settings. Special care should be taken to make sure such a domain has a restrictive group assigned like **owners** or **admins**, this will match any request not already matched by another ProxyAuth Domain.
+> You can set up a wildcard ProxyAuth Domain `*/*` which will cover any domain not matched by other entries in your ProxyAuth Domain settings.
 
 ## Responses
 

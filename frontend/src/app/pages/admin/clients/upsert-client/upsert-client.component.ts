@@ -38,10 +38,10 @@ export type TypedControls<T> = {
 export class UpsertClientComponent implements OnInit {
   public authMethods: { name: string, value: ClientAuthMethod }[] = [
     { name: 'Client Secret Basic', value: 'client_secret_basic' },
-    { name: 'Client Secret JWT', value: 'client_secret_jwt' },
     { name: 'Client Secret Post', value: 'client_secret_post' },
-    // 'private_key_jwt', // do not enable until jwk_uri is ready
+    { name: 'Client Secret JWT', value: 'client_secret_jwt' },
     { name: 'None (Public)', value: 'none' },
+    // 'private_key_jwt', // do not enable until jwk_uri is ready
   ]
 
   public nonClientSecretAuthMethods: ClientAuthMethod[] = ['none']
