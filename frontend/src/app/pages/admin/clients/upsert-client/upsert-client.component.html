@@ -53,6 +53,21 @@
 
       <mat-divider></mat-divider>
 
+      <mat-form-field>
+        <mat-label>Auth Method</mat-label>
+        <mat-select formControlName="token_endpoint_auth_method">
+          @for (method of authMethods; track method) {
+            <mat-option [value]="method.value">{{ method.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.token_endpoint_auth_method.value === "none") {
+          <mat-hint>PKCE Required with this Auth Method.</mat-hint>
+        }
+        @if (form.controls.token_endpoint_auth_method.errors) {
+          <mat-error>{{ form.controls.token_endpoint_auth_method.errors | validationError }}</mat-error>
+        }
+      </mat-form-field>
+
       <mat-form-field class="client-secret">
         <mat-label>Client Secret</mat-label>
         <input #secret matInput [type]="pwdShow ? 'text' : 'password'" formControlName="client_secret" />
@@ -129,21 +144,6 @@
       }
 
       <mat-form-field>
-        <mat-label>Auth Method</mat-label>
-        <mat-select formControlName="token_endpoint_auth_method">
-          @for (method of authMethods; track method) {
-            <mat-option [value]="method.value">{{ method.name }}</mat-option>
-          }
-        </mat-select>
-        @if (form.controls.token_endpoint_auth_method.value === "none") {
-          <mat-hint>PKCE Required with this Auth Method.</mat-hint>
-        }
-        @if (form.controls.token_endpoint_auth_method.errors) {
-          <mat-error>{{ form.controls.token_endpoint_auth_method.errors | validationError }}</mat-error>
-        }
-      </mat-form-field>
-
-      <mat-form-field>
         <mat-label>Response Types</mat-label>
         <mat-select [formControl]="responseTypeControl" multiple>
           @for (rt of uniqueResponseTypes; track rt) {
@@ -166,10 +166,10 @@
 
       <mat-form-field>
         <mat-label>PostLogout URL</mat-label>
-        <input matInput type="text" [formControl]="postLogoutUrlControl" />
+        <input matInput type="text" formControlName="post_logout_redirect_uri" />
         <mat-hint>Allowed post-logout redirect url on client initiated logout.</mat-hint>
-        @if (postLogoutUrlControl.errors) {
-          <mat-error>{{ postLogoutUrlControl.errors | validationError }}</mat-error>
+        @if (form.controls.post_logout_redirect_uri) {
+          <mat-error>{{ form.controls.post_logout_redirect_uri.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 

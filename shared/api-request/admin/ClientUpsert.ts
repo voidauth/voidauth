@@ -8,19 +8,21 @@ export const UNIQUE_RESPONSE_TYPES = ['code', 'id_token', 'token'] as const
 
 export const GRANT_TYPES = ['implicit', 'authorization_code', 'refresh_token'] as const
 
-export type ClientUpsert = Required<Pick<ClientMetadata,
-  'client_id'
-  | 'redirect_uris'>>
-  // Optional
-  & Partial<Pick<ClientMetadata,
-  'client_secret'
-  | 'token_endpoint_auth_method'
-  | 'response_types'
-  | 'grant_types'
-  | 'logo_uri'
-  | 'skip_consent'
-  | 'require_mfa'
-  | 'post_logout_redirect_uris'>>
-  & {
-    groups: OIDCGroup['groupId'][]
-  }
+export type ClientUpsert = {
+  post_logout_redirect_uri: string | null
+}
+& Required<Pick<ClientMetadata,
+'client_id'
+| 'redirect_uris'>>
+    // Optional
+& Partial<Pick<ClientMetadata,
+'client_secret'
+| 'token_endpoint_auth_method'
+| 'response_types'
+| 'grant_types'
+| 'logo_uri'
+| 'skip_consent'
+| 'require_mfa'>>
+& {
+  groups: OIDCGroup['groupId'][]
+}

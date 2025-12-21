@@ -9,6 +9,7 @@ import { ADMIN_GROUP } from '@shared/constants'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { loginFactors } from '@shared/user'
 import { userCanLogin } from './auth'
+import { formatWildcardDomain } from '@shared/utils'
 import { getBaseDomain } from './cookies'
 
 // proxy auth cache
@@ -119,9 +120,9 @@ export async function getProxyAuthWithCache(url: URL) {
     proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
   }
 
-  return proxyAuthCache.find(d => isMatch(formattedUrl, d.domain))
+  return proxyAuthCache.find(d => isMatch(formattedUrl, formatWildcardDomain(d.domain, true)))
 }
 
 function formatProxyAuthDomain(url: URL) {
-  return `${url.hostname}${url.pathname}`
+  return `${url.hostname}:${url.port || '*'}${url.pathname}`
 }

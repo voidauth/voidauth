@@ -13,7 +13,9 @@ import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { getProxyAuthWithCache } from '../util/proxyAuth'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
+import { isMatch } from 'matcher'
 import assert from 'assert'
+import { wildcardRedirect } from '@shared/utils'
 import { getBaseDomain } from '../util/cookies'
 
 // Extend 'oidc-provider' where needed
@@ -21,7 +23,11 @@ declare module 'oidc-provider' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Client {
     interface Schema {
+      redirect_uris: string[]
+      application_type: string
+      grant_types: string[]
       invalidate(message: string, code?: unknown): void
+      redirectUris(uris: string[], label: string): void
     }
   }
 
@@ -328,7 +334,9 @@ const configuration: Configuration = {
     'none',
   ],
   conformIdTokenClaims: false,
-  extraClientMetadata: { properties: ['skip_consent', 'require_mfa'] },
+  extraClientMetadata: {
+    properties: ['skip_consent', 'require_mfa'],
+  },
   renderError: (ctx, out, _error) => {
     ctx.body = {
       error: out,
@@ -360,26 +368,75 @@ const clientSchemaInvalidate = provider.Client.Schema.prototype.invalidate
 assert.ok(clientSchemaInvalidate, 'oidc-provider provider.Client.Schema.prototype.invalidate does not exist.')
 provider.Client.Schema.prototype.invalidate = function newInvalidate(message, code) {
   if (typeof message === 'string'
-    && message === 'redirect_uris for native clients using Custom URI scheme should use reverse domain name based scheme') {
-    return
+    && (message === 'redirect_uris for native clients using Custom URI scheme should use reverse domain name based scheme')) {
+    return // do not throw the error
   }
 
   clientSchemaInvalidate.call(this, message, code)
 }
 
+// Split the checks for valid redirectUris for creating Clients
+// into wildcard and non-wildcard
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const clientSchemaRedirectUris = provider.Client.Schema.prototype.redirectUris
+// Make sure this exists and library did not change
+assert.ok(clientSchemaRedirectUris, 'oidc-provider provider.Client.Schema.prototype.redirectUris does not exist.')
+provider.Client.Schema.prototype.redirectUris = function newRedirectUris(uris: string[], label: string = 'redirect_uris') {
+  // provide defaults here — use the instance property if caller omitted `uris`
+  if (typeof uris === 'undefined') {
+    uris = this.redirect_uris
+  }
+
+  const regularUris = uris.filter(u => !u.includes('*'))
+  clientSchemaRedirectUris.call(this, regularUris, label)
+
+  // Only allowed invalid URL property on wildcard redirect is port
+  // See if wildcard uris are valid with dummy port
+  const wildcardUris = uris.filter(u => u.includes('*')).map((u) => {
+    try {
+      const url = wildcardRedirect(u)
+      return `${url.protocol}//${url.hostname}${url.port ? `:80` : ''}${url.pathname}${url.search}${url.hash}`
+    } catch (e) {
+      const message = `${label} ${e instanceof Error ? e.message : 'must be valid URL.'}`
+      clientSchemaInvalidate.call(this, message)
+      return u
+    }
+  })
+  clientSchemaRedirectUris.call(this, wildcardUris, label)
+}
+
 // allow any redirect_uri when using client auth_internal_client
 // this client is not used for actual oidc, only profile or admin management, or proxy auth
 // redirectUriAllowed on a client prototype checks whether a redirect_uri is allowed or not
+// allow for wildcard matches as well
 // eslint-disable-next-line @typescript-eslint/unbound-method
-const { redirectUriAllowed } = provider.Client.prototype
+const { redirectUriAllowed, postLogoutRedirectUriAllowed } = provider.Client.prototype
 provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
   if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
-  // auth_internal_client redirect_uri is allowed if hostname matches APP_URL
+    // auth_internal_client redirect_uri is allowed if hostname matches APP_URL
     return getBaseDomain(URL.parse(redirectUri)?.hostname ?? '') === getBaseDomain(appUrl().hostname)
+  }
+
+  // Check if any client redirectUris are a wildcard match
+  if (this.redirectUris?.some((r: string) => {
+    return r.includes('*') && isMatch(redirectUri, r)
+  })) {
+    return true
   }
 
   // Call the default redirectUriAllowed function
   return redirectUriAllowed.call(this, redirectUri)
+}
+provider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutRedirectUriAllowed(postLogoutRedirectUri: string) {
+  // Check if any client postLogoutRedirectUris are a wildcard match
+  if (this.postLogoutRedirectUris?.some((r: string) => {
+    return r.includes('*') && isMatch(postLogoutRedirectUri, r)
+  })) {
+    return true
+  }
+
+  // Call the default postLogoutRedirectUriAllowed function
+  return postLogoutRedirectUriAllowed.call(this, postLogoutRedirectUri)
 }
 
 export async function getProviderClient(client_id: string) {

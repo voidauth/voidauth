@@ -2,11 +2,11 @@ import { Component, inject, type OnInit } from '@angular/core'
 import { AdminService } from '../../../../services/admin.service'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import { isValidURL, isValidURLControl, isValidWebURLControl } from '../../../../validators/validators'
+import { isValidWebURLControl, isValidWildcardRedirectControl } from '../../../../validators/validators'
 import { generate } from 'generate-password-browser'
 import { GRANT_TYPES, RESPONSE_TYPES, UNIQUE_RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
@@ -17,6 +17,7 @@ import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.co
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
+import { isValidWildcardRedirect, validateWildcardRedirects } from '@shared/utils'
 
 export type TypedControls<T> = {
   [K in keyof Required<T>]: FormControl<T[K] | null>
@@ -37,10 +38,10 @@ export type TypedControls<T> = {
 export class UpsertClientComponent implements OnInit {
   public authMethods: { name: string, value: ClientAuthMethod }[] = [
     { name: 'Client Secret Basic', value: 'client_secret_basic' },
-    { name: 'Client Secret JWT', value: 'client_secret_jwt' },
     { name: 'Client Secret Post', value: 'client_secret_post' },
-    // 'private_key_jwt', // do not enable until jwk_uri is ready
+    { name: 'Client Secret JWT', value: 'client_secret_jwt' },
     { name: 'None (Public)', value: 'none' },
+    // 'private_key_jwt', // do not enable until jwk_uri is ready
   ]
 
   public nonClientSecretAuthMethods: ClientAuthMethod[] = ['none']
@@ -64,14 +65,25 @@ export class UpsertClientComponent implements OnInit {
       return null
     }]),
     grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(['authorization_code', 'refresh_token']),
-    post_logout_redirect_uris: new FormControl<ClientUpsert['post_logout_redirect_uris']>([], [(c) => {
-      if ((c.value as string[]).some(v => typeof v === 'string' && v && !isValidURL(v))) {
-        return {
-          isValidUrl: 'Must be a valid URL.',
+    post_logout_redirect_uri: new FormControl<ClientUpsert['post_logout_redirect_uri']>(null, [
+      isValidWildcardRedirectControl,
+      (c: AbstractControl<string | null>) => {
+        const url = c.value
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const existing = this.form?.controls.redirect_uris.value
+        if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
+          return null
         }
-      }
-      return null
-    }]),
+        const all = existing.concat([url])
+        try {
+          validateWildcardRedirects(all)
+        } catch (e) {
+          return {
+            invalidRedirectUri: e instanceof Error ? e.message : 'A Redirect URL is invalid.',
+          }
+        }
+        return null
+      }]),
     skip_consent: new FormControl<boolean>(true),
     require_mfa: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
@@ -89,23 +101,19 @@ export class UpsertClientComponent implements OnInit {
   redirectUrlControl = new FormControl<string>({
     value: '',
     disabled: false,
-  }, [isValidURLControl, (c) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const value = c.value
+  }, [isValidWildcardRedirectControl, (c: AbstractControl<string>) => {
+    const url = c.value
     const existing = this.form.controls.redirect_uris.value
-    if (typeof value !== 'string' || !isValidURL(value) || !existing?.length) {
+    if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
       return null
     }
-    const all = existing.concat([value])
-    let hasHttpProtocol = false
-    let hasCustomProtocol = false
-    for (const uri of all) {
-      const protocol = URL.parse(uri)?.protocol
-      hasHttpProtocol ||= protocol === 'http:'
-      hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
-    }
-    if (hasCustomProtocol && hasHttpProtocol) {
-      return { invalid: 'You cannot mix insecure and custom protocol URLs in the Redirect URLs list.' }
+    const all = existing.concat([url])
+    try {
+      validateWildcardRedirects(all)
+    } catch (e) {
+      return {
+        invalid: e instanceof Error ? e.message : 'A Redirect URL is invalid.',
+      }
     }
     return null
   }])
@@ -117,8 +125,6 @@ export class UpsertClientComponent implements OnInit {
     }
     return null
   }])
-
-  postLogoutUrlControl = new FormControl<string | null>(null, [isValidURLControl])
 
   pwdShow = false
 
@@ -147,7 +153,7 @@ export class UpsertClientComponent implements OnInit {
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_post',
             response_types: client.response_types ?? ['code'],
             grant_types: client.grant_types ?? ['authorization_code', 'refresh_token'],
-            post_logout_redirect_uris: client.post_logout_redirect_uris ?? [],
+            post_logout_redirect_uri: client.post_logout_redirect_uris?.[0] ?? null,
             skip_consent: client['skip_consent'] ?? true,
             require_mfa: client['require_mfa'] ?? false,
             logo_uri: client.logo_uri,
@@ -167,8 +173,6 @@ export class UpsertClientComponent implements OnInit {
             initialResponseType.push('token')
           }
           this.responseTypeControl.setValue(initialResponseType)
-
-          this.postLogoutUrlControl.setValue(this.form.controls.post_logout_redirect_uris.value?.[0] ?? null)
         }
       } catch (e) {
         console.error(e)
@@ -192,15 +196,6 @@ export class UpsertClientComponent implements OnInit {
       }
       this.form.controls.response_types.setValue(response_types)
       this.form.controls.response_types.markAsDirty()
-    })
-
-    this.postLogoutUrlControl.valueChanges.subscribe((value) => {
-      if (value) {
-        this.form.controls.post_logout_redirect_uris.setValue([value])
-      } else {
-        this.form.controls.post_logout_redirect_uris.setValue([])
-      }
-      this.form.controls.post_logout_redirect_uris.markAsDirty()
     })
 
     this.form.controls.token_endpoint_auth_method.valueChanges.subscribe((value) => {
@@ -324,6 +319,9 @@ export class UpsertClientComponent implements OnInit {
     }
     this.form.controls.redirect_uris.setValue([value].concat(this.form.controls.redirect_uris.value ?? []).sort())
     this.form.controls.redirect_uris.markAsDirty()
+    this.form.controls.redirect_uris.updateValueAndValidity()
+    this.form.controls.post_logout_redirect_uri.markAsTouched()
+    this.form.controls.post_logout_redirect_uri.updateValueAndValidity()
   }
 
   removeRedirectUrl(value: string) {
@@ -331,5 +329,9 @@ export class UpsertClientComponent implements OnInit {
     this.form.controls.redirect_uris.markAsDirty()
     this.form.updateValueAndValidity()
     this.redirectUrlControl.updateValueAndValidity()
+    this.form.controls.redirect_uris.markAsDirty()
+    this.form.controls.redirect_uris.updateValueAndValidity()
+    this.form.controls.post_logout_redirect_uri.markAsTouched()
+    this.form.controls.post_logout_redirect_uri.updateValueAndValidity()
   }
 }

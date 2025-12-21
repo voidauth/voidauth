@@ -8,19 +8,126 @@ export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefin
 
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 
+type URLPatternGroups = {
+  protocol?: string
+  userinfo?: string
+  hostname?: string
+  port?: string
+  pathname?: string
+  search?: string
+  hash?: string
+}
+
+export function urlFromWildcardHref(input: string) {
+  const pattern = new RegExp(
+    '^'
+    + '(?:(?<protocol>[^:/?#.]+:)(?://)?)?' // protocol, optionally match '//'
+    + '(?:' // wrap host portions in an optional match, allows matching path/query/hash only
+    + '(?:(?<userinfo>[^\\\\/?#]*)@)?' // username+password
+    + '(?<hostname>[^\\\\/?#:]*?)' // hostname
+    + '(?::(?<port>[0-9*]+))?' // port, ALLOW WILDCARDS, do not include ':'
+    + '(?=[\\\\/?#]|$)' // match everything else up to \, /, ?, #
+    + ')?'
+    + '(?<pathname>[^?#:]+)?' // pathname
+    + '(?:(?<search>\\?[^#]*))?' // search
+    + '(?:(?<hash>#.*))?' // hash
+    + '$')
+
+  const url: URLPatternGroups | undefined = pattern.exec(input)?.groups
+
+  // protocol and hostname are required
+  // TODO: base url parameter to match URL.parse
+  if (!url || !url.protocol || !url.hostname) {
+    return null
+  }
+
+  return {
+    protocol: url.protocol,
+    hostname: url.hostname,
+    pathname: url.pathname ?? '/',
+    port: url.port ?? '',
+    href: input,
+    search: url.search ?? '',
+    hash: url.hash ?? '',
+    username: url.userinfo?.split(':')[0] ?? '',
+    password: url.userinfo?.split(':')[1] ?? '',
+  }
+}
+
 function urlFromWildcardDomain(input: string) {
-  const url = URL.parse(`http://${input.replaceAll(/\*+/g, '*').replaceAll('*', '__wildcard__')}`)
+  // If the input does not start with http(s), add it so it can be later safely removed
+  if (!input.startsWith('http:') && !input.startsWith('https:')) {
+    input = 'http:' + input
+  }
+
+  const url = urlFromWildcardHref(input)
+
   if (!url) {
     return null
   }
-  return {
-    hostname: url.hostname.replaceAll('__wildcard__', '*'),
-    pathname: url.pathname.replaceAll('__wildcard__', '*'),
-    href: url.href.replaceAll('__wildcard__', '*'),
-    search: url.search,
-    hash: url.hash,
-    password: url.password,
-    username: url.username,
+
+  if (url.pathname.endsWith('/')) {
+    url.pathname += '*'
+  }
+
+  return { ...url, hostname: url.hostname, pathname: url.pathname }
+}
+
+/**
+ * If input is a valid redirect (supporting wildcards) returns true. Otherwise throws an error with
+ * message explaining why it is not
+ */
+export function wildcardRedirect(input: string) {
+  const uri = urlFromWildcardHref(input)
+
+  if (!uri) {
+    throw new TypeError('Could not be parsed, must include protocol and domain.')
+  }
+
+  // redirect_uri must not include hash
+  if (uri.hash) {
+    throw new TypeError('Must not include fragment.')
+  }
+
+  // protocol must not include wildcard
+  if (uri.protocol.includes('*')) {
+    throw new TypeError('Protocol must not include wildcard.')
+  }
+
+  return uri
+}
+
+export function isValidWildcardRedirect(input: string) {
+  try {
+    wildcardRedirect(input)
+    return true
+  } catch (_e) {
+    return false
+  }
+}
+
+export function validateWildcardRedirects(inputs: string[]) {
+  try {
+    for (const input of inputs) {
+      wildcardRedirect(input)
+    }
+  } catch (_e) {
+    throw new TypeError('A Redirect URL is invalid.')
+  }
+
+  let hasHttpProtocol = false
+  let hasCustomProtocol = false
+  for (const input of inputs) {
+    const uri = urlFromWildcardHref(input)
+    if (!uri) {
+      continue
+    }
+    const protocol = uri.protocol
+    hasHttpProtocol ||= protocol === 'http:'
+    hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
+  }
+  if (hasCustomProtocol && hasHttpProtocol) {
+    throw new TypeError('Do not mix insecure and custom protocol Redirect URLs.')
   }
 }
 
@@ -36,14 +143,10 @@ export function isValidWildcardDomain(input: string) {
   }
 }
 
-export function formatWildcardDomain(input: string) {
+export function formatWildcardDomain(input: string, forcePort: boolean = false) {
   const url = urlFromWildcardDomain(input) as URL
-  const hostname = url.hostname
-  let pathname = url.pathname
-  if (!pathname.endsWith('*') && pathname.endsWith('/')) {
-    pathname += '*'
-  }
-  return `${hostname}${pathname}`
+  const port = url.port || forcePort ? ':' + (url.port || '*') : ''
+  return `${url.hostname}${port}${url.pathname}`
 }
 
 export function sortWildcardDomains(ad: string, bd: string) {
@@ -54,10 +157,9 @@ export function sortWildcardDomains(ad: string, bd: string) {
     return +!a - +!b
   }
 
+  // Check if one domain has more subdomains
   const ah = a.hostname
   const bh = b.hostname
-
-  // Check if one domain has more subdomains
   const aSubs = ah.split('.').filter(s => !!s).reverse()
   const bSubs = bh.split('.').filter(s => !!s).reverse()
   const subResult = sortWildcardParts(aSubs, bSubs)
@@ -65,11 +167,17 @@ export function sortWildcardDomains(ad: string, bd: string) {
     return subResult
   }
 
-  // Do the same for paths
-  const ap = a.pathname
-  const bp = b.pathname
+  // Check if one domain has more specific port number
+  const aPort = a.port != '' ? [a.port] : []
+  const bPort = b.port != '' ? [b.port] : []
+  const portResult = sortWildcardParts(aPort, bPort)
+  if (portResult) {
+    return portResult
+  }
 
   // Check if one path has more subpaths
+  const ap = a.pathname
+  const bp = b.pathname
   const aPaths = ap.split('/').filter(s => !!s)
   const bPaths = bp.split('/').filter(s => !!s)
   const pathResult = sortWildcardParts(aPaths, bPaths)

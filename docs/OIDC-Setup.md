@@ -26,5 +26,7 @@ If a configuration property is omitted from an [OIDC Client Guide](OIDC-Guides.m
 <img src="/public/screenshots/oidc_endpoints.png" width="500">
 </p>
 
-> [!IMPORTANT]
-> The OIDC Client page starts with sensible defaults, but you must follow the application OIDC setup guide parameters exactly or it is likely your OIDC integration will not work. You can see setup guides for some applications on the [OIDC Guides](OIDC-Guides.md) page.
+> [!NOTE]
+> The `Redirect URLs` and `PostLogout URL` fields support wildcards, though care should be taken when using them. Please make sure to follow Client application documentation when using wildcard Redirect URLs.
+
+The OIDC Client page starts with sensible defaults, but you must follow the application OIDC setup guide parameters exactly or it is likely your OIDC integration will not work. You can see setup guides for some applications on the [OIDC Guides](OIDC-Guides.md) page.
