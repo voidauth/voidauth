@@ -34,9 +34,9 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://arcane.example.com/auth/oidc/callback
-Auth Method: Client Secret Post
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/beszel.svg" width="28" /> Beszel
@@ -54,9 +54,9 @@ User info URL: Copy from OIDC Info in VoidAuth (UserInfo Endpoint)
 In VoidAuth OIDC Client Page:
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://beszel.example.com/api/oauth2-redirect
-Auth Method: Client Secret Basic
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/cloudflare.svg" width="28" /> Cloudflare ZeroTrust
@@ -80,9 +80,9 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://your-team-name.cloudflareaccess.com/cdn-cgi/access/callback
-Auth Method: Client Secret Basic
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/grist.svg" width="28" /> Grist
@@ -100,9 +100,9 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://grist.example.com/oauth2/callback
-Auth Method: Client Secret Basic
 PostLogout URL: https://grist.example.com/signed-out
 ```
 
@@ -123,12 +123,12 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs:
   - https://immich.example.com/auth/login
   - https://immich.example.com/user-settings
   - app.immich:///oauth-callback
-Auth Method: Client Secret Post
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyfin.svg" width="28" /> Jellyfin
@@ -163,9 +163,9 @@ Scheme Override: https
 In VoidAuth OIDC Client Page:
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://jellyfin.example.com/sso/OID/redirect/VoidAuth
-Auth Method: Client Secret Post
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/manyfold.png" width="28" /> Manyfold
@@ -187,9 +187,9 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://manyfold.example.com/users/auth/openid_connect/callback
-Auth Method: Client Secret Basic
 ```
 
 
@@ -216,9 +216,9 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://mastodon.example.com/auth/auth/openid_connect/callback
-Auth Method: Client Secret Basic
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/open-webui.svg" width="28" /> Open WebUI
@@ -246,9 +246,9 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://openwebui.example.com/oauth/oidc/callback
-Auth Method: Client Secret Basic
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/portainer.svg" width="28" /> Portainer
@@ -275,9 +275,9 @@ In VoidAuth Create OIDC Client:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://portainer.example.com
-Auth Method: Client Secret Post
 ```
 Screenshot(s):
 <img width="1400" src="/public/screenshots/f7cf9712-4259-43ce-bde1-fbe22a447763.png" />
@@ -315,9 +315,9 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://seafile.example.com/oauth/callback/
-Auth Method: Client Secret Basic
 ```
 
 
@@ -347,9 +347,9 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://wikijs.example.com/login/token-given-on-wikijs-authentication-strategy-view-check-below/callback
-Auth Method: Client Secret Post
 ```
 
 
@@ -379,7 +379,7 @@ In VoidAuth OIDC Client Page:
 
 ```
 Client ID: your-client-id
+Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://memos.example.com/auth/callback
-Auth Method: Client Secret Post
 ```
