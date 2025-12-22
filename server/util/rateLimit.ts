@@ -18,5 +18,5 @@ export const sensitiveRateLimit = rateLimit({
   windowMs: sensitiveRateWindowS * 1000,
   max: rateWindowS * 1, // max 1 requests per second
   validate: { trustProxy: false },
-  legacyHeaders: false,
+  legacyHeaders: true,
 })
