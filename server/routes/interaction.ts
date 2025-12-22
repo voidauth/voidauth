@@ -13,7 +13,6 @@ import type { EmailVerification } from '@shared/db/EmailVerification'
 import type { User } from '@shared/db/User'
 import { db } from '../db/db'
 import type { RegisterUser } from '@shared/api-request/RegisterUser'
-import * as argon2 from 'argon2'
 import { randomUUID } from 'crypto'
 import { REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { type Interaction } from 'oidc-provider'
@@ -59,6 +58,7 @@ import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResp
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
+import { argon2 } from '../util/argon2id'
 
 const registerUserValidator = {
   username: {
@@ -361,7 +361,7 @@ router.post('/register',
       return
     }
 
-    const passwordHash = await argon2.hash(registration.password)
+    const passwordHash = argon2.hash(registration.password)
 
     const id = randomUUID()
     const user: User = {

@@ -13,13 +13,13 @@ import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswor
 import { randomUUID } from 'crypto'
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import type { User } from '@shared/db/User'
-import * as argon2 from 'argon2'
 import { generate } from 'generate-password'
 import { createPasskey, createPasskeyRegistrationOptions, getRegistrationInfo, passkeyRegistrationValidator } from '../util/passkey'
 import { getUserPasskeys } from '../db/passkey'
 import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 import { passwordStrength } from '../util/zxcvbn'
 import { logger } from '../util/logger'
+import { argon2 } from '../util/argon2id'
 
 /**
  * routes that do not require any auth
@@ -112,7 +112,7 @@ publicRouter.post('/reset_password',
       return
     }
 
-    await db().table<User>(TABLES.USER).update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
+    await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
     await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id: passwordReset.id })
     await endSessions(user.id)
     res.send()

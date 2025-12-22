@@ -6,12 +6,12 @@ import type { User } from '@shared/db/User'
 import { ADMIN_USER, ADMIN_GROUP, TABLES } from '@shared/constants'
 import { randomUUID } from 'crypto'
 import { generate } from 'generate-password'
-import * as argon2 from 'argon2'
 import type { Flag } from '@shared/db/Flag'
 import appConfig from '../util/config'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { hasTOTP } from './totp'
 import { getUserPasskeys } from './passkey'
+import { argon2 } from '../util/argon2id'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -74,7 +74,7 @@ export async function getUserByInput(input: string): Promise<UserDetails | undef
 
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
   const user = await db().select().table<User>(TABLES.USER).where({ id: userId }).first()
-  return !!user && !!password && !!user.passwordHash && await argon2.verify(user.passwordHash, password)
+  return !!user && !!password && !!user.passwordHash && argon2.verify(user.passwordHash, password)
 }
 
 export function userRequiresMfa(user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup'>) {
@@ -134,7 +134,7 @@ export async function createInitialAdmin() {
       id: randomUUID(),
       username: ADMIN_USER,
       name: 'Auth Admin',
-      passwordHash: await argon2.hash(password),
+      passwordHash: argon2.hash(password),
       emailVerified: true,
       approved: true,
       createdAt: new Date(),
@@ -170,7 +170,7 @@ export async function createInitialAdmin() {
 
     console.log('')
     console.log('')
-    console.log('The following is the initial Admin username and password, use to create your own user.')
+    console.log('The following are the initial Admin username and password, use to create your own user.')
     console.log('These will not be shown again.')
     console.log('')
     console.log(initialAdminUser.username)

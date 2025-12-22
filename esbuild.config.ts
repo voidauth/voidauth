@@ -31,7 +31,6 @@ rmSync(outDir, {
 // dependencies that cannot be bundled
 const externalDeps = [
   'isomorphic-dompurify',
-  'argon2',
   'sqlite3',
   '@angular/material',
 ]

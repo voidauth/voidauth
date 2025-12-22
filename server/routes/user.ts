@@ -3,7 +3,6 @@ import { validate, validatorData } from '../util/validate'
 import type { UpdateProfile } from '@shared/api-request/UpdateProfile'
 
 import { db } from '../db/db'
-import * as argon2 from 'argon2'
 import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
@@ -15,6 +14,7 @@ import { deleteUserPasskeys } from '../db/passkey'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/constants'
 import type { TOTP } from '@shared/db/TOTP'
+import { argon2 } from '../util/argon2id'
 
 export const userRouter = Router()
 
@@ -101,7 +101,7 @@ userRouter.patch('/password',
       return
     }
 
-    await db().table<User>(TABLES.USER).update({ passwordHash: await argon2.hash(newPassword) }).where({ id: user.id })
+    await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
     res.send()
   },
 )

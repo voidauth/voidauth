@@ -2,6 +2,7 @@ import { exit } from 'process'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { booleanString } from './util/util.ts'
+import { logger } from './util/logger.ts'
 
 // Configure some env variables for dependencies in advance of importing them
 // For this to work, no static import statement in this file can import the following:
@@ -26,7 +27,7 @@ export const argv = yargs(hideBin(process.argv))
       const server = await import('./server.ts')
       void server.serve()
     } catch (e) {
-      console.error(e)
+      logger.error(e)
       exit(1)
     }
   })
@@ -37,10 +38,10 @@ export const argv = yargs(hideBin(process.argv))
       try {
         const migrate = await import('./migrateDB.ts')
         await migrate.migrate()
-        console.log('Database migration completed successfully, adjust your DB_* environment variables and restart.')
+        logger.info('Database migration completed successfully, adjust your DB_* environment variables and restart.')
         exit(0)
       } catch (e) {
-        console.error(e)
+        logger.error(e)
         exit(1)
       }
     })
