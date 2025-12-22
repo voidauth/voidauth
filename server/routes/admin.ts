@@ -61,7 +61,11 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     trim: true,
   },
   post_logout_redirect_uri: {
-    optional: true,
+    optional: {
+      options: {
+        values: 'falsy',
+      },
+    },
     isValidURL: {
       custom: (input) => {
         return typeof input === 'string' && isValidWildcardRedirect(input)
@@ -179,7 +183,10 @@ adminRouter.post('/client',
     }
 
     const clientUpsert = validatorData<ClientUpsert>(req)
-    const clientMetadata: ClientResponse = { ...clientUpsert }
+    const clientMetadata: ClientResponse = {
+      ...clientUpsert,
+      post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
+    }
 
     if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
       res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'none'.` })
@@ -225,7 +232,10 @@ adminRouter.patch('/client',
     }
 
     const clientUpsert = validatorData<ClientUpsert>(req)
-    const clientMetadata: ClientResponse = { ...clientUpsert }
+    const clientMetadata: ClientResponse = {
+      ...clientUpsert,
+      post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
+    }
 
     if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
       res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'none'.` })
