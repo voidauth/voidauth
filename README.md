@@ -66,6 +66,7 @@ services:
 
   voidauth: 
     image: voidauth/voidauth:latest
+    user: "8681:8681"
     restart: unless-stopped
     volumes:
       - ./voidauth/config:/app/config

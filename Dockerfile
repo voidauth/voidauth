@@ -1,7 +1,7 @@
 #
 # Frontend Builder
 #
-FROM node:24-alpine AS build-fe
+FROM node:24-alpine3.22 AS build-fe
 
 WORKDIR /app/frontend
 
@@ -19,7 +19,7 @@ RUN npm run build
 #
 # Backend Builder
 #
-FROM node:24-alpine AS build-be
+FROM node:24-alpine3.22 AS build-be
 
 WORKDIR /app
 
@@ -45,29 +45,40 @@ RUN npm run server:build
 # Install external dependencies in dist folder
 RUN cd ./dist && npm i
 
-#
-# Serve files and api endpoints
-#
-FROM node:24-alpine AS serve
+# 
+# Compile all outputs into /app folder
+# 
+FROM node:24-alpine3.22 AS build
 
 WORKDIR /app
 
 # Copy build files
-COPY --from=build-fe /app/frontend/dist ./frontend/dist
-COPY --from=build-be /app/dist/index.mjs ./dist/index.mjs
-COPY --from=build-be /app/dist/node_modules ./node_modules
+COPY --from=build-fe --chmod=0777 /app/frontend/dist ./frontend/dist
+COPY --from=build-be --chmod=0777 /app/dist/index.mjs ./dist/index.mjs
+COPY --from=build-be --chmod=0777 /app/dist/node_modules ./node_modules
 
 # Copy supporting files
-COPY ./theme ./theme
-COPY ./default_email_templates ./default_email_templates
-COPY ./migrations ./migrations
+COPY --chmod=0777 ./theme ./theme
+COPY --chmod=0777 ./default_email_templates ./default_email_templates
+COPY --chmod=0777 ./migrations ./migrations
 
-# VoidAuth help command to verify runnable
-RUN node ./dist/index.mjs --help
+#
+# Serve files and api endpoints
+# Requires a login to dhi.io
+#
+FROM dhi.io/node:24-alpine3.22 AS serve
+
+WORKDIR /app
+
+# Copy build files
+COPY --from=build --chmod=0777 /app ./
+
+# Needed for backwards compatibility
+USER 0:0
 
 VOLUME ["/app/config"]
 VOLUME ["/app/db"]
 EXPOSE 3000
 ENTRYPOINT [ "node", "./dist/index.mjs" ]
 
-HEALTHCHECK CMD node -e "fetch('http://localhost:'+(process.env.APP_PORT||3000)+'/healthcheck').then(r=>process.exit(r.status===200?0:1)).catch(e=>process.exit(1))"
+HEALTHCHECK CMD ["node", "-e", "\"fetch('http://localhost:'+(process.env.APP_PORT||3000)+'/healthcheck').then(r=>process.exit(r.status===200?0:1)).catch(e=>process.exit(1))\""]

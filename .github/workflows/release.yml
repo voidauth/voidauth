@@ -33,6 +33,13 @@ jobs:
           username: notquitenothing
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login Docker Hardened Images Registry
+        uses: docker/login-action@v3
+        with:
+          registry: dhi.io
+          username: notquitenothing
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: DOCKER_IMAGE_NAME
         run: |
           DOCKER_IMAGE_NAME="voidauth/voidauth"

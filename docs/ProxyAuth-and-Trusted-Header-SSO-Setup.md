@@ -307,6 +307,7 @@ services:
 
   voidauth: 
     image: voidauth/voidauth:latest
+    user: "8681:8681"
     volumes:
       - ./voidauth/config:/app/config
     environment:
