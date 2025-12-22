@@ -1,7 +1,7 @@
 #
 # Frontend Builder
 #
-FROM dhi.io/node:24-alpine3.22-dev AS build-fe
+FROM node:24-alpine3.22 AS build-fe
 
 WORKDIR /app/frontend
 
@@ -19,7 +19,7 @@ RUN npm run build
 #
 # Backend Builder
 #
-FROM dhi.io/node:24-alpine3.22-dev AS build-be
+FROM node:24-alpine3.22 AS build-be
 
 WORKDIR /app
 
@@ -45,10 +45,10 @@ RUN npm run server:build
 # Install external dependencies in dist folder
 RUN cd ./dist && npm i
 
-#
-# Serve files and api endpoints
-#
-FROM dhi.io/node:24-alpine3.22 AS serve
+# 
+# Compile all outputs into /app folder
+# 
+FROM node:24-alpine3.22 as build
 
 WORKDIR /app
 
@@ -61,6 +61,17 @@ COPY --from=build-be --chmod=0777 /app/dist/node_modules ./node_modules
 COPY --chmod=0777 ./theme ./theme
 COPY --chmod=0777 ./default_email_templates ./default_email_templates
 COPY --chmod=0777 ./migrations ./migrations
+
+#
+# Serve files and api endpoints
+# Requires a login to dhi.io
+#
+FROM dhi.io/node:24-alpine3.22 AS serve
+
+WORKDIR /app
+
+# Copy build files
+COPY --from=build --chmod=0777 /app ./
 
 # Needed for backwards compatibility
 USER 0:0

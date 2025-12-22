@@ -28,15 +28,6 @@ jobs:
           username: notquitenothing
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Login to docker hardened image registry if not a fork PR
-      - name: Login Docker Hardened Images Registry
-        if: ${{ github.event.pull_request == null || !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
-        with:
-          registry: dhi.io
-          username: notquitenothing
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       # runs for PRs from forks (skip any registry-backed cache)
       - name: Build Push (fork - no remote cache)
         if: ${{ github.event.pull_request != null && github.event.pull_request.head.repo.fork }}
@@ -45,6 +36,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
+          target: build
           platforms: linux/amd64,linux/arm64
           tags: voidauth/voidauth:test
           push: false
