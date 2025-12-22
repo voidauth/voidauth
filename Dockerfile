@@ -48,7 +48,7 @@ RUN cd ./dist && npm i
 # 
 # Compile all outputs into /app folder
 # 
-FROM node:24-alpine3.22 as build
+FROM node:24-alpine3.22 AS build
 
 WORKDIR /app
 
