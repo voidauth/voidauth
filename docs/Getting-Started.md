@@ -97,6 +97,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | APP_URL | | URL VoidAuth will be served on. Must start with`https://`, subdirectory routing is supported. ex. `https://auth.example.com` or `https://example.com/auth` | 🔴 | |
 | STORAGE_KEY | | Storage encryption key for secret values such as keys and client secrets. Must be at least 32 characters long and should be randomly generated. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
 | STORAGE_KEY_SECONDARY | | Secondary storage encryption key, used when rotating the primary storage encryption key. | | |
+| SESSION_DOMAIN | `${APP_URL}` Base Domain | Domain of the VoidAuth Session Cookie. This is automatically set to the Base Domain of `${APP_URL}` but may be overridden here. Must be equal to or a higher level domain than `${APP_URL}` | | |
 | DEFAULT_REDIRECT | `${APP_URL}` | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
 | SIGNUP | `false` | Whether the app allows new users to self-register themselves without invitation. | | |
 | SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |

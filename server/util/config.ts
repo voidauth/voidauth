@@ -10,6 +10,8 @@ class Config {
   APP_URL = ''
   APP_PORT = 3000
 
+  SESSION_DOMAIN?: string
+
   SIGNUP = false
   SIGNUP_REQUIRES_APPROVAL = true
   EMAIL_VERIFICATION: boolean | null = null
@@ -81,6 +83,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
       break
 
     // non default variables
+    case 'SESSION_DOMAIN':
     case 'STORAGE_KEY_SECONDARY':
     case 'DEFAULT_REDIRECT':
     case 'CONTACT_EMAIL':
@@ -206,6 +209,18 @@ if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
   logger.debug(`APP_URL: '${appConfig.APP_URL}' appears to be a private DNS zone.`)
 }
 
+// If SESSION_DOMAIN is set, make sure APP_URL endsWith SESSION_DOMAIN
+if (appConfig.SESSION_DOMAIN) {
+  const dotSD = (!appConfig.SESSION_DOMAIN.startsWith('.') ? '.' : '') + appConfig.SESSION_DOMAIN
+  if (appUrl().hostname !== appConfig.SESSION_DOMAIN && !appUrl().hostname.endsWith(dotSD)) {
+    logger.error('If SESSION_DOMAIN is set, the APP_URL hostname must end with the SESSION_DOMAIN.')
+    exit(1)
+  }
+  if (appConfig.SESSION_DOMAIN !== getBaseDomain(appUrl().hostname)) {
+    logger.debug(`SESSION_DOMAIN: '${appConfig.SESSION_DOMAIN}'`)
+  }
+}
+
 // check DEFAULT_REDIRECT is valid if set
 if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
   logger.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
@@ -243,6 +258,24 @@ export function appUrl(): URL {
 
 export function basePath() {
   return appUrl().pathname.replace(/\/$/, '')
+}
+
+export function getSessionDomain() {
+  return appConfig.SESSION_DOMAIN || getBaseDomain(appUrl().hostname)
+}
+
+export function sessionDomainReaches(hostName: string) {
+  const targetDomain = getBaseDomain(hostName)
+  const sessionDomain = getSessionDomain()
+  return targetDomain === sessionDomain || (sessionDomain != null && hostName.endsWith(sessionDomain))
+}
+
+//
+// Utility Functions
+//
+
+function getBaseDomain(hostname: string) {
+  return psl.get(hostname) ?? undefined
 }
 
 //
