@@ -8,7 +8,9 @@ Security Groups are created from the admin Groups page, users can be added to gr
 > [!TIP]
 > Users with the `auth_admins` group will not be denied access to any resource, regardless of other security group restrictions.
 
+<p align=center>
 <img width="336" alt="image" src="/public/screenshots/91429974-7e2c-4c3a-80a4-ad25e5ea6416.png" />
+</p>
 
 Security Groups are used in both OIDC Clients and ProxyAuth Domains.
 
