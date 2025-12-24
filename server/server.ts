@@ -16,8 +16,8 @@ import { sendAdminNotifications } from './util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMaintenance'
 import { createInitialAdmin } from './db/user'
 import { logger } from './util/logger'
-import { rateLimit } from 'express-rate-limit'
 import { getBaseDomain } from './util/cookies'
+import { standardRateLimit } from './util/rateLimit'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -47,13 +47,7 @@ export async function serve() {
   }))
 
   // apply rate limiter to all requests
-  const rateWindowS = 10 * 60 // 10 minutes
-  app.use(rateLimit({
-    windowMs: rateWindowS * 1000,
-    max: rateWindowS * 100, // max 100 requests per second
-    validate: { trustProxy: false },
-    legacyHeaders: false,
-  }))
+  app.use(standardRateLimit)
 
   function noCache(_req: Request, res: Response, next: NextFunction) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')

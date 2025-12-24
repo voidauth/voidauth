@@ -14,6 +14,7 @@ import { loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
 import { userCanLogin } from '../util/auth'
 import { getBaseDomain } from '../util/cookies'
+import { sensitiveRateLimit } from '../util/rateLimit'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -46,6 +47,12 @@ router.use(async (req, res, next) => {
   }
   next()
 })
+
+// use sensitiveRateLimit on all post-put-patch-delete requests
+router.post(new RegExp(`(.*)`), sensitiveRateLimit)
+router.put(new RegExp(`(.*)`), sensitiveRateLimit)
+router.patch(new RegExp(`(.*)`), sensitiveRateLimit)
+router.delete(new RegExp(`(.*)`), sensitiveRateLimit)
 
 // Set user on request
 router.use(async (req: Request, res: Response, next) => {
