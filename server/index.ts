@@ -23,6 +23,17 @@ export const argv = yargs(hideBin(process.argv))
   .scriptName('voidauth')
   .usage('Usage: voidauth <command> [options]')
   .command(['serve', '$0'], 'Default, serve voidauth application.', {}, async () => {
+    logger.info(`
+
+ __   __ ______   __   _____    ______   __  __   ______  __  __   
+/\\ \\ / //\\  __ \\ /\\ \\ /\\  __ \\ /\\  __ \\ /\\ \\/\\ \\ /\\__  _\\/\\ \\_\\ \\  
+\\ \\ \\ / \\ \\ \\/\\ \\\\ \\ \\\\ \\ \\/\\ \\\\ \\  __ \\\\ \\ \\_\\ \\\\/_/\\ \\/\\ \\  __ \\ 
+ \\ \\_/   \\ \\_____\\\\ \\_\\\\ \\_____\\\\ \\_\\ \\_\\\\ \\_____\\  \\ \\_\\ \\ \\_\\ \\_\\
+  \\//     \\/_____/ \\/_/ \\/_____/ \\/_/\\/_/ \\/_____/   \\/_/  \\/_/\\/_/
+
+        ## Single Sign-On for Your Self-Hosted Universe ##
+
+`)
     try {
       const server = await import('./server.ts')
       void server.serve()

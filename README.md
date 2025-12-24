@@ -66,6 +66,7 @@ services:
 
   voidauth: 
     image: voidauth/voidauth:latest
+    # for best security use a user id that does not exist on the host. Container runs as root by default
     user: "8681:8681"
     restart: unless-stopped
     volumes:
@@ -102,7 +103,7 @@ After creating/updating the compose.yml file and filling in the required environ
 > After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`. Use these credentials to log in and change the default username and password or create a separate user for yourself.
 
 > [!TIP]
-> Users are created by administrators on the Invitations page by creating a new Invitation, then sending the resulting invitation link.
+> Users are created by administrators on the Invitations page by creating a new Invitation, then sending the invitation link.
 
 Please see the [Getting Started](https://voidauth.app/#/Getting-Started) page for setup details and configuration options.
 

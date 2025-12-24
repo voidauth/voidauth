@@ -171,7 +171,7 @@ export async function createInitialAdmin() {
     console.log('')
     console.log('')
     console.log('The following are the initial Admin username and password, use to create your own user.')
-    console.log('These will not be shown again.')
+    console.log('These will not be shown again:')
     console.log('')
     console.log(initialAdminUser.username)
     console.log(password)
