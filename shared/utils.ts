@@ -21,7 +21,7 @@ type URLPatternGroups = {
 export function urlFromWildcardHref(input: string) {
   const pattern = new RegExp(
     '^'
-    + '(?:(?<protocol>[^:/?#.]+:)(?:///?)?)?' // protocol, optionally match '//(/)'
+    + '(?:(?<protocol>[^:/?#]+:)(?:///?/?)?)?' // protocol, optionally match '//(/)'
     + '(?:' // wrap host portions in an optional match, allows matching path/query/hash only
     + '(?:(?<userinfo>[^\\\\/?#]*)@)?' // username+password
     + '(?<hostname>[^\\\\/?#:]*?)' // hostname
