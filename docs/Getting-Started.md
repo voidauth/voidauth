@@ -8,7 +8,7 @@ services:
   # ---------------------------------
   # Your reverse-proxy service here:
   # caddy, traefik, nginx, etc.
-  # https:// setup is REQUIRED
+  # https:// setup is highly recommended
   # ---------------------------------
 
   voidauth: 
@@ -50,7 +50,7 @@ services:
   # ---------------------------------
   # Your reverse-proxy service here:
   # caddy, traefik, nginx, etc.
-  # https:// setup is REQUIRED
+  # https:// setup is highly recommended
   # ---------------------------------
 
   voidauth: 
@@ -73,21 +73,26 @@ volumes:
 ```
 
 > [!TIP]
-> A bind mount as shown for VoidAuth `/app/config` is recommended to enable logo and email template customization.
+> A VoidAuth bind mount for `/app/config` as shown above is recommended to enable logo and email template customization.
 
 > [!WARNING]
 > VoidAuth does **NOT** provide `https:` termination itself, but it is **highly recommended**. This means you will need a reverse-proxy with `https:` support in front of VoidAuth and your other services, and some method of acquiring certificates (many reverse-proxies handle this as well).
 
 > [!WARNING]
-> The **APP_URL** environment variable **must** be set to the full external url of the VoidAuth service, ex. `APP_URL: https://auth.example.com` or `APP_URL: https://example.com/auth`.
+> The **APP_URL** environment variable **must** be set to the full external url of the VoidAuth service, ex. `APP_URL: https://auth.example.com` or `APP_URL: https://example.com/auth`
 
 > [!CAUTION]
 > During the first start of the app, the **initial admin username and password** will be shown in the logs. They will never be shown again. You will need to note them down and either change the username and password or create a user for yourself, which you should add to the **auth_admins** group. Afterwards you may delete the **auth_admin** user.
 
 > [!IMPORTANT]
-> Any user in the **auth_admins** group will be an administrator in VoidAuth and have access to the admin pages. Do not give this security group to any user you do not want to have full privileges in VoidAuth! You should make a different group for administrators of protected domains/apps.
+> Any user in the **auth_admins** group will be an administrator in VoidAuth. You should make a different group for administrators of protected domains/apps.
 
 ## Configuration
+
+### User and Client App
+
+User and Client App (OIDC Client or ProxyAuth Domain) management is performed in the web interface. Please see the Admin Guides in the documentation sidebar for more information.
+
 ### Environment Variables
 VoidAuth is configurable primarily by environment variable. The available environment variables and their defaults are listed in the table below:
 
@@ -97,6 +102,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | APP_URL | | URL VoidAuth will be served on. Must start with`https://`, subdirectory routing is supported. ex. `https://auth.example.com` or `https://example.com/auth` | 🔴 | |
 | STORAGE_KEY | | Storage encryption key for secret values such as keys and client secrets. Must be at least 32 characters long and should be randomly generated. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
 | STORAGE_KEY_SECONDARY | | Secondary storage encryption key, used when rotating the primary storage encryption key. | | |
+| SESSION_DOMAIN | `${APP_URL}` Base Domain | Domain of the VoidAuth Session Cookie. This is automatically set to the Base Domain of `${APP_URL}` but may be overridden here. Must be equal to or a higher level domain than `${APP_URL}` | | |
 | DEFAULT_REDIRECT | `${APP_URL}` | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the logo when already on the auth home page. | | ✅ |
 | SIGNUP | `false` | Whether the app allows new users to self-register themselves without invitation. | | |
 | SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |

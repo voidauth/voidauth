@@ -1,8 +1,9 @@
 import { Component, inject, type OnInit } from '@angular/core'
 import { MaterialModule } from '../../material-module'
-import { ActivatedRoute } from '@angular/router'
-import { SnackbarService } from '../../services/snackbar.service'
+import { ActivatedRoute, Router } from '@angular/router'
 import { getCurrentHost } from '../../services/config.service'
+import { UserService } from '../../services/user.service'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 
 @Component({
   selector: 'app-logout',
@@ -14,22 +15,34 @@ import { getCurrentHost } from '../../services/config.service'
 })
 export class LogoutComponent implements OnInit {
   protected challenge?: string
+  user?: CurrentUserDetails
 
   private route = inject(ActivatedRoute)
-  private snackbarService = inject(SnackbarService)
+  private userService = inject(UserService)
+  private router = inject(Router)
 
   public host = getCurrentHost()
 
   history = window.history
 
-  ngOnInit() {
+  async ngOnInit() {
     const params = this.route.snapshot.paramMap
+
+    try {
+      this.user = await this.userService.getMyUser()
+    } catch (_e) {
+      // User is not logged in, and therefore cannot log out
+      await this.router.navigate(['/'], {
+        replaceUrl: true,
+      })
+      return
+    }
 
     const challenge = params.get('challenge')
     if (challenge) {
       this.challenge = challenge
     } else {
-      this.snackbarService.error('Invalid logout request.')
+      window.location.assign(`${this.host}/oidc/session/end`)
     }
   }
 }

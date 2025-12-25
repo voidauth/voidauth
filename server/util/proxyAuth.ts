@@ -3,14 +3,13 @@ import { type Request, type Response } from 'express'
 import { isMatch } from 'matcher'
 import { getProxyAuths } from '../db/proxyAuth'
 import { checkPasswordHash, getUserByInput } from '../db/user'
-import appConfig, { appUrl } from './config'
+import appConfig, { getSessionDomain, sessionDomainReaches } from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { loginFactors } from '@shared/user'
 import { userCanLogin } from './auth'
 import { formatWildcardDomain } from '@shared/utils'
-import { getBaseDomain } from './cookies'
 
 // proxy auth cache
 let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups'>[] = []
@@ -26,10 +25,8 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   let user: UserDetails | undefined
   let amr: string[] = []
 
-  const baseUrlDomain = getBaseDomain(url.hostname)
-  const baseAPP_URLDomain = getBaseDomain(appUrl().hostname)
-  if (baseUrlDomain !== baseAPP_URLDomain) {
-    res.status(400).send({ message: `ProxyAuth Domain base domain '${String(baseUrlDomain)}' does not equal $APP_URL base domain '${String(baseAPP_URLDomain)}'. Base domain names must match.` })
+  if (!sessionDomainReaches(url.hostname)) {
+    res.status(400).send({ message: `ProxyAuth Domain hostname '${url.hostname}' is not covered by session domain '${String(getSessionDomain())}'` })
     return
   }
 

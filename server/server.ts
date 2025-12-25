@@ -1,4 +1,4 @@
-import appConfig, { appUrl, basePath } from './util/config'
+import appConfig, { basePath, getSessionDomain, sessionDomainReaches } from './util/config'
 import * as _ from '../custom_typings/type_validator'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import path from 'node:path'
@@ -16,7 +16,6 @@ import { sendAdminNotifications } from './util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from './db/tableMaintenance'
 import { createInitialAdmin } from './db/user'
 import { logger } from './util/logger'
-import { getBaseDomain } from './util/cookies'
 import { standardRateLimit } from './util/rateLimit'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
@@ -68,9 +67,9 @@ export async function serve() {
   function checkAPPUrl(req: Request, _res: Response, next: NextFunction) {
     // If base hostname does not match, OIDC authorization endpoint will fail to set cookie that can persist
     // Do not throw a hard error here, hostname might be getting mangled on the way in but still correct in browser
-    if (getBaseDomain(req.hostname) !== getBaseDomain(appUrl().hostname)) {
+    if (!sessionDomainReaches(req.hostname)) {
       const message = 'Invalid request hostname \'' + req.hostname + '\', '
-        + '$APP_URL hostname is \'' + appUrl().hostname + '\' . '
+        + 'Session Domain is \'' + String(getSessionDomain()) + '\' . '
         + 'If \'' + req.hostname + '\' does not match what is displayed in the browser URL bar '
         + 'this may indicate a reverse-proxy misconfiguration.'
       logger.debug(message)

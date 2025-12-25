@@ -90,7 +90,7 @@ export class PasswordResetsComponent {
       const reset = await this.adminService.createPasswordReset({ userId: user.id })
       const data = [reset].concat(this.dataSource.data)
       this.dataSource.data = this.dataSource.sortData(data, this.sort())
-      this.snackbarService.message('Password reset link was deleted.')
+      this.snackbarService.message('Password reset link was created.')
     } catch (_e) {
       this.snackbarService.error('Could not create password reset link.')
     } finally {

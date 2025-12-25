@@ -280,7 +280,9 @@ Client Secret: your-client-secret
 Redirect URLs: https://portainer.example.com
 ```
 Screenshot(s):
+<p align=center>
 <img width="1400" src="/public/screenshots/f7cf9712-4259-43ce-bde1-fbe22a447763.png" />
+</p>
 
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/seafile.svg" width="28" /> Seafile

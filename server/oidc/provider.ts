@@ -1,6 +1,6 @@
 import Provider, { type Configuration } from 'oidc-provider'
 import { findAccount, getUserById, userRequiresMfa } from '../db/user'
-import appConfig, { appUrl, basePath } from '../util/config'
+import appConfig, { appUrl, basePath, getSessionDomain } from '../util/config'
 import { KnexAdapter } from './adapter'
 import { type OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
@@ -16,7 +16,6 @@ import type { OIDCGroup, Group } from '@shared/db/Group'
 import { isMatch } from 'matcher'
 import assert from 'assert'
 import { wildcardRedirect } from '@shared/utils'
-import { getBaseDomain } from '../util/cookies'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -268,12 +267,12 @@ const configuration: Configuration = {
     long: {
       httpOnly: true,
       sameSite: 'lax',
-      domain: getBaseDomain(appUrl().hostname) ?? undefined,
+      domain: getSessionDomain(),
     },
     short: {
       httpOnly: true,
       sameSite: 'lax',
-      domain: getBaseDomain(appUrl().hostname) ?? undefined,
+      domain: getSessionDomain(),
     },
   },
   jwks: initialJwks,
@@ -414,7 +413,8 @@ const { redirectUriAllowed, postLogoutRedirectUriAllowed } = provider.Client.pro
 provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
   if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
     // auth_internal_client redirect_uri is allowed if hostname matches APP_URL
-    return getBaseDomain(URL.parse(redirectUri)?.hostname ?? '') === getBaseDomain(appUrl().hostname)
+    const redirectURL = URL.parse(redirectUri)
+    return !!redirectURL && redirectURL.hostname === appUrl().hostname
   }
 
   // Check if any client redirectUris are a wildcard match

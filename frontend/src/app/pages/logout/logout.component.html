@@ -3,14 +3,17 @@
   <mat-card-content>
     <form autocomplete="off" [action]="host + '/oidc/session/end/confirm'" method="post">
       <!-- TODO: Display client name/id if provided -->
+      @if (user) {
+        <h2>{{ user.name ?? user.username }}</h2>
+      }
       <p>Do you want to log out?</p>
       <input type="hidden" name="xsrf" [value]="challenge" />
       <mat-card-actions>
         <button mat-flat-button autofocus="" [disabled]="!challenge" type="submit" value="yes" name="logout">Yes</button>
         @if (history.length) {
-          <button mat-button [disabled]="!challenge" type="button" (click)="history.back()">Back</button>
+          <button mat-button type="button" (click)="history.back()">Back</button>
         } @else {
-          <button mat-button [disabled]="!challenge" type="submit">No</button>
+          <button mat-button type="submit">No</button>
         }
       </mat-card-actions>
     </form>

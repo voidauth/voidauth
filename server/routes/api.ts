@@ -9,11 +9,10 @@ import { authRouter } from './auth'
 import { als } from '../util/als'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
-import appConfig, { appUrl } from '../util/config'
+import appConfig, { getSessionDomain, sessionDomainReaches } from '../util/config'
 import { loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
 import { userCanLogin } from '../util/auth'
-import { getBaseDomain } from '../util/cookies'
 import { sensitiveRateLimit } from '../util/rateLimit'
 
 declare global {
@@ -105,10 +104,8 @@ router.get('/cb', (req, res) => {
   const r = (redir && typeof redir === 'string' && URL.parse(redir)) || undefined
 
   if (r) {
-    const baseRedirDomain = getBaseDomain(r.hostname)
-    const baseAPP_URLDomain = getBaseDomain(appUrl().hostname)
-    if (baseRedirDomain !== baseAPP_URLDomain) {
-      res.status(400).send({ message: `ProxyAuth root hostname '${String(baseRedirDomain)}' does not equal APP_URL root hostname '${String(baseAPP_URLDomain)}'` })
+    if (!sessionDomainReaches(r.hostname)) {
+      res.status(400).send({ message: `ProxyAuth Domain hostname '${r.hostname}' is not covered by session domain '${String(getSessionDomain())}'` })
       return
     }
   }
