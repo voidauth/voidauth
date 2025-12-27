@@ -1,14 +1,13 @@
 import { Component, inject, type OnDestroy, type OnInit } from '@angular/core'
 import { AuthService } from '../../services/auth.service'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import { Router, RouterLink } from '@angular/router'
+import { RouterLink } from '@angular/router'
 import { MaterialModule } from '../../material-module'
 import { HttpErrorResponse } from '@angular/common/http'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../services/config.service'
-import { UserService } from '../../services/user.service'
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { WebAuthnAbortService } from '@simplewebauthn/browser'
@@ -48,11 +47,10 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   public pwdShow: boolean = false
   public passkeySupport?: PasskeySupport
+  interactionAvailable = true
 
   private authService = inject(AuthService)
-  private userService = inject(UserService)
   private configService = inject(ConfigService)
-  private router = inject(Router)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   passkeyService = inject(PasskeyService)
@@ -68,19 +66,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.passkeySupport = await this.passkeyService.getPasskeySupport()
 
       try {
-        const user = await this.userService.getMyUser()
-        if (user.canLogin) {
-          // The user is already logged in
-          await this.router.navigate(['/'], {
-            replaceUrl: true,
-          })
-          return
-        }
-      } catch (_e) {
-        // This is expected, that the user is not logged in
-      }
-
-      try {
         const info = await this.authService.interactionExists()
         if (info.successRedirect) {
           window.location.assign(info.successRedirect.location)
@@ -88,6 +73,17 @@ export class LoginComponent implements OnInit, OnDestroy {
       } catch (_e) {
         // interaction session is missing, could not log in without it
         await this.authService.createInteraction()
+        try {
+          await this.authService.interactionExists()
+        } catch (e) {
+          console.error(e)
+          this.snackbarService.error('Could not create Session.')
+          this.interactionAvailable = false
+        }
+      }
+
+      if (!this.interactionAvailable) {
+        this.form.disable()
       }
     } finally {
       this.spinnerService.hide()
