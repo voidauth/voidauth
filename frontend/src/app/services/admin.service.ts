@@ -162,4 +162,10 @@ export class AdminService {
     }
     return firstValueFrom(this.http.get<EmailsResponse>(`/api/admin/emails${query}`))
   }
+
+  async sendTestEmail(email: string) {
+    return firstValueFrom(this.http.post<null>(`/api/admin/send_test_email`, {
+      email,
+    }))
+  }
 }

@@ -1,0 +1,21 @@
+@if (data.header) {
+  <h2 mat-dialog-title>{{ data.header }}</h2>
+}
+<mat-dialog-content>
+  <p>
+    {{ data.message ?? "Please enter an email address below." }}
+  </p>
+  <mat-form-field style="width: 100%">
+    <input matInput type="text" [formControl]="emailControl" />
+    @if (emailControl.errors) {
+      <mat-error>{{ emailControl.errors | validationError }}</mat-error>
+    }
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-flat-button [mat-dialog-close]="emailControl.value" cdkFocusInitial [disabled]="!emailControl.value || emailControl.errors">
+    Confirm
+  </button>
+</mat-dialog-actions>

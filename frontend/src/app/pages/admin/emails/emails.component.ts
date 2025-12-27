@@ -12,6 +12,9 @@ import { MaterialModule } from '../../../material-module'
 import { RouterLink } from '@angular/router'
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser'
 import DOMPurify from 'isomorphic-dompurify'
+import { EmailInputComponent } from '../../../dialogs/email-input/email-input.component'
+import { UserService } from '../../../services/user.service'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 
 @Component({
   selector: 'app-emails',
@@ -52,11 +55,16 @@ export class EmailsComponent {
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
+  private userService = inject(UserService)
+
+  me?: CurrentUserDetails
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
+
+      this.me = await this.userService.getMyUser()
       await this.setData()
 
       this.paginator().page.subscribe(async () => {
@@ -83,6 +91,33 @@ export class EmailsComponent {
     } catch (_e) {
       this.snackbarService.error('Could not get Sent Mail.')
     }
+  }
+
+  sendTestEmail() {
+    const testEmailDialog = this.dialog.open<EmailInputComponent, { message?: string, header?: string, initial?: string }>(
+      EmailInputComponent, {
+        data: {
+          header: 'Send Test Email',
+          initial: this.me?.email ?? undefined,
+        },
+        disableClose: true,
+      })
+
+    testEmailDialog.afterClosed().subscribe(async (data) => {
+      if (data && typeof data === 'string') {
+        try {
+          this.spinnerService.show()
+          await this.adminService.sendTestEmail(data)
+          await this.setData()
+          this.snackbarService.message('Sent Test Email.')
+        } catch (e) {
+          console.error(e)
+          this.snackbarService.error('Could not send Test Email.')
+        } finally {
+          this.spinnerService.hide()
+        }
+      }
+    })
   }
 
   previewEmail(email: EmailLog) {

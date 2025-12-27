@@ -8,7 +8,7 @@ import { SnackbarService } from '../../../services/snackbar.service'
 import type { TableColumn } from '../clients/clients.component'
 import { RouterLink } from '@angular/router'
 import { UserService } from '../../../services/user.service'
-import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { SpinnerService } from '../../../services/spinner.service'
 import type { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox'
 import { MatDialog } from '@angular/material/dialog'
@@ -27,7 +27,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs'
   styleUrl: './users.component.scss',
 })
 export class UsersComponent {
-  public me?: UserDetails
+  public me?: CurrentUserDetails
 
   dataSource: MatTableDataSource<UserWithAdminIndicator> = new MatTableDataSource()
 

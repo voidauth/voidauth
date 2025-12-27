@@ -93,6 +93,51 @@ const passwordResetTemplates = compileTemplates('reset_password')
 const invitationTemplate = compileTemplates('invitation')
 const approvedTemplate = compileTemplates('approved')
 const adminNotificationTemplate = compileTemplates('admin_notification')
+const testNotificationTemplate = compileTemplates('test_notification')
+
+export async function sendTestNotification(email: string) {
+  if (!appConfig.SMTP_FROM) {
+    throw new Error('Email cannot be sent without valid SMTP_FROM config value.')
+  }
+  if (!SMTP_VERIFIED) {
+    throw new Error('SMTP transport could not be validated.')
+  }
+
+  const { subject, html, text } = testNotificationTemplate({
+    primary_color: PRIMARY_COLOR,
+    primary_contrast_color: PRIMARY_CONTRAST_COLOR,
+    app_title: appConfig.APP_TITLE,
+    app_url: appConfig.APP_URL,
+  })
+
+  if (!subject || (!html && !text)) {
+    throw new Error('Missing email template.')
+  }
+
+  await transporter.sendMail({
+    from: {
+      name: appConfig.APP_TITLE,
+      address: appConfig.SMTP_FROM,
+    },
+    to: email,
+    subject: subject,
+    html: html,
+    text: text,
+  })
+
+  const emailLog: EmailLog = {
+    id: randomUUID(),
+    type: 'test_notification',
+    toUser: null,
+    to: email,
+    subject: subject,
+    body: html ?? text,
+    reasons: null,
+    createdAt: new Date(),
+  }
+
+  await db().table<EmailLog>(TABLES.EMAIL_LOG).insert(emailLog)
+}
 
 export async function sendEmailVerification(user: UserWithoutPassword, challenge: string, email: string) {
   if (!appConfig.SMTP_FROM) {
