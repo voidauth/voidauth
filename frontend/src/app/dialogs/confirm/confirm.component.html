@@ -15,9 +15,9 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button matButton mat-dialog-close>Cancel</button>
+  <button mat-button mat-dialog-close>Cancel</button>
   <button
-    matButton
+    mat-flat-button
     [mat-dialog-close]="true"
     cdkFocusInitial
     [disabled]="data.requiredText && data.requiredText !== requiredTextControl.value"
