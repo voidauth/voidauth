@@ -21,7 +21,7 @@ import type { UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import { sendApproved, sendInvitation, sendPasswordReset, SMTP_VERIFIED } from '../util/email'
+import { sendApproved, sendInvitation, sendPasswordReset, sendTestNotification, SMTP_VERIFIED } from '../util/email'
 import { generate } from 'generate-password'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
@@ -1137,3 +1137,17 @@ adminRouter.get('/emails',
 
     res.send(result)
   })
+
+adminRouter.post('/send_test_email',
+  ...validate<{ email: string }>({
+    email: {
+      isEmail: true,
+    },
+  }), async (req, res) => {
+    const { email } = validatorData<{ email: string }>(req)
+
+    await sendTestNotification(email)
+
+    res.send()
+  },
+)
