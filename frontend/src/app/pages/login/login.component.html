@@ -23,11 +23,11 @@
       <mat-checkbox formControlName="rememberMe">Remember Me</mat-checkbox>
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid" type="submit">Login</button>
+        <button mat-flat-button [disabled]="form.invalid || !interactionAvailable" type="submit">Login</button>
 
         @if (passkeySupport?.enabled) {
           <app-text-divider text="or" disabled style="margin-top: 16px"></app-text-divider>
-          <button mat-flat-button type="button" (click)="passkeyLogin(false)">
+          <button mat-flat-button type="button" [disabled]="!interactionAvailable" (click)="passkeyLogin(false)">
             {{ passkeySupport?.platformName ?? "Passkey" }}
             <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
           </button>

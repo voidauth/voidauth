@@ -123,6 +123,13 @@ router.get('/', async (req, res) => {
   logger.debug(`interaction required: ${JSON.stringify(logInfo)}`)
 
   if (prompt.name === 'login') {
+    if (prompt.reasons.includes('login_prompt')) {
+      // consent prompt was requested, always comply
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGIN}`)
+      res.send()
+      return
+    }
+
     // Check for prompt reasons that cause special redirects
     if (prompt.reasons.includes('user_not_approved')) {
       // User is not approved, destroy their session/interaction so they can re-attempt login
@@ -155,6 +162,13 @@ router.get('/', async (req, res) => {
     res.send()
     return
   } else if (prompt.name === 'consent') {
+    if (prompt.reasons.includes('consent_prompt')) {
+      // consent prompt was requested, always comply
+      res.redirect(`${appConfig.APP_URL}/consent/${uid}`)
+      res.send()
+      return
+    }
+
     if (prompt.reasons.includes('client_mfa_required')) {
       // client requires mfa
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
