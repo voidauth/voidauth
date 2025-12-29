@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express'
-import { getInteractionDetails, getSession, router as interactionRouter } from './interaction'
+import { getInteractionDetails, router as interactionRouter } from './interaction'
 import { commit, transaction, rollback } from '../db/db'
 import { getUserById } from '../db/user'
 import { userRouter } from './user'
@@ -14,6 +14,7 @@ import { loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
 import { userCanLogin } from '../util/auth'
 import { sensitiveRateLimit } from '../util/rateLimit'
+import { getSession } from '../oidc/provider'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

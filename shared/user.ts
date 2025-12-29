@@ -1,19 +1,21 @@
 import type { UserDetails } from './api-response/UserDetails'
 import { ADMIN_GROUP } from './constants'
 
-export function loginFactors(amr: string[]) {
-  const multiFactors = ['email', 'webauthn'] // something that should already require mfa to access
-  const firstFactors = ['pwd'] // something you know (password, PIN)
-  const secondFactors = ['totp'] // something you have or are (device, biometrics)
+export const amrFactors = {
+  multiFactors: ['email', 'webauthn'], // something that should already require mfa to access
+  firstFactors: ['pwd'], // something you know (password, PIN)
+  secondFactors: ['totp'], // something you have or are (device, biometrics)
+}
 
+export function loginFactors(amr: string[]) {
   // Multi-factor AMRs allow access always
-  if (amr.some(f => multiFactors.includes(f))) {
+  if (amr.some(f => amrFactors.multiFactors.includes(f))) {
     return 2
   }
 
   // Single-factor AMRs allow access if mfa is not required, or if there is a second factor
-  if (amr.some(f => firstFactors.includes(f))) {
-    if (amr.some(f => secondFactors.includes(f))) {
+  if (amr.some(f => amrFactors.firstFactors.includes(f))) {
+    if (amr.some(f => amrFactors.secondFactors.includes(f))) {
       return 2
     }
     return 1

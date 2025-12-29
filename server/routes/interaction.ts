@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express'
-import { provider } from '../oidc/provider'
+import { getSession, provider } from '../oidc/provider'
 import { checkPasswordHash, getUserById, getUserByInput } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
 import { validate, validatorData } from '../util/validate'
@@ -56,7 +56,7 @@ import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
-import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import { amrFactors, isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
 import { argon2 } from '../util/argon2id'
 
@@ -123,13 +123,6 @@ router.get('/', async (req, res) => {
   logger.debug(`interaction required: ${JSON.stringify(logInfo)}`)
 
   if (prompt.name === 'login') {
-    if (prompt.reasons.includes('login_prompt')) {
-      // consent prompt was requested, always comply
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGIN}`)
-      res.send()
-      return
-    }
-
     // Check for prompt reasons that cause special redirects
     if (prompt.reasons.includes('user_not_approved')) {
       // User is not approved, destroy their session/interaction so they can re-attempt login
@@ -1005,18 +998,22 @@ router.post('/verify_email',
   },
 )
 
-export async function loginResult(req: Request, res: Response, options: {
+async function loginResult(req: Request, res: Response, options: {
   amr: string[]
   userId: string
   remember?: boolean
 }): Promise<Redirect | undefined> {
   let { amr } = options
   const { userId, remember = false } = options
+  const includesFirstFactorAmr = amrFactors.firstFactors.some(f => amr.includes(f))
 
   try {
     const session = await getSession(req, res)
     if (session?.accountId === userId) {
-      amr = [...new Set([...amr, ...(session.amr ?? [])])]
+      // merge amr if amr is not firstFactor
+      if (!includesFirstFactorAmr) {
+        amr = [...new Set([...amr, ...(session.amr ?? [])])]
+      }
       session.amr = amr
       await session.save(TTLs.SESSION)
     }
@@ -1029,7 +1026,10 @@ export async function loginResult(req: Request, res: Response, options: {
 
     if (interaction) {
       if (interaction.result?.login?.accountId === userId) {
-        amr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
+        // merge amr if amr is not firstFactor
+        if (!includesFirstFactorAmr) {
+          amr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
+        }
         interaction.result.login.amr = amr
         await interaction.save(TTLs.INTERACTION)
       }
@@ -1048,15 +1048,6 @@ export async function loginResult(req: Request, res: Response, options: {
     }
   } catch (_e) {
     // if there is no interaction, there is no error
-  }
-}
-
-export async function getSession(req: IncomingMessage, res: ServerResponse) {
-  try {
-    const ctx = provider.createContext(req, res)
-    return await provider.Session.get(ctx)
-  } catch (_e) {
-    return null
   }
 }
 

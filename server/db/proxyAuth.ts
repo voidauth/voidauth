@@ -1,9 +1,29 @@
 import { db } from './db'
 import type { Group, ProxyAuthGroup } from '@shared/db/Group'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
-import { sortWildcardDomains } from '@shared/utils'
+import { formatWildcardDomain, sortWildcardDomains } from '@shared/utils'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { TABLES } from '@shared/constants'
+import { isMatch } from 'matcher'
+
+// proxy auth cache
+let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups' | 'maxSessionLength'>[] = []
+let proxyAuthCacheExpires: number = 0
+
+export async function getProxyAuthWithCache(url: URL) {
+  const formattedUrl = formatProxyAuthDomain(url)
+  if (proxyAuthCacheExpires < new Date().getTime()) {
+    proxyAuthCache = await getProxyAuths()
+
+    proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
+  }
+
+  return proxyAuthCache.find(d => isMatch(formattedUrl, formatWildcardDomain(d.domain, true)))
+}
+
+export function formatProxyAuthDomain(url: URL) {
+  return `${url.hostname}:${url.port || '*'}${url.pathname}`
+}
 
 export async function getProxyAuths(): Promise<ProxyAuthResponse[]> {
   const proxyAuths: ProxyAuthResponse[] = (await db().select().table<ProxyAuth>(TABLES.PROXY_AUTH))

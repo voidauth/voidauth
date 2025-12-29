@@ -32,7 +32,9 @@ export class AuthService {
 
   async createInteraction() {
     try {
-      await firstValueFrom(this.http.get<null>(oidcLoginPath(getCurrentHost()), {
+      await firstValueFrom(this.http.get<null>(oidcLoginPath(getCurrentHost(), {
+        prompt: 'login',
+      }), {
         redirect: 'manual',
       }))
     } catch (_e) {

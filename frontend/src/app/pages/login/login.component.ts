@@ -1,7 +1,7 @@
 import { Component, inject, type OnDestroy, type OnInit } from '@angular/core'
 import { AuthService } from '../../services/auth.service'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import { RouterLink } from '@angular/router'
+import { Router, RouterLink } from '@angular/router'
 import { MaterialModule } from '../../material-module'
 import { HttpErrorResponse } from '@angular/common/http'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
@@ -54,6 +54,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   passkeyService = inject(PasskeyService)
+  private router = inject(Router)
 
   async ngOnInit() {
     this.configService.getConfig().then(c => this.config = c).catch((e: unknown) => {
@@ -65,17 +66,19 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       this.passkeySupport = await this.passkeyService.getPasskeySupport()
 
+      // interaction needed, check if one exists
       try {
         const info = await this.authService.interactionExists()
         if (info.successRedirect) {
           window.location.assign(info.successRedirect.location)
         }
       } catch (_e) {
-        // interaction session is missing, could not log in without it
+        // interaction is missing, could not log in without it
         await this.authService.createInteraction()
         try {
           await this.authService.interactionExists()
         } catch (e) {
+          // attempted to create interaction and failed
           console.error(e)
           this.snackbarService.error('Could not create Session.')
           this.interactionAvailable = false
@@ -117,6 +120,9 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       if (redirect) {
         location.assign(redirect.location)
+      } else {
+        await this.router.navigate(['/'])
+        return
       }
     } catch (e) {
       let shownError: string | null = null

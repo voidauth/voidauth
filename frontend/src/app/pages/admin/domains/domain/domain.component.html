@@ -61,6 +61,15 @@
         </mat-error>
       }
 
+      <mat-form-field>
+        <mat-label>Max Session Age (Minutes)</mat-label>
+        <input matInput type="number" min="5" max="525600" formControlName="maxSessionLength" />
+        <mat-hint>Blank means no re-authentication required.</mat-hint>
+        @if (form.controls.maxSessionLength.errors) {
+          <mat-error>{{ form.controls.maxSessionLength.errors | validationError }}</mat-error>
+        }
+      </mat-form-field>
+
       <mat-checkbox formControlName="mfaRequired">MFA Required</mat-checkbox>
 
       <mat-card-actions>
