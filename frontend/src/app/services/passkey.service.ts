@@ -85,16 +85,19 @@ export class PasskeyService {
     return firstValueFrom(this.http.post<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey/start', null))
   }
 
-  private async sendAuth(auth: AuthenticationResponseJSON) {
-    const result = firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/passkey/end', auth))
+  private async sendAuth(auth: AuthenticationResponseJSON, remember?: boolean) {
+    const result = firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/passkey/end', {
+      ...auth,
+      remember,
+    }))
     localStorage.setItem('passkey_seen', Date())
     return result
   }
 
-  async login(auto: boolean = false) {
+  async login(remember: boolean = false) {
     const optionsJSON = await this.getAuthOptions()
-    const auth = await startAuthentication({ optionsJSON, useBrowserAutofill: auto })
-    return await this.sendAuth(auth)
+    const auth = await startAuthentication({ optionsJSON })
+    return await this.sendAuth(auth, remember)
   }
 
   async register() {
