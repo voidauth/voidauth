@@ -11,7 +11,7 @@ import { commit, transaction } from '../db/db'
 
 const passkeyRpName = appConfig.APP_TITLE
 export const passkeyRpId = appUrl().hostname
-export const passkeyRpOrigin = `${appUrl().protocol}//${appUrl().host}`
+export const passkeyRpOrigin = appUrl().origin
 
 export const passkeyRegistrationValidator = {
   id: stringValidation,

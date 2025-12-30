@@ -783,7 +783,13 @@ router.post('/passkey/start',
  * Finish login with passkey, finishes login and adds webauthn to amr
  */
 router.post('/passkey/end',
-  ...validate<AuthenticationResponseJSON>({
+  ...validate<AuthenticationResponseJSON & {
+    remember?: boolean
+  }>({
+    remember: {
+      optional: true,
+      isBoolean: true,
+    },
     id: stringValidation,
     rawId: stringValidation,
     'response.clientDataJSON': stringValidation,
@@ -821,7 +827,9 @@ router.post('/passkey/end',
       return
     }
 
-    const body = validatorData<AuthenticationResponseJSON>(req)
+    const { remember, ...body } = validatorData<AuthenticationResponseJSON & {
+      remember?: boolean
+    }>(req)
 
     const authOptions = await getAuthenticationOptions((interaction?.uid ?? session?.uid) as string)
 
@@ -880,6 +888,7 @@ router.post('/passkey/end',
     const redir = await loginResult(req, res, {
       userId: user.id,
       amr: ['webauthn'],
+      remember,
     })
 
     res.send(redir)

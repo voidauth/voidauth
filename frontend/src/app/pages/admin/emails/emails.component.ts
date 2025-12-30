@@ -81,6 +81,7 @@ export class EmailsComponent {
 
   async setData() {
     try {
+      this.spinnerService.show()
       const pageIndex = this.paginator().pageIndex
       const pageSize = this.paginator().pageSize
       const sortActive = this.sort().active
@@ -90,6 +91,8 @@ export class EmailsComponent {
       this.paginator().length = data.count
     } catch (_e) {
       this.snackbarService.error('Could not get Sent Mail.')
+    } finally {
+      this.spinnerService.hide()
     }
   }
 
