@@ -41,6 +41,7 @@ class Config {
   // Optional
   STORAGE_KEY_SECONDARY?: string
   PASSWORD_STRENGTH = 3
+  API_RATELIMIT = 60
   DEFAULT_REDIRECT?: string
   CONTACT_EMAIL?: string
   ADMIN_EMAILS?: number
@@ -62,6 +63,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'APP_PORT':
     case 'SMTP_PORT':
     case 'PASSWORD_STRENGTH':
+    case 'API_RATELIMIT':
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
 

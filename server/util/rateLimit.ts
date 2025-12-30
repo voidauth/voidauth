@@ -1,4 +1,5 @@
 import { rateLimit } from 'express-rate-limit'
+import appConfig from './config'
 
 // Standard Rate Limit, 100 per second over 10 minute window
 //  very permissive as this will also apply to all downstream ProxyAuth Domains
@@ -16,7 +17,7 @@ export const standardRateLimit = rateLimit({
 const sensitiveRateWindowS = 1 * 60 // 1 minute
 export const sensitiveRateLimit = rateLimit({
   windowMs: sensitiveRateWindowS * 1000,
-  max: rateWindowS * 1, // max 1 requests per second
+  max: appConfig.API_RATELIMIT,
   validate: { trustProxy: false },
   legacyHeaders: true,
 })
