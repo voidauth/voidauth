@@ -351,6 +351,23 @@ adminRouter.post('/proxyAuth',
       isBoolean: true,
       toBoolean: true,
     },
+    maxSessionLength: {
+      optional: {
+        options: {
+          values: 'null',
+        },
+      },
+      default: {
+        options: null,
+      },
+      isInt: {
+        options: {
+          lt: 525601, // one year in minutes
+          gt: 4, // 5 minutes
+        },
+      },
+      toInt: true,
+    },
     groups: {
       isArray: true,
     },
@@ -363,7 +380,7 @@ adminRouter.post('/proxyAuth',
       return
     }
 
-    const { id, domain, mfaRequired, groups } = validatorData<ProxyAuthUpsert>(req)
+    const { id, domain, mfaRequired, maxSessionLength, groups } = validatorData<ProxyAuthUpsert>(req)
 
     // Check for domain conflict
     const conflicting = await db().select()
@@ -381,6 +398,7 @@ adminRouter.post('/proxyAuth',
       id: proxyAuthId,
       domain,
       mfaRequired,
+      maxSessionLength: maxSessionLength ?? null,
       createdBy: user.id,
       updatedBy: user.id,
       createdAt: new Date(),

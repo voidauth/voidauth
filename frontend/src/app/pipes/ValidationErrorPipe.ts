@@ -17,6 +17,10 @@ export class ValidationErrorPipe implements PipeTransform {
       switch (k.toLowerCase()) {
         case 'required':
           return 'Required.'
+        case 'min':
+          return `Must be at least ${String(errors[k]?.min)}.`
+        case 'max':
+          return `Cannot be greater than ${String(errors[k]?.max)}.`
         case 'minlength':
           return `Must be at least ${String(errors[k]?.requiredLength)} characters long.`
         case 'maxlength':

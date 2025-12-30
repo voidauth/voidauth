@@ -5,7 +5,7 @@ ProxyAuth Domains are protected through a collaboration between your reverse-pro
 You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains page.
 
 <p align=center>
-<img align=center src="/public/screenshots/b774693a-6ef2-4d15-b193-dbc1a8388f3a.png" width="300" />
+<img align=center src="/public/screenshots/proxy_auth_domain.png" width="300" />
 </p>
 
 ## Identifying Users

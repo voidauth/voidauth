@@ -1,19 +1,13 @@
 import { oidcLoginPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
-import { isMatch } from 'matcher'
-import { getProxyAuths } from '../db/proxyAuth'
+import { formatProxyAuthDomain, getProxyAuthWithCache } from '../db/proxyAuth'
 import { checkPasswordHash, getUserByInput } from '../db/user'
 import appConfig, { getSessionDomain, sessionDomainReaches } from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP } from '@shared/constants'
-import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { loginFactors } from '@shared/user'
 import { userCanLogin } from './auth'
-import { formatWildcardDomain } from '@shared/utils'
-
-// proxy auth cache
-let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups'>[] = []
-let proxyAuthCacheExpires: number = 0
+import { getSession } from '../oidc/provider'
 
 // proxy auth common
 export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request', req: Request, res: Response) {
@@ -30,9 +24,21 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     return
   }
 
+  // check if user may access url
+  // using a short cache
+  const match = await getProxyAuthWithCache(url)
+
   if (req.user) {
     user = req.user
     amr = req.user.amr
+
+    // Check that session is not too old
+    const session = await getSession(req, res)
+    if (match?.maxSessionLength && session?.past(match.maxSessionLength * 60)) {
+      res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true, prompt: 'login' })}`)
+      res.send()
+      return
+    }
   } else if (proxyAuthorizationHeader) {
     // Proxy-Authorization header flow
     // Decode the Basic Authorization header
@@ -42,7 +48,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
       res.setHeader('Proxy-Authenticate', `Basic realm="${formattedUrl}"`)
-      res.redirect(407, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
+      res.redirect(407, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
       res.send()
       return
     }
@@ -56,14 +62,14 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
       res.setHeader('WWW-Authenticate', `Basic realm="${formattedUrl}"`)
-      res.redirect(401, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
+      res.redirect(401, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
       res.send()
       return
     }
     amr = ['pwd']
   } else {
     // User not logged in, redirect to login
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return
   }
@@ -71,19 +77,15 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // Check that user is approved and verified and should be able to continue
   if (!userCanLogin(user, amr)) {
     // If not, redirect to login flow, which will send to correct redirect
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return
   }
 
-  // check if user may access url
-  // using a short cache
-  const match = await getProxyAuthWithCache(url)
-
   // Check that proxyAuth domain does not require MFA or user is logged in with MFA already
   if (!!match?.mfaRequired && loginFactors(amr) < 2) {
     // If not, redirect to login flow, which will send to correct redirect
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, url.href, true)}`)
+    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return
   }
@@ -107,19 +109,4 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     res.setHeader('Remote-Groups', user.groups.map(g => g.name).join(','))
   }
   res.send()
-}
-
-export async function getProxyAuthWithCache(url: URL) {
-  const formattedUrl = formatProxyAuthDomain(url)
-  if (proxyAuthCacheExpires < new Date().getTime()) {
-    proxyAuthCache = await getProxyAuths()
-
-    proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
-  }
-
-  return proxyAuthCache.find(d => isMatch(formattedUrl, formatWildcardDomain(d.domain, true)))
-}
-
-function formatProxyAuthDomain(url: URL) {
-  return `${url.hostname}:${url.port || '*'}${url.pathname}`
 }

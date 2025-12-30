@@ -10,12 +10,13 @@ import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import Keygrip from 'keygrip'
 import { interactionPolicy } from 'oidc-provider'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
-import { getProxyAuthWithCache } from '../util/proxyAuth'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
 import { isMatch } from 'matcher'
 import assert from 'assert'
 import { wildcardRedirect } from '@shared/utils'
+import type { IncomingMessage, ServerResponse } from 'http'
+import { getProxyAuthWithCache } from '../db/proxyAuth'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -449,4 +450,13 @@ export async function getProviderClient(client_id: string) {
     .where({ oidcId: client_id }))
     .map(g => g.name)
   return { ...client, groups }
+}
+
+export async function getSession(req: IncomingMessage, res: ServerResponse) {
+  try {
+    const ctx = provider.createContext(req, res)
+    return await provider.Session.get(ctx)
+  } catch (_e) {
+    return null
+  }
 }

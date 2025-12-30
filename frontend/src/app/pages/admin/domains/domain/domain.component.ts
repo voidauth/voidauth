@@ -51,6 +51,7 @@ export class DomainComponent {
       value: [],
       disabled: false,
     }, []),
+    maxSessionLength: new FormControl<number | null>(null, [Validators.min(5), Validators.max(525600)]),
     mfaRequired: new FormControl<boolean>(false),
   })
 
@@ -85,7 +86,11 @@ export class DomainComponent {
   }
 
   resetForm(proxyAuth: ProxyAuthResponse) {
-    this.form.reset({ domain: proxyAuth.domain, groups: proxyAuth.groups, mfaRequired: proxyAuth.mfaRequired })
+    this.form.reset({ domain: proxyAuth.domain,
+      groups: proxyAuth.groups,
+      mfaRequired: proxyAuth.mfaRequired,
+      maxSessionLength: proxyAuth.maxSessionLength,
+    })
   }
 
   groupAutoFilter(value: string = '') {

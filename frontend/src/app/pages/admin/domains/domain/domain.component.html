@@ -12,12 +12,12 @@
 
       <mat-expansion-panel style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px">
         <mat-expansion-panel-header>
-          <mat-panel-title> Domain Info </mat-panel-title>
+          <mat-panel-title> Domain Help </mat-panel-title>
         </mat-expansion-panel-header>
         <ol>
-          <li>Domain should not include protocol, may include a path, and supports wildcards (*) at any position.</li>
+          <li>Domain should not include protocol, may include a path and port, and supports wildcards (*) at any position.</li>
           <li><b>example.domain.com/api/alive</b> will only check access to a single endpoint.</li>
-          <li><b>example.domain.com/api/</b> (note the ending /) will check access for all endpoints under /api.</li>
+          <li><b>example.domain.com/api/*</b> will check access for all endpoints under /api.</li>
         </ol>
       </mat-expansion-panel>
 
@@ -60,6 +60,15 @@
           {{ form.controls.groups.errors | validationError }}
         </mat-error>
       }
+
+      <mat-form-field>
+        <mat-label>Max Session Age (Minutes)</mat-label>
+        <input matInput type="number" min="5" max="525600" formControlName="maxSessionLength" />
+        <mat-hint>Blank means no re-authentication required.</mat-hint>
+        @if (form.controls.maxSessionLength.errors) {
+          <mat-error>{{ form.controls.maxSessionLength.errors | validationError }}</mat-error>
+        }
+      </mat-form-field>
 
       <mat-checkbox formControlName="mfaRequired">MFA Required</mat-checkbox>
 
