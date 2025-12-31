@@ -331,16 +331,16 @@ Redirect URLs: https://seafile.example.com/oauth/callback/
 4. Fill, customize and save these fields in the new configuration view:
 
 ```
-Client ID : your-client-id
-Client Secret : your-client-secret
-Authorization Endpoint URL : Copy from OIDC Info in VoidAuth (Authorization Endpoint)
-Token Endpoint URL : Copy from OIDC Info in VoidAuth (Token Endpoint)
-User Info Endpoint URL : Copy from OIDC Info in VoidAuth (UserInfo Endpoint)
+Client ID: your-client-id
+Client Secret: your-client-secret
+Authorization Endpoint URL: Copy from OIDC Info in VoidAuth (Authorization Endpoint)
+Token Endpoint URL: Copy from OIDC Info in VoidAuth (Token Endpoint)
+User Info Endpoint URL: Copy from OIDC Info in VoidAuth (UserInfo Endpoint)
 Issuer: Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
-Email Claim : email
-Display Name Claim : name
-Groups Claim : groups
-Logout URL : Copy from OIDC Info in VoidAuth (Logout Endpoint)
+Email Claim: email
+Display Name Claim: name
+Groups Claim: groups
+Logout URL: Copy from OIDC Info in VoidAuth (Logout Endpoint)
 ```
 > [!NOTE]
 > Make sure you enabled the authentication strategy.
@@ -384,4 +384,28 @@ Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://memos.example.com/auth/callback
+```
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/actual-budget.svg" width="28" /> Actual Budget
+
+Actual Budget can be set up to use VoidAuth as an OIDC Provider in three ways, through Environment Variables, Web GUI, or Config File. Please see the [Actaul Budget - Authenticating With an OpenID Provider](https://actualbudget.org/docs/config/oauth-auth/) for the details of both options.
+
+Actual Budget OIDC Setup Environment Variables:
+
+```
+ACTUAL_OPENID_DISCOVERY_URL: #Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
+ACTUAL_OPENID_CLIENT_ID: your-client-id
+ACTUAL_OPENID_CLIENT_SECRET: your-client-secret
+ACTUAL_OPENID_SERVER_HOSTNAME: https://actual.example.com #(VoidAuth redirects you to this)
+ACTUAL_OPENID_ENFORCE: true     #optional [true, false]
+ACTUAL_TOKEN_EXPIRATION: never  #optional [never, openid-provider, seconds] (3600 for 1 hour)
+```
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://actual.example.com/openid/callback
 ```
