@@ -386,7 +386,7 @@ Client Secret: your-client-secret
 Redirect URLs: https://memos.example.com/auth/callback
 ```
 
-## <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/actual-budget.svg" width="28" /> Actual Budget
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/actual-budget.svg" width="28" /> Actual Budget
 
 Actual Budget can be set up to use VoidAuth as an OIDC Provider in three ways, through Environment Variables, Web GUI, or Config File. Please see the [Actaul Budget - Authenticating With an OpenID Provider](https://actualbudget.org/docs/config/oauth-auth/) for the details of both options.
 
@@ -408,5 +408,4 @@ Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://actual.example.com/openid/callback
-PostLogout URL: https://grist.example.com/signed-out
 ```
