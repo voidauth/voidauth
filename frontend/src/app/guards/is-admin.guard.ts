@@ -1,10 +1,9 @@
 import { inject } from '@angular/core'
 import { Router, type CanActivateFn } from '@angular/router'
 import { UserService } from '../services/user.service'
-import { oidcLoginPath } from '@shared/oidc'
-import { getBaseHrefPath, getCurrentHost } from '../services/config.service'
 import { SpinnerService } from '../services/spinner.service'
 import { isAdmin } from '@shared/user'
+import { REDIRECT_PATHS } from '@shared/constants'
 
 export const isAdminGuard: CanActivateFn = async (_route, _state) => {
   const userService = inject(UserService)
@@ -23,7 +22,10 @@ export const isAdminGuard: CanActivateFn = async (_route, _state) => {
     }
   } catch (_e) {
     // user isn't logged in
-    window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost(), { prompt: 'login' }))
+    // redirect to login page
+    await router.navigate([REDIRECT_PATHS.LOGIN], {
+      replaceUrl: true,
+    })
     return false
   } finally {
     spinnerService.hide()

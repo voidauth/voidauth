@@ -17,6 +17,7 @@ export const PrivilegedGuard: CanActivateFn = async (_route, _state) => {
     if (!user.isPrivileged) {
       // let oidc redirect to correct entry
       window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost()))
+      return false
     }
   } catch (_e) {
     // user isn't logged in
