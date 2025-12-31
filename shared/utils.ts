@@ -81,7 +81,7 @@ export function wildcardRedirect(input: string) {
   const uri = urlFromWildcardHref(input)
 
   if (!uri) {
-    throw new TypeError('Could not be parsed, must include protocol and domain.')
+    throw new TypeError('Invalid, must include protocol and domain.')
   }
 
   // redirect_uri must not include hash

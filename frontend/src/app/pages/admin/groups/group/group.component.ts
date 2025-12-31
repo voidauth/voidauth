@@ -42,7 +42,7 @@ export class GroupComponent {
     name: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.required]),
+    }, [Validators.required, Validators.pattern('^[A-Za-z0-9_-]+$')]), // only alphanumeric, underscore, and hyphen
     users: new FormControl<GroupUsers['users']>([], []),
     mfaRequired: new FormControl<boolean>(false),
   })

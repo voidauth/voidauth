@@ -760,7 +760,12 @@ adminRouter.post('/group',
       },
       ...uuidValidation,
     },
-    name: stringValidation,
+    name: {
+      matches: {
+        options: new RegExp('^[A-Za-z0-9_-]+$'),
+      },
+      ...stringValidation,
+    },
     mfaRequired: {
       isBoolean: true,
       toBoolean: true,
