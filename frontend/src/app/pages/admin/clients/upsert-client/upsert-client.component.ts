@@ -288,7 +288,7 @@ export class UpsertClientComponent implements OnInit {
 
   generateSecret() {
     this.form.controls.client_secret.setValue(generate({
-      length: 24,
+      length: 32,
       numbers: true,
       strict: true,
     }))

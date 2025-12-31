@@ -37,14 +37,9 @@ export class ClientsComponent implements AfterViewInit {
 
   columns: TableColumn<ClientResponse>[] = [
     {
-      columnDef: 'client_id',
-      header: 'Client ID',
-      cell: element => element.client_id,
-    },
-    {
       columnDef: 'client_name',
-      header: 'Display Name',
-      cell: element => element.client_name ?? '',
+      header: 'Client Name',
+      cell: element => element.client_name ?? element.client_id,
     },
     {
       columnDef: 'redirect_uris',
@@ -78,9 +73,10 @@ export class ClientsComponent implements AfterViewInit {
   }
 
   delete(client_id: string) {
+    const client = this.dataSource.data.find(c => c.client_id === client_id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove client '${client_id}'?`,
+        message: `Are you sure you want to remove client '${client?.client_name ?? client_id}'?`,
         header: 'Delete',
       },
     })
