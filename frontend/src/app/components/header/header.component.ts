@@ -4,8 +4,7 @@ import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component'
 import { MaterialModule } from '../../material-module'
 import { UserService } from '../../services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
-import { ConfigService, getBaseHrefPath, getCurrentHost } from '../../services/config.service'
-import { oidcLoginPath } from '@shared/oidc'
+import { ConfigService } from '../../services/config.service'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { LogoComponent } from './logo.component'
@@ -23,7 +22,6 @@ import { LogoComponent } from './logo.component'
 })
 export class HeaderComponent implements OnInit {
   public user?: CurrentUserDetails
-  public loginRedirect?: string
   public config?: ConfigResponse
   public location = window.location
 
@@ -34,8 +32,6 @@ export class HeaderComponent implements OnInit {
   private spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
-    this.loginRedirect = getBaseHrefPath() + oidcLoginPath(getCurrentHost(), { prompt: 'login' })
-
     try {
       this.spinnerService.show()
       this.user = await this.userService.getMyUser()

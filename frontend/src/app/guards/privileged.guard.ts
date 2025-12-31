@@ -3,6 +3,8 @@ import { Router, type CanActivateFn } from '@angular/router'
 import { UserService } from '../services/user.service'
 import { SpinnerService } from '../services/spinner.service'
 import { REDIRECT_PATHS } from '@shared/constants'
+import { getBaseHrefPath, getCurrentHost } from '../services/config.service'
+import { oidcLoginPath } from '@shared/oidc'
 
 export const PrivilegedGuard: CanActivateFn = async (_route, _state) => {
   const userService = inject(UserService)
@@ -13,7 +15,9 @@ export const PrivilegedGuard: CanActivateFn = async (_route, _state) => {
     spinnerService.show()
     const user = await userService.getMyUser()
     if (!user.isPrivileged) {
-      throw new Error('User does not have AMR required to use account management or admin features.')
+      // let oidc redirect to correct entry
+      window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost()))
+      return false
     }
   } catch (_e) {
     // user isn't logged in
