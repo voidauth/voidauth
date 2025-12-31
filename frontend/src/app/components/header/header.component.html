@@ -14,9 +14,9 @@
   <span class="right-actions">
     <app-theme-toggle></app-theme-toggle>
     <span>
-      @if (!user?.canLogin && loginRedirect && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {
+      @if (!user?.canLogin && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {
         <span>
-          <a mat-flat-button [href]="loginRedirect">Login</a>
+          <a mat-flat-button routerLink="/login">Login</a>
         </span>
       } @else if (!location.pathname.endsWith("/login") && !location.pathname.endsWith("/register")) {
         <button mat-icon-button (click)="toggleSidenav.emit()">
