@@ -42,6 +42,11 @@ export class ClientsComponent implements AfterViewInit {
       cell: element => element.client_id,
     },
     {
+      columnDef: 'client_name',
+      header: 'Display Name',
+      cell: element => element.client_name ?? '',
+    },
+    {
       columnDef: 'redirect_uris',
       header: 'Redirects',
       cell: element => String(element.redirect_uris?.join('\n')),

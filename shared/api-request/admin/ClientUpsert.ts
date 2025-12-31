@@ -22,7 +22,9 @@ export type ClientUpsert = {
 | 'grant_types'
 | 'logo_uri'
 | 'skip_consent'
-| 'require_mfa'>>
+| 'require_mfa'
+| 'client_name'
+| 'client_uri'>>
 & {
   groups: OIDCGroup['groupId'][]
 }

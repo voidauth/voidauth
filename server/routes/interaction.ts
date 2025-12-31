@@ -281,6 +281,7 @@ router.get('/:uid/detail',
     const details: ConsentDetails = {
       uid: uid,
       clientId: params.client_id as string,
+      clientName: client?.clientName,
       logoUri: client?.logoUri,
       redirectUri: params.redirect_uri as string,
       scopes: scope.split(' '),

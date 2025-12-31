@@ -5,9 +5,29 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
         <mat-label>Client ID</mat-label>
-        <input matInput type="text" formControlName="client_id" />
+        <input #clientid matInput type="text" formControlName="client_id" />
+        @if (!client_id) {
+          <button
+            class="field-suffix"
+            type="button"
+            [disabled]="!!clientid.value"
+            mat-icon-button
+            matSuffix
+            (click)="$event.stopPropagation(); generateClientID()"
+          >
+            <mat-icon fontSet="material-icons-round" matSuffix>autorenew</mat-icon>
+          </button>
+        }
         @if (form.controls.client_id.errors) {
           <mat-error>{{ form.controls.client_id.errors | validationError }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Display Name</mat-label>
+        <input matInput type="text" formControlName="client_name" />
+        @if (form.controls.client_name.errors) {
+          <mat-error>{{ form.controls.client_name.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
@@ -165,20 +185,29 @@
       </mat-form-field>
 
       <mat-form-field>
-        <mat-label>PostLogout URL</mat-label>
-        <input matInput type="text" formControlName="post_logout_redirect_uri" />
-        <mat-hint>Allowed post-logout redirect url on client initiated logout.</mat-hint>
-        @if (form.controls.post_logout_redirect_uri) {
-          <mat-error>{{ form.controls.post_logout_redirect_uri.errors | validationError }}</mat-error>
+        <mat-label>Home Page URL</mat-label>
+        <input matInput type="text" formControlName="client_uri" />
+        <mat-hint>Home Page URL of the client.</mat-hint>
+        @if (form.controls.client_uri.errors) {
+          <mat-error>{{ form.controls.client_uri.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field>
         <mat-label>Logo URL</mat-label>
         <input matInput type="text" formControlName="logo_uri" />
-        <mat-hint>Logo URL shown on client consent page.</mat-hint>
+        <mat-hint>Logo URL of the client.</mat-hint>
         @if (form.controls.logo_uri.errors) {
           <mat-error>{{ form.controls.logo_uri.errors | validationError }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>PostLogout URL</mat-label>
+        <input matInput type="text" formControlName="post_logout_redirect_uri" />
+        <mat-hint>Allowed post-logout redirect url on client initiated logout.</mat-hint>
+        @if (form.controls.post_logout_redirect_uri) {
+          <mat-error>{{ form.controls.post_logout_redirect_uri.errors | validationError }}</mat-error>
         }
       </mat-form-field>
 

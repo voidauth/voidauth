@@ -49,6 +49,13 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
       },
     },
   },
+  client_name: {
+    default: {
+      options: undefined,
+    },
+    optional: true,
+    ...stringValidation,
+  },
   redirect_uris: {
     isArray: true,
   },
@@ -127,6 +134,20 @@ const clientMetadataValidator: TypedSchema<ClientUpsert> = {
     isBoolean: true,
   },
   logo_uri: {
+    default: {
+      options: undefined,
+    },
+    optional: true,
+    isURL: {
+      options: {
+        protocols: ['http', 'https'],
+        require_tld: false,
+        require_protocol: true,
+      },
+    },
+    trim: true,
+  },
+  client_uri: {
     default: {
       options: undefined,
     },
