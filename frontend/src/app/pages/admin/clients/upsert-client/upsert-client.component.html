@@ -5,7 +5,19 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
         <mat-label>Client ID</mat-label>
-        <input matInput type="text" formControlName="client_id" />
+        <input #clientid matInput type="text" formControlName="client_id" />
+        @if (!client_id) {
+          <button
+            class="field-suffix"
+            type="button"
+            [disabled]="!!clientid.value"
+            mat-icon-button
+            matSuffix
+            (click)="$event.stopPropagation(); generateClientID()"
+          >
+            <mat-icon fontSet="material-icons-round" matSuffix>autorenew</mat-icon>
+          </button>
+        }
         @if (form.controls.client_id.errors) {
           <mat-error>{{ form.controls.client_id.errors | validationError }}</mat-error>
         }

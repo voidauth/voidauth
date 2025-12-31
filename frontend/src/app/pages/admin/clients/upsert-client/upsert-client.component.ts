@@ -277,9 +277,18 @@ export class UpsertClientComponent implements OnInit {
     })
   }
 
+  generateClientID() {
+    this.form.controls.client_id.setValue(generate({
+      length: 16,
+      numbers: true,
+      strict: true,
+    }))
+    this.form.controls.client_id.markAsDirty()
+  }
+
   generateSecret() {
     this.form.controls.client_secret.setValue(generate({
-      length: 32,
+      length: 24,
       numbers: true,
       strict: true,
     }))
