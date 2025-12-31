@@ -54,9 +54,10 @@ export class UpsertClientComponent implements OnInit {
 
   form = new FormGroup<TypedControls<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
+    client_name: new FormControl<string | null>(null),
     redirect_uris: new FormControl<string[]>([], [Validators.required, Validators.minLength(1)]),
     client_secret: new FormControl<string | null>(null, [Validators.required, Validators.minLength(4)]),
-    token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_post'),
+    token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_basic'),
     response_types: new FormControl<ResponseType[]>(['code'], [(c) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!c.value?.length) {
@@ -87,6 +88,7 @@ export class UpsertClientComponent implements OnInit {
     skip_consent: new FormControl<boolean>(true),
     require_mfa: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
+    client_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     groups: new FormControl<ClientUpsert['groups']>([]),
   })
 
@@ -148,15 +150,17 @@ export class UpsertClientComponent implements OnInit {
           const client = await this.adminService.client(this.client_id)
           this.form.reset({
             client_id: client.client_id,
+            client_name: client.client_name ?? null,
             client_secret: client.client_secret ?? null,
             redirect_uris: client.redirect_uris ?? [],
-            token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_post',
+            token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_basic',
             response_types: client.response_types ?? ['code'],
             grant_types: client.grant_types ?? ['authorization_code', 'refresh_token'],
             post_logout_redirect_uri: client.post_logout_redirect_uris?.[0] ?? null,
             skip_consent: client['skip_consent'] ?? true,
             require_mfa: client['require_mfa'] ?? false,
-            logo_uri: client.logo_uri,
+            logo_uri: client.logo_uri ?? null,
+            client_uri: client.client_uri ?? null,
             groups: client.groups,
           })
 

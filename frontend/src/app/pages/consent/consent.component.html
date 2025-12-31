@@ -10,7 +10,7 @@
           <br />
           <br />
           Do you want to sign in to <br />
-          <h2>{{ redirectHost ?? details.redirectUri }}</h2>
+          <h2>{{ details.clientName ?? redirectHost ?? details.redirectUri }}</h2>
           <br />
           @if (redirectHost) {
             <p>
