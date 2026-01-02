@@ -73,6 +73,9 @@ WORKDIR /app
 # Copy build files
 COPY --from=build --chmod=0777 /app ./
 
+# Ensure executable
+RUN [ "node", "./dist/index.mjs", "--help" ]
+
 # Needed for backwards compatibility
 USER 0:0
 

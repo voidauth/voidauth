@@ -27,7 +27,7 @@
 <br>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/2f8c15db-28fd-4b0e-a266-1dddd9cf9e3a.png" title="Login Portal" alt="Login Portal" width="240">
+  <img src="https://raw.githubusercontent.com/voidauth/voidauth/refs/heads/main/docs/public/screenshots/login_page.png" title="Login Portal" alt="Login Portal" width="280">
 </p>
 
 ## What is VoidAuth
