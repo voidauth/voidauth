@@ -448,3 +448,7 @@ Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://pve.example.com
 ```
+Screenshot(s):
+<p align=center>
+<img width="600" src="/public/screenshots/proxmox-pve-openid.png" />
+</p>
