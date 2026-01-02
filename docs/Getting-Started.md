@@ -59,7 +59,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./voidauth/config:/app/config
-      - db:/app/db # volume for SQLite file
+      - ./voidauth/db:/app/db
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
@@ -68,8 +68,6 @@ services:
       STORAGE_KEY: # required
       DB_ADAPTER: sqlite
 
-volumes:
-  db:
 ```
 
 > [!TIP]
