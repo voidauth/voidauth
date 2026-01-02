@@ -37,7 +37,7 @@ services:
     volumes:
       - db:/var/lib/postgresql/18/docker
     healthcheck:
-      test: pg_isready
+      test: "pg_isready -U postgres -h localhost"
 
 volumes:
   db:

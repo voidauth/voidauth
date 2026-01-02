@@ -31,4 +31,4 @@ services:
       - ./db/data:/var/lib/postgresql/18/docker
     restart: unless-stopped
     healthcheck:
-      test: pg_isready
+      test: "pg_isready -U postgres -h localhost"
