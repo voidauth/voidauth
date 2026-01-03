@@ -35,7 +35,6 @@ import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordRese
 import type { EmailLog } from '@shared/db/EmailLog'
 import appConfig from '../util/config'
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
-import DOMPurify from 'isomorphic-dompurify'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import { logger } from '../util/logger'
@@ -1172,8 +1171,8 @@ adminRouter.get('/emails',
     const emails = (await emailsModel.clone().select().offset(page * pageSize).limit(pageSize)).map((e) => {
       return {
         ...e,
-        body: e.body ? DOMPurify.sanitize(e.body) : e.body,
-        subject: DOMPurify.sanitize(e.subject),
+        body: e.body,
+        subject: e.subject,
       }
     })
 

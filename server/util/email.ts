@@ -13,7 +13,6 @@ import type { EmailLog } from '@shared/db/EmailLog'
 import { randomUUID } from 'node:crypto'
 import type { User } from '@shared/db/User'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
-import DOMPurify from 'isomorphic-dompurify'
 import ejs from 'ejs'
 import { logger } from './logger'
 
@@ -82,9 +81,9 @@ function compileTemplates(name: string) {
   }
   return (locals: pug.LocalsObject | ejs.Data) => {
     return {
-      subject: templates.subject ? DOMPurify.sanitize(templates.subject(locals)) : undefined,
-      html: templates.html ? DOMPurify.sanitize(templates.html(locals)) : undefined,
-      text: templates.text ? DOMPurify.sanitize(templates.text(locals)) : undefined,
+      subject: templates.subject ? templates.subject(locals) : undefined,
+      html: templates.html ? templates.html(locals) : undefined,
+      text: templates.text ? templates.text(locals) : undefined,
     }
   }
 }
@@ -107,6 +106,7 @@ export async function sendTestNotification(email: string) {
     primary_color: PRIMARY_COLOR,
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
+    app_font: appConfig.APP_FONT,
     app_url: appConfig.APP_URL,
   })
 
@@ -151,6 +151,7 @@ export async function sendEmailVerification(user: UserWithoutPassword, challenge
     primary_color: PRIMARY_COLOR,
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
+    app_font: appConfig.APP_FONT,
     app_url: appConfig.APP_URL,
     name: user.name || user.username,
     verification_url: `${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFY_EMAIL}/${user.id}/${challenge}`,
@@ -199,6 +200,7 @@ export async function sendPasswordReset(passwordReset: PasswordReset, user: User
     primary_color: PRIMARY_COLOR,
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
+    app_font: appConfig.APP_FONT,
     app_url: appConfig.APP_URL,
     name: user.name || user.username,
     reset_url: `${appConfig.APP_URL}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`,
@@ -247,6 +249,7 @@ export async function sendInvitation(invitation: Invitation, email: string) {
     primary_color: PRIMARY_COLOR,
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
+    app_font: appConfig.APP_FONT,
     app_url: appConfig.APP_URL,
     name: invitation.name || invitation.username,
     invitation_url: `${appConfig.APP_URL}/${REDIRECT_PATHS.INVITE}?${query}`,
@@ -292,6 +295,7 @@ export async function sendApproved(user: Pick<User, 'id' | 'username' | 'name'>,
     primary_color: PRIMARY_COLOR,
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
     app_title: appConfig.APP_TITLE,
+    app_font: appConfig.APP_FONT,
     app_url: appConfig.APP_URL,
     name: user.name || user.username,
     default_url: appConfig.DEFAULT_REDIRECT || appConfig.APP_URL,
@@ -395,6 +399,7 @@ export async function sendAdminNotifications() {
       primary_color: PRIMARY_COLOR,
       primary_contrast_color: PRIMARY_CONTRAST_COLOR,
       app_title: appConfig.APP_TITLE,
+      app_font: appConfig.APP_FONT,
       app_url: appConfig.APP_URL,
       users: approvalsNeeded.map(u => u.username), // backwards compatibility, unused in default template
       unapproved_users: approvalsNeeded, // unapproved users

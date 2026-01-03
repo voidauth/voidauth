@@ -20,12 +20,12 @@
       }
     </style>
   </head>
-  <body style="margin: 0; padding: 0; font-family: Arial, sans-serif">
+  <body style="margin: 0; padding: 0; font-family: <%= locals.app_font %>monospace;">
     <table border="0"
       cellpadding="0"
       cellspacing="0"
       width="100%"
-      style="max-width: 600px; margin: 0 auto">
+      style="max-width: 600px; margin: 0 auto; font-family: <%= locals.app_font %>monospace;">
       <tr>
         <td align="center" style="padding: 20px 0">
           <table border="0"
@@ -61,7 +61,7 @@
                       <a
                         href="<%= locals.default_url %>"
                         style="font-size: 16px;
-                          font-family: Arial, sans-serif;
+                          font-family: <%= locals.app_font %>monospace;
                           color: <%= locals.primary_contrast_color %>;
                           text-decoration: none;
                           border-radius: 50px;
