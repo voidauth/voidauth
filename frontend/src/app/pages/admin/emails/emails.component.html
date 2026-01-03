@@ -1,6 +1,6 @@
 <div class="container">
   <span style="align-self: end">
-    <button mat-flat-button (click)="sendTestEmail()">Send Test Email</button>
+    <button [disabled]="!config?.emailActive" mat-flat-button (click)="sendTestEmail()">Send Test Email</button>
   </span>
   <table mat-table [dataSource]="dataSource" matSort>
     @for (column of columns; track column) {

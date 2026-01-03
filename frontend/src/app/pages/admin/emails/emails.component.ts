@@ -15,6 +15,8 @@ import DOMPurify from 'isomorphic-dompurify'
 import { EmailInputComponent } from '../../../dialogs/email-input/email-input.component'
 import { UserService } from '../../../services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { ConfigService } from '../../../services/config.service'
 
 @Component({
   selector: 'app-emails',
@@ -56,8 +58,10 @@ export class EmailsComponent {
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
   private userService = inject(UserService)
+  private configService = inject(ConfigService)
 
   me?: CurrentUserDetails
+  public config?: ConfigResponse
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
@@ -65,6 +69,7 @@ export class EmailsComponent {
       this.spinnerService.show()
 
       this.me = await this.userService.getMyUser()
+      this.config = await this.configService.getConfig()
       await this.setData()
 
       this.paginator().page.subscribe(async () => {
