@@ -18,6 +18,8 @@ if (booleanString(process.env.ENABLE_DEBUG) || booleanString(process.env.DEBUG))
   process.env.DEBUG = 'oidc-provider:server_error'
 }
 
+// Follow process flow depending on input arguments
+// TODO: this (and the cli file structure) are a bit of a mess, organize
 export const argv = yargs(hideBin(process.argv))
   .version(false)
   .scriptName('voidauth')
@@ -35,7 +37,7 @@ export const argv = yargs(hideBin(process.argv))
 
 `)
     try {
-      const server = await import('./server.ts')
+      const server = await import('./cli/server.ts')
       void server.serve()
     } catch (e) {
       logger.error(e)
@@ -47,7 +49,7 @@ export const argv = yargs(hideBin(process.argv))
     {},
     async () => {
       try {
-        const migrate = await import('./migrateDB.ts')
+        const migrate = await import('./cli/migrateDB.ts')
         await migrate.migrate()
         logger.info('Database migration completed successfully, adjust your DB_* environment variables and restart.')
         exit(0)
@@ -56,4 +58,30 @@ export const argv = yargs(hideBin(process.argv))
         exit(1)
       }
     })
+  .command(
+    'generate password-reset [username]',
+    'Generate a password reset link for an existing user.',
+    yg => yg
+      .positional('username', { type: 'string', describe: 'Existing user username' })
+      .option('username', {
+        alias: 'u',
+        type: 'string',
+        describe: 'Existing user username',
+      }),
+    async (argv) => {
+      try {
+        if (!argv.username) {
+          logger.error('Username must be specified')
+          exit(2)
+        }
+        const gpr = await import('./cli/generatePasswordReset.ts')
+        const result = await gpr.generatePasswordReset(argv.username)
+        logger.info(`\nPassword Reset link created: \n\n${result}\n`)
+        exit(0)
+      } catch (e) {
+        logger.error(e)
+        exit(1)
+      }
+    },
+  )
   .parse()

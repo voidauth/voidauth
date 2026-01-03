@@ -9,4 +9,5 @@
   * [Security Groups](Security-Groups.md)
   * [Password Resets](Password-Resets.md)
   * [Email Templates](Email-Templates.md)
+  * [CLI Commands](CLI-Commands.md)
   * [Database Migration](DB-Migration.md)

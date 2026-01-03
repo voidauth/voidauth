@@ -1,10 +1,10 @@
-import { commit, db, rollback, transaction } from './db/db'
-import { als } from './util/als'
-import appConfig from './util/config'
+import { commit, db, rollback, transaction } from '../db/db'
+import { als } from '../util/als'
+import appConfig from '../util/config'
 import { exit } from 'process'
 import { TABLES_ORDER } from '@shared/constants'
-import { createDB } from './db/connection'
-import { logger } from './util/logger'
+import { createDB } from '../db/connection'
+import { logger } from '../util/logger'
 
 export async function migrate() {
   if (appConfig.DB_ADAPTER === appConfig.MIGRATE_TO_DB_ADAPTER) {

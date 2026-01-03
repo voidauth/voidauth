@@ -39,6 +39,7 @@ import DOMPurify from 'isomorphic-dompurify'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import { logger } from '../util/logger'
+import { createPasswordReset } from '../db/passwordReset'
 
 const clientMetadataValidator: TypedSchema<ClientUpsert> = {
   client_id: {
@@ -1051,17 +1052,7 @@ adminRouter.post('/passwordreset',
       return
     }
 
-    const passwordReset: PasswordReset = {
-      id: randomUUID(),
-      userId: user.id,
-      challenge: generate({
-        length: 32,
-        numbers: true,
-      }),
-      createdAt: new Date(),
-      expiresAt: createExpiration(TTLs.PASSWORD_RESET),
-    }
-    await db().table<PasswordReset>(TABLES.PASSWORD_RESET).insert(passwordReset)
+    const passwordReset = await createPasswordReset(user.id)
 
     const result: PasswordResetUser = { ...passwordReset, username: user.username, email: user.email }
     res.send(result)

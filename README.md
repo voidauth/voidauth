@@ -66,8 +66,6 @@ services:
 
   voidauth: 
     image: voidauth/voidauth:latest
-    # for best security use a user id that does not exist on the host. Container runs as root by default
-    user: "8681:8681"
     restart: unless-stopped
     volumes:
       - ./voidauth/config:/app/config

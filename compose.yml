@@ -4,7 +4,6 @@ services:
       context: .
       target: serve
     image: voidauth/voidauth:latest
-    user: "8681:8681"
     env_file:
       - ".env"
     ports:
