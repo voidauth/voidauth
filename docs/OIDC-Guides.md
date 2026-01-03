@@ -409,3 +409,46 @@ Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://actual.example.com/openid/callback
 ```
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/proxmox.svg" width="28" /> Proxmox PVE
+
+Proxmox PVE can be set up to use VoidAuth as an OIDC Provider in two ways, through Web GUI or Config File. Please see the [Proxmox - PVE Authentication Realms](https://pve.proxmox.com/wiki/User_Management#pveum_authentication_realms) for the details.
+
+Login to your Proxmox PVE
+Under Server View side panel, click Datacenter
+Under the second side panel, click Permissions > Realms
+Under the Realms panel, click Add > OpenID Connect Server
+
+```
+Issuer URL: https://auth.example.com/oidc (VoidAuth OIDC Issuer Endpoint)
+Realm: VoidAuth (Any name you want)
+Client ID: your-client-id
+Client Key: your-client-secret
+Scopes: (leave default [email, profile])
+Username Claim: [subject, email, username] (default is sub, choose carefully)
+Prompt: Auth-Provider Default (leave default)
+```
+
+Optional:
+```
+Default: (Make VoidAuth your default provider)
+Autocreate Users: (Advanced)
+Autocreate Groups: (Advanced)
+Groups Claim: (Advanced)
+Overright Groups: (Advanced)
+```
+
+If you are not using Autocreate, you will need to to create Groups and Users manually. PVE permissions can be quite complicated. We recommend following through their Wiki as each setup requires it's own set.
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://pve.example.com
+```
+Screenshot(s):
+<p align=center>
+<img width="600" src="/public/screenshots/proxmox-pve-openid.png" />
+</p>
