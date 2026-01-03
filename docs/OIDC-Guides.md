@@ -11,6 +11,30 @@ In the guides below, there may be omitted options when those options are set to 
 > [!NOTE]
 > Public clients can be configured by selecting the `None (Public)` option from the `Auth Method` dropdown on the OIDC Client page. These clients do not require a Client Secret but do require PKCE, which your Public Client Application should provide.
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/actual-budget.svg" width="28" /> Actual Budget
+
+Actual Budget can be set up to use VoidAuth as an OIDC Provider in three ways, through Environment Variables, Web GUI, or Config File. Please see the [Actaul Budget - Authenticating With an OpenID Provider](https://actualbudget.org/docs/config/oauth-auth/) for the details of both options.
+
+Actual Budget OIDC Setup Environment Variables:
+
+```
+ACTUAL_OPENID_DISCOVERY_URL: #Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
+ACTUAL_OPENID_CLIENT_ID: your-client-id
+ACTUAL_OPENID_CLIENT_SECRET: your-client-secret
+ACTUAL_OPENID_SERVER_HOSTNAME: https://actual.example.com #(VoidAuth redirects you to this)
+ACTUAL_OPENID_ENFORCE: true     #optional [true, false]
+ACTUAL_TOKEN_EXPIRATION: never  #optional [never, openid-provider, seconds] (3600 for 1 hour)
+```
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://actual.example.com/openid/callback
+```
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/arcane.svg" width="28" /> Arcane
 
 Arcane can be set up to use VoidAuth as an OIDC Provider in two ways, through the Web GUI or through Environment Variables. Please see the [Arcane SSO Docs](https://arcane.ofkm.dev/docs/configuration/sso) for the details of both options.
@@ -221,6 +245,38 @@ Client Secret: your-client-secret
 Redirect URLs: https://mastodon.example.com/auth/auth/openid_connect/callback
 ```
 
+
+## <img src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/logo-rounded.png" width="28" /> Memos
+
+1. Connect to Memos as an admin user
+2. Click on the *user icon* at the bottom left, then on *Settings*, and finally on *SSO*
+3. Click on the *Create* button and select *Custom* from the *Template* menu
+4. Fill, customize and save these fields in the new configuration:
+
+```
+Client ID : your-client-id
+Client Secret : your-client-secret
+Authorization endpoint : Copy from OIDC Info in VoidAuth (Authorization Endpoint)
+Token endpoint : Copy from OIDC Info in VoidAuth (Token Endpoint)
+User endpoint : Copy from OIDC Info in VoidAuth (UserInfo Endpoint)
+Scopes : openid profile email offline_access
+Identifier : preferred_username
+Display Name : name
+Email : email
+```
+
+> [!NOTE]
+> Scopes are separated by spaces, **not** by commas
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://memos.example.com/auth/callback
+```
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/open-webui.svg" width="28" /> Open WebUI
 
 In the following example only users in VoidAuth with the group `users` or `admins` will be able to log in. Adjust these group names as needed.
@@ -284,6 +340,48 @@ Screenshot(s):
 <img width="1400" src="/public/screenshots/f7cf9712-4259-43ce-bde1-fbe22a447763.png" />
 </p>
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/proxmox.svg" width="28" /> Proxmox PVE
+
+Proxmox PVE can be set up to use VoidAuth as an OIDC Provider in two ways, through Web GUI or Config File. Please see the [Proxmox - PVE Authentication Realms](https://pve.proxmox.com/wiki/User_Management#pveum_authentication_realms) for the details.
+
+Login to your Proxmox PVE
+Under Server View side panel, click Datacenter
+Under the second side panel, click Permissions > Realms
+Under the Realms panel, click Add > OpenID Connect Server
+
+```
+Issuer URL: https://auth.example.com/oidc (VoidAuth OIDC Issuer Endpoint)
+Realm: VoidAuth (Any name you want)
+Client ID: your-client-id
+Client Key: your-client-secret
+Scopes: (leave default [email, profile])
+Username Claim: [subject, email, username] (default is sub, choose carefully)
+Prompt: Auth-Provider Default (leave default)
+```
+
+Optional:
+```
+Default: (Make VoidAuth your default provider)
+Autocreate Users: (Advanced)
+Autocreate Groups: (Advanced)
+Groups Claim: (Advanced)
+Overright Groups: (Advanced)
+```
+
+If you are not using Autocreate, you will need to to create Groups and Users manually. PVE permissions can be quite complicated. We recommend following through their Wiki as each setup requires it's own set.
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://pve.example.com
+```
+Screenshot(s):
+<p align=center>
+<img width="600" src="/public/screenshots/proxmox-pve-openid.png" />
+</p>
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/seafile.svg" width="28" /> Seafile
 
@@ -353,102 +451,3 @@ Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://wikijs.example.com/login/token-given-on-wikijs-authentication-strategy-view-check-below/callback
 ```
-
-
-## <img src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/logo-rounded.png" width="28" /> Memos
-
-1. Connect to Memos as an admin user
-2. Click on the *user icon* at the bottom left, then on *Settings*, and finally on *SSO*
-3. Click on the *Create* button and select *Custom* from the *Template* menu
-4. Fill, customize and save these fields in the new configuration:
-
-```
-Client ID : your-client-id
-Client Secret : your-client-secret
-Authorization endpoint : Copy from OIDC Info in VoidAuth (Authorization Endpoint)
-Token endpoint : Copy from OIDC Info in VoidAuth (Token Endpoint)
-User endpoint : Copy from OIDC Info in VoidAuth (UserInfo Endpoint)
-Scopes : openid profile email offline_access
-Identifier : preferred_username
-Display Name : name
-Email : email
-```
-
-> [!NOTE]
-> Scopes are separated by spaces, **not** by commas
-
-In VoidAuth OIDC Client Page:
-
-```
-Client ID: your-client-id
-Auth Method: Client Secret Post
-Client Secret: your-client-secret
-Redirect URLs: https://memos.example.com/auth/callback
-```
-
-## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/actual-budget.svg" width="28" /> Actual Budget
-
-Actual Budget can be set up to use VoidAuth as an OIDC Provider in three ways, through Environment Variables, Web GUI, or Config File. Please see the [Actaul Budget - Authenticating With an OpenID Provider](https://actualbudget.org/docs/config/oauth-auth/) for the details of both options.
-
-Actual Budget OIDC Setup Environment Variables:
-
-```
-ACTUAL_OPENID_DISCOVERY_URL: #Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
-ACTUAL_OPENID_CLIENT_ID: your-client-id
-ACTUAL_OPENID_CLIENT_SECRET: your-client-secret
-ACTUAL_OPENID_SERVER_HOSTNAME: https://actual.example.com #(VoidAuth redirects you to this)
-ACTUAL_OPENID_ENFORCE: true     #optional [true, false]
-ACTUAL_TOKEN_EXPIRATION: never  #optional [never, openid-provider, seconds] (3600 for 1 hour)
-```
-
-In VoidAuth OIDC Client Page:
-
-```
-Client ID: your-client-id
-Auth Method: Client Secret Post
-Client Secret: your-client-secret
-Redirect URLs: https://actual.example.com/openid/callback
-```
-
-## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/proxmox.svg" width="28" /> Proxmox PVE
-
-Proxmox PVE can be set up to use VoidAuth as an OIDC Provider in two ways, through Web GUI or Config File. Please see the [Proxmox - PVE Authentication Realms](https://pve.proxmox.com/wiki/User_Management#pveum_authentication_realms) for the details.
-
-Login to your Proxmox PVE
-Under Server View side panel, click Datacenter
-Under the second side panel, click Permissions > Realms
-Under the Realms panel, click Add > OpenID Connect Server
-
-```
-Issuer URL: https://auth.example.com/oidc (VoidAuth OIDC Issuer Endpoint)
-Realm: VoidAuth (Any name you want)
-Client ID: your-client-id
-Client Key: your-client-secret
-Scopes: (leave default [email, profile])
-Username Claim: [subject, email, username] (default is sub, choose carefully)
-Prompt: Auth-Provider Default (leave default)
-```
-
-Optional:
-```
-Default: (Make VoidAuth your default provider)
-Autocreate Users: (Advanced)
-Autocreate Groups: (Advanced)
-Groups Claim: (Advanced)
-Overright Groups: (Advanced)
-```
-
-If you are not using Autocreate, you will need to to create Groups and Users manually. PVE permissions can be quite complicated. We recommend following through their Wiki as each setup requires it's own set.
-
-In VoidAuth OIDC Client Page:
-
-```
-Client ID: your-client-id
-Auth Method: Client Secret Post
-Client Secret: your-client-secret
-Redirect URLs: https://pve.example.com
-```
-Screenshot(s):
-<p align=center>
-<img width="600" src="/public/screenshots/proxmox-pve-openid.png" />
-</p>
