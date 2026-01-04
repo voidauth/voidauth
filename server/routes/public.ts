@@ -7,19 +7,17 @@ import { validate, validatorData } from '../util/validate'
 import { newPasswordValidation, stringValidation, uuidValidation } from '../util/validators'
 import { endSessions, getUserById, getUserByInput } from '../db/user'
 import { db } from '../db/db'
-import { createExpiration } from '../db/util'
-import { TABLES, TTLs } from '@shared/constants'
+import { TABLES } from '@shared/constants'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
-import { randomUUID } from 'crypto'
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import type { User } from '@shared/db/User'
-import { generate } from 'generate-password'
 import { createPasskey, createPasskeyRegistrationOptions, getRegistrationInfo, passkeyRegistrationValidator } from '../util/passkey'
 import { getUserPasskeys } from '../db/passkey'
 import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 import { passwordStrength } from '../util/zxcvbn'
 import { logger } from '../util/logger'
 import { argon2 } from '../util/argon2id'
+import { createPasswordReset } from '../db/passwordReset'
 
 /**
  * routes that do not require any auth
@@ -67,17 +65,7 @@ publicRouter.post('/send_password_reset',
     }
 
     // Create the password reset link even if email will not send
-    const passwordReset: PasswordReset = {
-      id: randomUUID(),
-      userId: user.id,
-      challenge: generate({
-        length: 32,
-        numbers: true,
-      }),
-      createdAt: new Date(),
-      expiresAt: createExpiration(TTLs.PASSWORD_RESET),
-    }
-    await db().table<PasswordReset>(TABLES.PASSWORD_RESET).insert(passwordReset)
+    const passwordReset = await createPasswordReset(user.id)
 
     // If possible, send email
     const result: SendPasswordResetResponse = { emailSent: false }
