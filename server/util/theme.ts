@@ -33,14 +33,17 @@ export async function generateTheme() {
       fs.writeFileSync(path.join('./theme', resultFile), themeContent)
     }
 
-    const compiled = await sass.compileAsync(path.join('./theme', 'theme-styles.scss'), {
+    // If APP_FONT is set, apply it here
+    const themeStyles = fs.readFileSync(path.join('./theme', 'theme-styles.scss'), 'utf-8').replaceAll('__APP_FONT__', appConfig.APP_FONT)
+
+    const compiled = await sass.compileStringAsync(themeStyles, {
       loadPaths: [
         './theme',
         './node_modules',
       ],
     })
 
-    // TODO: get primary and contrast color for use in config
+    // Get primary and contrast color for use in config
     const primary = /--mat-sys-primary: light-dark\((#\w+), (#\w+)\);/.exec(compiled.css)?.[1]
     const contrast = /--mat-sys-on-primary: light-dark\((#\w+), (#\w+)\);/.exec(compiled.css)?.[1]
     if (!primary || !contrast) {

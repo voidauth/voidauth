@@ -19,7 +19,7 @@ html {
       primary: theme-colors.$primary-palette,
       tertiary: theme-colors.$tertiary-palette,
     ),
-    typography: monospace,
+    typography: "__APP_FONT__monospace",
     density: 0,
   ));
 }
