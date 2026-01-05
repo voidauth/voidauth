@@ -80,7 +80,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         } catch (e) {
           // attempted to create interaction and failed
           console.error(e)
-          this.snackbarService.error('Could not create Session.')
+          this.snackbarService.error('Could not create session.')
           this.interactionAvailable = false
         }
       }

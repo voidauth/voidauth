@@ -38,7 +38,7 @@ export class ClientsComponent implements AfterViewInit {
   columns: TableColumn<ClientResponse>[] = [
     {
       columnDef: 'client_name',
-      header: 'Client Name',
+      header: 'Name',
       cell: element => element.client_name ?? element.client_id,
     },
     {
@@ -76,7 +76,7 @@ export class ClientsComponent implements AfterViewInit {
     const client = this.dataSource.data.find(c => c.client_id === client_id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove client '${client?.client_name ?? client_id}'?`,
+        message: `Are you sure you want to remove app '${client?.client_name ?? client_id}'?`,
         header: 'Delete',
       },
     })
@@ -90,9 +90,9 @@ export class ClientsComponent implements AfterViewInit {
         this.spinnerService.show()
         await this.adminService.deleteClient(client_id)
         this.dataSource.data = this.dataSource.data.filter(c => c.client_id !== client_id)
-        this.snackbarService.message(`Client ${client_id} was deleted.`)
+        this.snackbarService.message(`App ${client?.client_name ?? client_id} was deleted.`)
       } catch (_e) {
-        this.snackbarService.error('Could not delete client.')
+        this.snackbarService.error('Could not delete app.')
       } finally {
         this.spinnerService.hide()
       }

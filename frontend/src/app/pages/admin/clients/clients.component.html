@@ -1,6 +1,6 @@
 <div class="container">
   <span style="align-self: end">
-    <a mat-flat-button routerLink="/admin/client">Create OIDC Client</a>
+    <a mat-flat-button routerLink="/admin/client">Create OIDC App</a>
   </span>
   <app-oidc-info style="width: 100%; margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
 
@@ -37,7 +37,7 @@
 
     <!-- Row shown when there is no matching data. -->
     <tr *matNoDataRow>
-      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1"><h1>No OIDC Clients.</h1></td>
+      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1"><h1>No OIDC Apps.</h1></td>
     </tr>
   </table>
 
