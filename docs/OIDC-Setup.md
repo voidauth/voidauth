@@ -1,4 +1,4 @@
-# OIDC Setup
+# OIDC App Setup
 
 When setting up OIDC Apps you should follow the guide provided by the 'Client' application. You can create a new OIDC App from the admin OIDC page. An example App OIDC documentation guide:
 
@@ -20,7 +20,7 @@ Could be filled out in VoidAuth as follows:
 If a configuration property is omitted from an [OIDC App Guide](OIDC-Guides.md) it is likely that the default value will work. The OIDC App page also includes optional configurations at the top such as `Display Name`, `Logo URL`, `Groups`, `Skip Consent`, and `MFA Required`.
 
 > [!IMPORTANT]
-> At the very top of the OIDC App pages there is a drop-down panel with info about the VoidAuth OIDC Provider that your application will probably need during its OIDC setup.
+> At the very top of the OIDC App pages there is a drop-down panel with info about the VoidAuth OIDC Provider that the 'Client' application will probably need during its OIDC setup.
 
 <p align=center>
 <img src="/public/screenshots/oidc_endpoints.png" width="500">
