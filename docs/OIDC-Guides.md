@@ -83,6 +83,32 @@ Client Secret: your-client-secret
 Redirect URLs: https://beszel.example.com/api/oauth2-redirect
 ```
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/autocaliweb.svg" width="28" /> AutoCaliWeb
+
+In AutoCaliWeb:
+
+1. Navigate to **Settings** → **Configuration** → **Edit Basic Configuration** → **Feature Configuration**
+2. In the **Login Type** dropdown, select `Use OAuth`.
+3. Scroll down to **Generic** Fill out the config as follows:
+
+```
+generic OAuth Client Id: your-client-id
+generic OAuth Client Secret: your-client-secret
+generic OAuth scope: openid profile email
+generic OAuth Metadata URL: Copy from OIDC Info in VoidAuth (Well-Known Endpoint)
+generic OAuth Username mapper: preferred_username
+generic OAuth Email mapper: email
+generic OAuth Login Button: VoidAuth
+```
+
+In VoidAuth OIDC Client Page:
+```
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://autocaliweb.example.com/login/generic/authorized
+```
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/cloudflare.svg" width="28" /> Cloudflare ZeroTrust
 
 In Cloudflare:
@@ -107,27 +133,6 @@ Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://your-team-name.cloudflareaccess.com/cdn-cgi/access/callback
-```
-
-## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/dawarich.svg" width="28" /> Dawarich
-
-
-In your `docker-compose.yml` file, add the following environment variables to the Dawarich service:
-```
-OIDC_CLIENT_ID=your-client-id
-OIDC_CLIENT_SECRET=your-client-secret
-OIDC_ISSUER=Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
-OIDC_REDIRECT_URI=https://dawarich.example.com/users/auth/openid_connect/callback
-```
-
-See [release notes for v0.36.0](https://github.com/Freika/dawarich/discussions/1969) for more details on environment variables.
-
-In VoidAuth OIDC Client Page:
-```
-Client ID: your-client-id
-Auth Method: Client Secret Basic
-Client Secret: your-client-secret
-Redirect URLs: https://dawarich.example.com/users/auth/openid_connect/callback
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/grist.svg" width="28" /> Grist
