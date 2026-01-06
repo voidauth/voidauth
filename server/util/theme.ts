@@ -41,6 +41,7 @@ export async function generateTheme() {
         './theme',
         './node_modules',
       ],
+      quietDeps: true,
     })
 
     // Get primary and contrast color for use in config
