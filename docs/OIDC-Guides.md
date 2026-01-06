@@ -472,3 +472,30 @@ Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://wikijs.example.com/login/token-given-on-wikijs-authentication-strategy-view-check-below/callback
 ```
+
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/paperless-ngx.svg" width="28" /> Paperless-ngx
+Paperless-ngx OIDC Setup Environment Variables ("OAUTH_PKCE_ENABLED": true" is optional)
+```
+PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
+PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect": {"OAUTH_PKCE_ENABLED": true, "APPS": [{"provider_id": "voidauth","name": "VoidAuth","client_id": "your-client-id","secret": "your-client-secret","settings": {"fetch_userinfo": true,"server_url": "oidc-issuer-endpoint-from-voidauth","token_auth_method": "client_secret_basic"}}]}}'
+```
+> [!NOTE]
+> You need to set `PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: true` as Environment Variable temporarily if it's present in your Environment and set to false.
+
+In VoidAuth Create OIDC Client:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://paperless.example.com/accounts/oidc/voidauth/login/callback/
+```
+> [!NOTE]
+> If you have an existing user you want to link to the VoidAuth login:
+> - Just login via the VoidAuth button on Paperless login screen sfter the aboce steps
+> - Paperless asks to register the user with username and E-Mail -> don't proceed further
+> - Login via your local user -> go into Profile on top right
+> - Link your local account to VoidAuth -> VoidAuth e-mail should now show in connected 3rd Party accounts
+>
+> Optional: If you want to disable local account login after setting up VoidAuth, set `PAPERLESS_DISABLE_REGULAR_LOGIN: true` as Environment Variable
