@@ -478,16 +478,16 @@ Redirect URLs: https://wikijs.example.com/login/token-given-on-wikijs-authentica
 Paperless-ngx OIDC Setup Environment Variables (`OAUTH_PKCE_ENABLED": true` is optional)
 ```
 PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
-PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect": {"OAUTH_PKCE_ENABLED": true, "APPS": [{"provider_id": "voidauth","name": "VoidAuth","client_id": "your-client-id","secret": "your-client-secret","settings": {"fetch_userinfo": true,"server_url": "oidc-issuer-endpoint-from-voidauth","token_auth_method": "client_secret_basic"}}]}}'
+PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect": {"OAUTH_PKCE_ENABLED": true, "APPS": [{"provider_id": "voidauth","name": "VoidAuth","client_id": "your-client-id","secret": "your-client-secret","settings": {"fetch_userinfo": true,"server_url": "https://voidauth.example.com/oidc","token_auth_method": "client_secret_basic"}}]}}'
 ```
 > [!NOTE]
-> You need to set `PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: true` as Environment Variable temporarily if it's present in your Environment and set to false.
+> You need to set `PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: true` as Environment Variable temporarily if it's present in your Environment and set to false. It can be set to false again after completing the configuration.
 
 In VoidAuth Create OIDC Client:
 
 ```
 Client ID: your-client-id
-Auth Method: Client Secret Post
+Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://paperless.example.com/accounts/oidc/voidauth/login/callback/
 ```
