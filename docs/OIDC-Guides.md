@@ -499,3 +499,29 @@ Redirect URLs: https://paperless.example.com/accounts/oidc/voidauth/login/callba
 > - Link your local account to VoidAuth -> VoidAuth E-Mail should now show in connected 3rd Party accounts
 >
 > Optional: If you want to disable local account login after setting up VoidAuth, set `PAPERLESS_DISABLE_REGULAR_LOGIN: true` as Environment Variable
+
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/pangolin.svg" width="28" /> Pangolin
+Follow the [[OAuth/OIDC Guide](https://docs.pangolin.net/manage/identity-providers/openid-connect) in the Pangolin Docs and fill out the config as follows:
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Auth URL: Copy from OIDC Info in VoidAuth (Auth Endpoint)
+Token URL: Copy from OIDC Info in VoidAuth (Token Endpoint)
+```
+> [!NOTE]
+> The Redirect URL is shown after you created VoidAuth as identity provider in Pangolin settings.
+>
+> You need to either
+> - enable automatic user creation when creating VoidAuth as identity provider in Pangolin
+> or
+> - create the VoidAuth user in your Pangolin organisation settings with his OpenID Connect ID as username (ID can be found in VoidAuth URL when entering the user profile; Format: XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX) -> don't worry, the user is later shown with his e-mail in Pangolin, not with the ID
+
+In VoidAuth Create OIDC Client:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://pangolin.example.com/auth/idp/1/oidc/callback -> The address may vary if you have multiple OIDC providers configured in Pangolin (see note above)
+```
