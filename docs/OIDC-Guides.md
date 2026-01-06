@@ -493,9 +493,9 @@ Redirect URLs: https://paperless.example.com/accounts/oidc/voidauth/login/callba
 ```
 > [!NOTE]
 > If you have an existing user you want to link to the VoidAuth login:
-> - Just login via the VoidAuth button on Paperless login screen sfter the aboce steps
+> - Just login via the VoidAuth button on Paperless login screen after the above steps
 > - Paperless asks to register the user with username and E-Mail -> don't proceed further
 > - Login via your local user -> go into Profile on top right
-> - Link your local account to VoidAuth -> VoidAuth e-mail should now show in connected 3rd Party accounts
+> - Link your local account to VoidAuth -> VoidAuth E-Mail should now show in connected 3rd Party accounts
 >
 > Optional: If you want to disable local account login after setting up VoidAuth, set `PAPERLESS_DISABLE_REGULAR_LOGIN: true` as Environment Variable
