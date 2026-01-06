@@ -109,6 +109,27 @@ Client Secret: your-client-secret
 Redirect URLs: https://your-team-name.cloudflareaccess.com/cdn-cgi/access/callback
 ```
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/dawarich.svg" width="28" /> Dawarich
+
+
+In your `docker-compose.yml` file, add the following environment variables to the Dawarich service:
+```
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
+OIDC_ISSUER=Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
+OIDC_REDIRECT_URI=https://dawarich.example.com/users/auth/openid_connect/callback
+```
+
+See [release notes for v0.36.0](https://github.com/Freika/dawarich/discussions/1969) for more details on environment variables.
+
+In VoidAuth OIDC Client Page:
+```
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://dawarich.example.com/users/auth/openid_connect/callback
+```
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/grist.svg" width="28" /> Grist
 
 Grist OIDC Setup Environment Variables:
