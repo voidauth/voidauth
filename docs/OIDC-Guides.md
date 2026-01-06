@@ -475,7 +475,7 @@ Redirect URLs: https://wikijs.example.com/login/token-given-on-wikijs-authentica
 
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/paperless-ngx.svg" width="28" /> Paperless-ngx
-Paperless-ngx OIDC Setup Environment Variables ("OAUTH_PKCE_ENABLED": true" is optional)
+Paperless-ngx OIDC Setup Environment Variables (`OAUTH_PKCE_ENABLED": true` is optional)
 ```
 PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
 PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect": {"OAUTH_PKCE_ENABLED": true, "APPS": [{"provider_id": "voidauth","name": "VoidAuth","client_id": "your-client-id","secret": "your-client-secret","settings": {"fetch_userinfo": true,"server_url": "oidc-issuer-endpoint-from-voidauth","token_auth_method": "client_secret_basic"}}]}}'
