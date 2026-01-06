@@ -502,7 +502,7 @@ Redirect URLs: https://paperless.example.com/accounts/oidc/voidauth/login/callba
 
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/pangolin.svg" width="28" /> Pangolin
-Follow the [[OAuth/OIDC Guide](https://docs.pangolin.net/manage/identity-providers/openid-connect) in the Pangolin Docs and fill out the config as follows:
+Follow the [OAuth/OIDC Guide](https://docs.pangolin.net/manage/identity-providers/openid-connect) in the Pangolin Docs and fill out the config as follows:
 ```
 Client ID: your-client-id
 Client Secret: your-client-secret
