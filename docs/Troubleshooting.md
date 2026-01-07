@@ -6,7 +6,7 @@ Some common issues and their causes.
 
 The `x-voidauth-session` or `x-voidauth-interaction` cookies could not be set. Make sure that the `APP_URL` environment variable is set to the public URL of VoidAuth, and that you are accessing the app from that URL.
 
-This may also be caused by an invalid `SESSION_DOMAIN` environment variable, browsers may not allow setting cookies on some domains (ex. `com`, `co.uk`, `lan`). You can read more at the [Mozilla HTTP Cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies#define_where_cookies_are_sent) documentation.
+This may also be caused by an invalid `SESSION_DOMAIN` environment variable value (including the default). Browsers may not allow setting cookies on top-level domains (ex. `com`, `co.uk`, `lan`) as well as some public domains (ex. `azurewebsites.net`, `cdn.cloudflare.net`). You can read more at the [Mozilla HTTP Cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies#define_where_cookies_are_sent) documentation and see the current [Public Suffix List](https://publicsuffix.org/list/) for restricted domains.
 
 ### Invalid Client
 
