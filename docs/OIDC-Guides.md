@@ -83,6 +83,32 @@ Client Secret: your-client-secret
 Redirect URLs: https://beszel.example.com/api/oauth2-redirect
 ```
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/autocaliweb.svg" width="28" /> AutoCaliWeb
+
+In AutoCaliWeb:
+
+1. Navigate to **Settings** → **Configuration** → **Edit Basic Configuration** → **Feature Configuration**
+2. In the **Login Type** dropdown, select `Use OAuth`.
+3. Scroll down to **Generic** Fill out the config as follows:
+
+```
+generic OAuth Client Id: your-client-id
+generic OAuth Client Secret: your-client-secret
+generic OAuth scope: openid profile email
+generic OAuth Metadata URL: Copy from OIDC Info in VoidAuth (Well-Known Endpoint)
+generic OAuth Username mapper: preferred_username
+generic OAuth Email mapper: email
+generic OAuth Login Button: VoidAuth
+```
+
+In VoidAuth OIDC Client Page:
+```
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://autocaliweb.example.com/login/generic/authorized
+```
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/cloudflare.svg" width="28" /> Cloudflare ZeroTrust
 
 In Cloudflare:
@@ -107,27 +133,6 @@ Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
 Redirect URLs: https://your-team-name.cloudflareaccess.com/cdn-cgi/access/callback
-```
-
-## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/dawarich.svg" width="28" /> Dawarich
-
-
-In your `docker-compose.yml` file, add the following environment variables to the Dawarich service:
-```
-OIDC_CLIENT_ID=your-client-id
-OIDC_CLIENT_SECRET=your-client-secret
-OIDC_ISSUER=Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
-OIDC_REDIRECT_URI=https://dawarich.example.com/users/auth/openid_connect/callback
-```
-
-See [release notes for v0.36.0](https://github.com/Freika/dawarich/discussions/1969) for more details on environment variables.
-
-In VoidAuth OIDC Client Page:
-```
-Client ID: your-client-id
-Auth Method: Client Secret Basic
-Client Secret: your-client-secret
-Redirect URLs: https://dawarich.example.com/users/auth/openid_connect/callback
 ```
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/grist.svg" width="28" /> Grist
@@ -471,4 +476,57 @@ Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://wikijs.example.com/login/token-given-on-wikijs-authentication-strategy-view-check-below/callback
+```
+
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/paperless-ngx.svg" width="28" /> Paperless-ngx
+Paperless-ngx OIDC Setup Environment Variables (`OAUTH_PKCE_ENABLED": true` is optional)
+```
+PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
+PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect": {"OAUTH_PKCE_ENABLED": true, "APPS": [{"provider_id": "voidauth","name": "VoidAuth","client_id": "your-client-id","secret": "your-client-secret","settings": {"fetch_userinfo": true,"server_url": "https://voidauth.example.com/oidc","token_auth_method": "client_secret_basic"}}]}}'
+```
+> [!NOTE]
+> You need to set `PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: true` as Environment Variable temporarily if it's present in your Environment and set to false. It can be set to false again after completing the configuration.
+
+In VoidAuth Create OIDC Client:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://paperless.example.com/accounts/oidc/voidauth/login/callback/
+```
+> [!NOTE]
+> If you have an existing user you want to link to the VoidAuth login:
+> - Just login via the VoidAuth button on Paperless login screen after the above steps
+> - Paperless asks to register the user with username and E-Mail -> don't proceed further
+> - Login via your local user -> go into Profile on top right
+> - Link your local account to VoidAuth -> VoidAuth E-Mail should now show in connected 3rd Party accounts
+>
+> Optional: If you want to disable local account login after setting up VoidAuth, set `PAPERLESS_DISABLE_REGULAR_LOGIN: true` as Environment Variable
+
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/pangolin.svg" width="28" /> Pangolin
+Follow the [OAuth/OIDC Guide](https://docs.pangolin.net/manage/identity-providers/openid-connect) in the Pangolin Docs and fill out the config as follows:
+```
+Client ID: your-client-id
+Client Secret: your-client-secret
+Auth URL: Copy from OIDC Info in VoidAuth (Auth Endpoint)
+Token URL: Copy from OIDC Info in VoidAuth (Token Endpoint)
+```
+> [!NOTE]
+> The Redirect URL is shown after you created VoidAuth as identity provider in Pangolin settings.
+>
+> You need to either
+> - enable automatic user creation when creating VoidAuth as identity provider in Pangolin
+> or
+> - create the VoidAuth user in your Pangolin organisation settings with his OpenID Connect ID as username (ID can be found in VoidAuth URL when entering the user profile; Format: XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX) -> don't worry, the user is later shown with his e-mail in Pangolin, not with the ID
+
+In VoidAuth Create OIDC Client:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://pangolin.example.com/auth/idp/1/oidc/callback -> The address may vary if you have multiple OIDC providers configured in Pangolin (see note above)
 ```
