@@ -1,10 +1,10 @@
-<h1>{{ this.client_id ? "Update" : "Create" }} OIDC Client</h1>
+<h1>{{ this.client_id ? "Update" : "Create" }} OIDC App</h1>
 <app-oidc-info style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
-        <mat-label>Display Name</mat-label>
+        <mat-label>Name</mat-label>
         <input matInput type="text" formControlName="client_name" />
         @if (form.controls.client_name.errors) {
           <mat-error>{{ form.controls.client_name.errors | validationError }}</mat-error>
@@ -67,10 +67,8 @@
         </mat-error>
       }
 
-      <mat-checkbox formControlName="skip_consent" matTooltip="Skip user confirmation for this client."> Skip Consent </mat-checkbox>
-      <mat-checkbox formControlName="require_mfa" matTooltip="Users will have to use mfa to access this client.">
-        MFA Required
-      </mat-checkbox>
+      <mat-checkbox formControlName="skip_consent" matTooltip="Skip user confirmation for this app."> Skip Consent </mat-checkbox>
+      <mat-checkbox formControlName="require_mfa" matTooltip="Users will have to use mfa to access this app."> MFA Required </mat-checkbox>
 
       <mat-divider></mat-divider>
 

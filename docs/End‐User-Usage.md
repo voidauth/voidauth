@@ -1,14 +1,14 @@
 # User Experience
 
 ## Login
-Users are directed to the login portal if they are not already signed into VoidAuth and they either visit the **APP_URL** directly or are redirected there through the **OIDC Client** or **Proxy Auth** flows. VoidAuth supports password login, as well as passkey login (Face ID, Windows Hello, etc). There is also a "Forgot Password" option, which will redirect to the [Forgot Password](#forgot-password) page. The "Remember Me" checkbox will attempt to make the user session last through device restarts for up to one year, as long as the user signs in with their password instead of any other method.
+Users are directed to the login portal if they are not already signed into VoidAuth and they either visit the **APP_URL** directly or are redirected there through the **OIDC App** or **Proxy Auth** flows. VoidAuth supports password login, as well as passkey login (Face ID, Windows Hello, etc). There is also a "Forgot Password" option, which will redirect to the [Forgot Password](#forgot-password) page. The "Remember Me" checkbox will attempt to make the user session last through device restarts for up to one year, as long as the user signs in with their password instead of any other method.
 
 <p align=center>
 <img src="/public/screenshots/login_page.png" width="375" />
 </p>
 
 ## Multi-Factor Authentication (MFA)
-Users are sent to the Multi-Factor Authentication page if they require MFA due to global policy, group membership, or the security policy of the OIDC Client or ProxyAuth Domain they are visiting. If a user does not have a MFA method available on their account but one is required, they will have the opportunity to set one up on this page.
+Users are sent to the Multi-Factor Authentication page if they require MFA due to global policy, group membership, or the security policy of the OIDC App or ProxyAuth Domain they are visiting. If a user does not have a MFA method available on their account but one is required, they will have the opportunity to set one up on this page.
 
 <p align=center>
 <img src="/public/screenshots/mfa_required.png" width="375" />
