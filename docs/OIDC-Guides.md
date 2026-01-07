@@ -404,6 +404,107 @@ Screenshot(s):
 <img width="600" src="/public/screenshots/proxmox-pve-openid.png" />
 </p>
 
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/bytestash.svg" width="28" /> ByteStash
+
+ByteStash OIDC Setup Environment Variables:
+
+```
+OIDC_ENABLED: "true"
+OIDC_DISPLAY_NAME: VoidAuth
+OIDC_ISSUER_URL: Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
+OIDC_CLIENT_ID: your-client-id
+OIDC_CLIENT_SECRET: your-client-secret
+OIDC_SCOPES: openid profile email groups
+
+# Optional: Disable internal accounts to force OIDC-only authentication
+# DISABLE_INTERNAL_ACCOUNTS: "true"
+```
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://bytestash.example.com/api/auth/callback
+```
+
+
+## <img src="https://dockhand.pro/images/logo-dark.webp" width="28" /> Dockhand
+
+In Dockhand:
+
+1. Navigate to **Settings** > **Authentication** > **SSO**
+2. Click **Add provider**
+3. Fill in the configuration:
+```
+Name: VoidAuth
+Issuer URL: Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
+Client ID: your-client-id
+Client Secret: your-client-secret
+Redirect URI: https://dockhand.example.com/api/auth/oidc/callback
+Scopes: openid profile email groups
+```
+
+Optional Claim Mappings:
+```
+Username claim: preferred_username
+Email claim: email
+Display name claim: name
+```
+
+In VoidAuth OIDC Client Page:
+```
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://dockhand.example.com/api/auth/oidc/callback
+```
+
+> [!NOTE]
+> For role-based access control and group mapping features, an Enterprise license is required. See the [Dockhand OIDC Configuration Guide](https://dockhand.pro/manual/#appendix-oidc) for detailed setup instructions.
+
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyseerr.svg" width="28" /> Jellyseerr (Experimental)
+
+> [!CAUTION]
+> OIDC support in Jellyseerr is currently **experimental** and only available in the preview image: `fallenbagel/jellyseerr:preview-OIDC`. This feature is under active development and may have bugs or breaking changes.
+
+In Jellyseerr:
+
+1. Navigate to **Settings** from the left-hand menu
+2. Scroll to the **OpenID Connect** section
+3. Configure the following:
+
+```
+Enable OpenID Connect Sign-In: ☑ (checked)
+Display Name: VoidAuth
+Issuer URL: Copy from OIDC Info in VoidAuth (OIDC Issuer Endpoint)
+Client ID: your-client-id
+Client Secret: your-client-secret
+Scopes: openid profile email groups
+```
+
+4. Scroll down and click **Save Changes**
+
+In VoidAuth OIDC Client Page:
+
+```
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://jellyseerr.example.com/login?provider=voidauth&callback=true
+```
+
+> [!TIP]
+> - If running behind a reverse proxy, enable **Proxy Support** in Jellyseerr settings
+> - Ensure proper HTTP/HTTPS scheme configuration to avoid redirect URI issues
+> - For more details, see the [Jellyseerr OIDC Discussion](https://github.com/fallenbagel/jellyseerr/discussions/1529)
+
+> [!NOTE]
+> Jellyseerr is being merged into a unified repository at [seerr-team/seerr](https://github.com/seerr-team/seerr). This documentation will be updated once the merge is complete and OIDC support is available in the stable release.
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/seafile.svg" width="28" /> Seafile
 
 In Seafile, add these lines to the configuration file named `seahub_settings.py`:
