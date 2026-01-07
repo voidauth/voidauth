@@ -87,7 +87,7 @@ services:
 
 ### Users and Apps
 
-User and Client App (OIDC Client or ProxyAuth Domain) management is performed in the web interface. You can view the documentation on user management on the [User Management](User-Management.md) page.
+User, OIDC App, and ProxyAuth Domain management is performed in the web interface. You can view the documentation on user management on the [User Management](User-Management.md) page.
 
 To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. If the application does not support OIDC or you just want to secure a specific path, you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) guide.
 
@@ -98,7 +98,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | APP_URL | | URL of the web interface. ex. `https://auth.example.com` or `https://example.com/auth` | 🔴 | |
-| STORAGE_KEY | | Storage encryption key for secret values such as keys and client secrets. Must be at least 32 characters long and should be randomly generated. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
+| STORAGE_KEY | | Storage encryption key for secret values such as keys and OIDC App Client Secrets. Must be at least 32 characters long and should be randomly generated. If you do not enter one VoidAuth will recommend one to you. | 🔴 | |
 | STORAGE_KEY_SECONDARY | | Secondary storage encryption key, used when rotating the primary storage encryption key. | | |
 | SESSION_DOMAIN | `${APP_URL}` Base Domain | Domain of the VoidAuth Session Cookie. This is automatically set to the Base Domain of `${APP_URL}` but may be overridden here. Must be equal to or a higher level domain than `${APP_URL}` | | |
 | DEFAULT_REDIRECT | `${APP_URL}` | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the header logo when already on the auth home page. | | ✅ |
@@ -182,5 +182,5 @@ For information on how to change the email templates used for invitations, passw
 > The following configurations are not well supported or tested, but may cover additional use-cases.
 
 ### Multi-Domain Protection
-You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC clients, ProxyAuth Domains, etc.
+You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC Apps, ProxyAuth Domains, etc.
 

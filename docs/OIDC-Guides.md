@@ -1,15 +1,15 @@
-# OIDC Guides
+# OIDC App Guides
 
 In the guides below, there may be omitted options when those options are set to the default value.
 
 > [!TIP]
-> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `your-admin-role`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC Client Create pages, and is the recommended source of OIDC related Endpoint URLs.
+> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `your-admin-role`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC App pages, and is the recommended source of OIDC related Endpoint URLs.
 
 > [!CAUTION]
-> Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC Client page can be randomly generated and copied it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
+> Client IDs **must** be unique between OIDc Apps. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC App page can be randomly generated and copied it to the clipboard for use within the OIDC App. Client Secrets are encrypted on disk.
 
 > [!NOTE]
-> Public clients can be configured by selecting the `None (Public)` option from the `Auth Method` dropdown on the OIDC Client page. These clients do not require a Client Secret but do require PKCE, which your Public Client Application should provide.
+> Public OIDC Apps can be configured by selecting the `None (Public)` option from the `Auth Method` dropdown on the OIDC App page. These OIDC Apps do not require a Client Secret but do require PKCE, which your Public OIDC App should provide.
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/actual-budget.svg" width="28" /> Actual Budget
 
@@ -26,7 +26,7 @@ ACTUAL_OPENID_ENFORCE: true     #optional [true, false]
 ACTUAL_TOKEN_EXPIRATION: never  #optional [never, openid-provider, seconds] (3600 for 1 hour)
 ```
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -54,7 +54,7 @@ OIDC_ADMIN_VALUE: your-admin-role
 # OIDC_MERGE_ACCOUNTS: true
 ```
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -75,7 +75,7 @@ Fetch user info from: User info URL
 User info URL: Copy from OIDC Info in VoidAuth (UserInfo Endpoint)
 ```
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 ```
 Client ID: your-client-id
 Auth Method: Client Secret Basic
@@ -126,7 +126,7 @@ In Cloudflare:
     - Proof Key for Code Exchange (PKCE): `ON`
     - Optional configurations > OIDC Claims: `mail, preferred_username`
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -146,7 +146,7 @@ GRIST_OIDC_IDP_CLIENT_SECRET: your-client-secret
 GRIST_OIDC_SP_IGNORE_EMAIL_VERIFIED: true
 ```
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -169,7 +169,7 @@ Client Secret: your-client-secret
 Scope: openid profile email
 ```
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -210,7 +210,7 @@ Scheme Override: https
 ```
 4. Follow the instructions on the [Jellyfin SSO Plugin](https://github.com/9p4/jellyfin-plugin-sso) repository for how to make an SSO Login button on the Jellyfin Login page.
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 ```
 Client ID: your-client-id
 Auth Method: Client Secret Post
@@ -233,7 +233,7 @@ OIDC_NAME: VoidAuth
 # FORCE_OIDC: true
 ```
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -262,7 +262,7 @@ OIDC_SECURITY_ASSUME_EMAIL_IS_VERIFIED: true
 # ALLOW_UNSAFE_AUTH_PROVIDER_REATTACH: true
 ```
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -294,7 +294,7 @@ Email : email
 > [!NOTE]
 > Scopes are separated by spaces, **not** by commas
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -324,7 +324,7 @@ OAUTH_ALLOWED_ROLES: users,admins
 OAUTH_ADMIN_ROLES: admins
 ```
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -353,7 +353,7 @@ Auth Style: In Params
 > [!NOTE]
 > Scopes are separated by spaces, **not** by commas
 
-In VoidAuth Create OIDC Client:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -396,7 +396,7 @@ Overright Groups: (Advanced)
 
 If you are not using Autocreate, you will need to to create Groups and Users manually. PVE permissions can be quite complicated. We recommend following through their Wiki as each setup requires it's own set.
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -437,7 +437,7 @@ OAUTH_ATTRIBUTE_MAP = {
 > [!NOTE]
 > You will need to reboot seafile server to take the modifications into account.
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id
@@ -469,7 +469,7 @@ Logout URL: Copy from OIDC Info in VoidAuth (Logout Endpoint)
 > [!NOTE]
 > Make sure you enabled the authentication strategy.
 
-In VoidAuth OIDC Client Page:
+In VoidAuth OIDC App Page:
 
 ```
 Client ID: your-client-id

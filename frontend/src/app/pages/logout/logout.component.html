@@ -2,7 +2,7 @@
 <mat-card class="form-card">
   <mat-card-content>
     <form autocomplete="off" [action]="host + '/oidc/session/end/confirm'" method="post">
-      <!-- TODO: Display client name/id if provided -->
+      <!-- TODO: Display OIDC App name/id if provided -->
       @if (user) {
         <h2>{{ user.name ?? user.username }}</h2>
       }
