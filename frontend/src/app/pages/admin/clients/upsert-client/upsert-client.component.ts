@@ -174,7 +174,7 @@ export class UpsertClientComponent implements OnInit {
         }
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading Client.')
+        this.snackbarService.error('Error loading OIDC App Details.')
         this.form.disable()
       } finally {
         this.spinnerService.hide()
@@ -230,7 +230,7 @@ export class UpsertClientComponent implements OnInit {
         shownError ??= (e as Error).message
       }
 
-      shownError ??= `Could not ${this.client_id ? 'update' : 'create'} client.`
+      shownError ??= `Could not ${this.client_id ? 'update' : 'create'} app.`
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
@@ -240,7 +240,7 @@ export class UpsertClientComponent implements OnInit {
   deleteClient() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to delete this client?`,
+        message: `Are you sure you want to delete this app?`,
         header: 'Delete',
       },
     })
@@ -257,10 +257,10 @@ export class UpsertClientComponent implements OnInit {
           await this.adminService.deleteClient(this.client_id)
         }
 
-        this.snackbarService.message('Client deleted.')
+        this.snackbarService.message('App deleted.')
         await this.router.navigate(['/admin/clients'])
       } catch (_e) {
-        this.snackbarService.error('Could not delete client.')
+        this.snackbarService.error('Could not delete app.')
       } finally {
         this.spinnerService.hide()
       }

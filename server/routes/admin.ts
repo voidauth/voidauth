@@ -210,7 +210,7 @@ adminRouter.post('/client',
     }
 
     if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
-      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'none'.` })
+      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
       return
     }
 
@@ -259,7 +259,7 @@ adminRouter.patch('/client',
     }
 
     if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
-      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'none'.` })
+      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
       return
     }
 
