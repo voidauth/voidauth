@@ -73,7 +73,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
   }
   if (enableWarnings && lockedClients.length > 0) {
     logger.error(`WARNING!!!
-      You have OIDC Clients that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
+      You have OIDC Apps that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
       This could be due to a mistake while rotating the storage key.
       If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.
       Non-decryptable Clients: ${lockedClients.map(c => c.id).join(', ')}`)

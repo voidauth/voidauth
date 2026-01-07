@@ -1,15 +1,15 @@
-# OIDC Guides
+# OIDC App Guides
 
 In the guides below, there may be omitted options when those options are set to the default value.
 
 > [!TIP]
-> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `your-admin-role`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC Client Create pages, and is the recommended source of OIDC related Endpoint URLs.
+> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `your-admin-role`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC App pages, and is the recommended source of OIDC related Endpoint URLs.
 
 > [!CAUTION]
-> Client IDs **must** be unique between clients. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC Client page can be randomly generated and copied it to the clipboard for use in the OIDC Client application. Client Secrets are encrypted on disk.
+> Client IDs **must** be unique between OIDc Apps. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC App page can be randomly generated and copied it to the clipboard for use within the OIDC App. Client Secrets are encrypted on disk.
 
 > [!NOTE]
-> Public clients can be configured by selecting the `None (Public)` option from the `Auth Method` dropdown on the OIDC Client page. These clients do not require a Client Secret but do require PKCE, which your Public Client Application should provide.
+> Public OIDC Apps can be configured by selecting the `None (Public)` option from the `Auth Method` dropdown on the OIDC App page. These OIDC Apps do not require a Client Secret but do require PKCE, which your Public OIDC App should provide.
 
 <br>
 
@@ -30,7 +30,7 @@ ACTUAL_OPENID_SERVER_HOSTNAME="https://actual.example.com"
 # ACTUAL_TOKEN_EXPIRATION="never"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -60,7 +60,7 @@ OIDC_ADMIN_VALUE="your-admin-role"
 # OIDC_MERGE_ACCOUNTS="true"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -91,7 +91,7 @@ generic OAuth Email mapper: email
 generic OAuth Login Button: VoidAuth
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -117,7 +117,7 @@ Fetch user info from: User info URL
 User info URL: Copy from VoidAuth OIDC Info (UserInfo Endpoint)
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -144,7 +144,7 @@ OIDC_SCOPES="openid profile email groups"
 # DISABLE_INTERNAL_ACCOUNTS="true"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -172,7 +172,7 @@ Proof Key for Code Exchange (PKCE): ON
 OIDC Claims: mail, preferred_username
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -196,7 +196,7 @@ OIDC_ISSUER="Copy from VoidAuth OIDC Info (OIDC Issuer Endpoint)"
 OIDC_REDIRECT_URI="https://dawarich.example.com/users/auth/openid_connect/callback"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -227,7 +227,7 @@ Email claim: email
 Display name claim: name
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -252,7 +252,7 @@ GRIST_OIDC_IDP_CLIENT_SECRET="your-client-secret"
 GRIST_OIDC_SP_IGNORE_EMAIL_VERIFIED="true"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -277,7 +277,7 @@ Client Secret: your-client-secret
 Scope: openid profile email
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -320,8 +320,7 @@ Set default username claim: preferred_username
 Scheme Override: https
 ```
 
-**VoidAuth OIDC Client Configuration:**
-
+**In VoidAuth OIDC App Page:**
 ```
 Client ID: your-client-id
 Auth Method: Client Secret Post
@@ -351,7 +350,7 @@ Scopes: openid profile email groups
 
 Scroll down and click **Save Changes**.
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -388,7 +387,7 @@ OIDC_NAME="VoidAuth"
 # FORCE_OIDC="true"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -419,7 +418,7 @@ OIDC_SECURITY_ASSUME_EMAIL_IS_VERIFIED="true"
 # ALLOW_UNSAFE_AUTH_PROVIDER_REATTACH="true"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -448,7 +447,7 @@ Display Name: name
 Email: email
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -483,7 +482,7 @@ OAUTH_ALLOWED_ROLES="users,admins"
 OAUTH_ADMIN_ROLES="admins"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -507,7 +506,7 @@ Auth URL: Copy from VoidAuth OIDC Info (Authorization Endpoint)
 Token URL: Copy from VoidAuth OIDC Info (Token Endpoint)
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -539,7 +538,7 @@ PAPERLESS_SOCIALACCOUNT_PROVIDERS='{"openid_connect": {"OAUTH_PKCE_ENABLED": tru
 # PAPERLESS_DISABLE_REGULAR_LOGIN="true"
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -578,7 +577,7 @@ Scopes: openid profile groups email
 Auth Style: In Params
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -621,7 +620,7 @@ Prompt: Auth-Provider Default
 # Override Groups: (Advanced)
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -667,7 +666,7 @@ OAUTH_ATTRIBUTE_MAP = {
 }
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id
@@ -700,7 +699,7 @@ Groups Claim: groups
 Logout URL: Copy from VoidAuth OIDC Info (Logout Endpoint)
 ```
 
-**VoidAuth OIDC Client Configuration:**
+**In VoidAuth OIDC App Page:**
 
 ```
 Client ID: your-client-id

@@ -55,16 +55,10 @@ export class UpsertClientComponent implements OnInit {
   form = new FormGroup<TypedControls<ClientUpsert>>({
     client_id: new FormControl<string | null>(null, [Validators.required]),
     client_name: new FormControl<string | null>(null),
-    redirect_uris: new FormControl<string[]>([], [Validators.required, Validators.minLength(1)]),
+    redirect_uris: new FormControl<string[]>([]),
     client_secret: new FormControl<string | null>(null, [Validators.required, Validators.minLength(4)]),
     token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_basic'),
-    response_types: new FormControl<ResponseType[]>(['code'], [(c) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (!c.value?.length) {
-        return { invalid: 'This is an invalid Response Type selection.' }
-      }
-      return null
-    }]),
+    response_types: new FormControl<ResponseType[]>(['code']),
     grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(['authorization_code', 'refresh_token']),
     post_logout_redirect_uri: new FormControl<ClientUpsert['post_logout_redirect_uri']>(null, [
       isValidWildcardRedirectControl,
@@ -180,7 +174,7 @@ export class UpsertClientComponent implements OnInit {
         }
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading Client.')
+        this.snackbarService.error('Error loading OIDC App Details.')
         this.form.disable()
       } finally {
         this.spinnerService.hide()
@@ -189,15 +183,11 @@ export class UpsertClientComponent implements OnInit {
 
     this.responseTypeControl.valueChanges.subscribe((value) => {
       const response_types: ResponseType[] = []
-      if (!value?.length) {
-        response_types.push('none')
-      } else {
-        RESPONSE_TYPES.forEach((rt) => {
-          if ((rt.split(' ') as ('code' | 'id_token' | 'token')[]).every(rs => value.includes(rs))) {
-            response_types.push(rt)
-          }
-        })
-      }
+      RESPONSE_TYPES.forEach((rt) => {
+        if ((rt.split(' ') as ('code' | 'id_token' | 'token' | 'none')[]).every(rs => value?.includes(rs))) {
+          response_types.push(rt)
+        }
+      })
       this.form.controls.response_types.setValue(response_types)
       this.form.controls.response_types.markAsDirty()
     })
@@ -240,7 +230,7 @@ export class UpsertClientComponent implements OnInit {
         shownError ??= (e as Error).message
       }
 
-      shownError ??= `Could not ${this.client_id ? 'update' : 'create'} client.`
+      shownError ??= `Could not ${this.client_id ? 'update' : 'create'} app.`
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
@@ -250,7 +240,7 @@ export class UpsertClientComponent implements OnInit {
   deleteClient() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to delete this client?`,
+        message: `Are you sure you want to delete this app?`,
         header: 'Delete',
       },
     })
@@ -267,10 +257,10 @@ export class UpsertClientComponent implements OnInit {
           await this.adminService.deleteClient(this.client_id)
         }
 
-        this.snackbarService.message('Client deleted.')
+        this.snackbarService.message('App deleted.')
         await this.router.navigate(['/admin/clients'])
       } catch (_e) {
-        this.snackbarService.error('Could not delete client.')
+        this.snackbarService.error('Could not delete app.')
       } finally {
         this.spinnerService.hide()
       }
