@@ -98,15 +98,37 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     }
   }
 
-  res.setHeader('Remote-User', user.username)
+  // Set Trusted Header Auth headers
+  try {
+    res.setHeader('Remote-User', user.username)
+  } catch (_e) {
+    res.setHeader('Remote-User', encodeURIComponent(user.username))
+  }
   if (user.email) {
-    res.setHeader('Remote-Email', user.email)
+    try {
+      res.setHeader('Remote-Email', user.email)
+    } catch (_e) {
+      res.setHeader('Remote-Email', encodeURIComponent(user.email))
+    }
   }
   if (user.name) {
-    res.setHeader('Remote-Name', user.name)
+    try {
+      res.setHeader('Remote-Name', user.name)
+    } catch (_e) {
+      res.setHeader('Remote-Name', encodeURIComponent(user.name))
+    }
   }
   if (user.groups.length) {
-    res.setHeader('Remote-Groups', user.groups.map(g => g.name).join(','))
+    const groupsList: string[] = []
+    for (const group of user.groups) {
+      try {
+        res.setHeader('Remote-Groups', groupsList.concat([group.name]).join(','))
+        groupsList.push(group.name)
+      } catch (_e) {
+        res.setHeader('Remote-Groups', groupsList.concat([encodeURIComponent(group.name)]).join(','))
+        groupsList.push(encodeURIComponent(group.name))
+      }
+    }
   }
   res.send()
 }
