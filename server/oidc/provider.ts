@@ -24,10 +24,8 @@ declare module 'oidc-provider' {
   namespace Client {
     interface Schema {
       redirect_uris: string[]
-      application_type: string
-      grant_types: string[]
       invalidate(message: string, code?: unknown): void
-      redirectUris(uris: string[], label: string): void
+      redirectUris(uris: string[], label?: string): void
     }
   }
 

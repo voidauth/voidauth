@@ -6,14 +6,14 @@ In the guides below, there may be omitted options when those options are set to 
 > Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `your-admin-role`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC App pages, and is the recommended source of OIDC related Endpoint URLs.
 
 > [!CAUTION]
-> Client IDs **must** be unique between OIDc Apps. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC App page can be randomly generated and copied it to the clipboard for use within the OIDC App. Client Secrets are encrypted on disk.
+> Client IDs **must** be unique between OIDC Apps. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC App page can be randomly generated and copied it to the clipboard for use within the OIDC App. Client Secrets are encrypted on disk.
 
 > [!NOTE]
 > Public OIDC Apps can be configured by selecting the `None (Public)` option from the `Auth Method` dropdown on the OIDC App page. These OIDC Apps do not require a Client Secret but do require PKCE, which your Public OIDC App should provide.
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/actual-budget.svg" width="28" /> Actual Budget
 
-Actual Budget can be set up to use VoidAuth as an OIDC Provider in three ways, through Environment Variables, Web GUI, or Config File. Please see the [Actaul Budget - Authenticating With an OpenID Provider](https://actualbudget.org/docs/config/oauth-auth/) for the details of both options.
+Actual Budget can be set up to use VoidAuth as an OIDC Provider in three ways, through Environment Variables, Web GUI, or Config File. Please see the [Actual Budget - Authenticating With an OpenID Provider](https://actualbudget.org/docs/config/oauth-auth/) for the details of both options.
 
 Actual Budget OIDC Setup Environment Variables:
 
@@ -520,7 +520,7 @@ Token URL: Copy from OIDC Info in VoidAuth (Token Endpoint)
 > You need to either
 > - enable automatic user creation when creating VoidAuth as identity provider in Pangolin
 > or
-> - create the VoidAuth user in your Pangolin organisation settings with his OpenID Connect ID as username (ID can be found in VoidAuth URL when entering the user profile; Format: XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX) -> don't worry, the user is later shown with his e-mail in Pangolin, not with the ID
+> - create the VoidAuth user in your Pangolin organization settings with his OpenID Connect ID as username (ID can be found in VoidAuth URL when entering the user profile; Format: XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX) -> don't worry, the user is later shown with his e-mail in Pangolin, not with the ID
 
 In VoidAuth Create OIDC Client:
 
