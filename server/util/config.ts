@@ -223,6 +223,7 @@ if (appConfig.SESSION_DOMAIN) {
     logger.debug(`SESSION_DOMAIN: '${appConfig.SESSION_DOMAIN}'`)
   }
 }
+logger.debug(`Session Domain: '${String(getSessionDomain())}'`)
 
 // check DEFAULT_REDIRECT is valid if set
 if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {

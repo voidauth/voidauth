@@ -69,7 +69,7 @@ export async function serve() {
     // Do not throw a hard error here, hostname might be getting mangled on the way in but still correct in browser
     if (!sessionDomainReaches(req.hostname)) {
       const message = 'Invalid request hostname \'' + req.hostname + '\', '
-        + 'Session Domain is \'' + String(getSessionDomain()) + '\' . '
+        + 'Session Domain is \'' + String(getSessionDomain()) + '\'. '
         + 'If \'' + req.hostname + '\' does not match what is displayed in the browser URL bar '
         + 'this may indicate a reverse-proxy misconfiguration.'
       logger.debug(message)

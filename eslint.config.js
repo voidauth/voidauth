@@ -46,6 +46,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['./eslint.config.js', '**/node_modules', '**/dist', "knexfile.js"]
+    ignores: ['./eslint.config.js', '**/node_modules', '**/dist', '**/.angular', "knexfile.js"]
   }
 );

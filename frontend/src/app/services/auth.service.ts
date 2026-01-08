@@ -37,8 +37,11 @@ export class AuthService {
       }), {
         redirect: 'manual',
       }))
-    } catch (_e) {
-      // do nothing
+    } catch (e) {
+      console.error(typeof e === 'object' && e && 'error' in e
+        && typeof e.error === 'object' && e.error && 'error' in e.error
+        ? e.error.error
+        : e)
     }
   }
 
