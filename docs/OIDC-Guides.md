@@ -32,7 +32,7 @@ ACTUAL_OPENID_SERVER_HOSTNAME="https://actual.example.com"
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
@@ -62,7 +62,7 @@ OIDC_ADMIN_VALUE="your-admin-role"
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
@@ -93,7 +93,7 @@ generic OAuth Login Button: VoidAuth
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -119,7 +119,7 @@ User info URL: Copy from VoidAuth OIDC Info (UserInfo Endpoint)
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -146,7 +146,7 @@ OIDC_SCOPES="openid profile email groups"
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
@@ -174,7 +174,7 @@ OIDC Claims: mail, preferred_username
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -198,7 +198,7 @@ OIDC_REDIRECT_URI="https://dawarich.example.com/users/auth/openid_connect/callba
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -229,7 +229,7 @@ Display name claim: name
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -254,7 +254,7 @@ GRIST_OIDC_SP_IGNORE_EMAIL_VERIFIED="true"
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -279,7 +279,7 @@ Scope: openid profile email
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
@@ -321,7 +321,8 @@ Scheme Override: https
 ```
 
 **In VoidAuth OIDC App Page:**
-```
+
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
@@ -333,7 +334,10 @@ Redirect URLs: https://jellyfin.example.com/sso/OID/redirect/VoidAuth
 
 <br>
 
-## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyseerr.svg" width="28" /> Jellyseerr (Experimental)
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyseerr.svg" width="28" /> Jellyseerr
+
+> [!CAUTION]
+> OIDC support in Jellyseerr is currently **experimental** and only available in the preview image: `fallenbagel/jellyseerr:preview-OIDC`. This feature is under active development and may have bugs or breaking changes.
 
 Navigate to **Settings** from the left-hand menu in Jellyseerr. Scroll to the **OpenID Connect** section. See the [Jellyseerr OIDC Discussion](https://github.com/fallenbagel/jellyseerr/discussions/1529) for more details.
 
@@ -352,15 +356,12 @@ Scroll down and click **Save Changes**.
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
 Redirect URLs: https://jellyseerr.example.com/login?provider=voidauth&callback=true
 ```
-
-> [!CAUTION]
-> OIDC support in Jellyseerr is currently **experimental** and only available in the preview image: `fallenbagel/jellyseerr:preview-OIDC`. This feature is under active development and may have bugs or breaking changes.
 
 > [!TIP]
 > - If running behind a reverse proxy, enable **Proxy Support** in Jellyseerr settings
@@ -389,7 +390,7 @@ OIDC_NAME="VoidAuth"
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -420,7 +421,7 @@ OIDC_SECURITY_ASSUME_EMAIL_IS_VERIFIED="true"
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -449,7 +450,7 @@ Email: email
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
@@ -484,7 +485,7 @@ OAUTH_ADMIN_ROLES="admins"
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -508,7 +509,7 @@ Token URL: Copy from VoidAuth OIDC Info (Token Endpoint)
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -540,7 +541,7 @@ PAPERLESS_SOCIALACCOUNT_PROVIDERS='{"openid_connect": {"OAUTH_PKCE_ENABLED": tru
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -579,7 +580,7 @@ Auth Style: In Params
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
@@ -622,7 +623,7 @@ Prompt: Auth-Provider Default
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
@@ -668,7 +669,7 @@ OAUTH_ATTRIBUTE_MAP = {
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
@@ -701,7 +702,7 @@ Logout URL: Copy from VoidAuth OIDC Info (Logout Endpoint)
 
 **In VoidAuth OIDC App Page:**
 
-```
+```plaintext
 Client ID: your-client-id
 Auth Method: Client Secret Post
 Client Secret: your-client-secret
