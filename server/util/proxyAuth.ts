@@ -104,7 +104,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       return
     } else if (match.groups.length && !user.groups.some(g => match.groups.includes(g.name))) {
       const logInfo = {
-        reason: 'no_required_group',
+        reason: 'user_group_missing',
         url: url.href,
         urlDomain: formattedUrl,
         domain: match.domain,
@@ -148,5 +148,6 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       }
     }
   }
-  res.send()
+  logger.debug(`proxyauth access granted${match ? ` to domain: ${match.domain}` : ''}`)
+  res.status(200).send()
 }
