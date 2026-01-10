@@ -1,7 +1,7 @@
 import { db } from './db'
 import type { Group, ProxyAuthGroup } from '@shared/db/Group'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
-import { formatWildcardDomain, sortWildcardDomains } from '@shared/utils'
+import { urlFromWildcardDomain, sortWildcardDomains } from '@shared/utils'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { TABLES } from '@shared/constants'
 import { isMatch } from 'matcher'
@@ -18,10 +18,13 @@ export async function getProxyAuthWithCache(url: URL) {
     proxyAuthCacheExpires = new Date().getTime() + 30000 // 30 seconds
   }
 
-  return proxyAuthCache.find(d => isMatch(formattedUrl, formatWildcardDomain(d.domain, true)))
+  return proxyAuthCache.find((d) => {
+    const purl = urlFromWildcardDomain(d.domain)
+    return purl && isMatch(formattedUrl, formatProxyAuthDomain(purl))
+  })
 }
 
-export function formatProxyAuthDomain(url: URL) {
+export function formatProxyAuthDomain(url: Pick<URL, 'hostname' | 'port' | 'pathname'>) {
   return `${url.hostname}:${url.port || '*'}${url.pathname}`
 }
 

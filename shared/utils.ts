@@ -54,7 +54,7 @@ export function urlFromWildcardHref(input: string) {
   }
 }
 
-function urlFromWildcardDomain(input: string) {
+export function urlFromWildcardDomain(input: string) {
   // If the input does not start with http(s), add it so it can be later safely removed
   if (!input.startsWith('http:') && !input.startsWith('https:')) {
     input = 'http:' + input
@@ -143,10 +143,12 @@ export function isValidWildcardDomain(input: string) {
   }
 }
 
-export function formatWildcardDomain(input: string, forcePort: boolean = false) {
-  const url = urlFromWildcardDomain(input) as URL
-  const port = url.port || forcePort ? ':' + (url.port || '*') : ''
-  return `${url.hostname}${port}${url.pathname}`
+export function formatWildcardDomain(input: string) {
+  const url = urlFromWildcardDomain(input)
+  if (!url) {
+    return ''
+  }
+  return `${url.hostname}${url.port ? ':' + url.port : ''}${url.pathname}`
 }
 
 export function sortWildcardDomains(ad: string, bd: string) {
@@ -168,8 +170,8 @@ export function sortWildcardDomains(ad: string, bd: string) {
   }
 
   // Check if one domain has more specific port number
-  const aPort = a.port != '' ? [a.port] : []
-  const bPort = b.port != '' ? [b.port] : []
+  const aPort = a.port != '' ? [a.port] : ['*']
+  const bPort = b.port != '' ? [b.port] : ['*']
   const portResult = sortWildcardParts(aPort, bPort)
   if (portResult) {
     return portResult
