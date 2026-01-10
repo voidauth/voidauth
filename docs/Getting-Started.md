@@ -148,7 +148,7 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | Name | Default | Description |
 | :------ | :-- | :-------- |
 | SMTP_HOST | | SMTP Host; ex. `mail.example.com` |
-| SMTP_FROM | | SMTP From field. Can be plain `'app@example.com'` or formatted `'"My App" <app@example.com>'`. Ensure the string is properly formatted for your chosen deployment method, or emails may silently fail to be delivered. |
+| SMTP_FROM | | SMTP From **address**, should be a plain email address (ex. `app@example.com`). The SMTP From **name** will be populated with the `APP_TITLE` value. |
 | SMTP_PORT | `587` | SMTP port to use. |
 | SMTP_SECURE | `false` | SMTP has TLS/SSL enabled. |
 | SMTP_USER | | SMTP username used to sign into email provider; ex `user@example.com` |

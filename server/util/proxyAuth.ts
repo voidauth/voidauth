@@ -100,7 +100,10 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
         urlDomain: formattedUrl,
       }
       logger.debug(`proxyauth forbidden: ${JSON.stringify(logInfo)}`)
-      res.status(403).send(logInfo)
+      res.status(403).send({
+        status: 'Forbidden',
+        reason: logInfo.reason,
+      })
       return
     } else if (match.groups.length && !user.groups.some(g => match.groups.includes(g.name))) {
       const logInfo = {
@@ -111,7 +114,10 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
         domainGroups: match.groups,
       }
       logger.debug(`proxyauth forbidden: ${JSON.stringify(logInfo)}`)
-      res.status(403).send(logInfo)
+      res.status(403).send({
+        status: 'Forbidden',
+        reason: logInfo.reason,
+      })
       return
     }
   }
