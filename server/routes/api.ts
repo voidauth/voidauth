@@ -75,6 +75,7 @@ router.get('/authz/forward-auth', async (req: Request, res) => {
   const path = req.headersDistinct['x-forwarded-uri']?.[0]
   const url = proto && host ? URL.parse(`${proto}://${host}${path ?? ''}`) : null
   if (!url) {
+    logger.error(`invalid x-forwarded headers in ProxyAuth Domain request.`)
     res.sendStatus(400)
     return
   }
@@ -85,6 +86,7 @@ router.get('/authz/auth-request', async (req: Request, res) => {
   const headerUrl = req.headersDistinct['x-original-url']?.[0]
   const url = headerUrl ? URL.parse(headerUrl) : null
   if (!url) {
+    logger.error(`invalid x-original-url header in ProxyAuth Domain request.`)
     res.sendStatus(400)
     return
   }
