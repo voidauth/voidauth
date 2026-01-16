@@ -372,6 +372,43 @@ Redirect URLs: https://jellyseerr.example.com/login?provider=voidauth&callback=t
 
 <br>
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/komodo.png" width="28" /> Komodo
+
+> [!NOTE]
+> Komodo is not automatically provisioning users via OIDC if the environment variable `KOMODO_DISABLE_USER_REGISTRATION=true` is configured. If you generally want to prevent new user registrations:
+> 1. *Temporarily* set the environment variable `KOMODO_DISABLE_USER_REGISTRATION=false`
+> 2. Restart the Komodo core container
+> 3. Login to Komodo via VoidAuth OIDC to create a disabled account
+> 4. Login to Komodo as admin, go to Settings -> Users, enable the newly created account with type `Oidc`. Optionally make the account admin.
+> 5. Set the environment variable back to `KOMODO_DISABLE_USER_REGISTRATION=true`
+> 6. Restart the Komodo core container
+
+**Environment Variables:**
+
+```bash
+KOMODO_OIDC_ENABLED=true
+KOMODO_OIDC_PROVIDER="Copy from VoidAuth OIDC Info (OIDC Issuer Endpoint)"
+KOMODO_OIDC_CLIENT_ID="your-client-id"
+KOMODO_OIDC_CLIENT_SECRET="your-client-secret"
+
+# Temporarily:
+KOMODO_DISABLE_USER_REGISTRATION=false
+# But generally:
+KOMODO_DISABLE_USER_REGISTRATION=true
+```
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://komodo.example.com/auth/oidc/callback
+```
+
+
+<br>
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/manyfold.png" width="28" /> Manyfold
 
 **Environment Variables:**
