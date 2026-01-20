@@ -125,8 +125,14 @@ export class GroupComponent {
 
   async submit() {
     try {
+      const values = this.form.getRawValue()
+      const { name, mfaRequired, users } = values
+      if (!this.id || name == null || mfaRequired == null || users == null) {
+        throw new Error('Missing required information.')
+      }
+
       this.spinnerService.show()
-      const group = await this.adminService.upsertGroup({ ...this.form.getRawValue(), id: this.id })
+      const group = await this.adminService.upsertGroup({ ...values, name, mfaRequired, users, id: this.id })
       this.snackbarService.message(`Group ${this.id ? 'updated' : 'created'}.`)
 
       this.id = group.id

@@ -8,6 +8,25 @@ export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefin
 
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 
+export type OptionalizedNullable<T> = {
+  [K in keyof T]: null extends T[K] ? Exclude<T[K], null> | undefined : T[K]
+}
+
+export function optionalizeNullable<T extends object>(input: T) {
+  if (typeof input !== 'object') {
+    throw new Error('input must be an object')
+  }
+
+  const result: Partial<OptionalizedNullable<T>> = {}
+
+  for (const key of Object.keys(input) as (keyof T)[]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+    result[key] = input[key] ?? undefined as any
+  }
+
+  return result as OptionalizedNullable<T>
+}
+
 type URLPatternGroups = {
   protocol?: string
   userinfo?: string

@@ -1,5 +1,4 @@
 import appConfig, { appUrl } from './config'
-import { stringValidation } from './validators'
 import { generateRegistrationOptions,
   verifyRegistrationResponse,
   type AuthenticatorTransportFuture,
@@ -12,50 +11,6 @@ import { commit, transaction } from '../db/db'
 const passkeyRpName = appConfig.APP_TITLE
 export const passkeyRpId = appUrl().hostname
 export const passkeyRpOrigin = appUrl().origin
-
-export const passkeyRegistrationValidator = {
-  id: stringValidation,
-  rawId: stringValidation,
-  'response.clientDataJSON': stringValidation,
-  'response.attestationObject': stringValidation,
-  'response.authenticatorData': {
-    optional: true,
-    ...stringValidation,
-  },
-  'response.transports': {
-    optional: true,
-    isArray: true,
-  },
-  'response.transports.*': {
-    optional: true,
-    ...stringValidation,
-  },
-  'response.publicKeyAlgorithm': {
-    optional: true,
-    isNumeric: true,
-  },
-  'response.publicKey': {
-    optional: true,
-    ...stringValidation,
-  },
-  authenticatorAttachment: {
-    optional: true,
-    ...stringValidation,
-  },
-  'clientExtensionResults.appid': {
-    optional: true,
-    isBoolean: true,
-  },
-  'clientExtensionResults.credProps.rk': {
-    optional: true,
-    isBoolean: true,
-  },
-  'clientExtensionResults.hmacCreateSecret': {
-    optional: true,
-    isBoolean: true,
-  },
-  type: stringValidation,
-} as const
 
 export async function createPasskeyRegistrationOptions(uniqueId: string, username?: string, excludeCredentials?: {
   id: Base64URLString

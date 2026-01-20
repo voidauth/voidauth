@@ -184,8 +184,17 @@ export class InvitationComponent {
     try {
       this.spinnerService.show()
 
+      const values = this.form.getRawValue()
+      const { groups, emailVerified } = values
+
+      if (!this.id || groups == null || emailVerified == null) {
+        throw new Error('Missing required information.')
+      }
+
       const invitation = await this.adminService.upsertInvitation({
-        ...this.form.getRawValue(),
+        ...values,
+        groups,
+        emailVerified,
         id: this.id,
       })
 

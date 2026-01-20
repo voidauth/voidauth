@@ -137,9 +137,21 @@ export class RegistrationComponent implements OnInit {
 
   async register() {
     try {
+      const values = this.form.getRawValue()
+
+      if (!values.username) {
+        throw new Error('Username missing.')
+      } else if (!values.password) {
+        throw new Error('Password missing')
+      }
+
+      const { username, password } = values
+
       this.spinnerService.show()
       const redirect = await this.authService.register({
-        ...this.form.getRawValue(),
+        ...values,
+        username,
+        password,
         inviteId: this.invitation?.id,
         challenge: this.invitation?.challenge,
       })
@@ -178,17 +190,22 @@ export class RegistrationComponent implements OnInit {
   async passkey() {
     try {
       this.spinnerService.show()
-      const username = this.form.getRawValue().username
-      if (!username) {
+
+      const values = this.form.getRawValue()
+
+      if (!values.username) {
         throw Error('Username required.')
       }
+
+      const { username } = values
 
       const optionsJSON = await this.authService.startPasskeySignup(this.invitation?.id, this.invitation?.challenge)
       optionsJSON.user.name = username
       optionsJSON.user.displayName = username
       const registration = await startRegistration({ optionsJSON })
       const redirect = await this.authService.endPasskeySignup({
-        ...this.form.getRawValue(),
+        ...values,
+        username,
         inviteId: this.invitation?.id,
         challenge: this.invitation?.challenge,
         ...registration,

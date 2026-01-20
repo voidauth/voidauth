@@ -144,9 +144,16 @@ export class UserComponent {
 
   async submit() {
     try {
+      const values = this.form.getRawValue()
+      const { username, emailVerified, approved, mfaRequired, groups } = values
+
+      if (!this.id || !username || emailVerified == null || approved == null || mfaRequired == null || groups == null) {
+        throw new Error('Missing required information.')
+      }
+
       this.spinnerService.show()
 
-      await this.adminService.updateUser({ ...this.form.getRawValue(), id: this.id })
+      await this.adminService.updateUser({ ...values, username, emailVerified, approved, mfaRequired, groups, id: this.id })
       this.snackbarService.message('User updated.')
     } catch (_e) {
       this.snackbarService.error('Could not update user.')

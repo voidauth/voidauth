@@ -9,22 +9,22 @@ export const UNIQUE_RESPONSE_TYPES = ['code', 'id_token', 'token', 'none'] as co
 export const GRANT_TYPES = ['implicit', 'authorization_code', 'refresh_token'] as const
 
 export type ClientUpsert = {
-  post_logout_redirect_uri: string | null
+  post_logout_redirect_uri?: string
 }
 & Required<Pick<ClientMetadata,
 'client_id'
 | 'redirect_uris'>>
     // Optional
-& Partial<Pick<ClientMetadata,
+& Pick<ClientMetadata,
 'client_secret'
 | 'token_endpoint_auth_method'
 | 'response_types'
 | 'grant_types'
 | 'logo_uri'
-| 'skip_consent'
-| 'require_mfa'
 | 'client_name'
-| 'client_uri'>>
+| 'client_uri'>
 & {
+  skip_consent: boolean
+  require_mfa: boolean
   groups: OIDCGroup['groupId'][]
 }
