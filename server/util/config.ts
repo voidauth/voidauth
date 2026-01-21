@@ -3,6 +3,7 @@ import { exit } from 'node:process'
 import { booleanString } from './util'
 import { logger } from './logger'
 import * as psl from 'psl'
+import type { ClientMetadata, ClientAuthMethod } from 'oidc-provider'
 
 // basic config for app
 class Config {
@@ -55,6 +56,8 @@ class Config {
   SMTP_USER?: string
   SMTP_PASS?: string
   SMTP_IGNORE_CERT: boolean = false
+
+  DECLARED_CLIENTS = new Map<string, ClientMetadata>()
 }
 const appConfig = new Config()
 
@@ -109,6 +112,9 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'DB_PORT':
     case 'MIGRATE_TO_DB_PORT':
       appConfig[key] = posInt(value) ?? appConfig[key]
+      break
+
+    case 'DECLARED_CLIENTS':
       break
 
     // The default case for all string config values
@@ -191,6 +197,36 @@ const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
 // read from process env vars
 configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
+})
+
+Object.keys(process.env).forEach((key) => {
+  const parts = key.split('_', 2)
+  if (parts.length < 3 || parts[0] != 'OIDC') return
+
+  const client_id = parts[1].toLowerCase()
+  if (!appConfig.DECLARED_CLIENTS.has(client_id)) {
+    appConfig.DECLARED_CLIENTS.set(client_id, { client_id: client_id })
+  }
+
+  const value = process.env[key]
+  switch (parts[2]) {
+    case 'CLIENT_DISPLAY_NAME':
+      appConfig.DECLARED_CLIENTS.get(client_id).client_name = value
+      break
+    case 'CLIENT_HOMEPAGE_URL':
+      appConfig.DECLARED_CLIENTS.get(client_id).client_uri = value
+      break
+    case 'CLIENT_LOGO_URL':
+      appConfig.DECLARED_CLIENTS.get(client_id).logo_uri = value
+      break
+    case 'CLIENT_SECRET':
+      appConfig.DECLARED_CLIENTS.get(client_id).client_secret = value
+      break
+    case 'CLIENT_AUTH_METHOD':
+      appConfig.DECLARED_CLIENTS.get(client_id).token_endpoint_auth_method
+        = value != undefined ? (value as ClientAuthMethod) : 'client_secret_basic'
+      break
+  }
 })
 
 /**
