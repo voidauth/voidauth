@@ -54,12 +54,12 @@ import { logger } from '../util/logger'
 import { argon2 } from '../util/argon2id'
 import { zodValidate, type SchemaShape } from '../util/validate'
 import zod from 'zod'
-import { nameValidation, newPasswordValidation, passkeyRegistrationValidator } from '../util/validators'
+import { coerceEmailOrNull, nameValidation, newPasswordValidation, passkeyRegistrationValidator } from '../util/validators'
 
 const registerUserValidator = {
   username: zod.string().regex(USERNAME_REGEX),
   name: nameValidation,
-  email: zod.email().nullable().optional(),
+  email: coerceEmailOrNull.optional(),
   inviteId: zod.string().optional(),
   challenge: zod.string().optional(),
 } as const satisfies SchemaShape<Omit<RegisterUser, 'password'>>
@@ -898,7 +898,7 @@ router.post('/verify_email',
       return
     }
 
-    const emailVerification = await getEmailVerification(userId)
+    const emailVerification = await getEmailVerification(userId, challenge)
     if (!emailVerification) {
       res.sendStatus(404)
       return

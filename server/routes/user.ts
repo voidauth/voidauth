@@ -6,7 +6,7 @@ import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
-import { checkPrivileged } from '../util/validators'
+import { checkPrivileged, coerceEmailOrNull } from '../util/validators'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
 import { deleteUserPasskeys } from '../db/passkey'
@@ -56,7 +56,7 @@ userRouter.patch('/profile',
 // Update user email address
 userRouter.patch('/email',
   zodValidate<UpdateEmail>({
-    email: zod.email().toLowerCase().nullable(),
+    email: coerceEmailOrNull,
   }, async (req, res) => {
     const user = req.user
     if (!user) {
@@ -78,7 +78,7 @@ userRouter.patch('/email',
 // Change user password
 userRouter.patch('/password',
   zodValidate<UpdatePassword>({
-    oldPassword: zod.string().nullable().optional(),
+    oldPassword: zod.string().nullish(),
     newPassword: newPasswordValidation,
   }, async (req, res) => {
     const user = req.user

@@ -22,7 +22,11 @@ export function checkAdmin(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-export const nameValidation = zod.string().min(3).max(64).nullable().optional()
+export const emptyString = zod.string().max(0)
+
+export const coerceEmailOrNull = zod.union([emptyString, zod.string().trim().max(0), zod.email()]).transform(val => val || null).nullable()
+
+export const nameValidation = zod.string().min(3).max(64).nullish()
 
 export const newPasswordValidation = zod.string().refine((val) => {
   return passwordStrength(val).score >= appConfig.PASSWORD_STRENGTH

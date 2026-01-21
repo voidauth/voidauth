@@ -4,7 +4,7 @@ import { isOIDCProviderError, provider } from '../oidc/provider'
 import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomUUID } from 'crypto'
-import { checkAdmin, checkPrivileged } from '../util/validators'
+import { checkAdmin, checkPrivileged, coerceEmailOrNull } from '../util/validators'
 import { getClient, getClients, removeClient, upsertClient } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
@@ -240,7 +240,7 @@ adminRouter.post('/proxyAuth',
   zodValidate<ProxyAuthUpsert>({
     id: zod.uuidv4().optional(),
     domain: zod.string().refine(val => isValidWildcardDomain(val)).transform(val => formatWildcardDomain(val)),
-    mfaRequired: zod.boolean(),
+    mfaRequired: zod.union([zod.boolean(), zod.number()]),
     maxSessionLength: zod.int().min(5).max(525600).nullable(),
     groups: zod.array(zod.string()),
   }, async (req, res) => {
@@ -339,10 +339,10 @@ adminRouter.patch('/user',
     id: zod.uuidv4(),
     username: zod.string().regex(USERNAME_REGEX),
     name: nameValidation,
-    email: zod.email().nullable().optional(),
-    emailVerified: zod.boolean(),
-    approved: zod.boolean(),
-    mfaRequired: zod.boolean(),
+    email: coerceEmailOrNull.optional(),
+    emailVerified: zod.union([zod.boolean(), zod.number()]),
+    approved: zod.union([zod.boolean(), zod.number()]),
+    mfaRequired: zod.union([zod.boolean(), zod.number()]),
     groups: zod.array(zod.object({
       name: zod.string(),
       id: zod.uuidv4(),
@@ -556,7 +556,7 @@ adminRouter.post('/group',
   zodValidate<GroupUpsert>({
     id: zod.uuidv4().optional(),
     name: zod.string().regex(new RegExp('^[A-Za-z0-9_-]+$')),
-    mfaRequired: zod.boolean(),
+    mfaRequired: zod.union([zod.boolean(), zod.number()]),
     users: zod.array(zod.object({
       id: zod.uuidv4(),
       username: zod.string(),
@@ -665,10 +665,10 @@ adminRouter.get('/invitation/:id',
 adminRouter.post('/invitation',
   zodValidate<InvitationUpsert>({
     id: zod.uuidv4().optional(),
-    username: zod.string().regex(USERNAME_REGEX).nullable().optional(),
+    username: zod.string().regex(USERNAME_REGEX).nullish(),
     name: nameValidation,
-    email: zod.email().nullable().optional(),
-    emailVerified: zod.boolean(),
+    email: coerceEmailOrNull.optional(),
+    emailVerified: zod.union([zod.boolean(), zod.number()]),
     groups: zod.array(zod.string()),
   }, async (req, res) => {
     const currentUser = req.user

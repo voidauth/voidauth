@@ -28,10 +28,10 @@ type RegularKeys<T> = Exclude<{ [K in keyof T]: K }[keyof T], AnyKeys<T> | Vague
 
 type ShapeOptional<T> = undefined extends T
   ? null extends T
-    ? zod.ZodOptional<zod.ZodNullable<zod.ZodType<Exclude<T, undefined | null>>>>
-    : zod.ZodOptional<zod.ZodType<Exclude<T, undefined>>>
+    ? zod.ZodOptional<zod.ZodNullable<zod.ZodType<T>>>
+    : zod.ZodOptional<zod.ZodType<T>>
   : null extends T
-    ? zod.ZodNullable<zod.ZodType<Exclude<T, null>>>
+    ? zod.ZodNullable<zod.ZodType<T>>
     : zod.ZodType<T>
 
 // // keys in T that are optional (not including vague keys or those with type 'any')
@@ -45,7 +45,7 @@ type ShapeOptional<T> = undefined extends T
 export type SchemaShape<T extends object | undefined> = T extends object ? {
   [K in AnyKeys<T>]-?: zod.ZodType<T[K]>
 } & {
-  [K in VagueKeys<T>]: zod.ZodType<T[K]> | zod.ZodOptional<zod.ZodType<Exclude<T[K], undefined>>>
+  [K in VagueKeys<T>]: zod.ZodType<T[K]> | zod.ZodOptional<zod.ZodType<T[K]>>
 } & {
   [K in RegularKeys<T>]-?: ShapeOptional<T[K]>
 } : undefined

@@ -187,7 +187,7 @@ export class InvitationComponent {
       const values = this.form.getRawValue()
       const { groups, emailVerified } = values
 
-      if (!this.id || groups == null || emailVerified == null) {
+      if (groups == null || emailVerified == null) {
         throw new Error('Missing required information.')
       }
 
@@ -195,7 +195,7 @@ export class InvitationComponent {
         ...values,
         groups,
         emailVerified,
-        id: this.id,
+        id: this.id ?? undefined,
       })
 
       this.snackbarService.message(`Invitation ${this.id ? 'updated' : 'created'}.`)
