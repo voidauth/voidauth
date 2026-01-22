@@ -60,6 +60,18 @@ export class ClientsComponent implements AfterViewInit {
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
 
+  get showActions(): boolean {
+    return this.dataSource.data.some(c => !c.declared)
+  }
+
+  private updateDisplayedColumns() {
+    this.displayedColumns = this.columns.map(c => c.columnDef)
+
+    if (this.showActions) {
+      this.displayedColumns.push('actions')
+    }
+  }
+
   async ngAfterViewInit() {
     try {
       // Assign the data to the data source for the table to render
@@ -67,6 +79,8 @@ export class ClientsComponent implements AfterViewInit {
       this.dataSource.data = await this.adminService.clients()
       this.dataSource.paginator = this.paginator()
       this.dataSource.sort = this.sort()
+
+      this.updateDisplayedColumns()
     } finally {
       this.spinnerService.hide()
     }
@@ -90,6 +104,7 @@ export class ClientsComponent implements AfterViewInit {
         this.spinnerService.show()
         await this.adminService.deleteClient(client_id)
         this.dataSource.data = this.dataSource.data.filter(c => c.client_id !== client_id)
+        this.updateDisplayedColumns()
         this.snackbarService.message(`App ${client?.client_name ?? client_id} was deleted.`)
       } catch (_e) {
         this.snackbarService.error('Could not delete app.')
