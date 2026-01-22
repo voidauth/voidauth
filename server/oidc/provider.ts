@@ -439,6 +439,9 @@ provider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutR
 }
 
 export async function getProviderClient(client_id: string) {
+  const declaredClient = appConfig.DECLARED_CLIENTS.get(client_id)
+  if (declaredClient != undefined) return declaredClient
+
   const client = (await provider.Client.find(client_id))?.metadata()
   if (!client) {
     return
@@ -447,7 +450,7 @@ export async function getProviderClient(client_id: string) {
     .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ oidcId: client_id }))
     .map(g => g.name)
-  return { ...client, groups }
+  return { ...client, groups, declared: false }
 }
 
 export async function getSession(req: IncomingMessage, res: ServerResponse) {

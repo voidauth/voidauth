@@ -141,6 +141,7 @@ function loadDeclaredClients() {
         response_types: ['code'],
         grant_types: ['authorization_code', 'refresh_token'],
         groups: [],
+        declared: true,
       }
       appConfig.DECLARED_CLIENTS.set(client_id, client)
     }

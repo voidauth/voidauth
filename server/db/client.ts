@@ -25,7 +25,6 @@ export async function getClients(): Promise<ClientResponse[]> {
     .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ type: CLIENT_TYPE })
     .orderBy(`${TABLES.OIDC_PAYLOADS}.id`, 'asc'))
-    .concat(Object.values(appConfig.DECLARED_CLIENTS))
     .reduce<ClientResponse[]>((arr, r) => {
       const existing = arr.find(a => a.client_id === r.id)
       if (existing && r.groupName) {
@@ -39,7 +38,7 @@ export async function getClients(): Promise<ClientResponse[]> {
             c.client_secret = client_secret
           }
         }
-        const cr: ClientResponse = { ...c, groups: [] }
+        const cr: ClientResponse = { ...c, groups: [], declared: false }
         if (r.groupName) {
           cr.groups.push(r.groupName)
         }
@@ -47,6 +46,8 @@ export async function getClients(): Promise<ClientResponse[]> {
       }
       return arr
     }, [])
+    .filter(s => !appConfig.DECLARED_CLIENTS.has(s.client_id))
+    .concat(Object.values(appConfig.DECLARED_CLIENTS))
 
   return clients
 }
