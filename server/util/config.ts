@@ -3,7 +3,8 @@ import { exit } from 'node:process'
 import { booleanString } from './util'
 import { logger } from './logger'
 import * as psl from 'psl'
-import type { ClientMetadata, ClientAuthMethod } from 'oidc-provider'
+import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
+import type { ClientResponse } from '@shared/api-response/ClientResponse.js'
 
 // basic config for app
 class Config {
@@ -57,7 +58,7 @@ class Config {
   SMTP_PASS?: string
   SMTP_IGNORE_CERT: boolean = false
 
-  DECLARED_CLIENTS = new Map<string, ClientMetadata>()
+  DECLARED_CLIENTS = new Map<string, ClientResponse>()
 }
 const appConfig = new Config()
 
@@ -122,6 +123,63 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
       appConfig[key] = stringOnly(value) ?? appConfig[key]
       break
   }
+}
+
+function loadDeclaredClients() {
+  Object.keys(process.env).forEach((key) => {
+    const parts = key.split('_', 2)
+    if (parts[0] != 'OIDC') return
+
+    const client_id = parts[1]?.toLowerCase()
+    if (client_id === undefined) return
+
+    let client = appConfig.DECLARED_CLIENTS.get(client_id)
+    if (!client) {
+      client = {
+        client_id: client_id,
+        token_endpoint_auth_method: 'client_secret_basic',
+        response_types: ['code'],
+        grant_types: ['authorization_code', 'refresh_token'],
+        groups: [],
+      }
+      appConfig.DECLARED_CLIENTS.set(client_id, client)
+    }
+
+    const value = process.env[key]
+    if (value === undefined) return
+
+    switch (parts[2]) {
+      case 'CLIENT_DISPLAY_NAME':
+        client.client_name = value
+        break
+      case 'CLIENT_HOMEPAGE_URL':
+        client.client_uri = value
+        break
+      case 'CLIENT_LOGO_URL':
+        client.logo_uri = value
+        break
+      case 'CLIENT_SECRET':
+        client.client_secret = value
+        break
+      case 'CLIENT_AUTH_METHOD':
+        client.token_endpoint_auth_method = (value as ClientAuthMethod)
+        break
+      case 'CLIENT_GROUPS':
+        client.groups = value.replace(/\s/g, '').split(',')
+        break
+      case 'CLIENT_REDIRECT_URLS':
+        client.redirect_uris = value.replace(/\s/g, '').split(',')
+        break
+      case 'CLIENT_RESPONSE_TYPES':
+        client.response_types = value.replace(/\s/g, '').split(',') as ResponseType[]
+        break
+      case 'CLIENT_GRANT_TYPES':
+        client.grant_types = value.replace(/\s/g, '').split(',')
+        break
+      case 'CLIENT_POST_LOGOUT_URLS':
+        client.post_logout_redirect_uris = value.replace(/\s/g, '').split(',')
+    }
+  })
 }
 
 // functions to help format config
@@ -198,36 +256,7 @@ const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
 configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
 })
-
-Object.keys(process.env).forEach((key) => {
-  const parts = key.split('_', 2)
-  if (parts.length < 3 || parts[0] != 'OIDC') return
-
-  const client_id = parts[1].toLowerCase()
-  if (!appConfig.DECLARED_CLIENTS.has(client_id)) {
-    appConfig.DECLARED_CLIENTS.set(client_id, { client_id: client_id })
-  }
-
-  const value = process.env[key]
-  switch (parts[2]) {
-    case 'CLIENT_DISPLAY_NAME':
-      appConfig.DECLARED_CLIENTS.get(client_id).client_name = value
-      break
-    case 'CLIENT_HOMEPAGE_URL':
-      appConfig.DECLARED_CLIENTS.get(client_id).client_uri = value
-      break
-    case 'CLIENT_LOGO_URL':
-      appConfig.DECLARED_CLIENTS.get(client_id).logo_uri = value
-      break
-    case 'CLIENT_SECRET':
-      appConfig.DECLARED_CLIENTS.get(client_id).client_secret = value
-      break
-    case 'CLIENT_AUTH_METHOD':
-      appConfig.DECLARED_CLIENTS.get(client_id).token_endpoint_auth_method
-        = value != undefined ? (value as ClientAuthMethod) : 'client_secret_basic'
-      break
-  }
-})
+loadDeclaredClients()
 
 /**
  * Validations and Coercions

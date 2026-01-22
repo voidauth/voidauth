@@ -25,6 +25,7 @@ export async function getClients(): Promise<ClientResponse[]> {
     .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ type: CLIENT_TYPE })
     .orderBy(`${TABLES.OIDC_PAYLOADS}.id`, 'asc'))
+    .concat(Object.values(appConfig.DECLARED_CLIENTS))
     .reduce<ClientResponse[]>((arr, r) => {
       const existing = arr.find(a => a.client_id === r.id)
       if (existing && r.groupName) {
@@ -46,6 +47,7 @@ export async function getClients(): Promise<ClientResponse[]> {
       }
       return arr
     }, [])
+
   return clients
 }
 
