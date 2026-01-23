@@ -9,11 +9,6 @@ export class ValidationErrorPipe implements PipeTransform {
       return ''
     }
     return Object.keys(errors).map((k) => {
-      if (typeof errors[k] === 'string') {
-        // If custom error message, use that
-        return errors[k]
-      }
-
       switch (k.toLowerCase()) {
         case 'required':
           return 'Required.'
@@ -28,6 +23,10 @@ export class ValidationErrorPipe implements PipeTransform {
         case 'email':
           return 'Not a valid email.'
         default:
+          if (typeof errors[k] === 'string') {
+            // If custom error message, use that
+            return errors[k]
+          }
           return defaultMessage
       }
     })[0] ?? ''

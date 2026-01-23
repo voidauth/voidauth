@@ -16,6 +16,7 @@ import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { itemIn } from '@shared/utils'
+import { isValidEmail } from '../../../../validators/validators'
 
 @Component({
   selector: 'app-user',
@@ -49,7 +50,7 @@ export class UserComponent {
     email: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.email]),
+    }, [isValidEmail]),
     name: new FormControl<string | null>({
       value: null,
       disabled: false,

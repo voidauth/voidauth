@@ -16,6 +16,8 @@ import { TextDividerComponent } from '../../components/text-divider/text-divider
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
 import { UserService } from '../../services/user.service'
+import { isValidEmail } from '../../validators/validators'
+
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
@@ -39,7 +41,7 @@ export class RegistrationComponent implements OnInit {
     email: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.email]),
+    }, [isValidEmail]),
 
     name: new FormControl<string | null>({
       value: null,
