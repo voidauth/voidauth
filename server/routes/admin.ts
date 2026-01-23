@@ -1,32 +1,31 @@
 import { Router } from 'express'
 import { db } from '../db/db'
 import { isOIDCProviderError, provider } from '../oidc/provider'
-import { GRANT_TYPES, RESPONSE_TYPES, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
+import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomUUID } from 'crypto'
-import { checkAdmin, checkPrivileged, coerceEmailOrNull } from '../util/validators'
 import { getClient, getClients, removeClient, upsertClient } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
-import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
-import { ADMIN_GROUP, TABLES, TTLs, USERNAME_REGEX } from '@shared/constants'
-import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
+import { groupUpsertValidator } from '@shared/api-request/admin/GroupUpsert'
+import { ADMIN_GROUP, TABLES, TTLs } from '@shared/constants'
+import { userUpdateValidator } from '@shared/api-request/admin/UserUpdate'
 import { endSessions, getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
 import type { UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
-import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
+import { invitationUpsertValidator } from '@shared/api-request/admin/InvitationUpsert'
 import { sendApproved, sendInvitation, sendPasswordReset, sendTestNotification, SMTP_VERIFIED } from '../util/email'
 import { generate } from 'generate-password'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
-import { formatWildcardDomain, isValidWildcardDomain, urlFromWildcardHref, isValidWildcardRedirect } from '@shared/utils'
+import { urlFromWildcardHref } from '@shared/utils'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
-import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
+import { proxyAuthUpsertValidator } from '@shared/api-request/admin/ProxyAuthUpsert'
 import { getProxyAuth, getProxyAuths } from '../db/proxyAuth'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
 import type { PasswordReset } from '@shared/db/PasswordReset'
-import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
+import { passwordResetCreateValidator } from '@shared/api-request/admin/PasswordResetCreate'
 import type { EmailLog } from '@shared/db/EmailLog'
 import appConfig from '../util/config'
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
@@ -34,36 +33,9 @@ import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import { logger } from '../util/logger'
 import { createPasswordReset } from '../db/passwordReset'
-import { zodValidate, type SchemaShape } from '../util/validate'
+import { zodValidate } from '../util/validate'
 import zod from 'zod'
-import { nameValidation } from '../util/validators'
-
-const clientMetadataValidator = {
-  client_id: zod.string().min(1).trim(),
-  client_name: zod.string().trim().optional(),
-  redirect_uris: zod.array(zod.string().trim().refine((input) => {
-    return typeof input === 'string' && isValidWildcardRedirect(input)
-  })),
-  post_logout_redirect_uri: zod.string().trim().refine((input) => {
-    return typeof input === 'string' && isValidWildcardRedirect(input)
-  }).optional(),
-  client_secret: zod.string().trim().min(1).optional(),
-  token_endpoint_auth_method: zod.enum([
-    'client_secret_basic',
-    'client_secret_post',
-    'client_secret_jwt',
-    'private_key_jwt',
-    'tls_client_auth',
-    'self_signed_tls_client_auth',
-    'none']).optional(),
-  response_types: zod.array(zod.enum(RESPONSE_TYPES)).optional(),
-  grant_types: zod.array(zod.enum(GRANT_TYPES)).optional(),
-  skip_consent: zod.boolean(),
-  require_mfa: zod.boolean(),
-  logo_uri: zod.url().trim().optional(),
-  client_uri: zod.url().trim().optional(),
-  groups: zod.array(zod.string()),
-} satisfies SchemaShape<ClientUpsert>
+import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 
 export const adminRouter = Router()
 
@@ -75,7 +47,7 @@ adminRouter.get('/clients', async (_req, res) => {
 })
 
 adminRouter.get('/client/:client_id',
-  zodValidate<{ client_id: string }>({
+  zodValidate({
     client_id: zod.string(),
   }, async (req, res) => {
     const { client_id } = req.validatedData
@@ -93,8 +65,8 @@ adminRouter.get('/client/:client_id',
  */
 
 adminRouter.post('/client',
-  zodValidate<ClientUpsert>(
-    clientMetadataValidator,
+  zodValidate(
+    clientUpsertValidator,
     async (req, res) => {
       if (!req.user) {
         res.sendStatus(500)
@@ -142,8 +114,8 @@ adminRouter.post('/client',
     }))
 
 adminRouter.patch('/client',
-  zodValidate<ClientUpsert>(
-    clientMetadataValidator,
+  zodValidate(
+    clientUpsertValidator,
     async (req, res) => {
       if (!req.user) {
         res.sendStatus(500)
@@ -195,7 +167,7 @@ adminRouter.patch('/client',
     }))
 
 adminRouter.delete('/client/:client_id',
-  zodValidate<{ client_id: string }>({
+  zodValidate({
     client_id: zod.string(),
   }, async (req, res) => {
     const { client_id } = req.validatedData
@@ -214,7 +186,7 @@ adminRouter.get('/proxyauths', async (_req, res) => {
 })
 
 adminRouter.get('/proxyauth/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -237,13 +209,7 @@ adminRouter.get('/proxyauth/:id',
   }))
 
 adminRouter.post('/proxyAuth',
-  zodValidate<ProxyAuthUpsert>({
-    id: zod.uuidv4().optional(),
-    domain: zod.string().refine(val => isValidWildcardDomain(val)).transform(val => formatWildcardDomain(val)),
-    mfaRequired: zod.union([zod.boolean(), zod.number()]),
-    maxSessionLength: zod.int().min(5).max(525600).nullable(),
-    groups: zod.array(zod.string()),
-  }, async (req, res) => {
+  zodValidate(proxyAuthUpsertValidator, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
@@ -301,7 +267,7 @@ adminRouter.post('/proxyAuth',
   }))
 
 adminRouter.delete('/proxyauth/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -312,7 +278,7 @@ adminRouter.delete('/proxyauth/:id',
   }))
 
 adminRouter.get('/users{/:searchTerm}',
-  zodValidate<{ searchTerm?: string }>({
+  zodValidate({
     searchTerm: zod.string().optional(),
   }, async (req, res) => {
     const { searchTerm } = req.validatedData
@@ -321,7 +287,7 @@ adminRouter.get('/users{/:searchTerm}',
   }))
 
 adminRouter.get('/user/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -335,19 +301,7 @@ adminRouter.get('/user/:id',
   }))
 
 adminRouter.patch('/user',
-  zodValidate<UserUpdate>({
-    id: zod.uuidv4(),
-    username: zod.string().regex(USERNAME_REGEX),
-    name: nameValidation,
-    email: coerceEmailOrNull.optional(),
-    emailVerified: zod.union([zod.boolean(), zod.number()]),
-    approved: zod.union([zod.boolean(), zod.number()]),
-    mfaRequired: zod.union([zod.boolean(), zod.number()]),
-    groups: zod.array(zod.object({
-      name: zod.string(),
-      id: zod.uuidv4(),
-    })),
-  }, async (req, res) => {
+  zodValidate(userUpdateValidator, async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
@@ -407,7 +361,7 @@ adminRouter.patch('/user',
   }))
 
 adminRouter.delete('/user/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const currentUser = req.user
@@ -435,7 +389,7 @@ adminRouter.delete('/user/:id',
   }))
 
 adminRouter.post('/user/signout/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const currentUser = req.user
@@ -457,7 +411,7 @@ adminRouter.post('/user/signout/:id',
   }))
 
 adminRouter.patch('/users/approve',
-  zodValidate<{ users: string[] }>({
+  zodValidate({
     users: zod.array(zod.uuidv4()),
   }, async (req, res) => {
     const { users } = req.validatedData
@@ -489,7 +443,7 @@ adminRouter.patch('/users/approve',
   }))
 
 adminRouter.post('/users/delete',
-  zodValidate<{ users: string[] }>({
+  zodValidate({
     users: zod.array(zod.uuidv4()),
   }, async (req, res) => {
     const currentUser = req.user
@@ -530,7 +484,7 @@ adminRouter.get('/groups', async (_req, res) => {
 })
 
 adminRouter.get('/group/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -553,15 +507,7 @@ adminRouter.get('/group/:id',
   }))
 
 adminRouter.post('/group',
-  zodValidate<GroupUpsert>({
-    id: zod.uuidv4().optional(),
-    name: zod.string().regex(new RegExp('^[A-Za-z0-9_-]+$')),
-    mfaRequired: zod.union([zod.boolean(), zod.number()]),
-    users: zod.array(zod.object({
-      id: zod.uuidv4(),
-      username: zod.string(),
-    })),
-  }, async (req, res) => {
+  zodValidate(groupUpsertValidator, async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
@@ -627,7 +573,7 @@ adminRouter.post('/group',
   }))
 
 adminRouter.delete('/group/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -650,7 +596,7 @@ adminRouter.get('/invitations', async (_req, res) => {
 })
 
 adminRouter.get('/invitation/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -663,14 +609,7 @@ adminRouter.get('/invitation/:id',
   }))
 
 adminRouter.post('/invitation',
-  zodValidate<InvitationUpsert>({
-    id: zod.uuidv4().optional(),
-    username: zod.string().regex(USERNAME_REGEX).nullish(),
-    name: nameValidation,
-    email: coerceEmailOrNull.optional(),
-    emailVerified: zod.union([zod.boolean(), zod.number()]),
-    groups: zod.array(zod.string()),
-  }, async (req, res) => {
+  zodValidate(invitationUpsertValidator, async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
@@ -732,7 +671,7 @@ adminRouter.post('/invitation',
   }))
 
 adminRouter.delete('/invitation/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -748,7 +687,7 @@ adminRouter.delete('/invitation/:id',
   }))
 
 adminRouter.post('/send_invitation/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -785,9 +724,7 @@ adminRouter.get('/passwordresets', async (_req, res) => {
 })
 
 adminRouter.post('/passwordreset',
-  zodValidate<PasswordResetCreate>({
-    userId: zod.uuidv4(),
-  }, async (req, res) => {
+  zodValidate(passwordResetCreateValidator, async (req, res) => {
     const { userId } = req.validatedData
     const user = await getUserById(userId)
 
@@ -803,7 +740,7 @@ adminRouter.post('/passwordreset',
   }))
 
 adminRouter.delete('/passwordreset/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -819,7 +756,7 @@ adminRouter.delete('/passwordreset/:id',
   }))
 
 adminRouter.post('/send_passwordreset/:id',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     const { id } = req.validatedData
@@ -841,14 +778,8 @@ adminRouter.post('/send_passwordreset/:id',
     res.send()
   }))
 
-type EmailsRequest = {
-  page: number
-  pageSize: number
-  sortActive?: 'createdAt' | 'to' | 'type'
-  sortDirection?: 'asc' | 'desc' | ''
-}
 adminRouter.get('/emails',
-  zodValidate<EmailsRequest>({
+  zodValidate({
     page: zod.coerce.number().int().min(0),
     pageSize: zod.coerce.number().int().min(1),
     sortActive: zod.enum(['createdAt', 'to', 'type']).optional(),
@@ -886,7 +817,7 @@ adminRouter.get('/emails',
   }))
 
 adminRouter.post('/send_test_email',
-  zodValidate<{ email: string }>({
+  zodValidate({
     email: zod.email(),
   }, async (req, res) => {
     const { email } = req.validatedData

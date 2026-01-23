@@ -1,3 +1,9 @@
-import type { EmailVerification } from '../db/EmailVerification.js'
+import type { SchemaInfer } from '@shared/utils'
+import zod from 'zod'
 
-export type VerifyUserEmail = Pick<EmailVerification, 'challenge' | 'userId'>
+export const verifyUserEmailValidator = {
+  userId: zod.uuidv4(),
+  challenge: zod.string(),
+} as const
+
+export type VerifyUserEmail = SchemaInfer<typeof verifyUserEmailValidator>

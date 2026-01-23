@@ -59,7 +59,7 @@ export class UpsertClientComponent implements OnInit {
     client_secret: new FormControl<string | null>(null, [Validators.required, Validators.minLength(4)]),
     token_endpoint_auth_method: new FormControl<Required<ClientUpsert>['token_endpoint_auth_method']>('client_secret_basic'),
     response_types: new FormControl<ResponseType[]>(['code']),
-    grant_types: new FormControl<string[]>(['authorization_code', 'refresh_token']),
+    grant_types: new FormControl<Required<ClientUpsert>['grant_types']>(['authorization_code', 'refresh_token']),
     post_logout_redirect_uri: new FormControl<string | null>(null, [
       isValidWildcardRedirectControl,
       (c: AbstractControl<string | null>) => {
@@ -149,7 +149,7 @@ export class UpsertClientComponent implements OnInit {
             redirect_uris: client.redirect_uris ?? [],
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_basic',
             response_types: client.response_types ?? ['code'],
-            grant_types: client.grant_types ?? ['authorization_code', 'refresh_token'],
+            grant_types: client.grant_types as ClientUpsert['grant_types'] ?? ['authorization_code', 'refresh_token'],
             post_logout_redirect_uri: client.post_logout_redirect_uris?.[0] ?? null,
             skip_consent: client.skip_consent ?? true,
             require_mfa: client.require_mfa ?? false,

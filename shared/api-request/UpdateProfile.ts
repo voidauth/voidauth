@@ -1,3 +1,8 @@
-import type { User } from '@shared/db/User'
+import type { SchemaInfer } from '@shared/utils'
+import { nameValidation } from '@shared/validators'
 
-export type UpdateProfile = Pick<User, 'name'>
+export const updateProfileValidator = {
+  name: nameValidation,
+} as const
+
+export type UpdateProfile = SchemaInfer<typeof updateProfileValidator>

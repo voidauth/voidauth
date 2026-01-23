@@ -1,3 +1,8 @@
-import type { User } from '@shared/db/User'
+import type { SchemaInfer } from '@shared/utils'
+import { coerceEmailOrNull } from '@shared/validators'
 
-export type UpdateEmail = Required<Pick<User, 'email'>>
+export const updateEmailValidator = {
+  email: coerceEmailOrNull,
+} as const
+
+export type UpdateEmail = SchemaInfer<typeof updateEmailValidator>

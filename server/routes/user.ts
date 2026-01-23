@@ -1,12 +1,11 @@
 import { Router } from 'express'
-import type { UpdateProfile } from '@shared/api-request/UpdateProfile'
+import { updateProfileValidator } from '@shared/api-request/UpdateProfile'
 
 import { db } from '../db/db'
-import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
+import { updateEmailValidator } from '@shared/api-request/UpdateEmail'
 import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
-import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
-import { checkPrivileged, coerceEmailOrNull } from '../util/validators'
+import { updatePasswordValidator } from '@shared/api-request/UpdatePassword'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
 import { deleteUserPasskeys } from '../db/passkey'
@@ -15,8 +14,8 @@ import { TABLES } from '@shared/constants'
 import type { TOTP } from '@shared/db/TOTP'
 import { argon2 } from '../util/argon2id'
 import { zodValidate } from '../util/validate'
-import { nameValidation, newPasswordValidation } from '../util/validators'
-import zod from 'zod'
+import { passwordStrength } from '../util/zxcvbn'
+import { checkPrivileged } from '../util/authMiddleware'
 
 export const userRouter = Router()
 
@@ -37,9 +36,7 @@ userRouter.use(checkPrivileged)
 
 // Update user profile information
 userRouter.patch('/profile',
-  zodValidate<UpdateProfile>({
-    name: nameValidation,
-  }, async (req, res) => {
+  zodValidate(updateProfileValidator, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
@@ -55,9 +52,7 @@ userRouter.patch('/profile',
 
 // Update user email address
 userRouter.patch('/email',
-  zodValidate<UpdateEmail>({
-    email: coerceEmailOrNull,
-  }, async (req, res) => {
+  zodValidate(updateEmailValidator, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
@@ -77,10 +72,7 @@ userRouter.patch('/email',
 
 // Change user password
 userRouter.patch('/password',
-  zodValidate<UpdatePassword>({
-    oldPassword: zod.string().nullish(),
-    newPassword: newPasswordValidation,
-  }, async (req, res) => {
+  zodValidate(updatePasswordValidator, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
@@ -88,6 +80,10 @@ userRouter.patch('/password',
     }
 
     const { oldPassword, newPassword } = req.validatedData
+
+    if (passwordStrength(newPassword).score < appConfig.PASSWORD_STRENGTH) {
+      res.status(422).send({ message: 'Password is not strong enough.' })
+    }
 
     if (user.hasPassword && (!oldPassword || !await checkPasswordHash(user.id, oldPassword))) {
       res.sendStatus(403)

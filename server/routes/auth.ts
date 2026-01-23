@@ -9,7 +9,7 @@ import zod from 'zod'
 export const authRouter = Router()
 
 authRouter.post('/send_verify_email',
-  zodValidate<{ id: string }>({
+  zodValidate({
     id: zod.uuidv4(),
   }, async (req, res) => {
     if (!appConfig.EMAIL_VERIFICATION) {
@@ -36,7 +36,7 @@ authRouter.post('/send_verify_email',
   }))
 
 authRouter.get('/invitation/:id/:challenge',
-  zodValidate<{ id: string, challenge: string }>({
+  zodValidate({
     id: zod.string(),
     challenge: zod.string(),
   }, async (req, res) => {

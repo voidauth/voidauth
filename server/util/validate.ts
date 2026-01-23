@@ -1,3 +1,4 @@
+import type { SchemaInfer } from '@shared/utils'
 import type { NextFunction, Request, Response } from 'express'
 import zod from 'zod'
 
@@ -6,49 +7,6 @@ declare module 'express' {
     validatedData?: unknown
   }
 }
-
-// detect if T is a vague key ('string' or 'number')
-type IsVagueKey<T> = string extends T ? true : number extends T ? true : false
-
-// keys in T that are vague ('string' or 'number') like 'string' from { [key: string]: any }
-type VagueKeys<T> = {
-  [K in keyof T]: IsVagueKey<K> extends true ? K : never
-}[keyof T]
-
-// detect if T is any
-type IsAny<T> = 0 extends (1 & T) ? true : false
-
-// keys in T that are of type 'any', not including any with vague index signatures ('string', 'number')
-type AnyKeys<T> = Exclude<{
-  [K in keyof T]: IsAny<T[K]> extends true ? K : never
-}[keyof T], VagueKeys<T>>
-
-// keys that are 'regular' in T, not vague or type any
-type RegularKeys<T> = Exclude<{ [K in keyof T]: K }[keyof T], AnyKeys<T> | VagueKeys<T>>
-
-type ShapeOptional<T> = undefined extends T
-  ? null extends T
-    ? zod.ZodOptional<zod.ZodNullable<zod.ZodType<T>>>
-    : zod.ZodOptional<zod.ZodType<T>>
-  : null extends T
-    ? zod.ZodNullable<zod.ZodType<T>>
-    : zod.ZodType<T>
-
-// // keys in T that are optional (not including vague keys or those with type 'any')
-// type OptionalKeys<T> = Exclude<{
-//   [K in keyof T]-?: undefined extends T[K] ? K : never
-// }[keyof T], AnyKeys<T> | VagueKeys<T>>
-
-// // keys in T that are Required
-// type RequiredKeys<T> = Exclude<keyof T, OptionalKeys<T> | VagueKeys<T> | AnyKeys<T>>
-
-export type SchemaShape<T extends object | undefined> = T extends object ? {
-  [K in AnyKeys<T>]-?: zod.ZodType<T[K]>
-} & {
-  [K in VagueKeys<T>]: zod.ZodType<T[K]> | zod.ZodOptional<zod.ZodType<T[K]>>
-} & {
-  [K in RegularKeys<T>]-?: ShapeOptional<T[K]>
-} : undefined
 
 type ControllerHandler<T> = (
   req: Omit<Request, 'validatedData'> & { validatedData: T },
@@ -80,9 +38,9 @@ type ControllerHandler<T> = (
  *   res.status(200).json({ message: 'Success' })
  * }));
  */
-export function zodValidate<T extends object | undefined>(
-  schema: SchemaShape<T>,
-  controller: ControllerHandler<T>,
+export function zodValidate<T extends zod.core.$ZodShape>(
+  schema: T,
+  controller: ControllerHandler<SchemaInfer<T>>,
   locations: ('body' | 'query' | 'params')[] = ['params', 'query', 'body']) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const inputs: object = {}

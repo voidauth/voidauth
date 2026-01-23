@@ -3,17 +3,17 @@ import { getSession, provider } from '../oidc/provider'
 import { checkPasswordHash, getUserById, getUserByInput } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
 import type { Redirect } from '@shared/api-response/Redirect'
-import type { LoginUser } from '@shared/api-request/LoginUser'
+import { loginUserValidator } from '@shared/api-request/LoginUser'
 import appConfig from '../util/config'
-import type { VerifyUserEmail } from '@shared/api-request/VerifyUserEmail'
+import { verifyUserEmailValidator } from '@shared/api-request/VerifyUserEmail'
 import { sendEmailVerification } from '../util/email'
 import { generate } from 'generate-password'
 import type { EmailVerification } from '@shared/db/EmailVerification'
 import type { User } from '@shared/db/User'
 import { db } from '../db/db'
-import type { RegisterUser } from '@shared/api-request/RegisterUser'
+import { registerUserValidator } from '@shared/api-request/RegisterUser'
 import { randomUUID } from 'crypto'
-import { REDIRECT_PATHS, TABLES, TTLs, USERNAME_REGEX } from '@shared/constants'
+import { REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { type Interaction } from 'oidc-provider'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { createExpiration } from '../db/util'
@@ -25,8 +25,6 @@ import type { InvitationGroup, UserGroup } from '@shared/db/Group'
 import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
-  type AuthenticationResponseJSON,
-  type RegistrationResponseJSON,
 } from '@simplewebauthn/server'
 import {
   deleteAuthenticationOptions, getAuthenticationOptions,
@@ -52,17 +50,10 @@ import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 import { amrFactors, isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
 import { argon2 } from '../util/argon2id'
-import { zodValidate, type SchemaShape } from '../util/validate'
+import { zodValidate } from '../util/validate'
 import zod from 'zod'
-import { coerceEmailOrNull, nameValidation, newPasswordValidation, passkeyRegistrationValidator } from '../util/validators'
-
-const registerUserValidator = {
-  username: zod.string().regex(USERNAME_REGEX),
-  name: nameValidation,
-  email: coerceEmailOrNull.optional(),
-  inviteId: zod.string().optional(),
-  challenge: zod.string().optional(),
-} as const satisfies SchemaShape<Omit<RegisterUser, 'password'>>
+import { passkeyRegistrationValidator } from '../../shared/validators'
+import { passwordStrength } from '../util/zxcvbn'
 
 export const router = Router()
 
@@ -270,7 +261,7 @@ router.get('/:uid/detail',
  * Consent to oidc client
  */
 router.post('/:uid/confirm/',
-  zodValidate<{ uid: string }>({
+  zodValidate({
     uid: zod.string(),
   }, async (req, res) => {
     const {
@@ -313,11 +304,16 @@ router.post('/:uid/confirm/',
  * Register new user with password, finishes login and adds pwd to amr
  */
 router.post('/register',
-  zodValidate<RegisterUser>({
+  zodValidate({
     ...registerUserValidator,
-    password: newPasswordValidation,
+    password: zod.string(),
   }, async (req, res) => {
     const registration = req.validatedData
+
+    if (passwordStrength(registration.password).score < appConfig.PASSWORD_STRENGTH) {
+      res.status(422).send({ message: 'Password is not strong enough.' })
+      return
+    }
 
     if (appConfig.EMAIL_VERIFICATION && !registration.email) {
       res.status(400).send({ message: 'EMAIL_VERIFICATION is enabled but no email address was provided during registration.' })
@@ -419,7 +415,7 @@ router.post('/register',
  * Start user registration using a passkey instead of password
  */
 router.post('/register/passkey/start',
-  zodValidate<{ inviteId?: Invitation['id'], challenge?: Invitation['challenge'] }>({
+  zodValidate({
     inviteId: zod.string().optional(),
     challenge: zod.string().optional(),
   }, async (req, res) => {
@@ -452,7 +448,7 @@ router.post('/register/passkey/start',
  * Finish user registration using a passkey instead of password, finishes login and adds webauthn to amr
  */
 router.post('/register/passkey/end',
-  zodValidate<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>({
+  zodValidate({
     ...passkeyRegistrationValidator,
     ...registerUserValidator,
   }, async (req, res) => {
@@ -592,7 +588,7 @@ router.post('/passkey/registration/start',
  * Finish registering a passkey, finishes login and adds webauthn to amr
  */
 router.post('/passkey/registration/end',
-  zodValidate<RegistrationResponseJSON>(
+  zodValidate(
     passkeyRegistrationValidator,
     async (req, res) => {
       const body = req.validatedData
@@ -662,11 +658,7 @@ router.post('/totp/registration',
  * Login with password, finishes login and adds pwd to amr
  */
 router.post('/login',
-  zodValidate<LoginUser>({
-    input: zod.string().min(1).max(32).toLowerCase(),
-    password: zod.string(),
-    remember: zod.boolean().optional(),
-  }, async (req, res) => {
+  zodValidate(loginUserValidator, async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
     if (!interaction && !session?.accountId) {
@@ -734,9 +726,7 @@ router.post('/passkey/start',
  * Finish login with passkey, finishes login and adds webauthn to amr
  */
 router.post('/passkey/end',
-  zodValidate<AuthenticationResponseJSON & {
-    remember?: boolean
-  }>({
+  zodValidate({
     remember: zod.boolean().optional(),
     id: zod.string(),
     rawId: zod.string(),
@@ -834,7 +824,7 @@ router.post('/passkey/end',
  * Validate totp and add totp to amr
  */
 router.post('/totp',
-  zodValidate<{ token: string, enableMfa?: boolean }>({
+  zodValidate({
     enableMfa: zod.boolean().optional(),
     token: zod.string(),
   }, async (req, res) => {
@@ -877,10 +867,7 @@ router.post('/totp',
  * Verify an email, finishes login adds email to amr
  */
 router.post('/verify_email',
-  zodValidate<VerifyUserEmail>({
-    userId: zod.uuidv4(),
-    challenge: zod.string(),
-  }, async (req, res) => {
+  zodValidate(verifyUserEmailValidator, async (req, res) => {
     const { userId, challenge } = req.validatedData
 
     const interaction = await getInteractionDetails(req, res)

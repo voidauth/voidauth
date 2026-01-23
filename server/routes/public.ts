@@ -7,18 +7,18 @@ import { endSessions, getUserById, getUserByInput } from '../db/user'
 import { db } from '../db/db'
 import { TABLES } from '@shared/constants'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
-import type { ResetPassword } from '@shared/api-request/ResetPassword'
+import { resetPasswordValidator } from '@shared/api-request/ResetPassword'
 import type { User } from '@shared/db/User'
 import { createPasskey, createPasskeyRegistrationOptions, getRegistrationInfo } from '../util/passkey'
 import { getUserPasskeys } from '../db/passkey'
-import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 import { passwordStrength } from '../util/zxcvbn'
 import { logger } from '../util/logger'
 import { argon2 } from '../util/argon2id'
 import { createPasswordReset } from '../db/passwordReset'
 import { zodValidate } from '../util/validate'
 import zod from 'zod'
-import { newPasswordValidation, passkeyRegistrationValidator } from '../util/validators'
+import { passkeyRegistrationValidator } from '../../shared/validators'
+import { userChallengeValidator } from '@shared/api-request/UserChallenge'
 
 /**
  * routes that do not require any auth
@@ -43,7 +43,7 @@ publicRouter.get('/config', (_req, res) => {
 })
 
 publicRouter.post('/passwordStrength',
-  zodValidate<{ password: string }>({
+  zodValidate({
     password: zod.string(),
   }, (req, res) => {
     const { password } = req.validatedData
@@ -51,7 +51,7 @@ publicRouter.post('/passwordStrength',
   }))
 
 publicRouter.post('/send_password_reset',
-  zodValidate<{ input: string }>({
+  zodValidate({
     input: zod.string(),
   }, async (req, res) => {
     const { input } = req.validatedData
@@ -81,12 +81,13 @@ publicRouter.post('/send_password_reset',
   }))
 
 publicRouter.post('/reset_password',
-  zodValidate<ResetPassword>({
-    userId: zod.uuidv4(),
-    challenge: zod.string(),
-    newPassword: newPasswordValidation,
-  }, async (req, res) => {
+  zodValidate(resetPasswordValidator, async (req, res) => {
     const { userId, challenge, newPassword } = req.validatedData
+
+    if (passwordStrength(newPassword).score < appConfig.PASSWORD_STRENGTH) {
+      res.status(422).send({ message: 'Password is not strong enough.' })
+    }
+
     const user = await getUserById(userId)
     const passwordReset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET)
       .where({ userId, challenge }).andWhere('expiresAt', '>=', new Date()).first()
@@ -103,10 +104,7 @@ publicRouter.post('/reset_password',
   }))
 
 publicRouter.post('/reset_password/passkey/start',
-  zodValidate<Omit<ResetPassword, 'newPassword'>>({
-    userId: zod.uuidv4(),
-    challenge: zod.string(),
-  }, async (req, res) => {
+  zodValidate(userChallengeValidator, async (req, res) => {
     const { userId, challenge } = req.validatedData
     const user = await getUserById(userId)
     const passwordReset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET)
@@ -125,9 +123,8 @@ publicRouter.post('/reset_password/passkey/start',
   }))
 
 publicRouter.post('/reset_password/passkey/end',
-  zodValidate<Omit<ResetPassword, 'newPassword'> & RegistrationResponseJSON>({
-    userId: zod.uuidv4(),
-    challenge: zod.string(),
+  zodValidate({
+    ...userChallengeValidator,
     ...passkeyRegistrationValidator,
   }, async (req, res) => {
     const body = req.validatedData

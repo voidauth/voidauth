@@ -1,5 +1,8 @@
-import type { User } from '@shared/db/User'
+import type { SchemaInfer } from '@shared/utils'
+import zod from 'zod'
 
-export type PasswordResetCreate = {
-  userId: User['id']
-}
+export const passwordResetCreateValidator = {
+  userId: zod.uuidv4(),
+} as const
+
+export type PasswordResetCreate = SchemaInfer<typeof passwordResetCreateValidator>
