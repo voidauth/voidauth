@@ -32,7 +32,6 @@
     "ejs": "^3.1.10",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
-    "express-validator": "^7.3.1",
     "generate-password": "^1.7.1",
     "helmet": "^8.1.0",
     "husky": "^9.1.7",
@@ -49,7 +48,8 @@
     "sass": "^1.97.2",
     "sqlite3": "^5.1.7",
     "tsx": "^4.21.0",
-    "yargs": "^18.0.0"
+    "yargs": "^18.0.0",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",

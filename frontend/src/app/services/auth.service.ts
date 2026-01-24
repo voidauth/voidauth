@@ -7,7 +7,6 @@ import type { VerifyUserEmail } from '@shared/api-request/VerifyUserEmail'
 import type { Redirect } from '@shared/api-response/Redirect'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
-import { type Nullable } from '@shared/utils'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import { type RegistrationResponseJSON, type PublicKeyCredentialCreationOptionsJSON, WebAuthnError } from '@simplewebauthn/browser'
@@ -49,7 +48,7 @@ export class AuthService {
     return firstValueFrom(this.http.delete<null>('/api/interaction/current'))
   }
 
-  async register(body: Nullable<RegisterUser>) {
+  async register(body: RegisterUser) {
     return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/register', body))
   }
 
@@ -60,7 +59,7 @@ export class AuthService {
     }))
   }
 
-  async endPasskeySignup(body: Nullable<RegistrationResponseJSON & Omit<RegisterUser, 'password'>>) {
+  async endPasskeySignup(body: RegistrationResponseJSON & Omit<RegisterUser, 'password'>) {
     try {
       const result = await firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/register/passkey/end', body))
       localStorage.setItem('passkey_seen', 'true')

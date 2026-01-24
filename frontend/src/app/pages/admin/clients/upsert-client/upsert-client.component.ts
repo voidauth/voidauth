@@ -17,10 +17,10 @@ import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.co
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
-import { isValidWildcardRedirect, validateWildcardRedirects } from '@shared/utils'
+import { isValidWildcardRedirect, optionalizeNullable, validateWildcardRedirects } from '@shared/utils'
 
 export type TypedControls<T> = {
-  [K in keyof Required<T>]: FormControl<T[K] | null>
+  [K in keyof T]-?: FormControl<Required<T>[K] | null>
 }
 
 @Component({
@@ -52,15 +52,15 @@ export class UpsertClientComponent implements OnInit {
 
   public client_id: string | null = null
 
-  form = new FormGroup<TypedControls<ClientUpsert>>({
+  form = new FormGroup({
     client_id: new FormControl<string | null>(null, [Validators.required]),
     client_name: new FormControl<string | null>(null),
     redirect_uris: new FormControl<string[]>([]),
     client_secret: new FormControl<string | null>(null, [Validators.required, Validators.minLength(4)]),
-    token_endpoint_auth_method: new FormControl<ClientUpsert['token_endpoint_auth_method']>('client_secret_basic'),
+    token_endpoint_auth_method: new FormControl<Required<ClientUpsert>['token_endpoint_auth_method']>('client_secret_basic'),
     response_types: new FormControl<ResponseType[]>(['code']),
-    grant_types: new FormControl<itemIn<typeof GRANT_TYPES>[]>(['authorization_code', 'refresh_token']),
-    post_logout_redirect_uri: new FormControl<ClientUpsert['post_logout_redirect_uri']>(null, [
+    grant_types: new FormControl<Required<ClientUpsert>['grant_types']>(['authorization_code', 'refresh_token']),
+    post_logout_redirect_uri: new FormControl<string | null>(null, [
       isValidWildcardRedirectControl,
       (c: AbstractControl<string | null>) => {
         const url = c.value
@@ -83,8 +83,8 @@ export class UpsertClientComponent implements OnInit {
     require_mfa: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     client_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
-    groups: new FormControl<ClientUpsert['groups']>([]),
-  })
+    groups: new FormControl<string[]>([]),
+  }) satisfies FormGroup<TypedControls<ClientUpsert>>
 
   public groups: string[] = []
   public unselectedGroups: string[] = []
@@ -149,10 +149,10 @@ export class UpsertClientComponent implements OnInit {
             redirect_uris: client.redirect_uris ?? [],
             token_endpoint_auth_method: client.token_endpoint_auth_method ?? 'client_secret_basic',
             response_types: client.response_types ?? ['code'],
-            grant_types: client.grant_types ?? ['authorization_code', 'refresh_token'],
+            grant_types: client.grant_types as ClientUpsert['grant_types'] ?? ['authorization_code', 'refresh_token'],
             post_logout_redirect_uri: client.post_logout_redirect_uris?.[0] ?? null,
-            skip_consent: client['skip_consent'] ?? true,
-            require_mfa: client['require_mfa'] ?? false,
+            skip_consent: client.skip_consent ?? true,
+            require_mfa: client.require_mfa ?? false,
             logo_uri: client.logo_uri ?? null,
             client_uri: client.client_uri ?? null,
             groups: client.groups,
@@ -206,10 +206,31 @@ export class UpsertClientComponent implements OnInit {
     try {
       this.spinnerService.show()
 
+      const values = optionalizeNullable(this.form.getRawValue())
+
+      if (!values.client_id) {
+        throw new Error('Client ID missing.')
+      }
+
+      const { client_id, redirect_uris, groups, skip_consent, require_mfa } = values
+
+      if (redirect_uris == null || groups == null || skip_consent == null || require_mfa == null) {
+        throw new Error('Required field missing.')
+      }
+
+      const submitValues = {
+        ...values,
+        client_id,
+        redirect_uris,
+        groups,
+        skip_consent,
+        require_mfa,
+      } satisfies ClientUpsert
+
       if (this.client_id) {
-        await this.adminService.updateClient({ ...this.form.getRawValue(), client_secret: this.form.value.client_secret || null })
+        await this.adminService.updateClient(submitValues)
       } else {
-        await this.adminService.addClient({ ...this.form.getRawValue(), client_secret: this.form.value.client_secret || null })
+        await this.adminService.addClient(submitValues)
       }
 
       this.snackbarService.message(`Client ${this.client_id ? 'updated' : 'created'}.`)

@@ -1,6 +1,14 @@
-import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
-import type { Group } from '@shared/db/Group'
+import type { SchemaInfer } from '@shared/utils'
+import zod from 'zod'
 
-export type GroupUpsert = Partial<Pick<Group, 'id'>> & Pick<Group, 'name' | 'mfaRequired'> & {
-  users: GroupUsers['users']
-}
+export const groupUpsertValidator = {
+  id: zod.uuidv4().optional(),
+  name: zod.string().regex(new RegExp('^[A-Za-z0-9_-]+$')),
+  mfaRequired: zod.union([zod.boolean(), zod.number()]),
+  users: zod.array(zod.object({
+    id: zod.uuidv4(),
+    username: zod.string(),
+  })),
+} as const
+
+export type GroupUpsert = SchemaInfer<typeof groupUpsertValidator>

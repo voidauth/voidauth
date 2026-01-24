@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import type { ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
-import type { Nullable } from '@shared/utils'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
@@ -44,11 +43,11 @@ export class AdminService {
     return firstValueFrom(this.http.get<ClientResponse>(`/api/admin/client/${encodeURIComponent(client_id)}`))
   }
 
-  async addClient(client: Nullable<ClientUpsert>) {
+  async addClient(client: ClientUpsert) {
     return firstValueFrom(this.http.post<null>('/api/admin/client', client))
   }
 
-  async updateClient(client: Nullable<ClientUpsert>) {
+  async updateClient(client: ClientUpsert) {
     return firstValueFrom(this.http.patch<null>('/api/admin/client', client))
   }
 
@@ -64,7 +63,7 @@ export class AdminService {
     return firstValueFrom(this.http.get<ProxyAuthResponse>(`/api/admin/proxyauth/${proxyauth_id}`))
   }
 
-  async upsertProxyAuth(proxyAuth: Nullable<ProxyAuthUpsert>) {
+  async upsertProxyAuth(proxyAuth: ProxyAuthUpsert) {
     return firstValueFrom(this.http.post<ProxyAuthResponse>('/api/admin/proxyauth', proxyAuth))
   }
 
@@ -80,7 +79,7 @@ export class AdminService {
     return firstValueFrom(this.http.get<GroupUsers>(`/api/admin/group/${id}`))
   }
 
-  async upsertGroup(group: Nullable<GroupUpsert>) {
+  async upsertGroup(group: GroupUpsert) {
     return firstValueFrom(this.http.post<{ id: string }>('/api/admin/group', group))
   }
 
@@ -96,7 +95,7 @@ export class AdminService {
     return firstValueFrom(this.http.get<UserDetails>(`/api/admin/user/${id}`))
   }
 
-  async updateUser(user: Nullable<UserUpdate>) {
+  async updateUser(user: UserUpdate) {
     return firstValueFrom(this.http.patch<null>('/api/admin/user', user))
   }
 
@@ -124,7 +123,7 @@ export class AdminService {
     return firstValueFrom(this.http.get<InvitationDetails>(`/api/admin/invitation/${id}`))
   }
 
-  async upsertInvitation(invitation: Nullable<InvitationUpsert>) {
+  async upsertInvitation(invitation: InvitationUpsert) {
     return firstValueFrom(this.http.post<InvitationDetails>('/api/admin/invitation', invitation))
   }
 

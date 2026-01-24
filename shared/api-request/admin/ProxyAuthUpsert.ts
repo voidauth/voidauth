@@ -1,6 +1,12 @@
-import type { Group } from '@shared/db/Group'
-import type { ProxyAuth } from '@shared/db/ProxyAuth'
+import { formatWildcardDomain, isValidWildcardDomain, type SchemaInfer } from '@shared/utils'
+import zod from 'zod'
 
-export type ProxyAuthUpsert = Partial<Pick<ProxyAuth, 'id'>> & Pick<ProxyAuth, 'domain' | 'mfaRequired' | 'maxSessionLength'> & {
-  groups: Group['name'][]
-}
+export const proxyAuthUpsertValidator = {
+  id: zod.uuidv4().optional(),
+  domain: zod.string().refine(val => isValidWildcardDomain(val)).transform(val => formatWildcardDomain(val)),
+  mfaRequired: zod.union([zod.boolean(), zod.number()]),
+  maxSessionLength: zod.int().min(5).max(525600).nullable(),
+  groups: zod.array(zod.string()),
+} as const
+
+export type ProxyAuthUpsert = SchemaInfer<typeof proxyAuthUpsertValidator>

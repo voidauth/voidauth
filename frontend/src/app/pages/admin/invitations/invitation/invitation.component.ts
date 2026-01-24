@@ -16,6 +16,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
+import { isValidEmail } from '../../../../validators/validators'
 
 @Component({
   selector: 'app-invitation',
@@ -51,7 +52,7 @@ export class InvitationComponent {
     email: new FormControl<string | null>({
       value: null,
       disabled: false,
-    }, [Validators.email]),
+    }, [isValidEmail]),
     name: new FormControl<string | null>({
       value: null,
       disabled: false,
@@ -184,9 +185,18 @@ export class InvitationComponent {
     try {
       this.spinnerService.show()
 
+      const values = this.form.getRawValue()
+      const { groups, emailVerified } = values
+
+      if (groups == null || emailVerified == null) {
+        throw new Error('Missing required information.')
+      }
+
       const invitation = await this.adminService.upsertInvitation({
-        ...this.form.getRawValue(),
-        id: this.id,
+        ...values,
+        groups,
+        emailVerified,
+        id: this.id ?? undefined,
       })
 
       this.snackbarService.message(`Invitation ${this.id ? 'updated' : 'created'}.`)

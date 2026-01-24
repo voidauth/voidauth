@@ -126,8 +126,14 @@ export class DomainComponent {
 
   async submit() {
     try {
+      const values = this.form.getRawValue()
+      const { domain, mfaRequired, groups } = values
+      if (domain === null || mfaRequired === null || groups === null) {
+        throw new Error('Missing required information.')
+      }
+
       this.spinnerService.show()
-      const response = await this.adminService.upsertProxyAuth({ ...this.form.getRawValue(), id: this.id })
+      const response = await this.adminService.upsertProxyAuth({ ...values, domain, mfaRequired, groups, id: this.id ?? undefined })
       this.snackbarService.message(`Domain ${this.id ? 'updated' : 'created'}.`)
 
       this.id = response.id
