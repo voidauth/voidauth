@@ -11,6 +11,7 @@ import type { Invitation } from '@shared/db/Invitation'
 import { SpinnerService } from '../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
+import { humanDuration } from '@shared/utils'
 
 @Component({
   selector: 'app-invitations',
@@ -90,50 +91,4 @@ export class InvitationsComponent {
       }
     })
   }
-}
-
-export function humanDuration(ms: number): string {
-  const MINUTE = 60
-  const HOUR = MINUTE * 60
-  const DAY = HOUR * 24
-  const WEEK = DAY * 7
-  const YEAR = DAY * 365.25
-  const MONTH = YEAR / 12
-
-  const seconds = Math.round(ms / 1000)
-  const years = Math.round(seconds / YEAR)
-  const months = Math.round(seconds / MONTH)
-  const weeks = Math.round(seconds / WEEK)
-  const days = Math.round(seconds / DAY)
-  const hours = Math.round(seconds / HOUR)
-  const minutes = Math.round(seconds / MINUTE)
-
-  if (months > 11) {
-    return String(years) + ' year' + ((years > 1) ? 's' : '')
-  }
-
-  if (weeks > 4) {
-    return String(months) + ' month' + ((months > 1) ? 's' : '')
-  }
-
-  if (days > 6) {
-    return String(weeks) + ' week' + ((weeks > 1) ? 's' : '')
-  }
-
-  if (hours > 23) {
-    return String(days) + ' day' + ((days > 1) ? 's' : '')
-  }
-
-  if (minutes > 59) {
-    return String(hours) + ' hour' + ((hours > 1) ? 's' : '')
-  }
-
-  if (seconds > 59) {
-    return String(minutes) + ' minute' + ((minutes > 1) ? 's' : '')
-  }
-
-  if (ms > 999) {
-    return String(seconds) + ' second' + ((seconds > 1) ? 's' : '')
-  }
-  return 'now'
 }

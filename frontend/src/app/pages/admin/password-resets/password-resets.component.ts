@@ -7,7 +7,6 @@ import { AdminService } from '../../../services/admin.service'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
 import type { TableColumn } from '../clients/clients.component'
-import { humanDuration } from '../invitations/invitations.component'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
@@ -16,6 +15,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
+import { humanDuration } from '@shared/utils'
 
 @Component({
   selector: 'app-password-sets',
