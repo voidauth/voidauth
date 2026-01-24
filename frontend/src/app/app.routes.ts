@@ -54,5 +54,5 @@ export const routes: Routes = [
 
   { path: 'admin/emails', loadComponent: () => import('./pages/admin/emails/emails.component').then(m => m.EmailsComponent), canActivate: [isAdminGuard] },
 
-  { path: '**', redirectTo: '', pathMatch: 'full' },
+  { path: '**', pathMatch: 'full', loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent) },
 ]
