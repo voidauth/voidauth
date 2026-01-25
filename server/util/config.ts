@@ -11,7 +11,7 @@ import Docker from 'dockerode'
 class Config {
   APP_TITLE = 'VoidAuth'
   APP_URL = ''
-  APP_PORT = 3000
+  APP_PORT: number | string = 3000
 
   SESSION_DOMAIN?: string
 
@@ -68,11 +68,15 @@ const docker = new Docker()
 function assignConfigValue(key: keyof Config, value: string | undefined) {
   switch (key) {
     // positive ints
-    case 'APP_PORT':
     case 'SMTP_PORT':
     case 'PASSWORD_STRENGTH':
     case 'API_RATELIMIT':
       appConfig[key] = posInt(value) ?? appConfig[key]
+      break
+
+    // APP_PORT must be a positive integer or a non-empty string (for unix socket)
+    case 'APP_PORT':
+      appConfig[key] = posInt(value) ?? (stringOnly(value) || null) ?? appConfig[key]
       break
 
     case 'ADMIN_EMAILS':

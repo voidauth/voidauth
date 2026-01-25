@@ -14,6 +14,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
+import { isValidEmail } from '../../validators/validators'
 
 @Component({
   selector: 'app-home',
@@ -43,7 +44,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     email: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.required, Validators.email]),
+    }, [Validators.required, isValidEmail]),
   })
 
   public passwordForm = new FormGroup({

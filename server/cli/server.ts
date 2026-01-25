@@ -167,7 +167,7 @@ export async function serve() {
   })
 
   app.listen(appConfig.APP_PORT, () => {
-    console.log(`Listening on port: ${String(appConfig.APP_PORT)}`)
+    console.log(`Listening on ${typeof appConfig.APP_PORT === 'number' ? 'port' : 'socket'}: ${String(appConfig.APP_PORT)}`)
   })
 
   function modifyIndex() {

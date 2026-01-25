@@ -1,13 +1,11 @@
 import { Router } from 'express'
-import { validate, validatorData } from '../util/validate'
-import type { UpdateProfile } from '@shared/api-request/UpdateProfile'
+import { updateProfileValidator } from '@shared/api-request/UpdateProfile'
 
 import { db } from '../db/db'
-import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
+import { updateEmailValidator } from '@shared/api-request/UpdateEmail'
 import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
-import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
-import { checkPrivileged, emailValidation, nameValidation, newPasswordValidation, stringValidation, unlessNull } from '../util/validators'
+import { updatePasswordValidator } from '@shared/api-request/UpdatePassword'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
 import { deleteUserPasskeys } from '../db/passkey'
@@ -15,6 +13,9 @@ import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/constants'
 import type { TOTP } from '@shared/db/TOTP'
 import { argon2 } from '../util/argon2id'
+import { zodValidate } from '../util/validate'
+import { passwordStrength } from '../util/zxcvbn'
+import { checkPrivileged } from '../util/authMiddleware'
 
 export const userRouter = Router()
 
@@ -35,37 +36,30 @@ userRouter.use(checkPrivileged)
 
 // Update user profile information
 userRouter.patch('/profile',
-  ...validate<UpdateProfile>({
-    name: nameValidation,
-  }),
-  async (req, res) => {
+  zodValidate(updateProfileValidator, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
     }
 
-    const profile = validatorData<UpdateProfile>(req)
+    const profile = req.validatedData
 
     await db().table<User>(TABLES.USER).update(profile).where({ id: user.id })
 
     res.send()
-  },
-)
+  }))
 
 // Update user email address
 userRouter.patch('/email',
-  ...validate<UpdateEmail>({
-    email: emailValidation,
-  }),
-  async (req, res) => {
+  zodValidate(updateEmailValidator, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
     }
 
-    const { email } = validatorData<UpdateEmail>(req)
+    const { email } = req.validatedData
 
     if (appConfig.EMAIL_VERIFICATION && email) {
       await createEmailVerification(user, email)
@@ -74,27 +68,22 @@ userRouter.patch('/email',
     }
 
     res.send()
-  },
-)
+  }))
 
 // Change user password
 userRouter.patch('/password',
-  ...validate<UpdatePassword>({
-    oldPassword: {
-      optional: true,
-      ...unlessNull,
-      ...stringValidation,
-    },
-    newPassword: newPasswordValidation,
-  }),
-  async (req, res) => {
+  zodValidate(updatePasswordValidator, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
     }
 
-    const { oldPassword, newPassword } = validatorData<UpdatePassword>(req)
+    const { oldPassword, newPassword } = req.validatedData
+
+    if (passwordStrength(newPassword).score < appConfig.PASSWORD_STRENGTH) {
+      res.status(422).send({ message: 'Password is not strong enough.' })
+    }
 
     if (user.hasPassword && (!oldPassword || !await checkPasswordHash(user.id, oldPassword))) {
       res.sendStatus(403)
@@ -103,8 +92,7 @@ userRouter.patch('/password',
 
     await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
     res.send()
-  },
-)
+  }))
 
 // Delete all user passkeys
 userRouter.delete('/passkeys', async (req, res) => {

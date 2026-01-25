@@ -15,3 +15,9 @@ Make sure that an OIDC App has been created, and that the `Client ID` parameter 
 ### Invalid Redirect Uri
 
 The 'Client' application should specify the correct `Redirect URL` parameter for entry into VoidAuth. This is commonly located in the OIDC documentation of the application or on it's OIDC Setup page if it has one. You may also be able to find an example for the application on the [OIDC App Guides](OIDC-Guides.md) page.
+
+### The Page Cannot Be Found
+
+#### When Attempting to Authenticate an OIDC App
+
+If you are redirected to the **Cannot Be Found** page while attempting to authenticate to an OIDC App, a possible cause could be that one of the VoidAuth Endpoint URLs Required by the OIDC App during its setup were input incorrectly. You can find the correct Endpoint URLs on the VoidAuth Admin OIDC Apps pages at the top of the page in the dropdown.

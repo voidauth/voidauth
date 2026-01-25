@@ -8,7 +8,6 @@ import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
 import { ConfigService } from '../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { UserService } from '../../../services/user.service'
 import { PasskeyService } from '../../../services/passkey.service'
 
 @Component({
@@ -27,7 +26,6 @@ export class VerifyComponent implements OnInit {
 
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
-  private userService = inject(UserService)
   private passkeyService = inject(PasskeyService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)

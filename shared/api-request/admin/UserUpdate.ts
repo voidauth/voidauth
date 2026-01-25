@@ -1,12 +1,20 @@
-import type { UserDetails } from '@shared/api-response/UserDetails'
+import { USERNAME_REGEX } from '@shared/constants'
+import type { SchemaInfer } from '@shared/utils'
+import { coerceEmailOrNull, nameValidation } from '@shared/validators'
+import zod from 'zod'
 
-type UserUpdateFields = 'id'
-  | 'username'
-  | 'name'
-  | 'email'
-  | 'emailVerified'
-  | 'approved'
-  | 'groups'
-  | 'mfaRequired'
+export const userUpdateValidator = {
+  id: zod.uuidv4(),
+  username: zod.string().regex(USERNAME_REGEX),
+  name: nameValidation,
+  email: coerceEmailOrNull.optional(),
+  emailVerified: zod.union([zod.boolean(), zod.number()]),
+  approved: zod.union([zod.boolean(), zod.number()]),
+  mfaRequired: zod.union([zod.boolean(), zod.number()]),
+  groups: zod.array(zod.object({
+    name: zod.string(),
+    id: zod.uuidv4(),
+  })),
+} as const
 
-export type UserUpdate = Pick<UserDetails, UserUpdateFields>
+export type UserUpdate = SchemaInfer<typeof userUpdateValidator>

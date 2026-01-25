@@ -3,6 +3,8 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { booleanString } from './util/util.ts'
 import { logger } from './util/logger.ts'
+import { humanDuration } from '@shared/utils.ts'
+import { TTLs } from '@shared/constants.ts'
 
 // Configure some env variables for dependencies in advance of importing them
 // For this to work, no static import statement in this file can import the following:
@@ -76,7 +78,7 @@ export const argv = yargs(hideBin(process.argv))
         }
         const gpr = await import('./cli/generatePasswordReset.ts')
         const result = await gpr.generatePasswordReset(argv.username)
-        logger.info(`\nPassword Reset link created: \n\n${result}\n`)
+        logger.info(`\nPassword Reset link created (valid for ${humanDuration(TTLs.PASSWORD_RESET * 1000)}): \n\n${result}\n`)
         exit(0)
       } catch (e) {
         logger.error(e)

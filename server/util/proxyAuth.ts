@@ -70,6 +70,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     amr = ['pwd']
   } else {
     // User not logged in, redirect to login
+    const logInfo = {
+      reason: 'session_not_found',
+      url: url.href,
+    }
+    logger.debug(`session not found, redirect to login: ${JSON.stringify(logInfo)}`)
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return
@@ -78,6 +83,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // Check that user is approved and verified and should be able to continue
   if (!userCanLogin(user, amr)) {
     // If not, redirect to login flow, which will send to correct redirect
+    const logInfo = {
+      reason: 'login_not_finished',
+      url: url.href,
+    }
+    logger.debug(`user has not finished login: ${JSON.stringify(logInfo)}`)
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return
@@ -86,6 +96,12 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // Check that proxyAuth domain does not require MFA or user is logged in with MFA already
   if (!!match?.mfaRequired && loginFactors(amr) < 2) {
     // If not, redirect to login flow, which will send to correct redirect
+    const logInfo = {
+      reason: 'domain_mfa_required',
+      url: url.href,
+      domain: match.domain,
+    }
+    logger.debug(`mfa required for domain: ${JSON.stringify(logInfo)}`)
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return

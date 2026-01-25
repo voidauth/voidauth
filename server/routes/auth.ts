@@ -1,23 +1,22 @@
 import { Router } from 'express'
-import { validate, validatorData } from '../util/validate'
 import { getUserById } from '../db/user'
 import appConfig from '../util/config'
-import { stringValidation, uuidValidation } from '../util/validators'
 import { createEmailVerification } from './interaction'
 import { getInvitation } from '../db/invitations'
+import { zodValidate } from '../util/validate'
+import zod from 'zod'
 
 export const authRouter = Router()
 
 authRouter.post('/send_verify_email',
-  ...validate<{ id: string }>({
-    id: uuidValidation,
-  }),
-  async (req, res) => {
+  zodValidate({
+    id: zod.uuidv4(),
+  }, async (req, res) => {
     if (!appConfig.EMAIL_VERIFICATION) {
       res.sendStatus(400)
       return
     }
-    const { id } = validatorData<{ id: string }>(req)
+    const { id } = req.validatedData
 
     const user = await getUserById(id)
 
@@ -34,16 +33,14 @@ authRouter.post('/send_verify_email',
 
     res.send()
     return
-  },
-)
+  }))
 
 authRouter.get('/invitation/:id/:challenge',
-  ...validate<{ id: string, challenge: string }>({
-    id: stringValidation,
-    challenge: stringValidation,
-  }),
-  async (req, res) => {
-    const { id, challenge } = validatorData<{ id: string, challenge: string }>(req)
+  zodValidate({
+    id: zod.string(),
+    challenge: zod.string(),
+  }, async (req, res) => {
+    const { id, challenge } = req.validatedData
     const invite = await getInvitation(id)
     if (!invite || invite.challenge != challenge) {
       res.sendStatus(404)
@@ -51,5 +48,4 @@ authRouter.get('/invitation/:id/:challenge',
     }
 
     res.send(invite)
-  },
-)
+  }))

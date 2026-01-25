@@ -1,5 +1,6 @@
 import type { AbstractControl } from '@angular/forms'
 import { wildcardRedirect } from '@shared/utils'
+import zod from 'zod'
 
 export function isValidWebURLControl(control: AbstractControl) {
   try {
@@ -58,5 +59,21 @@ export function isValidURL(value: string) {
     return true
   } catch (_e) {
     return false
+  }
+}
+
+export function isValidEmail(control: AbstractControl) {
+  try {
+    if (typeof control.value === 'string' && control.value) {
+      const value = control.value
+      if (!zod.regexes.email.test(value)) {
+        throw new Error('Invalid Email.')
+      }
+    }
+    return null
+  } catch (_e) {
+    return {
+      email: 'Must be a valid email.',
+    }
   }
 }

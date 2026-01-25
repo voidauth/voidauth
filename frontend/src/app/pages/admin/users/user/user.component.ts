@@ -16,6 +16,7 @@ import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { itemIn } from '@shared/utils'
+import { isValidEmail } from '../../../../validators/validators'
 
 @Component({
   selector: 'app-user',
@@ -49,7 +50,7 @@ export class UserComponent {
     email: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.email]),
+    }, [isValidEmail]),
     name: new FormControl<string | null>({
       value: null,
       disabled: false,
@@ -144,9 +145,16 @@ export class UserComponent {
 
   async submit() {
     try {
+      const values = this.form.getRawValue()
+      const { username, emailVerified, approved, mfaRequired, groups } = values
+
+      if (!this.id || !username || emailVerified == null || approved == null || mfaRequired == null || groups == null) {
+        throw new Error('Missing required information.')
+      }
+
       this.spinnerService.show()
 
-      await this.adminService.updateUser({ ...this.form.getRawValue(), id: this.id })
+      await this.adminService.updateUser({ ...values, username, emailVerified, approved, mfaRequired, groups, id: this.id })
       this.snackbarService.message('User updated.')
     } catch (_e) {
       this.snackbarService.error('Could not update user.')
