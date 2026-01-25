@@ -5,6 +5,7 @@ import { logger } from './logger'
 import * as psl from 'psl'
 import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
 import type { ClientResponse } from '@shared/api-response/ClientResponse.js'
+import Docker from 'dockerode'
 
 // basic config for app
 class Config {
@@ -60,7 +61,9 @@ class Config {
 
   DECLARED_CLIENTS = new Map<string, ClientResponse>()
 }
+
 const appConfig = new Config()
+const docker = new Docker()
 
 function assignConfigValue(key: keyof Config, value: string | undefined) {
   switch (key) {
@@ -125,63 +128,99 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
   }
 }
 
-function loadDeclaredClients() {
+function registerDockerListener() {
+  docker.getEvents(
+    { filters: { type: ['container'], event: ['start', 'stop'] } },
+    function (_err, _stream) {
+      refreshDeclaredClients()
+    })
+}
+
+function refreshDeclaredClients() {
+  appConfig.DECLARED_CLIENTS.clear()
+
+  // Inspect docker container labels to find OIDC client configs
+  docker.listContainers(function (_err, containers) {
+    containers?.forEach(async function (containerInfo) {
+      await docker.getContainer(containerInfo.Id).inspect().then((info) => {
+        let enabled = false
+        for (const label in info.Config.Labels) {
+          if (label == 'voidauth.enable' && info.Config.Labels[label] == 'true') {
+            enabled = true
+            break
+          }
+        }
+        if (enabled) {
+          Object.entries(info.Config.Labels).forEach((label) => {
+            if (label[0].startsWith('voidauth.oidc.'))
+              registerClientVariable(info.Name, label[0].replace('voidauth.oidc.', ''), label[1])
+          })
+        }
+      })
+    })
+  })
+
+  // Inspect environment variables to find OIDC client configs
   Object.keys(process.env).forEach((key) => {
     const parts = key.split('_', 2)
-    if (parts[0] != 'OIDC') return
+    if (parts[0] != 'OIDC' || parts[2] == undefined) return
 
     const client_id = parts[1]?.toLowerCase()
     if (client_id === undefined) return
 
-    let client = appConfig.DECLARED_CLIENTS.get(client_id)
-    if (!client) {
-      client = {
-        client_id: client_id,
-        client_name: client_id.charAt(0).toUpperCase() + client_id.slice(1),
-        token_endpoint_auth_method: 'client_secret_basic',
-        response_types: ['code'],
-        grant_types: ['authorization_code', 'refresh_token'],
-        groups: [],
-        declared: true,
-      }
-      appConfig.DECLARED_CLIENTS.set(client_id, client)
-    }
-
     const value = process.env[key]
     if (value === undefined) return
 
-    switch (parts[2]) {
-      case 'CLIENT_DISPLAY_NAME':
-        client.client_name = value
-        break
-      case 'CLIENT_HOMEPAGE_URL':
-        client.client_uri = value
-        break
-      case 'CLIENT_LOGO_URL':
-        client.logo_uri = value
-        break
-      case 'CLIENT_SECRET':
-        client.client_secret = value
-        break
-      case 'CLIENT_AUTH_METHOD':
-        client.token_endpoint_auth_method = (value as ClientAuthMethod)
-        break
-      case 'CLIENT_GROUPS':
-        client.groups = value.replace(/\s/g, '').split(',')
-        break
-      case 'CLIENT_REDIRECT_URLS':
-        client.redirect_uris = value.replace(/\s/g, '').split(',')
-        break
-      case 'CLIENT_RESPONSE_TYPES':
-        client.response_types = value.replace(/\s/g, '').split(',') as ResponseType[]
-        break
-      case 'CLIENT_GRANT_TYPES':
-        client.grant_types = value.replace(/\s/g, '').split(',')
-        break
-      case 'CLIENT_POST_LOGOUT_URLS':
-        client.post_logout_redirect_uris = value.replace(/\s/g, '').split(',')
-    }
+    registerClientVariable(client_id, parts[2], value)
   })
+}
+
+function registerClientVariable(client_id: string, variable: string, value: string) {
+  let client = appConfig.DECLARED_CLIENTS.get(client_id)
+  if (!client) {
+    client = {
+      client_id: client_id,
+      client_name: client_id.charAt(0).toUpperCase() + client_id.slice(1),
+      token_endpoint_auth_method: 'client_secret_basic',
+      response_types: ['code'],
+      grant_types: ['authorization_code', 'refresh_token'],
+      groups: [],
+      declared: true,
+    }
+    appConfig.DECLARED_CLIENTS.set(client_id, client)
+  }
+
+  switch (variable.toUpperCase()) {
+    case 'CLIENT_DISPLAY_NAME':
+      client.client_name = value
+      break
+    case 'CLIENT_HOMEPAGE_URL':
+      client.client_uri = value
+      break
+    case 'CLIENT_LOGO_URL':
+      client.logo_uri = value
+      break
+    case 'CLIENT_SECRET':
+      client.client_secret = value
+      break
+    case 'CLIENT_AUTH_METHOD':
+      client.token_endpoint_auth_method = (value as ClientAuthMethod)
+      break
+    case 'CLIENT_GROUPS':
+      client.groups = value.replace(/\s/g, '').split(',')
+      break
+    case 'CLIENT_REDIRECT_URLS':
+      client.redirect_uris = value.replace(/\s/g, '').split(',')
+      break
+    case 'CLIENT_RESPONSE_TYPES':
+      client.response_types = value.replace(/\s/g, '').split(',') as ResponseType[]
+      break
+    case 'CLIENT_GRANT_TYPES':
+      client.grant_types = value.replace(/\s/g, '').split(',')
+      break
+    case 'CLIENT_POST_LOGOUT_URLS':
+      client.post_logout_redirect_uris = value.replace(/\s/g, '').split(',')
+  }
 }
 
 // functions to help format config
@@ -258,7 +297,9 @@ const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
 configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
 })
-loadDeclaredClients()
+
+refreshDeclaredClients()
+registerDockerListener()
 
 /**
  * Validations and Coercions
