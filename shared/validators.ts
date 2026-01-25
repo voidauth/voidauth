@@ -22,7 +22,7 @@ export const passkeyRegistrationValidator = {
     appid: zod.boolean().optional(),
     credProps: zod.object({
       rk: zod.boolean().optional(),
-    }),
+    }).optional(),
     hmacCreateSecret: zod.boolean().optional(),
   }),
   type: zod.literal('public-key'),
