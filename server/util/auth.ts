@@ -3,6 +3,10 @@ import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { userRequiresMfa } from '../db/user'
 import appConfig from './config'
 
+/**
+ * Determines if a user can login.
+ * Checks that session has required factors, user is approved, and email is verified (if required)
+ */
 export function userCanLogin(user: UserDetails | undefined, amr: string[]): user is UserDetails {
   if (!user) {
     return false
