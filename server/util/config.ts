@@ -184,7 +184,7 @@ function registerClientVariable(client_id: string, variable: string, value: stri
   if (!client) {
     client = {
       client_id: client_id,
-      client_name: client_id.charAt(0).toUpperCase() + client_id.slice(1),
+      client_name: client_id,
       token_endpoint_auth_method: 'client_secret_basic',
       response_types: ['code'],
       grant_types: ['authorization_code', 'refresh_token'],
