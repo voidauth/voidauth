@@ -38,7 +38,7 @@ export async function getClients(): Promise<ClientResponse[]> {
             c.client_secret = client_secret
           }
         }
-        const cr: ClientResponse = { ...c, groups: [], declared: false }
+        const cr: ClientResponse = { ...c, groups: [] }
         if (r.groupName) {
           cr.groups.push(r.groupName)
         }
