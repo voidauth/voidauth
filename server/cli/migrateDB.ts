@@ -26,6 +26,8 @@ export async function migrate() {
         DB_USER: appConfig.MIGRATE_TO_DB_USER,
         DB_NAME: appConfig.MIGRATE_TO_DB_NAME,
         DB_PASSWORD: appConfig.MIGRATE_TO_DB_PASSWORD,
+        DB_SSL: appConfig.MIGRATE_TO_DB_SSL,
+        DB_SSL_VERIFICATION: appConfig.MIGRATE_TO_DB_SSL_VERIFICATION,
         isMigration: true,
       })
 
