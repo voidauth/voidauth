@@ -17,6 +17,7 @@ import { PasskeyService, type PasskeySupport } from '../../services/passkey.serv
 import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
 import { UserService } from '../../services/user.service'
 import { isValidEmail } from '../../validators/validators'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-registration',
@@ -29,6 +30,7 @@ import { isValidEmail } from '../../validators/validators'
     RouterLink,
     NewPasswordInputComponent,
     TextDividerComponent,
+    TranslatePipe,
   ],
 })
 export class RegistrationComponent implements OnInit {

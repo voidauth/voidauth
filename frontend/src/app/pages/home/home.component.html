@@ -77,7 +77,9 @@
 
         <h2 style="margin-top: -16px">Passkeys</h2>
 
-        <p style="text-align: center">You have {{ user?.hasPasskeys ? "at least one registered passkey" : "no registered passkeys" }}.</p>
+        <p style="text-align: center">
+          {{ (user?.hasPasskeys ? "home.security.passkey.hasAny" : "home.security.passkey.hasNone") | translate }}
+        </p>
 
         <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
           Register Passkey

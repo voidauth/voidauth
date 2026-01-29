@@ -7,6 +7,7 @@ import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { SpinnerService } from './services/spinner.service'
 import { getCurrentHost } from './services/config.service'
 import { isAdmin } from '@shared/user'
+import { TranslationService } from './services/translation.service'
 
 @Component({
   selector: 'app-root',
@@ -26,10 +27,12 @@ export class AppComponent implements OnInit {
 
   private userService = inject(UserService)
   private spinnerService = inject(SpinnerService)
+  private translationService = inject(TranslationService)
 
   async ngOnInit() {
     try {
       this.spinnerService.show()
+      this.translationService.init()
       this.user = await this.userService.getMyUser()
       this.isAdmin = isAdmin(this.user)
     } catch (_e) {
