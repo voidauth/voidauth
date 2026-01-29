@@ -1,0 +1,58 @@
+{
+  "home": {
+    "security": {
+      "passkey": {
+        "hasAny": "You have at least one registered passkey.",
+        "hasNone": "You have no registered passkeys."
+      }
+    }
+  },
+  "login": {
+    "password": {
+      "label": "Password"
+    },
+    "username": {
+      "label": "Username or Email"
+    },
+    "forgot-password": "Forgot Password",
+    "remember-me": "Remember Me",
+    "actions": {
+      "login": "Login",
+      "sign-up": "Sign Up"
+    }
+  },
+  "contact-us": {
+    "action": {
+      "label": "Contact"
+    }
+  },
+  "passkey": {
+    "display-name": {
+      "default": "Passkey",
+      "face-id": "Face ID",
+      "touch-id": "Touch ID",
+      "windows-hello": "Windows Hello"
+    }
+  },
+  "passkey-dialog": {
+    "title": "Enable {{platformName}}?",
+    "action": {
+      "passkey": "Enable {{platformName}}"
+    }
+  },
+  "mfa": {
+    "action": {
+      "use-passkey-prefix": "Use {{platformName}}"
+    }
+  },
+  "registration": {
+    "action": {
+      "passkey-sign-up-prefix": "Sign Up With {{platformName}}"
+    }
+  },
+  "reset-password": {
+    "action": {
+      "enable-passkey-prefix": "Enable {{platformName}}"
+    }
+  }
+}

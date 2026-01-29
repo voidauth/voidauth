@@ -14,7 +14,10 @@
         @if (user?.hasPasskeys) {
           <app-text-divider text="or" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyLogin()">
-            Use {{ passkeySupport?.platformName ?? "Passkey" }}
+            {{
+              "mfa.action.use-passkey-prefix"
+                | translate: { platformName: passkeySupport?.platformName ?? "passkey.display-name.default" | translate }
+            }}
             <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
           </button>
         }

@@ -33,7 +33,10 @@
       @if (passkeySupport?.enabled) {
         <app-text-divider text="or"></app-text-divider>
         <button mat-flat-button [disabled]="form.invalid" type="button" (click)="passkey()">
-          Sign Up With {{ passkeySupport?.platformName ? passkeySupport?.platformName : "Passkey" }}
+          {{
+            "registration.action.passkey-sign-up-prefix"
+              | translate: { platformName: passkeySupport?.platformName ?? "passkey.display-name.default" | translate }
+          }}
           <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
         </button>
       }

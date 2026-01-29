@@ -14,6 +14,7 @@ import { SnackbarService } from './snackbar.service'
 import { SpinnerService } from './spinner.service'
 import { MaterialModule } from '../material-module'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import { _, TranslatePipe } from '@ngx-translate/core'
 
 @Injectable({
   providedIn: 'root',
@@ -57,19 +58,19 @@ export class PasskeyService {
       }
     }
 
-    let name: string | undefined
+    let name: PasskeySupport['platformName']
     let icon: string | undefined
     if (await platformAuthenticatorIsAvailable()) {
       const { os } = UAParser(navigator.userAgent)
       // if (os.name == 'Windows') {
-      //   name = 'Windows Hello'
+      //   name = 'passkey.display-name.windows-hello'
       //   icon = 'sentiment_satisfied'
       // } else
       if (os.name == 'iOS') {
-        name = 'Face ID'
+        name = _('passkey.display-name.face-id')
         icon = 'face'
       } else if (os.name == 'macOS') {
-        name = 'Touch ID'
+        name = _('passkey.display-name.touch-id')
         icon = 'fingerprint'
       }
     }
@@ -159,7 +160,7 @@ export class PasskeyService {
 
 export type PasskeySupport = {
   enabled: boolean
-  platformName?: string
+  platformName?: 'passkey.display-name.face-id' | 'passkey.display-name.touch-id'
   platformIcon?: string
 }
 
@@ -167,16 +168,17 @@ export type PasskeySupport = {
   selector: 'app-passkey-dialog',
   imports: [
     MaterialModule,
+    TranslatePipe,
   ],
   template: `
-    <h1 mat-dialog-title>{{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName + "?" : "Register Passkey?" }}</h1>
+    <h1 mat-dialog-title>{{ 'passkey-dialog.title' | translate:{ platformName: passkeySupport?.platformName ?? "passkey.display-name.default" | translate } }}</h1>
     <mat-dialog-content style="height: 200px; display: flex; justify-content: center; align-items: center;">
       <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px;" fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button matButton mat-dialog-close>Skip</button>
       <button mat-flat-button type="button" [mat-dialog-close]="true" cdkFocusInitial>
-        {{ passkeySupport?.platformName ? 'Enable' : "Register" }}
+        {{ 'passkey-dialog.action.passkey' | translate:{ platformName: passkeySupport?.platformName ?? "passkey.display-name.default" | translate } }}
         <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
       </button>
     </mat-dialog-actions>

@@ -15,6 +15,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
 import { isValidEmail } from '../../validators/validators'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-home',
@@ -23,6 +24,7 @@ import { isValidEmail } from '../../validators/validators'
     MaterialModule,
     ValidationErrorPipe,
     PasswordSetComponent,
+    TranslatePipe,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
