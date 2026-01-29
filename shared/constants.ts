@@ -1,4 +1,4 @@
-import type { valueof } from './utils'
+import type { ValueOf } from './utils'
 
 export const ADMIN_GROUP = 'auth_admins' as const
 export const ADMIN_USER = 'auth_admin' as const
@@ -72,7 +72,7 @@ export const TABLES = {
   TOTP: 'totp',
 } as const
 
-export const TABLES_ORDER: valueof<typeof TABLES>[] = [
+export const TABLES_ORDER: ValueOf<typeof TABLES>[] = [
   TABLES.KEY,
   TABLES.FLAG,
   TABLES.USER,
