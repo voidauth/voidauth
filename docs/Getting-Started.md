@@ -129,6 +129,8 @@ When using the `sqlite` database adapter type, no additional database connection
 | DB_PORT | `5432` | Port of the database. Not used if using SQLite database. | | |
 | DB_USER | `postgres` | Username used to sign into the database by the app. Not used if using SQLite database. | | |
 | DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if using SQLite database. | | |
+| DB_SSL | `false` | Enables SSL connection to the database. | | |
+| DB_SSL_VERIFICATION | `true` | If DB_SSL is enabled, whether to verify the SSL certificate. | | |
 
 #### Database Migration Settings
 Use the following environment variables to configure a database migration. These variables *exactly* mirror the `DB_*` environment variables and describe the connection to be made to the new database. See details on how to migrate an existing database to a new one on the [Database Migration](DB-Migration.md) page.
@@ -141,6 +143,8 @@ Use the following environment variables to configure a database migration. These
 | MIGRATE_TO_DB_PORT | `5432` | Port of the database. Not used if migrating to SQLite database. | | |
 | MIGRATE_TO_DB_USER | `postgres` | Username used to sign into the database by the app. Not used if migrating to SQLite database. | | |
 | MIGRATE_TO_DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if migrating to SQLite database. | | |
+| MIGRATE_TO_DB_SSL | `false` | Enables SSL connection to the database. | | |
+| MIGRATE_TO_DB_SSL_VERIFICATION | `true` | If MIGRATE_TO_DB_SSL is enabled, whether to verify the SSL certificate. | | |
 
 #### SMTP Settings
 All of these settings are ✅ recommended to be set to the correct values for your email provider.

@@ -12,6 +12,7 @@ import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { hasTOTP } from './totp'
 import { getUserPasskeys } from './passkey'
 import { argon2 } from '../util/argon2id'
+import zod from 'zod'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -124,7 +125,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
 export async function createInitialAdmin() {
   // Check if admin user and group have ever been created.
   const adminCreated = await db().table<Flag>(TABLES.FLAG).select().where({ name: 'ADMIN_CREATED' }).first()
-  if (adminCreated?.value?.toLowerCase() !== 'true') {
+  if (!zod.stringbool().safeParse(adminCreated?.value).data) {
     const password = generate({
       length: 32,
       numbers: true,
