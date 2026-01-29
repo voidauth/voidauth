@@ -2,7 +2,7 @@ import zod from 'zod'
 
 export const emptyString = zod.string().max(0)
 
-export const coerceEmailOrNull = zod.union([emptyString, zod.string().trim().max(0), zod.email()]).transform(val => val || null).nullable()
+export const coerceEmailOrNull = zod.union([emptyString, zod.email()]).transform(val => val || null).nullable()
 
 export const nameValidation = zod.string().min(3).max(64).nullish()
 

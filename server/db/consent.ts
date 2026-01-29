@@ -23,5 +23,5 @@ export async function addConsent(redirectUri: string, userId: string, scope: str
 }
 
 export function getConsentScopes(consent: Consent) {
-  return consent.scope.split(',').map(s => s.trim())
+  return consent.scope.split(/\s+/)
 }
