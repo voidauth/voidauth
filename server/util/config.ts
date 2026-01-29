@@ -27,6 +27,8 @@ class Config {
   DB_PORT?: number
   DB_USER?: string
   DB_NAME?: string
+  DB_SSL: boolean = false
+  DB_SSL_VERIFICATION: boolean = true
 
   // Database migration config
   MIGRATE_TO_DB_ADAPTER = 'postgres'
@@ -35,6 +37,8 @@ class Config {
   MIGRATE_TO_DB_PORT?: number
   MIGRATE_TO_DB_USER?: string
   MIGRATE_TO_DB_NAME?: string
+  MIGRATE_TO_DB_SSL: boolean = false
+  MIGRATE_TO_DB_SSL_VERIFICATION: boolean = true
 
   // required and checked for validity
   STORAGE_KEY: string = ''
@@ -82,6 +86,10 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SIGNUP':
     case 'SIGNUP_REQUIRES_APPROVAL':
     case 'MFA_REQUIRED':
+    case 'DB_SSL':
+    case 'DB_SSL_VERIFICATION':
+    case 'MIGRATE_TO_DB_SSL':
+    case 'MIGRATE_TO_DB_SSL_VERIFICATION':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 

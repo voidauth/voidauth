@@ -4,6 +4,18 @@ import knex from 'knex'
 import fs from 'node:fs'
 import { logger } from '../util/logger'
 
+export type DBConnectionOptions = {
+  DB_ADAPTER: string
+  DB_PASSWORD?: string
+  DB_HOST?: string
+  DB_PORT?: number
+  DB_NAME?: string
+  DB_USER?: string
+  DB_SSL?: boolean
+  DB_SSL_VERIFICATION?: boolean
+  isMigration?: boolean
+}
+
 async function runSchemaUpdates(connectionOptions: Knex.Config) {
   if (connectionOptions.client === 'sqlite3' || connectionOptions.client === 'better-sqlite') {
     const { pool, ...rest } = connectionOptions
@@ -20,15 +32,7 @@ async function runSchemaUpdates(connectionOptions: Knex.Config) {
   return migrations
 }
 
-export async function createDB(options: {
-  DB_ADAPTER: string
-  DB_PASSWORD?: string
-  DB_HOST?: string
-  DB_PORT?: number
-  DB_NAME?: string
-  DB_USER?: string
-  isMigration?: boolean
-}) {
+export async function createDB(options: DBConnectionOptions) {
   const connOptions = getConnectionOptions(options)
   const migrations = await runSchemaUpdates(connOptions)
   if (migrations.length) {
@@ -37,23 +41,9 @@ export async function createDB(options: {
   return knex(connOptions)
 }
 
-function getConnectionOptions(options: {
-  DB_ADAPTER: string
-  DB_PASSWORD?: string
-  DB_HOST?: string
-  DB_PORT?: number
-  DB_NAME?: string
-  DB_USER?: string
-  isMigration?: boolean
-}): knex.Knex.Config {
+function getConnectionOptions(options: DBConnectionOptions): knex.Knex.Config {
   if (options.DB_ADAPTER === 'postgres') {
-    return connectionPg({
-      DB_HOST: options.DB_HOST,
-      DB_PORT: options.DB_PORT,
-      DB_USER: options.DB_USER,
-      DB_NAME: options.DB_NAME,
-      DB_PASSWORD: options.DB_PASSWORD,
-    }, options.isMigration)
+    return connectionPg(options)
   } else if (options.DB_ADAPTER === 'sqlite') {
     return connectionSQLite()
   } else {
@@ -61,22 +51,16 @@ function getConnectionOptions(options: {
   }
 }
 
-function connectionPg(options: {
-  DB_PASSWORD?: string
-  DB_HOST?: string
-  DB_PORT?: number
-  DB_NAME?: string
-  DB_USER?: string
-}, isMigration: boolean = false) {
+function connectionPg(options: DBConnectionOptions): Knex.Config {
   // check that DB_PASSWORD is set
   if (!options.DB_PASSWORD?.length) {
-    throw new Error(`${isMigration ? 'MIGRATE_TO_' : ''}DB_PASSWORD must be set. If you don't already have one, use something long and random like:
+    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_PASSWORD must be set. If you don't already have one, use something long and random like:
     ${generate({ length: 32, numbers: true })}`)
   }
 
   // check that DB_HOST is set
   if (!options.DB_HOST?.length) {
-    throw new Error(`${isMigration ? 'MIGRATE_TO_' : ''}DB_HOST must be set.`)
+    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_HOST must be set.`)
   }
 
   return {
@@ -88,6 +72,7 @@ function connectionPg(options: {
       user: options.DB_USER ?? 'postgres',
       database: options.DB_NAME ?? 'postgres',
       password: options.DB_PASSWORD,
+      ssl: options.DB_SSL ? { rejectUnauthorized: !!options.DB_SSL_VERIFICATION } : false,
     },
   }
 }
