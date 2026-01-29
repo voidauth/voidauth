@@ -15,7 +15,7 @@ import { UserService } from '../../../../services/user.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
-import type { itemIn } from '@shared/utils'
+import type { ItemIn } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
 
 @Component({
@@ -34,9 +34,9 @@ export class UserComponent {
   public me?: UserDetails
   public id: string | null = null
 
-  public groups: itemIn<UserDetails['groups']>[] = []
-  public unselectedGroups: itemIn<UserDetails['groups']>[] = []
-  public selectableGroups: itemIn<UserDetails['groups']>[] = []
+  public groups: ItemIn<UserDetails['groups']>[] = []
+  public unselectedGroups: ItemIn<UserDetails['groups']>[] = []
+  public selectableGroups: ItemIn<UserDetails['groups']>[] = []
   groupSelect = new FormControl<string>({
     value: '',
     disabled: false,
@@ -126,7 +126,7 @@ export class UserComponent {
   }
 
   addGroup(event: MatAutocompleteSelectedEvent) {
-    const value = event.option.value as itemIn<UserDetails['groups']> | null
+    const value = event.option.value as ItemIn<UserDetails['groups']> | null
     if (!value) {
       return
     }
