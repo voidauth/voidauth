@@ -54,6 +54,8 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       return
     }
     amr = ['pwd']
+
+    logger.debug(`user found in proxy-authorization header`)
   } else if (authorizationHeader) {
     // Authorization header flow
     // Decode the Basic Authorization header
@@ -68,11 +70,14 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       return
     }
     amr = ['pwd']
+
+    logger.debug(`user found in authorization header`)
   } else {
     // User not logged in, redirect to login
     const logInfo = {
       reason: 'session_not_found',
       url: url.href,
+      domain: match?.domain,
     }
     logger.debug(`session not found, redirect to login: ${JSON.stringify(logInfo)}`)
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
@@ -86,6 +91,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     const logInfo = {
       reason: 'login_not_finished',
       url: url.href,
+      domain: match?.domain,
     }
     logger.debug(`user has not finished login: ${JSON.stringify(logInfo)}`)
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)

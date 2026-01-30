@@ -174,7 +174,7 @@ async function getUserSessionInteraction(req: Request, res: Response) {
     : undefined
 
   if (currentUser) {
-    logger.debug(`user found in getUserSessionInteraction; source = ${String(source)}`)
+    logger.debug(`user found in ${String(source)}`)
   }
 
   return currentUser

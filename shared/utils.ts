@@ -1,8 +1,8 @@
 import type zod from 'zod'
 
-export type valueof<T extends object> = T[keyof T]
+export type ValueOf<T extends object> = T[keyof T]
 
-export type itemIn<T extends readonly unknown[] | unknown[]> = T[number]
+export type ItemIn<T extends readonly unknown[] | unknown[]> = T[number]
 
 export type RequireKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
 
@@ -22,8 +22,7 @@ export function optionalizeNullable<T extends object>(input: T) {
   const result: Partial<OptionalizedNullable<T>> = {}
 
   for (const key of Object.keys(input) as (keyof T)[]) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    result[key] = input[key] ?? undefined as any
+    result[key] = (input[key] ?? undefined) as OptionalizedNullable<T>[typeof key]
   }
 
   return result as OptionalizedNullable<T>

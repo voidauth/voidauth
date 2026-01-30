@@ -21,3 +21,7 @@ The 'Client' application should specify the correct `Redirect URL` parameter for
 #### When Attempting to Authenticate an OIDC App
 
 If you are redirected to the **Cannot Be Found** page while attempting to authenticate to an OIDC App, a possible cause could be that one of the VoidAuth Endpoint URLs Required by the OIDC App during its setup were input incorrectly. You can find the correct Endpoint URLs on the VoidAuth Admin OIDC Apps pages at the top of the page in the dropdown.
+
+### Not Redirected After Login
+
+If you are attempting to authenticate to a ProxyAuth Domain and are not redirected after successful VoidAuth login, it may be caused by incorrect `X-Forwarded-*` headers reaching VoidAuth from a reverse proxy. These headers tell VoidAuth where you are trying to authenticate and where you will be redirected, please view the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) page and make sure the reverse proxy is set up correctly.
