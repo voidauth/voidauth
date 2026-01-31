@@ -981,7 +981,7 @@ export async function getInteractionDetails(req: IncomingMessage | Http2ServerRe
 }
 
 function consentMissingScopes(consent: Consent, scope: string) {
-  const scopes = scope.split(',').map(s => s.trim())
+  const scopes = scope.split(/\s+/)
   const consentScopes = getConsentScopes(consent)
   return scopes.filter((s) => {
     return !consentScopes.includes(s)

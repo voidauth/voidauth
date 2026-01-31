@@ -1,10 +1,10 @@
-import type { valueof } from '../utils'
+import type { ValueOf } from '../utils'
 import { KEY_TYPES } from '../constants'
 import type { JWK } from 'oidc-provider'
 
 export type Key = {
   id: string
-  type: valueof<typeof KEY_TYPES>
+  type: ValueOf<typeof KEY_TYPES>
   value: string // Should be stringified EncryptedData
   expiresAt: Date | number
 }
