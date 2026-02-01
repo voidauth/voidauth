@@ -8,6 +8,7 @@ import { ConfigService } from '../../services/config.service'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { LogoComponent } from './logo.component'
+import { LangSwitcherComponent } from '../lang-switcher/lang-switcher.component'
 
 @Component({
   selector: 'app-header',
@@ -16,6 +17,7 @@ import { LogoComponent } from './logo.component'
     ThemeToggleComponent,
     RouterLink,
     LogoComponent,
+    LangSwitcherComponent,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',

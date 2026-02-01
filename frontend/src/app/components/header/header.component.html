@@ -12,6 +12,7 @@
   <span class="example-spacer"></span>
 
   <span class="right-actions">
+    <app-lang-switcher></app-lang-switcher>
     <app-theme-toggle></app-theme-toggle>
     <span>
       @if (!user?.canLogin && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {

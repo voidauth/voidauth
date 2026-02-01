@@ -22,7 +22,7 @@
       <a routerLink="/forgot_password" mat-button type="button" style="margin-top: -6px">{{ "login.forgot-password" | translate }}</a>
       <mat-checkbox formControlName="rememberMe">{{ "login.remember-me" | translate }}</mat-checkbox>
 
-      <mat-card-actions>
+      <mat-card-actions style="margin-top: 8px">
         <button mat-flat-button [disabled]="form.invalid || !interactionAvailable" type="submit">
           {{ "login.actions.login" | translate }}
         </button>

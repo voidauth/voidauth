@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core'
-import { TranslateService, type LangChangeEvent } from '@ngx-translate/core'
+import { TranslateService } from '@ngx-translate/core'
 import translationsEN from '../../../public/i18n/en.json'
 
 @Injectable({
@@ -14,26 +14,12 @@ export class TranslationService {
     this.translate.setFallbackLang('en')
 
     this.setCurrentLang(this.getInitialLang())
-
-    this.setHtmlLangAttribute(this.translate.getCurrentLang())
-
-    this.translate.onLangChange.subscribe(
-      (event: LangChangeEvent) => {
-        this.setHtmlLangAttribute(event.lang)
-      },
-    )
   }
 
   setCurrentLang(lang: string) {
     // Set lang on localStorage and use that lang
     this.setLocalStorageLang(lang)
     this.translate.use(lang)
-  }
-
-  private setHtmlLangAttribute(lang: string): void {
-    if (lang && typeof document !== 'undefined') {
-      document.documentElement.setAttribute('lang', lang)
-    }
   }
 
   private getInitialLang() {
