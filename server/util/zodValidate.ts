@@ -75,6 +75,7 @@ export function zodValidate<
       req.body = undefined
     }
 
+    Object.defineProperty(req, 'query', { ...Object.getOwnPropertyDescriptor(req, 'query'), value: req.query, writable: true })
     if (schema.query) {
       const output = await zod.object(schema.query).safeParseAsync(req.query)
       if (!output.success) {
