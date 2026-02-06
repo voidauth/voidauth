@@ -4,14 +4,13 @@ services:
       context: .
       target: serve
     image: voidauth/voidauth:latest
-    env_file:
-      - ".env"
     ports:
-      - "3000:3000"
+      - "3000:3000" # The default port is 3000, configurable with environment variable APP_PORT
     volumes:
       - "./config:/app/config"
     environment:
-      # Required environment variables, set in .env file
+      # Required environment variables, set in .env file or replace ${...} with value
+      # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
       APP_URL: ${APP_URL} # required
       DB_HOST: voidauth-db # required
       DB_PASSWORD: ${DB_PASSWORD} # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service

@@ -3,20 +3,22 @@ import { getUserById } from '../db/user'
 import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
 import { getInvitation } from '../db/invitations'
-import { zodValidate } from '../util/validate'
+import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 
 export const authRouter = Router()
 
 authRouter.post('/send_verify_email',
   zodValidate({
-    id: zod.uuidv4(),
+    body: {
+      id: zod.uuidv4(),
+    },
   }, async (req, res) => {
     if (!appConfig.EMAIL_VERIFICATION) {
       res.sendStatus(400)
       return
     }
-    const { id } = req.validatedData
+    const { id } = req.body
 
     const user = await getUserById(id)
 
@@ -37,10 +39,12 @@ authRouter.post('/send_verify_email',
 
 authRouter.get('/invitation/:id/:challenge',
   zodValidate({
-    id: zod.string(),
-    challenge: zod.string(),
+    params: {
+      id: zod.string(),
+      challenge: zod.string(),
+    },
   }, async (req, res) => {
-    const { id, challenge } = req.validatedData
+    const { id, challenge } = req.params
     const invite = await getInvitation(id)
     if (!invite || invite.challenge != challenge) {
       res.sendStatus(404)
