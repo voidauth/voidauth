@@ -718,6 +718,35 @@ Redirect URLs: https://seafile.example.com/oauth/callback/
 
 <br>
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/unraid.svg" width="28" /> Unraid
+
+Navigate to **Settings** > **Management Access** > **Unraid API Settings** in the Unraid WebGUI. Add a new OIDC provider by clicking the + button. See the [Unraid OIDC Provider Setup](https://docs.unraid.net/API/oidc-provider-setup/) for full details.
+
+**Unraid OAuth Configuration:**
+
+```
+Provider ID: voidauth
+Provider Name: VoidAuth
+Client ID: your-client-id
+Client Secret: your-client-secret
+Issuer URL: Copy from VoidAuth OIDC Info (OIDC Issuer Endpoint)
+OAuth Scopes: openid profile email
+```
+
+> [!NOTE]
+> You will need to set at least one athorization rule and verify that the provider settings are applied. A simple authorization rule can be used to allow specific email domains, email addresses or specific users. Refer to the Unraid documentation for examples.
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://unraid.example.com/graphql/api/auth/oidc/callback
+```
+
+<br>
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/wiki-js.svg" width="28" /> WikiJS
 
 Connect to WikiJS portal as an admin. Go to Configuration Panel, and then Authentication Tab. Create a new authentication strategy using "Generic OpenID Connect / OAuth 2".
