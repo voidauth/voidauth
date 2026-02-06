@@ -13,7 +13,7 @@ import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/constants'
 import type { TOTP } from '@shared/db/TOTP'
 import { argon2 } from '../util/argon2id'
-import { zodValidate } from '../util/validate'
+import { zodValidate } from '../util/zodValidate'
 import { passwordStrength } from '../util/zxcvbn'
 import { checkPrivileged } from '../util/authMiddleware'
 
@@ -36,14 +36,14 @@ userRouter.use(checkPrivileged)
 
 // Update user profile information
 userRouter.patch('/profile',
-  zodValidate(updateProfileValidator, async (req, res) => {
+  zodValidate({ body: updateProfileValidator }, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
     }
 
-    const profile = req.validatedData
+    const profile = req.body
 
     await db().table<User>(TABLES.USER).update(profile).where({ id: user.id })
 
@@ -52,14 +52,14 @@ userRouter.patch('/profile',
 
 // Update user email address
 userRouter.patch('/email',
-  zodValidate(updateEmailValidator, async (req, res) => {
+  zodValidate({ body: updateEmailValidator }, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
     }
 
-    const { email } = req.validatedData
+    const { email } = req.body
 
     if (appConfig.EMAIL_VERIFICATION && email) {
       await createEmailVerification(user, email)
@@ -72,14 +72,14 @@ userRouter.patch('/email',
 
 // Change user password
 userRouter.patch('/password',
-  zodValidate(updatePasswordValidator, async (req, res) => {
+  zodValidate({ body: updatePasswordValidator }, async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
     }
 
-    const { oldPassword, newPassword } = req.validatedData
+    const { oldPassword, newPassword } = req.body
 
     if (passwordStrength(newPassword).score < appConfig.PASSWORD_STRENGTH) {
       res.status(422).send({ message: 'Password is not strong enough.' })

@@ -28,7 +28,7 @@ export function optionalizeNullable<T extends object>(input: T) {
   return result as OptionalizedNullable<T>
 }
 
-export type SchemaInfer<T extends zod.core.$ZodShape> = zod.infer<zod.ZodObject<T>>
+export type SchemaInfer<T extends zod.ZodRawShape> = zod.infer<zod.ZodObject<T>>
 
 type URLPatternGroups = {
   protocol?: string
