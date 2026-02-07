@@ -26,14 +26,7 @@
       "label": "Contact"
     }
   },
-  "passkey": {
-    "display-name": {
-      "default": "Passkey",
-      "face-id": "Face ID",
-      "touch-id": "Touch ID",
-      "windows-hello": "Windows Hello"
-    }
-  },
+  "passkey-title": "Passkey",
   "passkey-dialog": {
     "title": "Enable {{platformName}}?",
     "action": {

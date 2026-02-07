@@ -29,7 +29,7 @@
 
         @if (passkeySupport?.enabled) {
           <button mat-flat-button type="button" [disabled]="!interactionAvailable" (click)="passkeyLogin(false)">
-            {{ passkeySupport?.platformName ?? "passkey.display-name.default" | translate }}
+            {{ passkeySupport?.platformName ?? ("passkey-title" | translate) }}
             <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
           </button>
         }

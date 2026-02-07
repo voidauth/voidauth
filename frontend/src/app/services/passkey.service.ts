@@ -63,14 +63,14 @@ export class PasskeyService {
     if (await platformAuthenticatorIsAvailable()) {
       const { os } = UAParser(navigator.userAgent)
       // if (os.name == 'Windows') {
-      //   name = 'passkey.display-name.windows-hello'
+      //   name = 'Windows Hello'
       //   icon = 'sentiment_satisfied'
       // } else
       if (os.name == 'iOS') {
-        name = _('passkey.display-name.face-id')
+        name = 'Face ID'
         icon = 'face'
       } else if (os.name == 'macOS') {
-        name = _('passkey.display-name.touch-id')
+        name = 'Touch ID'
         icon = 'fingerprint'
       }
     }
@@ -160,7 +160,7 @@ export class PasskeyService {
 
 export type PasskeySupport = {
   enabled: boolean
-  platformName?: 'passkey.display-name.face-id' | 'passkey.display-name.touch-id'
+  platformName?: 'Face ID' | 'Touch ID'
   platformIcon?: string
 }
 
@@ -171,14 +171,14 @@ export type PasskeySupport = {
     TranslatePipe,
   ],
   template: `
-    <h1 mat-dialog-title>{{ 'passkey-dialog.title' | translate:{ platformName: passkeySupport?.platformName ?? "passkey.display-name.default" | translate } }}</h1>
+    <h1 mat-dialog-title>{{ 'passkey-dialog.title' | translate:{ platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}</h1>
     <mat-dialog-content style="height: 200px; display: flex; justify-content: center; align-items: center;">
       <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px;" fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button matButton mat-dialog-close>Skip</button>
       <button mat-flat-button type="button" [mat-dialog-close]="true" cdkFocusInitial>
-        {{ 'passkey-dialog.action.passkey' | translate:{ platformName: passkeySupport?.platformName ?? "passkey.display-name.default" | translate } }}
+        {{ 'passkey-dialog.action.passkey' | translate:{ platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}
         <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
       </button>
     </mat-dialog-actions>
