@@ -33,7 +33,7 @@ import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import { logger } from '../util/logger'
 import { createPasswordReset } from '../db/passwordReset'
-import { zodValidate } from '../util/validate'
+import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 
@@ -48,16 +48,16 @@ adminRouter.get('/clients', async (_req, res) => {
 
 adminRouter.get('/client/:client_id',
   zodValidate({
-    client_id: zod.string(),
-  }, async (req, res) => {
-    const { client_id } = req.validatedData
+    params: { client_id: zod.string() },
+  }), async (req, res) => {
+    const { client_id } = req.params
     const client = await getClient(client_id)
     if (client) {
       res.send(client)
     } else {
       res.sendStatus(404)
     }
-  }))
+  })
 
 /**
  * Because client_id is primary and user-defined,
@@ -66,111 +66,111 @@ adminRouter.get('/client/:client_id',
 
 adminRouter.post('/client',
   zodValidate(
-    clientUpsertValidator,
-    async (req, res) => {
-      if (!req.user) {
-        res.sendStatus(500)
-        return
-      }
+    { body: clientUpsertValidator }),
+  async (req, res) => {
+    if (!req.user) {
+      res.sendStatus(500)
+      return
+    }
 
-      const clientUpsert = req.validatedData
-      const clientMetadata: ClientResponse = {
-        ...clientUpsert,
-        post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
-      }
+    const clientUpsert = req.body
+    const clientMetadata: ClientResponse = {
+      ...clientUpsert,
+      post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
+    }
 
-      if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
-        res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
-        return
-      }
+    if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
+      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
+      return
+    }
 
-      try {
+    try {
       // check that existing client does not exist with client_id
-        const existingClient = await getClient(clientMetadata.client_id)
-        if (existingClient) {
-          res.sendStatus(409)
-          return
-        }
-
-        // determine proper Application Type
-        let hasHttpProtocol = false
-        let hasCustomProtocol = false
-        for (const uri of clientUpsert.redirect_uris) {
-          const protocol = urlFromWildcardHref(uri)?.protocol
-          hasHttpProtocol ||= protocol === 'http:'
-          hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
-        }
-        if (hasCustomProtocol && hasHttpProtocol) {
-          res.sendStatus(400)
-          return
-        }
-        clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
-
-        await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
-        res.send()
-      } catch (e) {
-        res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
+      const existingClient = await getClient(clientMetadata.client_id)
+      if (existingClient) {
+        res.sendStatus(409)
+        return
       }
-    }))
+
+      // determine proper Application Type
+      let hasHttpProtocol = false
+      let hasCustomProtocol = false
+      for (const uri of clientUpsert.redirect_uris) {
+        const protocol = urlFromWildcardHref(uri)?.protocol
+        hasHttpProtocol ||= protocol === 'http:'
+        hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
+      }
+      if (hasCustomProtocol && hasHttpProtocol) {
+        res.sendStatus(400)
+        return
+      }
+      clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
+
+      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
+      res.send()
+    } catch (e) {
+      res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
+    }
+  })
 
 adminRouter.patch('/client',
   zodValidate(
-    clientUpsertValidator,
-    async (req, res) => {
-      if (!req.user) {
-        res.sendStatus(500)
-        return
-      }
+    { body: clientUpsertValidator }),
+  async (req, res) => {
+    if (!req.user) {
+      res.sendStatus(500)
+      return
+    }
 
-      const clientUpsert = req.validatedData
-      const clientMetadata: ClientResponse = {
-        ...clientUpsert,
-        post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
-      }
+    const clientUpsert = req.body
+    const clientMetadata: ClientResponse = {
+      ...clientUpsert,
+      post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
+    }
 
-      if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
-        res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
-        return
-      }
+    if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
+      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
+      return
+    }
 
-      try {
+    try {
       // check that existing client exists with client_id
-        const existingClient = await getClient(clientMetadata.client_id)
-        if (!existingClient) {
-          res.sendStatus(404)
-          return
-        }
-
-        // determine proper Application Type
-        let hasHttpProtocol = false
-        let hasCustomProtocol = false
-        for (const uri of clientUpsert.redirect_uris) {
-          const protocol = urlFromWildcardHref(uri)?.protocol
-          hasHttpProtocol ||= protocol === 'http:'
-          hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
-        }
-        if (hasCustomProtocol && hasHttpProtocol) {
-          res.sendStatus(400)
-          return
-        }
-        clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
-
-        await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
-        res.send()
-      } catch (e) {
-        if (isOIDCProviderError(e)) {
-          res.status(400).send({ message: e.error_description })
-        } else {
-          throw e
-        }
+      const existingClient = await getClient(clientMetadata.client_id)
+      if (!existingClient) {
+        res.sendStatus(404)
+        return
       }
-    }))
+
+      // determine proper Application Type
+      let hasHttpProtocol = false
+      let hasCustomProtocol = false
+      for (const uri of clientUpsert.redirect_uris) {
+        const protocol = urlFromWildcardHref(uri)?.protocol
+        hasHttpProtocol ||= protocol === 'http:'
+        hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
+      }
+      if (hasCustomProtocol && hasHttpProtocol) {
+        res.sendStatus(400)
+        return
+      }
+      clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
+
+      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
+      res.send()
+    } catch (e) {
+      if (isOIDCProviderError(e)) {
+        res.status(400).send({ message: e.error_description })
+      } else {
+        throw e
+      }
+    }
+  })
 
 adminRouter.delete('/client/:client_id',
   zodValidate({
-    client_id: zod.string(),
-  }, async (req, res) => {
-    const { client_id } = req.validatedData
+    params: { client_id: zod.string() },
+  }), async (req, res) => {
+    const { client_id } = req.params
     const client = await getClient(client_id)
     if (!client) {
       res.sendStatus(404)
@@ -178,7 +178,7 @@ adminRouter.delete('/client/:client_id',
     }
     await removeClient(client_id)
     res.send()
-  }))
+  })
 
 adminRouter.get('/proxyauths', async (_req, res) => {
   const proxyauths = await getProxyAuths()
@@ -187,9 +187,11 @@ adminRouter.get('/proxyauths', async (_req, res) => {
 
 adminRouter.get('/proxyauth/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
     const proxyauth = await getProxyAuth(id)
 
     if (!proxyauth) {
@@ -206,17 +208,17 @@ adminRouter.get('/proxyauth/:id',
     }
 
     res.send(response)
-  }))
+  })
 
 adminRouter.post('/proxyAuth',
-  zodValidate(proxyAuthUpsertValidator, async (req, res) => {
+  zodValidate({ body: proxyAuthUpsertValidator }), async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
       return
     }
 
-    const { id, domain, mfaRequired, maxSessionLength, groups } = req.validatedData
+    const { id, domain, mfaRequired, maxSessionLength, groups } = req.body
 
     // Check for domain conflict
     const conflicting = await db().select()
@@ -264,33 +266,39 @@ adminRouter.post('/proxyAuth',
       .whereNotIn('groupId', proxyAuthGroups.map(g => g.groupId))
 
     res.send(await getProxyAuth(proxyAuthId))
-  }))
+  })
 
 adminRouter.delete('/proxyauth/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
 
     await db().table<ProxyAuth>(TABLES.PROXY_AUTH).delete().where({ id })
 
     res.send()
-  }))
+  })
 
 adminRouter.get('/users{/:searchTerm}',
   zodValidate({
-    searchTerm: zod.string().optional(),
-  }, async (req, res) => {
-    const { searchTerm } = req.validatedData
+    params: {
+      searchTerm: zod.string().optional(),
+    },
+  }), async (req, res) => {
+    const { searchTerm } = req.params
     const users: UserWithAdminIndicator[] = await getUsers(searchTerm)
     res.send(users)
-  }))
+  })
 
 adminRouter.get('/user/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
     const user = await getUserById(id)
     if (!user) {
       res.sendStatus(404)
@@ -298,17 +306,17 @@ adminRouter.get('/user/:id',
     }
 
     res.send(user)
-  }))
+  })
 
 adminRouter.patch('/user',
-  zodValidate(userUpdateValidator, async (req, res) => {
+  zodValidate({ body: userUpdateValidator }), async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
     }
 
-    const userUpdate = req.validatedData
+    const userUpdate = req.body
 
     const existingUser = await db().table<User>(TABLES.USER).where({ id: userUpdate.id }).first()
     if (!existingUser) {
@@ -358,19 +366,21 @@ adminRouter.patch('/user',
     }
 
     res.send()
-  }))
+  })
 
 adminRouter.delete('/user/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
     }
 
-    const { id } = req.validatedData
+    const { id } = req.params
 
     if (currentUser.id === id) {
       res.sendStatus(400)
@@ -386,19 +396,21 @@ adminRouter.delete('/user/:id',
     }
 
     res.send()
-  }))
+  })
 
 adminRouter.post('/user/signout/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
     }
 
-    const { id } = req.validatedData
+    const { id } = req.params
 
     if (currentUser.id === id) {
       res.sendStatus(400)
@@ -408,13 +420,15 @@ adminRouter.post('/user/signout/:id',
     await endSessions(id)
 
     res.send()
-  }))
+  })
 
 adminRouter.patch('/users/approve',
   zodValidate({
-    users: zod.array(zod.uuidv4()),
-  }, async (req, res) => {
-    const { users } = req.validatedData
+    body: {
+      users: zod.array(zod.uuidv4()),
+    },
+  }), async (req, res) => {
+    const { users } = req.body
 
     if (!users.length) {
       // nothing to do
@@ -440,19 +454,21 @@ adminRouter.patch('/users/approve',
     }
 
     res.send()
-  }))
+  })
 
 adminRouter.post('/users/delete',
   zodValidate({
-    users: zod.array(zod.uuidv4()),
-  }, async (req, res) => {
+    body: {
+      users: zod.array(zod.uuidv4()),
+    },
+  }), async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
     }
 
-    const { users } = req.validatedData
+    const { users } = req.body
 
     if (!users.length) {
       // nothing to do
@@ -476,7 +492,7 @@ adminRouter.post('/users/delete',
     }
 
     res.send()
-  }))
+  })
 
 adminRouter.get('/groups', async (_req, res) => {
   const groups = await db().select().table<Group>(TABLES.GROUP).orderBy('createdAt', 'asc')
@@ -485,9 +501,11 @@ adminRouter.get('/groups', async (_req, res) => {
 
 adminRouter.get('/group/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
     const group = await db().select().table<Group>(TABLES.GROUP).where({ id }).first()
 
     if (!group) {
@@ -504,17 +522,17 @@ adminRouter.get('/group/:id',
     }
 
     res.send(groupWithUsers)
-  }))
+  })
 
 adminRouter.post('/group',
-  zodValidate(groupUpsertValidator, async (req, res) => {
+  zodValidate({ body: groupUpsertValidator }), async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
     }
 
-    const { id, name, mfaRequired, users } = req.validatedData
+    const { id, name, mfaRequired, users } = req.body
 
     // Check for name conflict
     const conflictingGroup = await db().select()
@@ -570,13 +588,15 @@ adminRouter.post('/group',
       .whereNotIn('userId', userGroups.map(g => g.userId))
 
     res.send({ id: groupId })
-  }))
+  })
 
 adminRouter.delete('/group/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
 
     const group = await db().select().table<Group>(TABLES.GROUP).where({ id }).first()
     // Do not delete the admin group
@@ -588,7 +608,7 @@ adminRouter.delete('/group/:id',
     await db().table<Group>(TABLES.GROUP).delete().where({ id })
 
     res.send()
-  }))
+  })
 
 adminRouter.get('/invitations', async (_req, res) => {
   const invitations: Invitation[] = await getInvitations()
@@ -597,26 +617,26 @@ adminRouter.get('/invitations', async (_req, res) => {
 
 adminRouter.get('/invitation/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: { id: zod.uuidv4() },
+  }), async (req, res) => {
+    const { id } = req.params
     const invitation = await getInvitation(id)
     if (!invitation) {
       res.sendStatus(404)
       return
     }
     res.send(invitation)
-  }))
+  })
 
 adminRouter.post('/invitation',
-  zodValidate(invitationUpsertValidator, async (req, res) => {
+  zodValidate({ body: invitationUpsertValidator }), async (req, res) => {
     const currentUser = req.user
     if (!currentUser) {
       res.sendStatus(500)
       return
     }
 
-    const invitationUpsert = req.validatedData
+    const invitationUpsert = req.body
     const { groups: groupNames, ...invitationData } = invitationUpsert
 
     const id = invitationData.id ?? randomUUID()
@@ -668,13 +688,15 @@ adminRouter.post('/invitation',
 
     const invitation = await getInvitation(id)
     res.send(invitation)
-  }))
+  })
 
 adminRouter.delete('/invitation/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
 
     const count = await db().table<Invitation>(TABLES.INVITATION).delete().where({ id })
 
@@ -684,13 +706,15 @@ adminRouter.delete('/invitation/:id',
     }
 
     res.send()
-  }))
+  })
 
 adminRouter.post('/send_invitation/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
     const invitation = await getInvitation(id)
 
     if (!invitation) {
@@ -705,7 +729,7 @@ adminRouter.post('/send_invitation/:id',
 
     await sendInvitation(invitation, invitation.email)
     res.send()
-  }))
+  })
 
 adminRouter.get('/passwordresets', async (_req, res) => {
   const passwordResets: PasswordResetUser[] = await db().select(
@@ -724,8 +748,8 @@ adminRouter.get('/passwordresets', async (_req, res) => {
 })
 
 adminRouter.post('/passwordreset',
-  zodValidate(passwordResetCreateValidator, async (req, res) => {
-    const { userId } = req.validatedData
+  zodValidate({ body: passwordResetCreateValidator }), async (req, res) => {
+    const { userId } = req.body
     const user = await getUserById(userId)
 
     if (!user) {
@@ -737,13 +761,15 @@ adminRouter.post('/passwordreset',
 
     const result: PasswordResetUser = { ...passwordReset, username: user.username, email: user.email }
     res.send(result)
-  }))
+  })
 
 adminRouter.delete('/passwordreset/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
 
     const count = await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id })
 
@@ -753,13 +779,15 @@ adminRouter.delete('/passwordreset/:id',
     }
 
     res.send()
-  }))
+  })
 
 adminRouter.post('/send_passwordreset/:id',
   zodValidate({
-    id: zod.uuidv4(),
-  }, async (req, res) => {
-    const { id } = req.validatedData
+    params: {
+      id: zod.uuidv4(),
+    },
+  }), async (req, res) => {
+    const { id } = req.params
     const reset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET).where({ id }).first()
 
     if (!reset) {
@@ -776,16 +804,18 @@ adminRouter.post('/send_passwordreset/:id',
 
     await sendPasswordReset(reset, user, user.email)
     res.send()
-  }))
+  })
 
 adminRouter.get('/emails',
   zodValidate({
-    page: zod.coerce.number().int().min(0),
-    pageSize: zod.coerce.number().int().min(1),
-    sortActive: zod.enum(['createdAt', 'to', 'type']).optional(),
-    sortDirection: zod.enum(['asc', 'desc', '']).optional(),
-  }, async (req, res) => {
-    const { page, pageSize, sortActive, sortDirection } = req.validatedData
+    query: {
+      page: zod.coerce.number<string>().int().min(0),
+      pageSize: zod.coerce.number<string>().int().min(1),
+      sortActive: zod.enum(['createdAt', 'to', 'type']).optional(),
+      sortDirection: zod.enum(['asc', 'desc', '']).optional(),
+    },
+  }), async (req, res) => {
+    const { page, pageSize, sortActive, sortDirection } = req.query
 
     const emailsModel = db().table<EmailLog>(TABLES.EMAIL_LOG)
 
@@ -814,15 +844,17 @@ adminRouter.get('/emails',
     const result: EmailsResponse = { count, emails }
 
     res.send(result)
-  }))
+  })
 
 adminRouter.post('/send_test_email',
   zodValidate({
-    email: zod.email(),
-  }, async (req, res) => {
-    const { email } = req.validatedData
+    body: {
+      email: zod.email(),
+    },
+  }), async (req, res) => {
+    const { email } = req.body
 
     await sendTestNotification(email)
 
     res.send()
-  }))
+  })
