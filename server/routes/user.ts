@@ -36,7 +36,7 @@ userRouter.use(checkPrivileged)
 
 // Update user profile information
 userRouter.patch('/profile',
-  zodValidate({ body: updateProfileValidator }, async (req, res) => {
+  zodValidate({ body: updateProfileValidator }), async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
@@ -48,11 +48,11 @@ userRouter.patch('/profile',
     await db().table<User>(TABLES.USER).update(profile).where({ id: user.id })
 
     res.send()
-  }))
+  })
 
 // Update user email address
 userRouter.patch('/email',
-  zodValidate({ body: updateEmailValidator }, async (req, res) => {
+  zodValidate({ body: updateEmailValidator }), async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
@@ -68,11 +68,11 @@ userRouter.patch('/email',
     }
 
     res.send()
-  }))
+  })
 
 // Change user password
 userRouter.patch('/password',
-  zodValidate({ body: updatePasswordValidator }, async (req, res) => {
+  zodValidate({ body: updatePasswordValidator }), async (req, res) => {
     const user = req.user
     if (!user) {
       res.sendStatus(500)
@@ -92,7 +92,7 @@ userRouter.patch('/password',
 
     await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
     res.send()
-  }))
+  })
 
 // Delete all user passkeys
 userRouter.delete('/passkeys', async (req, res) => {
