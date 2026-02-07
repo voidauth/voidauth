@@ -13,7 +13,7 @@ authRouter.post('/send_verify_email',
     body: {
       id: zod.uuidv4(),
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     if (!appConfig.EMAIL_VERIFICATION) {
       res.sendStatus(400)
       return
@@ -35,7 +35,7 @@ authRouter.post('/send_verify_email',
 
     res.send()
     return
-  }))
+  })
 
 authRouter.get('/invitation/:id/:challenge',
   zodValidate({
@@ -43,7 +43,7 @@ authRouter.get('/invitation/:id/:challenge',
       id: zod.string(),
       challenge: zod.string(),
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     const { id, challenge } = req.params
     const invite = await getInvitation(id)
     if (!invite || invite.challenge != challenge) {
@@ -52,4 +52,4 @@ authRouter.get('/invitation/:id/:challenge',
     }
 
     res.send(invite)
-  }))
+  })

@@ -265,7 +265,7 @@ router.post('/:uid/confirm/',
     params: {
       uid: zod.string(),
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     const {
       uid,
       prompt,
@@ -294,7 +294,7 @@ router.post('/:uid/confirm/',
     res.redirect(redir)
     res.send()
     return
-  }))
+  })
 
 /**
  *
@@ -311,7 +311,7 @@ router.post('/register',
       ...registerUserValidator,
       password: zod.string(),
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     const registration = req.body
 
     if (passwordStrength(registration.password).score < appConfig.PASSWORD_STRENGTH) {
@@ -413,7 +413,7 @@ router.post('/register',
     })
 
     res.send(redir)
-  }))
+  })
 
 /**
  * Start user registration using a passkey instead of password
@@ -424,7 +424,7 @@ router.post('/register/passkey/start',
       inviteId: zod.string().optional(),
       challenge: zod.string().optional(),
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     const invite = req.body
 
     const interaction = await getInteractionDetails(req, res)
@@ -448,7 +448,7 @@ router.post('/register/passkey/start',
     const options = await createPasskeyRegistrationOptions(interaction.uid)
 
     res.send(options)
-  }))
+  })
 
 /**
  * Finish user registration using a passkey instead of password, finishes login and adds webauthn to amr
@@ -459,7 +459,7 @@ router.post('/register/passkey/end',
       ...passkeyRegistrationValidator,
       ...registerUserValidator,
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     const registration = req.body
 
     if (appConfig.EMAIL_VERIFICATION && !registration.email) {
@@ -563,7 +563,7 @@ router.post('/register/passkey/end',
     })
 
     res.send(redir)
-  }))
+  })
 
 /**
  *
@@ -596,36 +596,35 @@ router.post('/passkey/registration/start',
  * Finish registering a passkey, finishes login and adds webauthn to amr
  */
 router.post('/passkey/registration/end',
-  zodValidate(
-    { body: passkeyRegistrationValidator },
-    async (req, res) => {
-      const body = req.body
+  zodValidate({ body: passkeyRegistrationValidator }),
+  async (req, res) => {
+    const body = req.body
 
-      // Should only be able to register if fully logged in
-      const user = req.user
+    // Should only be able to register if fully logged in
+    const user = req.user
 
-      if (!user?.isPrivileged) {
-        res.sendStatus(401)
-        return
-      }
+    if (!user?.isPrivileged) {
+      res.sendStatus(401)
+      return
+    }
 
-      const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
+    const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
 
-      const { verified, registrationInfo } = verification
-      if (!verified) {
-        res.sendStatus(400)
-        return
-      }
+    const { verified, registrationInfo } = verification
+    if (!verified) {
+      res.sendStatus(400)
+      return
+    }
 
-      await createPasskey(user.id, registrationInfo, currentOptions)
+    await createPasskey(user.id, registrationInfo, currentOptions)
 
-      const redir = await loginResult(req, res, {
-        userId: user.id,
-        amr: ['webauthn'],
-      })
+    const redir = await loginResult(req, res, {
+      userId: user.id,
+      amr: ['webauthn'],
+    })
 
-      res.send(redir)
-    }))
+    res.send(redir)
+  })
 
 /**
  * Register a new totp, needs to be verified afterwards or it expires
@@ -666,7 +665,7 @@ router.post('/totp/registration',
  * Login with password, finishes login and adds pwd to amr
  */
 router.post('/login',
-  zodValidate({ body: loginUserValidator }, async (req, res) => {
+  zodValidate({ body: loginUserValidator }), async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
     if (!interaction && !session?.accountId) {
@@ -698,7 +697,7 @@ router.post('/login',
     })
 
     res.send(redir)
-  }))
+  })
 
 /**
  * Start login with passkey
@@ -755,7 +754,7 @@ router.post('/passkey/end',
       }),
       type: zod.literal('public-key'),
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
     if (!interaction && !session?.accountId) {
@@ -828,7 +827,7 @@ router.post('/passkey/end',
     })
 
     res.send(redir)
-  }))
+  })
 
 /**
  * Validate totp and add totp to amr
@@ -839,7 +838,7 @@ router.post('/totp',
       enableMfa: zod.boolean().optional(),
       token: zod.string(),
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     // Should only be able to register if fully logged in,
     // OR could not otherwise MFA
     // partially logged in users may be prompted to add MFA
@@ -873,13 +872,13 @@ router.post('/totp',
     })
 
     res.send(redir)
-  }))
+  })
 
 /**
  * Verify an email, finishes login adds email to amr
  */
 router.post('/verify_email',
-  zodValidate({ body: verifyUserEmailValidator }, async (req, res) => {
+  zodValidate({ body: verifyUserEmailValidator }), async (req, res) => {
     const { userId, challenge } = req.body
 
     const interaction = await getInteractionDetails(req, res)
@@ -929,7 +928,7 @@ router.post('/verify_email',
 
     res.send(redir)
     return
-  }))
+  })
 
 async function loginResult(req: IncomingMessage, res: Response, options: {
   amr: string[]

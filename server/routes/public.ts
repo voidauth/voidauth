@@ -47,17 +47,17 @@ publicRouter.post('/passwordStrength',
     body: {
       password: zod.string(),
     },
-  }, (req, res) => {
+  }), (req, res) => {
     const { password } = req.body
     res.send(passwordStrength(password))
-  }))
+  })
 
 publicRouter.post('/send_password_reset',
   zodValidate({
     body: {
       input: zod.string(),
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     const { input } = req.body
     const user = await getUserByInput(input)
 
@@ -82,10 +82,10 @@ publicRouter.post('/send_password_reset',
     }
 
     res.send(result)
-  }))
+  })
 
 publicRouter.post('/reset_password',
-  zodValidate({ body: resetPasswordValidator }, async (req, res) => {
+  zodValidate({ body: resetPasswordValidator }), async (req, res) => {
     const { userId, challenge, newPassword } = req.body
 
     if (passwordStrength(newPassword).score < appConfig.PASSWORD_STRENGTH) {
@@ -105,10 +105,10 @@ publicRouter.post('/reset_password',
     await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id: passwordReset.id })
     await endSessions(user.id)
     res.send()
-  }))
+  })
 
 publicRouter.post('/reset_password/passkey/start',
-  zodValidate({ body: userChallengeValidator }, async (req, res) => {
+  zodValidate({ body: userChallengeValidator }), async (req, res) => {
     const { userId, challenge } = req.body
     const user = await getUserById(userId)
     const passwordReset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET)
@@ -124,7 +124,7 @@ publicRouter.post('/reset_password/passkey/start',
     const options = await createPasskeyRegistrationOptions(user.id, user.username, userPasskeys)
 
     res.send(options)
-  }))
+  })
 
 publicRouter.post('/reset_password/passkey/end',
   zodValidate({
@@ -132,7 +132,7 @@ publicRouter.post('/reset_password/passkey/end',
       ...userChallengeValidator,
       ...passkeyRegistrationValidator,
     },
-  }, async (req, res) => {
+  }), async (req, res) => {
     const body = req.body
     const { userId, challenge } = body
     const user = await getUserById(userId)
@@ -157,4 +157,4 @@ publicRouter.post('/reset_password/passkey/end',
     await createPasskey(user.id, registrationInfo, currentOptions)
 
     res.send()
-  }))
+  })
