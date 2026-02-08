@@ -117,6 +117,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | APP_COLOR | `#906bc7` | Theme color, rgb format; ex. #xxyyzz | | ✅ |
 | APP_FONT | `monospace` | Font used in the web interface and sent emails. Safe fonts should be used, if a font is missing it will fallback to default. Multiple font families may be chosen in fallback-font format. ex. `APP_FONT: "Tahoma, Verdana, sans-serif"` | | |
 | CONTACT_EMAIL | | The email address used for 'Contact' links, which are shown on most end-user pages if this is set. | | |
+| FRONTEND_PATH | | The path from which to serve frontend files, if not set, the default frontend files will be used. | | |
 
 #### Database Settings
 When using the `sqlite` database adapter type, no additional database connection variables are required. You will need a mounted volume to hold the generated `db.sqlite` file, as shown in the SQLite docker compose example above.
@@ -187,4 +188,3 @@ For information on how to change the email templates used for invitations, passw
 
 ### Multi-Domain Protection
 You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC Apps, ProxyAuth Domains, etc.
-

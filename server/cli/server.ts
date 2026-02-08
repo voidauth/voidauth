@@ -19,7 +19,9 @@ import { logger } from '../util/logger'
 import { standardRateLimit } from '../util/rateLimit'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
-const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
+const FE_ROOT = process.env.FRONTEND_PATH
+  ? path.resolve(process.env.FRONTEND_PATH)
+  : path.join(PROCESS_ROOT, '../frontend/dist/browser')
 
 export async function serve() {
   // Do not wait for theme to generate before starting
