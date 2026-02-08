@@ -29,6 +29,7 @@ class Config {
   DB_NAME?: string
   DB_SSL: boolean = false
   DB_SSL_VERIFICATION: boolean = true
+  DB_SOCKET_PATH?: string
 
   // Database migration config
   MIGRATE_TO_DB_ADAPTER = 'postgres'
@@ -39,6 +40,7 @@ class Config {
   MIGRATE_TO_DB_NAME?: string
   MIGRATE_TO_DB_SSL: boolean = false
   MIGRATE_TO_DB_SSL_VERIFICATION: boolean = true
+  MIGRATE_TO_DB_SOCKET_PATH?: string
 
   // required and checked for validity
   STORAGE_KEY: string = ''
@@ -106,10 +108,12 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'DB_PASSWORD':
     case 'DB_NAME':
     case 'DB_USER':
+    case 'DB_SOCKET_PATH':
     case 'MIGRATE_TO_DB_PASSWORD':
     case 'MIGRATE_TO_DB_HOST':
     case 'MIGRATE_TO_DB_USER':
     case 'MIGRATE_TO_DB_NAME':
+    case 'MIGRATE_TO_DB_SOCKET_PATH':
     case 'SMTP_HOST':
     case 'SMTP_FROM':
     case 'SMTP_USER':

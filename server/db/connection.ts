@@ -13,6 +13,7 @@ export type DBConnectionOptions = {
   DB_USER?: string
   DB_SSL?: boolean
   DB_SSL_VERIFICATION?: boolean
+  DB_SOCKET_PATH?: string
   isMigration?: boolean
 }
 
@@ -52,6 +53,19 @@ function getConnectionOptions(options: DBConnectionOptions): knex.Knex.Config {
 }
 
 function connectionPg(options: DBConnectionOptions): Knex.Config {
+  if (options.DB_SOCKET_PATH?.length) {
+    return {
+      client: 'pg',
+      useNullAsDefault: true,
+      connection: {
+        host: options.DB_SOCKET_PATH,
+        database: options.DB_NAME,
+        ...(options.DB_USER?.length ? { user: options.DB_USER } : {}),
+        ...(options.DB_PASSWORD?.length ? { password: options.DB_PASSWORD } : {}),
+      },
+    }
+  }
+
   // check that DB_PASSWORD is set
   if (!options.DB_PASSWORD?.length) {
     throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_PASSWORD must be set when DB_ADAPTER is 'postgres'. If you don't already have one, use something long and random like:

@@ -32,6 +32,7 @@ const _db = await createDB({
   DB_PASSWORD: appConfig.DB_PASSWORD,
   DB_SSL: appConfig.DB_SSL,
   DB_SSL_VERIFICATION: appConfig.DB_SSL_VERIFICATION,
+  DB_SOCKET_PATH: appConfig.DB_SOCKET_PATH,
 })
 
 logger.info(`Connected to ${appConfig.DB_ADAPTER} database.`)

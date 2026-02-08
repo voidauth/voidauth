@@ -125,12 +125,13 @@ When using the `sqlite` database adapter type, no additional database connection
 | :------ | :-- | :-------- | :--- | :--- |
 | DB_ADAPTER | `postgres` | Allowed values are `postgres` and `sqlite`. | | |
 | DB_HOST | | Host address of the database. | 🔴 (unless using SQLite database) | |
-| DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless using SQLite database) | |
+| DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless using SQLite database or Unix socket) | |
 | DB_PORT | `5432` | Port of the database. Not used if using SQLite database. | | |
 | DB_USER | `postgres` | Username used to sign into the database by the app. Not used if using SQLite database. | | |
 | DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if using SQLite database. | | |
 | DB_SSL | `false` | Enables SSL connection to the database. | | |
 | DB_SSL_VERIFICATION | `true` | If DB_SSL is enabled, whether to verify the SSL certificate. | | |
+| DB_SOCKET_PATH | | Path to the Unix socket file used to connect to the database. Not used if using SQLite database. | | |
 
 #### Database Migration Settings
 Use the following environment variables to configure a database migration. These variables *exactly* mirror the `DB_*` environment variables and describe the connection to be made to the new database. See details on how to migrate an existing database to a new one on the [Database Migration](DB-Migration.md) page.
@@ -139,12 +140,13 @@ Use the following environment variables to configure a database migration. These
 | :------ | :-- | :-------- | :--- | :--- |
 | MIGRATE_TO_DB_ADAPTER | `postgres` | Allowed values are `postgres` and `sqlite`. | | |
 | MIGRATE_TO_DB_HOST | | Host address of the database. | 🔴 (unless migrating to SQLite database) | |
-| MIGRATE_TO_DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless migrating to SQLite database) | |
+| MIGRATE_TO_DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless migrating to SQLite database or using a Unix socket) | |
 | MIGRATE_TO_DB_PORT | `5432` | Port of the database. Not used if migrating to SQLite database. | | |
 | MIGRATE_TO_DB_USER | `postgres` | Username used to sign into the database by the app. Not used if migrating to SQLite database. | | |
 | MIGRATE_TO_DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if migrating to SQLite database. | | |
 | MIGRATE_TO_DB_SSL | `false` | Enables SSL connection to the database. | | |
 | MIGRATE_TO_DB_SSL_VERIFICATION | `true` | If MIGRATE_TO_DB_SSL is enabled, whether to verify the SSL certificate. | | |
+| MIGRATE_TO_DB_SOCKET_PATH | | Path to the Unix socket file used to connect to the database. Not used if using SQLite database. | | |
 
 #### SMTP Settings
 All of these settings are ✅ recommended to be set to the correct values for your email provider.
@@ -187,4 +189,3 @@ For information on how to change the email templates used for invitations, passw
 
 ### Multi-Domain Protection
 You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC Apps, ProxyAuth Domains, etc.
-
