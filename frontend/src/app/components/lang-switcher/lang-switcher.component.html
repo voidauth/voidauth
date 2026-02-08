@@ -1,9 +1,14 @@
-<button mat-icon-button [matMenuTriggerFor]="menu">
-  <mat-icon svgIcon="thumbs-up"></mat-icon>
-</button>
-<mat-menu #menu="matMenu">
-  <button mat-menu-item>
-    <span class="flag-emojis">🇬🇧</span>
-    English
+@if (translationService.currentLang(); as currentLang) {
+  <button mat-button [matMenuTriggerFor]="menu">
+    <span>{{ currentLang.flag }}</span>
+    {{ currentLang.display }}
   </button>
-</mat-menu>
+  <mat-menu #menu="matMenu" class="flag-emojis">
+    @for (lang of translationService.availableLangs; track lang) {
+      <button mat-menu-item [disabled]="lang.value === currentLang.value" (click)="selectLang(lang.value)">
+        <span>{{ lang.flag }}</span>
+        {{ lang.display }}
+      </button>
+    }
+  </mat-menu>
+}

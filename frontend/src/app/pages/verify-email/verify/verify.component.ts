@@ -9,12 +9,14 @@ import { SpinnerService } from '../../../services/spinner.service'
 import { ConfigService } from '../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { PasskeyService } from '../../../services/passkey.service'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-verify',
   imports: [
     CommonModule,
     MaterialModule,
+    TranslatePipe,
   ],
   templateUrl: './verify.component.html',
   styleUrl: './verify.component.scss',

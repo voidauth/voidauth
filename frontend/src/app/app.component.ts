@@ -27,12 +27,11 @@ export class AppComponent implements OnInit {
 
   private userService = inject(UserService)
   private spinnerService = inject(SpinnerService)
-  private translationService = inject(TranslationService)
+  private _translationService = inject(TranslationService)
 
   async ngOnInit() {
     try {
       this.spinnerService.show()
-      this.translationService.init()
       this.user = await this.userService.getMyUser()
       this.isAdmin = isAdmin(this.user)
     } catch (_e) {

@@ -1,5 +1,6 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MaterialModule } from '../../material-module'
+import { TranslationService } from '../../services/translation.service'
 
 @Component({
   selector: 'app-lang-switcher',
@@ -7,5 +8,10 @@ import { MaterialModule } from '../../material-module'
   templateUrl: './lang-switcher.component.html',
   styleUrl: './lang-switcher.component.scss',
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class LangSwitcherComponent {}
+export class LangSwitcherComponent {
+  translationService = inject(TranslationService)
+
+  selectLang(lang: string) {
+    this.translationService.setCurrentLang(lang)
+  }
+}

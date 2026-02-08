@@ -1,6 +1,12 @@
-import { inject, Injectable } from '@angular/core'
+import { computed, inject, Injectable, signal } from '@angular/core'
 import { TranslateService } from '@ngx-translate/core'
 import translationsEN from '../../../public/i18n/en.json'
+
+export type LangInfo = {
+  value: string
+  display: string
+  flag: string
+}
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +14,19 @@ import translationsEN from '../../../public/i18n/en.json'
 export class TranslationService {
   private translate = inject(TranslateService)
 
-  init() {
+  public availableLangs = [
+    { value: 'en', display: 'English', flag: '🇬🇧' },
+    { value: 'de', display: 'Deutsch', flag: '🇩🇪' },
+    { value: 'es', display: 'Español', flag: '🇲🇽' },
+  ] as const satisfies LangInfo[]
+
+  private _current = signal<string>('en')
+
+  public currentLang = computed<LangInfo | null>(() => {
+    return this.availableLangs.find(a => a.value === this._current()) || this.availableLangs[0]
+  })
+
+  constructor() {
     this.translate.setTranslation('en', translationsEN)
 
     this.translate.setFallbackLang('en')
@@ -19,6 +37,7 @@ export class TranslationService {
   setCurrentLang(lang: string) {
     // Set lang on localStorage and use that lang
     this.setLocalStorageLang(lang)
+    this._current.set(lang)
     this.translate.use(lang)
   }
 
