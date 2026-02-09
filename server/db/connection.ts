@@ -59,8 +59,9 @@ function connectionPg(options: DBConnectionOptions): Knex.Config {
       useNullAsDefault: true,
       connection: {
         host: options.DB_SOCKET_PATH,
-        database: options.DB_NAME,
-        ...(options.DB_USER?.length ? { user: options.DB_USER } : {}),
+        port: options.DB_PORT ?? 5432,
+        user: options.DB_USER ?? 'postgres',
+        database: options.DB_NAME ?? 'postgres',
         ...(options.DB_PASSWORD?.length ? { password: options.DB_PASSWORD } : {}),
       },
     }
