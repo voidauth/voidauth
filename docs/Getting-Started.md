@@ -131,7 +131,7 @@ When using the `sqlite` database adapter type, no additional database connection
 | DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if using SQLite database. | | |
 | DB_SSL | `false` | Enables SSL connection to the database. | | |
 | DB_SSL_VERIFICATION | `true` | If DB_SSL is enabled, whether to verify the SSL certificate. | | |
-| DB_SOCKET_PATH | | Path to the Unix socket file used to connect to the database. Not used if using SQLite database. | | |
+| DB_SOCKET_PATH | | Path to the **directory** containing the Unix socket file used to connect to the database (for example `/var/run/postgresql`). Do not include the socket filename. Not used if using SQLite database. | | |
 
 #### Database Migration Settings
 Use the following environment variables to configure a database migration. These variables *exactly* mirror the `DB_*` environment variables and describe the connection to be made to the new database. See details on how to migrate an existing database to a new one on the [Database Migration](DB-Migration.md) page.
