@@ -6,7 +6,7 @@
         <mat-label>Name</mat-label>
         <input matInput type="text" formControlName="name" />
         @if (form.controls.name.errors) {
-          <mat-error>{{ form.controls.name.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.name.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -29,7 +29,7 @@
             }
           </mat-autocomplete>
           @if (userSelect.errors) {
-            <mat-error>{{ userSelect.errors | validationError }}</mat-error>
+            <mat-error>{{ userSelect.errors | validationError | async }}</mat-error>
           }
         </mat-form-field>
 
@@ -55,7 +55,7 @@
       </mat-list>
       @if (form.controls.users.errors) {
         <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
-          {{ form.controls.users.errors | validationError }}
+          {{ form.controls.users.errors | validationError | async }}
         </mat-error>
       }
 

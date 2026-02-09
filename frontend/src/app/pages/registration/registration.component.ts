@@ -18,6 +18,7 @@ import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
 import { UserService } from '../../services/user.service'
 import { isValidEmail } from '../../validators/validators'
 import { TranslatePipe } from '@ngx-translate/core'
+import { AsyncPipe } from '@angular/common'
 
 @Component({
   selector: 'app-registration',
@@ -31,6 +32,7 @@ import { TranslatePipe } from '@ngx-translate/core'
     NewPasswordInputComponent,
     TextDividerComponent,
     TranslatePipe,
+    AsyncPipe,
   ],
 })
 export class RegistrationComponent implements OnInit {

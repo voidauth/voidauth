@@ -6,7 +6,7 @@
         <mat-label>{{ "login.username.label" | translate }}</mat-label>
         <input matInput type="text" formControlName="email" autocomplete="username webauthn" />
         @if (form.controls.email.errors) {
-          <mat-error>{{ form.controls.email.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.email.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
       <mat-form-field style="padding-right: 4px">
@@ -16,7 +16,7 @@
           <mat-icon fontSet="material-icons-round" matSuffix>{{ pwdShow ? "visibility" : "visibility_off" }}</mat-icon>
         </button>
         @if (form.controls.password.errors) {
-          <mat-error>{{ form.controls.password.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.password.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
       <a routerLink="/forgot_password" mat-button type="button" style="margin-top: -6px">{{ "login.forgot-password" | translate }}</a>
@@ -46,5 +46,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.action.label" | translate }}</a>
+  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

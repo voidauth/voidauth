@@ -1,12 +1,14 @@
-<h1>{{ title }}</h1>
+<h1>{{ title | async }}</h1>
 <mat-card class="form-card">
   <mat-card-content>
-    <button [ngClass]="{ hidden: !userid }" mat-button (click)="sendVerification()">Send Again</button>
+    <button [ngClass]="{ hidden: !userid }" mat-button (click)="sendVerification()">
+      {{ "verify-email.verify.actions.send-again.label" | translate }}
+    </button>
   </mat-card-content>
 </mat-card>
 
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.action.label" | translate }}</a>
+  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

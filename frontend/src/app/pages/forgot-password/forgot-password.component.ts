@@ -9,6 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { TranslatePipe } from '@ngx-translate/core'
+import { AsyncPipe } from '@angular/common'
 
 @Component({
   selector: 'app-forgot-password',
@@ -17,6 +18,7 @@ import { TranslatePipe } from '@ngx-translate/core'
     MaterialModule,
     ValidationErrorPipe,
     TranslatePipe,
+    AsyncPipe,
   ],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',

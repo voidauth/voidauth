@@ -1,4 +1,4 @@
-<h1>Logout</h1>
+<h1>{{ "logout.title" | translate }}</h1>
 <mat-card class="form-card">
   <mat-card-content>
     <form autocomplete="off" [action]="host + '/oidc/session/end/confirm'" method="post">
@@ -6,14 +6,16 @@
       @if (user) {
         <h2>{{ user.name ?? user.username }}</h2>
       }
-      <p>Do you want to log out?</p>
+      <p>{{ "logout.info.logout-question" | translate }}</p>
       <input type="hidden" name="xsrf" [value]="challenge" />
       <mat-card-actions>
-        <button mat-flat-button autofocus="" [disabled]="!challenge" type="submit" value="yes" name="logout">Yes</button>
+        <button mat-flat-button autofocus="" [disabled]="!challenge" type="submit" value="yes" name="logout">
+          {{ "logout.actions.yes" | translate }}
+        </button>
         @if (history.length) {
-          <button mat-button type="button" (click)="history.back()">Back</button>
+          <button mat-button type="button" (click)="history.back()">{{ "logout.actions.back" | translate }}</button>
         } @else {
-          <button mat-button type="submit">No</button>
+          <button mat-button type="submit">{{ "logout.actions.no" | translate }}</button>
         }
       </mat-card-actions>
     </form>

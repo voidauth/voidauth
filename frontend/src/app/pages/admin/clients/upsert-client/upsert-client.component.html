@@ -7,7 +7,7 @@
         <mat-label>Name</mat-label>
         <input matInput type="text" formControlName="client_name" />
         @if (form.controls.client_name.errors) {
-          <mat-error>{{ form.controls.client_name.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.client_name.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -15,7 +15,7 @@
         <mat-label>Home Page URL</mat-label>
         <input matInput type="text" formControlName="client_uri" />
         @if (form.controls.client_uri.errors) {
-          <mat-error>{{ form.controls.client_uri.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.client_uri.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -23,7 +23,7 @@
         <mat-label>Logo URL</mat-label>
         <input matInput type="text" formControlName="logo_uri" />
         @if (form.controls.logo_uri.errors) {
-          <mat-error>{{ form.controls.logo_uri.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.logo_uri.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -46,7 +46,7 @@
             }
           </mat-autocomplete>
           @if (groupSelect.errors) {
-            <mat-error>{{ groupSelect.errors | validationError }}</mat-error>
+            <mat-error>{{ groupSelect.errors | validationError | async }}</mat-error>
           }
         </mat-form-field>
 
@@ -63,7 +63,7 @@
       </mat-list>
       @if (form.controls.groups.errors) {
         <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
-          {{ form.controls.groups.errors | validationError }}
+          {{ form.controls.groups.errors | validationError | async }}
         </mat-error>
       }
 
@@ -100,7 +100,7 @@
           <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
         </button>
         @if (form.controls.client_id.errors) {
-          <mat-error>{{ form.controls.client_id.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.client_id.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -115,7 +115,7 @@
           <mat-hint>PKCE Required with this Auth Method.</mat-hint>
         }
         @if (form.controls.token_endpoint_auth_method.errors) {
-          <mat-error>{{ form.controls.token_endpoint_auth_method.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.token_endpoint_auth_method.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -155,7 +155,7 @@
           <mat-hint>Not required for current Auth Method.</mat-hint>
         }
         @if (form.controls.client_secret.errors) {
-          <mat-error>{{ form.controls.client_secret.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.client_secret.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -174,7 +174,7 @@
             <mat-icon fontSet="material-icons-round" matSuffix>add_circle</mat-icon>
           </button>
           @if (redirectUrlControl.errors) {
-            <mat-error>{{ redirectUrlControl.errors | validationError }}</mat-error>
+            <mat-error>{{ redirectUrlControl.errors | validationError | async }}</mat-error>
           }
         </mat-form-field>
         <div mat-subheader>Redirect URLs:</div>
@@ -190,7 +190,7 @@
       </mat-list>
       @if (form.controls.redirect_uris.errors) {
         <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
-          {{ form.controls.redirect_uris.errors | validationError }}
+          {{ form.controls.redirect_uris.errors | validationError | async }}
         </mat-error>
       }
 
@@ -202,7 +202,7 @@
           }
         </mat-select>
         @if (responseTypeControl.errors) {
-          <mat-error>{{ responseTypeControl.errors | validationError }}</mat-error>
+          <mat-error>{{ responseTypeControl.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -220,7 +220,7 @@
         <input matInput type="text" formControlName="post_logout_redirect_uri" />
         <mat-hint>Allowed post-logout redirect url on client initiated logout.</mat-hint>
         @if (form.controls.post_logout_redirect_uri) {
-          <mat-error>{{ form.controls.post_logout_redirect_uri.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.post_logout_redirect_uri.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 

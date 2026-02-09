@@ -1,26 +1,34 @@
-<h1>{{ invitation ? "Accept Invitation" : "Sign Up" }}</h1>
+<h1>
+  @if (invitation) {
+    {{ "registration.title.accept-invitation" | translate }}
+  } @else {
+    {{ "registration.title.sign-up" | translate }}
+  }
+</h1>
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="register()">
       <mat-form-field>
-        <mat-label>Username</mat-label>
+        <mat-label>{{ "registration.username.label" | translate }}</mat-label>
         <input matInput type="text" formControlName="username" />
         @if (form.controls.username.errors) {
-          <mat-error>{{ form.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" }}</mat-error>
+          <mat-error>{{
+            form.controls.username.errors | validationError: ("form-errors.alpha-num-underscore-only" | translate) | async
+          }}</mat-error>
         }
       </mat-form-field>
       <mat-form-field>
-        <mat-label>Email</mat-label>
+        <mat-label>{{ "registration.email.label" | translate }}</mat-label>
         <input matInput type="email" formControlName="email" />
         @if (form.controls.email.errors) {
-          <mat-error>{{ form.controls.email.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.email.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
       <mat-form-field>
-        <mat-label>Name</mat-label>
+        <mat-label>{{ "registration.name.label" | translate }}</mat-label>
         <input matInput type="text" formControlName="name" />
         @if (form.controls.name.errors) {
-          <mat-error>{{ form.controls.name.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.name.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -28,13 +36,15 @@
 
       <app-new-password-input style="width: 100%" [password]="form.controls.password" [(pwdShow)]="pwdShow"></app-new-password-input>
 
-      <button mat-flat-button [disabled]="form.invalid || !form.value.password" type="submit">Sign Up</button>
+      <button mat-flat-button [disabled]="form.invalid || !form.value.password" type="submit">
+        {{ "registration.actions.sign-up" | translate }}
+      </button>
 
       @if (passkeySupport?.enabled) {
         <app-text-divider text="or"></app-text-divider>
         <button mat-flat-button [disabled]="form.invalid" type="button" (click)="passkey()">
           {{
-            "registration.action.passkey-sign-up-prefix"
+            "registration.actions.passkey-sign-up"
               | translate: { platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) }
           }}
           <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
@@ -43,7 +53,7 @@
 
       @if (!invitation) {
         <app-text-divider text="or"></app-text-divider>
-        <a mat-button routerLink="/login">Login</a>
+        <a mat-button routerLink="/login">{{ "registration.actions.login" | translate }}</a>
       }
 
       <div style="padding-bottom: 6px"></div>
@@ -54,5 +64,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.action.label" | translate }}</a>
+  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

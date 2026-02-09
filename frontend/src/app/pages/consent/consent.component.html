@@ -9,18 +9,19 @@
           }
           <br />
           <br />
-          Do you want to sign in to <br />
-          <h2>{{ details.clientName ?? redirectHost ?? details.redirectUri }}</h2>
+          <div
+            [innerHTML]="
+              'consent.info.sign-into-question' | translate: { destination: details.clientName ?? redirectHost ?? details.redirectUri }
+            "
+          ></div>
           <br />
           @if (redirectHost) {
-            <p>
-              After you sign in, you will be sent to <b>{{ details.redirectUri }}</b>
-            </p>
+            <p [innerHTML]="'consent.info.post-signin-redir-notice' | translate: { redirect: details.redirectUri }"></p>
           }
         </div>
 
         <mat-card-actions>
-          <button mat-flat-button type="submit">Sign In</button>
+          <button mat-flat-button type="submit">{{ "consent.actions.sign-in.label" | translate }}</button>
         </mat-card-actions>
       </form>
     </mat-card-content>

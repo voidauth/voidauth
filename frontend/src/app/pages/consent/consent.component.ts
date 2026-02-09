@@ -7,11 +7,13 @@ import { MaterialModule } from '../../material-module'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { SpinnerService } from '../../services/spinner.service'
 import { getBaseHrefPath } from '../../services/config.service'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-consent',
   imports: [
     MaterialModule,
+    TranslatePipe,
   ],
   templateUrl: './consent.component.html',
   styleUrl: './consent.component.scss',
