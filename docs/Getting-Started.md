@@ -124,7 +124,7 @@ When using the `sqlite` database adapter type, no additional database connection
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | DB_ADAPTER | `postgres` | Allowed values are `postgres` and `sqlite`. | | |
-| DB_HOST | | Host address of the database. | 🔴 (unless using SQLite database) | |
+| DB_HOST | | Host address of the database. | 🔴 (unless using SQLite database or Unix socket) | |
 | DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless using SQLite database or Unix socket) | |
 | DB_PORT | `5432` | Port of the database. Not used if using SQLite database. | | |
 | DB_USER | `postgres` | Username used to sign into the database by the app. Not used if using SQLite database. | | |
