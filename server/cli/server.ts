@@ -18,9 +18,6 @@ import { createInitialAdmin } from '../db/user'
 import { logger } from '../util/logger'
 import { standardRateLimit } from '../util/rateLimit'
 
-const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
-const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
-
 export async function serve() {
   // Do not wait for theme to generate before starting
   void generateTheme()
@@ -138,7 +135,7 @@ export async function serve() {
   })
 
   // frontend
-  app.use(`${basePath()}/`, express.static(FE_ROOT, {
+  app.use(`${basePath()}/`, express.static(appConfig.FRONTEND_PATH, {
     index: false,
     fallthrough: true,
   }))
@@ -172,7 +169,8 @@ export async function serve() {
 
   function modifyIndex() {
   // add APP_TITLE
-    let index = fs.readFileSync(path.join(FE_ROOT, './index.html')).toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
+    const indexPath = path.join(appConfig.FRONTEND_PATH, './index.html')
+    let index = fs.readFileSync(indexPath).toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
 
     // Replace base href with path of APP_URL
     index = index.replace(/<base[^>]*href=[^>]*>/g, `<base href="${basePath()}/"/>`)

@@ -3,12 +3,16 @@ import { exit } from 'node:process'
 import { booleanString } from './util'
 import { logger } from './logger'
 import * as psl from 'psl'
+import path from 'node:path'
+
+const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 
 // basic config for app
 class Config {
   APP_TITLE = 'VoidAuth'
   APP_URL = ''
   APP_PORT: number | string = 3000
+  FRONTEND_PATH = path.join(PROCESS_ROOT, '../frontend/dist/browser')
 
   SESSION_DOMAIN?: string
 
