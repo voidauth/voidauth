@@ -28,6 +28,7 @@ export async function migrate() {
         DB_PASSWORD: appConfig.MIGRATE_TO_DB_PASSWORD,
         DB_SSL: appConfig.MIGRATE_TO_DB_SSL,
         DB_SSL_VERIFICATION: appConfig.MIGRATE_TO_DB_SSL_VERIFICATION,
+        DB_SOCKET_PATH: appConfig.MIGRATE_TO_DB_SOCKET_PATH,
         isMigration: true,
       })
 
