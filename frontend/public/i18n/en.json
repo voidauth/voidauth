@@ -77,9 +77,7 @@
   },
   "consent": {
     "actions": {
-      "sign-in": {
-        "label": "Sign In"
-      }
+      "sign-in": "Sign In"
     },
     "info": {
       "sign-into-question": "Do you want to sign in to <br /> <h2>{{destination}}</h2>",
@@ -91,18 +89,10 @@
       "label": "Email or Username"
     },
     "actions": {
-      "send": {
-        "label": "Send"
-      },
-      "send-again": {
-        "label": "Send Again"
-      },
-      "create-again": {
-        "label": "Create Again"
-      },
-      "create": {
-        "label": "Create"
-      }
+      "send": "Send",
+      "send-again": "Send Again",
+      "create-again": "Create Again",
+      "create": "Create"
     }
   },
   "form-errors": {
@@ -143,9 +133,7 @@
         "email-verification-could-not-be-sent": "Email Verification Could Not Be Sent"
       },
       "actions": {
-        "send-again": {
-          "label": "Send Again"
-        }
+        "send-again": "Send Again"
       }
     },
     "verify-sent": {
@@ -154,15 +142,9 @@
         "email-verification-required": "Email Verification Required"
       },
       "actions": {
-        "logout": {
-          "label": "Logout"
-        },
-        "send-again": {
-          "label": "Send Again"
-        },
-        "send-verification": {
-          "label": "Send Verification"
-        }
+        "logout": "Logout",
+        "send-again": "Send Again",
+        "send-verification": "Send Verification"
       }
     }
   }
