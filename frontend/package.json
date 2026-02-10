@@ -6,10 +6,12 @@
     "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "watch:prod": "ng build --watch --configuration production",
+    "i18n:extract": "ngx-translate-extract -s --input ./src --output ./public/i18n/en.json --format namespaced-json --format-indentation=\"  \"",
     "test": "ng test"
   },
   "dependencies": {
     "@angular/animations": "^21.1.1",
+    "@angular/build": "^21.1.3",
     "@angular/cdk": "^21.1.1",
     "@angular/cli": "^21.1.3",
     "@angular/common": "^21.1.1",
@@ -21,10 +23,13 @@
     "@angular/platform-browser": "^21.1.1",
     "@angular/platform-browser-dynamic": "^21.1.3",
     "@angular/router": "^21.1.3",
+    "@ngx-translate/core": "^17.0.0",
+    "@ngx-translate/http-loader": "^17.0.0",
     "@simplewebauthn/browser": "^13.2.2",
     "@types/jasmine": "~5.1.0",
     "@types/oidc-provider": "^9.5.0",
     "@types/qrcode": "^1.5.6",
+    "@vendure/ngx-translate-extract": "^10.1.3",
     "generate-password-browser": "^1.1.0",
     "isomorphic-dompurify": "^2.35.0",
     "jasmine-core": "~5.2.0",
@@ -41,8 +46,5 @@
     "ua-parser-js": "^2.0.9",
     "zod": "^4.3.6",
     "zone.js": "^0.15.1"
-  },
-  "devDependencies": {
-    "@angular/build": "^21.1.3"
   }
 }

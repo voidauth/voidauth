@@ -1,4 +1,4 @@
-<h2 style="text-align: center">Multi-Factor Authentication Required</h2>
+<h2 style="text-align: center">{{ "mfa.title" | translate }}</h2>
 <mat-card class="form-card">
   <mat-card-content>
     <form>
@@ -14,14 +14,14 @@
         @if (user?.hasPasskeys) {
           <app-text-divider text="or" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyLogin()">
-            Use {{ passkeySupport?.platformName ?? "Passkey" }}
+            {{ "mfa.actions.use-passkey" | translate: { platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}
             <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
           </button>
         }
         @if (user?.isPrivileged) {
           <app-text-divider text="or" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyRegister()">
-            Register Passkey
+            {{ "mfa.actions.register-passkey" | translate }}
             <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
           </button>
         }
@@ -29,7 +29,7 @@
 
       <app-text-divider text="or" disabled></app-text-divider>
 
-      <button mat-button (click)="cancelMfa()" type="button">Back</button>
+      <button mat-button (click)="cancelMfa()" type="button">{{ "mfa.actions.back" | translate }}</button>
     </form>
   </mat-card-content>
 </mat-card>
@@ -37,5 +37,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">Contact</a>
+  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

@@ -6,7 +6,7 @@
         <mat-label>Username</mat-label>
         <input matInput type="text" formControlName="username" />
         @if (form.controls.username.errors) {
-          <mat-error>{{ form.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" }}</mat-error>
+          <mat-error>{{ form.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -14,7 +14,7 @@
         <mat-label>Name</mat-label>
         <input matInput type="text" formControlName="name" />
         @if (form.controls.name.errors) {
-          <mat-error>{{ form.controls.name.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.name.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -22,7 +22,7 @@
         <mat-label>Email</mat-label>
         <input matInput type="text" formControlName="email" />
         @if (form.controls.email.errors) {
-          <mat-error>{{ form.controls.email.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.email.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -45,7 +45,7 @@
             }
           </mat-autocomplete>
           @if (groupSelect.errors) {
-            <mat-error>{{ groupSelect.errors | validationError }}</mat-error>
+            <mat-error>{{ groupSelect.errors | validationError | async }}</mat-error>
           }
         </mat-form-field>
 
@@ -67,7 +67,7 @@
       </mat-list>
       @if (form.controls.groups.errors) {
         <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
-          {{ form.controls.groups.errors | validationError }}
+          {{ form.controls.groups.errors | validationError | async }}
         </mat-error>
       }
 

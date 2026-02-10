@@ -17,7 +17,7 @@
         <mat-label>Name</mat-label>
         <input matInput type="text" formControlName="name" />
         @if (profileForm.controls.name.errors) {
-          <mat-error>{{ profileForm.controls.name.errors | validationError }}</mat-error>
+          <mat-error>{{ profileForm.controls.name.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -35,7 +35,7 @@
         <mat-label>Email</mat-label>
         <input matInput type="text" formControlName="email" />
         @if (emailForm.controls.email.errors) {
-          <mat-error>{{ emailForm.controls.email.errors | validationError }}</mat-error>
+          <mat-error>{{ emailForm.controls.email.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -77,7 +77,9 @@
 
         <h2 style="margin-top: -16px">Passkeys</h2>
 
-        <p style="text-align: center">You have {{ user?.hasPasskeys ? "at least one registered passkey" : "no registered passkeys" }}.</p>
+        <p style="text-align: center">
+          {{ (user?.hasPasskeys ? "home.security.passkey.hasAny" : "home.security.passkey.hasNone") | translate }}
+        </p>
 
         <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
           Register Passkey
@@ -166,5 +168,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">Contact</a>
+  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

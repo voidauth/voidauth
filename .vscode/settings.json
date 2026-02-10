@@ -1,3 +1,7 @@
 {
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "i18n-ally.localesPaths": [
+    "frontend/public/i18n"
+  ],
+  "i18n-ally.keystyle": "nested"
 }

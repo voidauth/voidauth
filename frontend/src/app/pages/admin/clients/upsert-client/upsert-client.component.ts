@@ -350,7 +350,6 @@ export class UpsertClientComponent implements OnInit {
 
   removeRedirectUrl(value: string) {
     this.form.controls.redirect_uris.setValue((this.form.controls.redirect_uris.value ?? []).filter(r => r !== value))
-    this.form.controls.redirect_uris.markAsDirty()
     this.form.updateValueAndValidity()
     this.redirectUrlControl.updateValueAndValidity()
     this.form.controls.redirect_uris.markAsDirty()

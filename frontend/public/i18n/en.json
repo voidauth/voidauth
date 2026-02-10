@@ -1,0 +1,151 @@
+{
+  "home": {
+    "security": {
+      "passkey": {
+        "hasAny": "You have at least one registered passkey.",
+        "hasNone": "You have no registered passkeys."
+      }
+    }
+  },
+  "login": {
+    "password": {
+      "label": "Password"
+    },
+    "username": {
+      "label": "Username or Email"
+    },
+    "forgot-password": "Forgot Password",
+    "remember-me": "Remember Me",
+    "actions": {
+      "login": "Login",
+      "sign-up": "Sign Up"
+    }
+  },
+  "contact-us": {
+    "actions": {
+      "label": "Contact"
+    }
+  },
+  "passkey-title": "Passkey",
+  "passkey-dialog": {
+    "title": "Enable {{platformName}}?",
+    "actions": {
+      "passkey": "Enable {{platformName}}"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "Use {{platformName}}",
+      "register-passkey": "Register Passkey",
+      "back": "Back"
+    },
+    "title": "Multi-Factor Authentication Required"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "Sign Up With {{platformName}}",
+      "sign-up": "Sign Up",
+      "login": "Login"
+    },
+    "title": {
+      "accept-invitation": "Accept Invitation",
+      "sign-up": "Sign Up"
+    },
+    "username": {
+      "label": "Username"
+    },
+    "email": {
+      "label": "Email"
+    },
+    "name": {
+      "label": "Name"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "Enable {{platformName}}",
+      "reset-password": "Reset Password"
+    },
+    "title": "Reset Password"
+  },
+  "approval-required": {
+    "content": "You need administrator approval before you can log in. Please wait or contact an Admin for help.",
+    "title": "Approval Required",
+    "actions": {
+      "login": "Login"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "Sign In"
+    },
+    "info": {
+      "sign-into-question": "Do you want to sign in to <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "After you sign in, you will be sent to <b>{{redirect}}</b>"
+    }
+  },
+  "forgot-password": {
+    "username": {
+      "label": "Email or Username"
+    },
+    "actions": {
+      "send": "Send",
+      "send-again": "Send Again",
+      "create-again": "Create Again",
+      "create": "Create"
+    }
+  },
+  "form-errors": {
+    "required": "Required.",
+    "min": "Must be at least {{min}}.",
+    "max": "Cannot be greater than {{max}}.",
+    "minLength": "Must be at least {{requiredLength}} characters long.",
+    "maxLength": "Must be less than {{requiredLength}} characters long.",
+    "email": "Not a valid email.",
+    "default": "Invalid value.",
+    "alpha-num-underscore-only": "Only A-Z,0-9,and _ allowed"
+  },
+  "logout": {
+    "title": "Logout",
+    "info": {
+      "logout-question": "Do you want to log out?"
+    },
+    "actions": {
+      "yes": "Yes",
+      "back": "Back",
+      "no": "No"
+    }
+  },
+  "page-not-found": {
+    "title": "The Page Cannot Be Found",
+    "": {
+      "actions": {
+        "go-home": "Go Home"
+      }
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "Verifying Email...",
+        "email-could-not-be-verified": "Email Could Not Be Verified",
+        "sending-new-verification": "Sending New Verification...",
+        "email-verification-could-not-be-sent": "Email Verification Could Not Be Sent"
+      },
+      "actions": {
+        "send-again": "Send Again"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "Verification Email Sent",
+        "email-verification-required": "Email Verification Required"
+      },
+      "actions": {
+        "logout": "Logout",
+        "send-again": "Send Again",
+        "send-verification": "Send Verification"
+      }
+    }
+  }
+}

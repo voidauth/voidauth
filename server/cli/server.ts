@@ -143,6 +143,18 @@ export async function serve() {
     fallthrough: true,
   }))
 
+  // Do not fallthrough to index.html for missing i18n files
+  app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
+    index: false,
+    fallthrough: false,
+  }), (err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    if (!res.statusCode || res.statusCode === 200) {
+      const errStatus = 'status' in err && typeof err.status === 'number' ? err.status : 500
+      res.status(errStatus)
+    }
+    res.sendStatus(res.statusCode)
+  })
+
   // Unresolved GET requests should return index if they start with it basePath
   app.get(new RegExp(`(.*)`), (req, res) => {
     if (req.originalUrl.startsWith(basePath())) {

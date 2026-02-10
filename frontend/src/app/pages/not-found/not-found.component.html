@@ -1,9 +1,9 @@
-<h1 style="margin-top: 3em">The Page Cannot Be Found</h1>
+<h1 style="margin-top: 3em">{{ "page-not-found.title" | translate }}</h1>
 
-<a mat-flat-button style="margin-top: 3em" routerLink="/">Go Home</a>
+<a mat-flat-button style="margin-top: 3em" routerLink="/">{{ "page-not-found..actions.go-home" | translate }}</a>
 
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">Contact</a>
+  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

@@ -6,7 +6,7 @@
         <mat-label>Domain</mat-label>
         <input matInput type="text" formControlName="domain" placeholder="ex. *.your.domain.com/path/" />
         @if (form.controls.domain.errors) {
-          <mat-error>{{ form.controls.domain.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.domain.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
@@ -40,7 +40,7 @@
             }
           </mat-autocomplete>
           @if (groupSelect.errors) {
-            <mat-error>{{ groupSelect.errors | validationError }}</mat-error>
+            <mat-error>{{ groupSelect.errors | validationError | async }}</mat-error>
           }
         </mat-form-field>
 
@@ -57,7 +57,7 @@
       </mat-list>
       @if (form.controls.groups.errors) {
         <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
-          {{ form.controls.groups.errors | validationError }}
+          {{ form.controls.groups.errors | validationError | async }}
         </mat-error>
       }
 
@@ -66,7 +66,7 @@
         <input matInput type="number" min="5" max="525600" formControlName="maxSessionLength" />
         <mat-hint>Blank means no re-authentication required.</mat-hint>
         @if (form.controls.maxSessionLength.errors) {
-          <mat-error>{{ form.controls.maxSessionLength.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.maxSessionLength.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 

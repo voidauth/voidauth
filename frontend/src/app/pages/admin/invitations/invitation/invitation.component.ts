@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common'
+import { AsyncPipe, CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
@@ -25,6 +25,7 @@ import { isValidEmail } from '../../../../validators/validators'
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
+    AsyncPipe,
   ],
   templateUrl: './invitation.component.html',
   styleUrl: './invitation.component.scss',

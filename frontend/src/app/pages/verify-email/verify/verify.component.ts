@@ -9,33 +9,36 @@ import { SpinnerService } from '../../../services/spinner.service'
 import { ConfigService } from '../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { PasskeyService } from '../../../services/passkey.service'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-verify',
   imports: [
     CommonModule,
     MaterialModule,
+    TranslatePipe,
   ],
   templateUrl: './verify.component.html',
   styleUrl: './verify.component.scss',
 })
 export class VerifyComponent implements OnInit {
-  title: string = 'Verifying Email...'
-  userid?: string
-  config?: ConfigResponse
-
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
   private passkeyService = inject(PasskeyService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private configService = inject(ConfigService)
+  private translate = inject(TranslateService)
+
+  title = this.translate.stream('verify-email.verify.title.verifying-email')
+  userid?: string
+  config?: ConfigResponse
 
   async ngOnInit() {
     const params = this.activatedRoute.snapshot.paramMap
 
     try {
-      this.title = 'Verifying Email...'
+      this.title = this.translate.stream('verify-email.verify.title.verifying-email')
 
       this.spinnerService.show()
 
@@ -87,14 +90,14 @@ export class VerifyComponent implements OnInit {
 
       error ||= 'Something went wrong.'
       this.snackbarService.error(error)
-      this.title = 'Email Could Not Be Verified :('
+      this.title = this.translate.stream('verify-email.verify.title.email-could-not-be-verified')
     } finally {
       this.spinnerService.hide()
     }
   }
 
   public async sendVerification() {
-    this.title = 'Sending New Verification...'
+    this.title = this.translate.stream('verify-email.verify.title.sending-new-verification')
     try {
       this.spinnerService.show()
       if (!this.userid) {
@@ -112,7 +115,7 @@ export class VerifyComponent implements OnInit {
       }
 
       error ||= 'Something went wrong.'
-      this.title = 'Email Verification Could Not Be Sent :('
+      this.title = this.translate.stream('verify-email.verify.title.email-verification-could-not-be-sent')
       this.snackbarService.error(error)
     } finally {
       this.spinnerService.hide()

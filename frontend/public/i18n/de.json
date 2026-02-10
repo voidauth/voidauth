@@ -1,0 +1,10 @@
+{
+  "login": {
+    "password": {
+      "label": "Passwort"
+    }
+  },
+  "form-errors": {
+    "required": "Erforderlich."
+  }
+}

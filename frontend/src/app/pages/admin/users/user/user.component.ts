@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { Component, inject, type OnInit } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { MaterialModule } from '../../../../material-module'
@@ -30,7 +30,7 @@ import { isValidEmail } from '../../../../validators/validators'
   templateUrl: './user.component.html',
   styleUrl: './user.component.scss',
 })
-export class UserComponent {
+export class UserComponent implements OnInit {
   public me?: UserDetails
   public id: string | null = null
 
@@ -131,7 +131,7 @@ export class UserComponent {
       return
     }
     this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value ?? [])
-      .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()
