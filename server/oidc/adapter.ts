@@ -1,5 +1,4 @@
-/* eslint-disable */
-import type { Adapter, ClientMetadata } from 'oidc-provider'
+import type { Adapter, AdapterPayload, ClientMetadata } from 'oidc-provider'
 import { db } from '../db/db'
 import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
 import appConfig from '../util/config'
@@ -13,20 +12,20 @@ function getExpireAt(expiresIn: number) {
     : undefined
 }
 
-function parsePayload(payload: string, pt: string) {
-  let parsed = JSON.parse(payload)
-  if (pt === 'Client' && parsed.client_secret != null) {
+function parsePayload(payload: string, pt: PayloadType) {
+  const parsed = JSON.parse(payload) as AdapterPayload
+  if (isClientPayload(pt, parsed) && parsed.client_secret != null) {
     const client_secret = decryptString(parsed.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
     if (client_secret == null) {
-      throw new Error("Cannot decrypt client_secret")
+      throw new Error('Cannot decrypt client_secret')
     }
-    (parsed as ClientMetadata).client_secret = client_secret
+    parsed.client_secret = client_secret
   }
   return parsed
 }
 
-function stringifyPayload(payload: any, pt: string) {
-  if (pt === 'Client' && payload.client_secret != null) {
+function stringifyPayload(payload: AdapterPayload, pt: PayloadType) {
+  if (isClientPayload(pt, payload) && payload.client_secret != null) {
     const client_secret = encryptString(payload.client_secret)
     return JSON.stringify({ ...payload, client_secret })
   }
@@ -45,22 +44,23 @@ export class KnexAdapter implements Adapter {
       .where('type', this.payloadType)
       .andWhere((w) => {
         w.where({ expiresAt: null })
-        .orWhere('expiresAt', '>=', new Date())
+          .orWhere('expiresAt', '>=', new Date())
       })
   }
 
-  _rows(obj: any) {
+  _rows(obj: Partial<OIDCPayload>) {
     return this._table.where(obj)
   }
 
-  _findBy(obj: any) {
-    return this._rows(obj).then((r: any) => {
+  _findBy(obj: Partial<OIDCPayload>): Promise<AdapterPayload | undefined> {
+    return this._rows(obj).then((r) => {
       try {
-        return r.length > 0
+        const first = r[0]
+        return first
           ? {
-            ...parsePayload(r[0].payload, this.payloadType),
-            ...(r[0].consumedAt ? { consumed: true } : undefined),
-          }
+              ...parsePayload(first.payload, this.payloadType),
+              ...(first.consumedAt ? { consumed: true } : undefined),
+            }
           : undefined
       } catch (e) {
         logger.error(e)
@@ -69,7 +69,7 @@ export class KnexAdapter implements Adapter {
     })
   }
 
-  async upsert(id: string, payload: any, expiresIn: number) {
+  async upsert(id: string, payload: AdapterPayload, expiresIn: number) {
     const expiresAt = getExpireAt(expiresIn)
     await db()
       .table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
@@ -87,15 +87,15 @@ export class KnexAdapter implements Adapter {
       .merge()
   }
 
-  async find(id: string) {
+  async find(id: string): Promise<AdapterPayload | undefined> {
     return this._findBy({ id })
   }
 
-  async findByUserCode(userCode: string) {
+  async findByUserCode(userCode: string): Promise<AdapterPayload | undefined> {
     return this._findBy({ userCode })
   }
 
-  async findByUid(uid: string) {
+  async findByUid(uid: string): Promise<AdapterPayload | undefined> {
     return this._findBy({ uid })
   }
 
@@ -114,3 +114,8 @@ export class KnexAdapter implements Adapter {
     return
   }
 };
+
+// type gates
+function isClientPayload(pt: PayloadType, payload: unknown): payload is ClientMetadata {
+  return pt === 'Client'
+}
