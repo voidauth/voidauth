@@ -54,7 +54,7 @@ function getConnectionOptions(options: DBConnectionOptions): knex.Knex.Config {
 function connectionPg(options: DBConnectionOptions): Knex.Config {
   // check that DB_PASSWORD is set
   if (!options.DB_PASSWORD?.length) {
-    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_PASSWORD must be set. If you don't already have one, use something long and random like:
+    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_PASSWORD must be set when DB_ADAPTER is 'postgres'. If you don't already have one, use something long and random like:
     ${generate({ length: 32, numbers: true })}`)
   }
 
