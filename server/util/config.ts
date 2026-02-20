@@ -174,7 +174,7 @@ function refreshDeclaredClients() {
 
   // Inspect environment variables to find OIDC client configs
   Object.keys(process.env).forEach((key) => {
-    const parts = key.split('_', 2)
+    const parts = key.split('_', 3)
     if (parts[0] != 'OIDC' || parts[2] == undefined) return
 
     const client_id = parts[1]?.toLowerCase()
@@ -312,6 +312,8 @@ configKeys.forEach((key: keyof Config) => {
 
 refreshDeclaredClients()
 registerDockerListener()
+
+console.log(appConfig.DECLARED_CLIENTS)
 
 /**
  * Validations and Coercions
