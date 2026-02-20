@@ -67,7 +67,6 @@ class Config {
 }
 
 const appConfig = new Config()
-const docker = new Docker()
 
 function assignConfigValue(key: keyof Config, value: string | undefined) {
   switch (key) {
@@ -140,37 +139,45 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
   }
 }
 
-function registerDockerListener() {
-  docker.getEvents(
-    { filters: { type: ['container'], event: ['start', 'stop'] } },
-    function (_err, _stream) {
-      refreshDeclaredClients()
+async function registerDockerListener(): Promise<Docker | undefined> {
+  try {
+    const docker = new Docker()
+    const stream = await docker.getEvents({ filters: { type: ['container'], event: ['start', 'stop', 'restart', 'die'] } })
+    stream.on('data', () => {
+      refreshDeclaredClients(docker)
     })
+    return docker
+  } catch { /* do nothing, docker not initialized */ }
 }
 
-function refreshDeclaredClients() {
-  appConfig.DECLARED_CLIENTS.clear()
+function refreshDeclaredClients(docker: Docker | undefined) {
+  // Use separate map to prevent DECLARED_CLIENTS map from being empty during a container start/stop/restart/etc.
+  const clients = new Map<string, ClientResponse>()
 
   // Inspect docker container labels to find OIDC client configs
-  docker.listContainers(function (_err, containers) {
-    containers?.forEach(async function (containerInfo) {
-      await docker.getContainer(containerInfo.Id).inspect().then((info) => {
-        let enabled = false
-        for (const label in info.Config.Labels) {
-          if (label == 'voidauth.enable' && info.Config.Labels[label] == 'true') {
-            enabled = true
-            break
+  if (docker !== undefined) {
+    docker.listContainers(function (_err, containers) {
+      containers?.forEach(async function (containerInfo) {
+        await docker.getContainer(containerInfo.Id).inspect().then((info) => {
+          if (!info.State.Running) return
+
+          let enabled = false
+          for (const label in info.Config.Labels) {
+            if (label == 'voidauth.enable' && info.Config.Labels[label] == 'true') {
+              enabled = true
+              break
+            }
           }
-        }
-        if (enabled) {
-          Object.entries(info.Config.Labels).forEach((label) => {
-            if (label[0].startsWith('voidauth.oidc.'))
-              registerClientVariable(info.Name, label[0].replace('voidauth.oidc.', ''), label[1])
-          })
-        }
+          if (enabled) {
+            Object.entries(info.Config.Labels).forEach((label) => {
+              if (label[0].startsWith('voidauth.oidc.'))
+                registerClientVariable(clients, info.Name.replace('/', ''), label[0].replace('voidauth.oidc.', ''), label[1])
+            })
+          }
+        })
       })
     })
-  })
+  }
 
   // Inspect environment variables to find OIDC client configs
   Object.keys(process.env).forEach((key) => {
@@ -188,12 +195,14 @@ function refreshDeclaredClients() {
     const variable = parts[2]
     if (client_id === undefined || variable === undefined || value === undefined) return
 
-    registerClientVariable(client_id, variable, value)
+    registerClientVariable(clients, client_id, variable, value)
   })
+
+  appConfig.DECLARED_CLIENTS = clients
 }
 
-function registerClientVariable(client_id: string, variable: string, value: string) {
-  let client = appConfig.DECLARED_CLIENTS.get(client_id)
+function registerClientVariable(clients: Map<string, ClientResponse>, client_id: string, variable: string, value: string) {
+  let client = clients.get(client_id)
   if (!client) {
     client = {
       client_id: client_id,
@@ -204,7 +213,7 @@ function registerClientVariable(client_id: string, variable: string, value: stri
       groups: [],
       declared: true,
     }
-    appConfig.DECLARED_CLIENTS.set(client_id, client)
+    clients.set(client_id, client)
   }
 
   switch (variable.toUpperCase()) {
@@ -315,8 +324,7 @@ configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
 })
 
-refreshDeclaredClients()
-registerDockerListener()
+refreshDeclaredClients(await registerDockerListener())
 
 /**
  * Validations and Coercions
