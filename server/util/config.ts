@@ -174,16 +174,21 @@ function refreshDeclaredClients() {
 
   // Inspect environment variables to find OIDC client configs
   Object.keys(process.env).forEach((key) => {
-    const parts = key.split('_', 3)
-    if (parts[0] != 'OIDC' || parts[2] == undefined) return
+    const raw = key.split('_')
+    if (raw.length < 3 || raw[0] !== 'OIDC') return
+
+    const parts = [
+      raw[0],
+      raw[1],
+      raw.slice(2).join('_'),
+    ]
 
     const client_id = parts[1]?.toLowerCase()
-    if (client_id === undefined) return
-
     const value = process.env[key]
-    if (value === undefined) return
+    const variable = parts[2]
+    if (client_id === undefined || variable === undefined || value === undefined) return
 
-    registerClientVariable(client_id, parts[2], value)
+    registerClientVariable(client_id, variable, value)
   })
 }
 
