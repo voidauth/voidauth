@@ -54,9 +54,7 @@ export class KnexAdapter implements Adapter {
 
   _findBy(obj: Partial<OIDCPayload>): Promise<AdapterPayload | undefined> {
     if (obj.id != undefined && this.payloadType === 'Client' && appConfig.DECLARED_CLIENTS.has(obj.id)) {
-      return new Promise((_value, _reason) => {
-        return appConfig.DECLARED_CLIENTS.get(<string>obj.id) as ClientMetadata
-      })
+      return Promise.resolve(appConfig.DECLARED_CLIENTS.get(obj.id) as ClientMetadata)
     }
 
     return this._rows(obj).then((r) => {
