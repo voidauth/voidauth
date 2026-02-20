@@ -313,8 +313,6 @@ configKeys.forEach((key: keyof Config) => {
 refreshDeclaredClients()
 registerDockerListener()
 
-console.log(appConfig.DECLARED_CLIENTS)
-
 /**
  * Validations and Coercions
  */
