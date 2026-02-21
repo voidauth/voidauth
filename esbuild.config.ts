@@ -30,7 +30,6 @@ rmSync(outDir, {
 
 // dependencies that cannot be bundled
 const externalDeps = [
-  'sqlite3',
   '@angular/material',
 ]
 
@@ -58,7 +57,7 @@ await esbuild.build({
   },
   // external packages that cannot be bundled plus whatever needs to be external to get bundle to run
   external: externalDeps.concat([
-    'better-sqlite3',
+    'sqlite3',
     'mysql2',
     'mysql',
     'pg-query-stream',

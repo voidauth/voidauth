@@ -85,7 +85,7 @@ function connectionSQLite(): Knex.Config {
   }
 
   return {
-    client: 'sqlite3',
+    client: 'better-sqlite3',
     connection: {
       filename: './db/db.sqlite',
     },
