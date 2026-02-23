@@ -52,15 +52,22 @@ fs.cpSync(DEFAULT_EMAIL_TEMPLATE_DIR, EMAIL_TEMPLATE_DEST, {
 // Fix permissions - files could be copied from a read only source
 // but we need them writable so they can be updated on subsequent starts
 function setWritableRecursive(dir: string) {
-  fs.chmodSync(dir, 0o755)
+  try {
+    fs.chmodSync(dir, 0o755)
+  } catch (_e) { /* do nothing */ }
 
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) {
-      fs.chmodSync(fullPath, 0o755)
+      try {
+        fs.chmodSync(fullPath, 0o755)
+      } catch (_e) { /* do nothing */ }
+
       setWritableRecursive(fullPath)
-    } else {
-      fs.chmodSync(fullPath, 0o644)
+    } else if (entry.isFile()) {
+      try {
+        fs.chmodSync(fullPath, 0o644)
+      } catch (_e) { /* do nothing */ }
     }
   }
 }
