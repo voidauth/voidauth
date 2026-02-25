@@ -156,26 +156,21 @@ function refreshDeclaredClients(docker: Docker | undefined) {
 
   // Inspect docker container labels to find OIDC client configs
   if (docker !== undefined) {
-    docker.listContainers(function (_err, containers) {
-      containers?.forEach(async function (containerInfo) {
-        await docker.getContainer(containerInfo.Id).inspect().then((info) => {
-          if (!info.State.Running) return
+    docker.listContainers(async (_err, containers) => {
+      if (!containers) return
 
-          let enabled = false
-          for (const label in info.Config.Labels) {
-            if (label == 'voidauth.enable' && info.Config.Labels[label] == 'true') {
-              enabled = true
-              break
-            }
-          }
-          if (enabled) {
-            Object.entries(info.Config.Labels).forEach((label) => {
-              if (label[0].startsWith('voidauth.oidc.'))
-                registerClientVariable(clients, info.Name.replace('/', ''), label[0].replace('voidauth.oidc.', ''), label[1])
-            })
-          }
-        })
-      })
+      for (const { Id } of containers) {
+        const info = await docker.getContainer(Id).inspect()
+        if (!info.State.Running || info.Config.Labels['voidauth.enable'] !== 'true') continue
+
+        for (const [rawKey, value] of Object.entries(info.Config.Labels)) {
+          const key = rawKey.toLowerCase()
+          if (!key.startsWith('voidauth.oidc.')) continue
+          const [, , client, variable] = key.split('.', 4)
+          if (!client || !variable) continue
+          registerClientVariable(clients, client, variable, value)
+        }
+      }
     })
   }
 

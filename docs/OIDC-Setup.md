@@ -48,8 +48,8 @@ Or a client can be configured through docker labels as follows:
 ```nix
 # client id inferred from container name
 voidauth.enable=true
-voidauth.oidc.client_secret=1234
-voidauth.oidc.client_redirect_urls=https://example.com, https://test.example.com
+voidauth.oidc.<clientid>.client_secret=1234
+voidauth.oidc.<clientid>.client_redirect_urls=https://example.com, https://test.example.com
 etc...
 ```
 
