@@ -17,7 +17,7 @@ services:
     volumes:
       - ./voidauth/config:/app/config
       # only required for declaring oidc clients via docker labels (see oidc-setup)
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
