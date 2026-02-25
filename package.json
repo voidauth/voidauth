@@ -30,6 +30,7 @@
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
     "dockerode": "^4.0.9",
+    "better-sqlite3": "^12.6.2",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
@@ -54,7 +55,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
-    "@types/dockerode": "^4.0.1",
     "@stylistic/eslint-plugin": "^5.7.1",
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.6",
