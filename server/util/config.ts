@@ -3,6 +3,9 @@ import { exit } from 'node:process'
 import { booleanString } from './util'
 import { logger } from './logger'
 import * as psl from 'psl'
+import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
+import type { ClientResponse } from '@shared/api-response/ClientResponse.js'
+import Docker from 'dockerode'
 
 // basic config for app
 class Config {
@@ -59,7 +62,10 @@ class Config {
   SMTP_USER?: string
   SMTP_PASS?: string
   SMTP_IGNORE_CERT: boolean = false
+
+  DECLARED_CLIENTS = new Map<string, ClientResponse>()
 }
+
 const appConfig = new Config()
 
 function assignConfigValue(key: keyof Config, value: string | undefined) {
@@ -123,10 +129,118 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
 
+    case 'DECLARED_CLIENTS':
+      break
+
     // The default case for all string config values
     default:
       appConfig[key] = stringOnly(value) ?? appConfig[key]
       break
+  }
+}
+
+async function registerDockerListener(): Promise<Docker | undefined> {
+  try {
+    const docker = new Docker()
+    const stream = await docker.getEvents({ filters: { type: ['container'], event: ['start', 'stop', 'restart', 'die'] } })
+    stream.on('data', () => {
+      refreshDeclaredClients(docker)
+    })
+    return docker
+  } catch { /* do nothing, docker not initialized */ }
+}
+
+function refreshDeclaredClients(docker: Docker | undefined) {
+  // Use separate map to prevent DECLARED_CLIENTS map from being empty during a container start/stop/restart/etc.
+  const clients = new Map<string, ClientResponse>()
+
+  // Inspect docker container labels to find OIDC client configs
+  if (docker !== undefined) {
+    docker.listContainers(async (_err, containers) => {
+      if (!containers) return
+
+      for (const { Id } of containers) {
+        const info = await docker.getContainer(Id).inspect()
+        if (!info.State.Running || info.Config.Labels['voidauth.enable'] !== 'true') continue
+
+        for (const [rawKey, value] of Object.entries(info.Config.Labels)) {
+          const key = rawKey.toLowerCase()
+          if (!key.startsWith('voidauth.oidc.')) continue
+          const [, , client, variable] = key.split('.', 4)
+          if (!client || !variable) continue
+          registerClientVariable(clients, client, variable, value)
+        }
+      }
+    })
+  }
+
+  // Inspect environment variables to find OIDC client configs
+  Object.keys(process.env).forEach((key) => {
+    const raw = key.split('_')
+    if (raw.length < 3 || raw[0] !== 'OIDC') return
+
+    const parts = [
+      raw[0],
+      raw[1],
+      raw.slice(2).join('_'),
+    ]
+
+    const client_id = parts[1]?.toLowerCase()
+    const value = process.env[key]
+    const variable = parts[2]
+    if (client_id === undefined || variable === undefined || value === undefined) return
+
+    registerClientVariable(clients, client_id, variable, value)
+  })
+
+  appConfig.DECLARED_CLIENTS = clients
+}
+
+function registerClientVariable(clients: Map<string, ClientResponse>, client_id: string, variable: string, value: string) {
+  let client = clients.get(client_id)
+  if (!client) {
+    client = {
+      client_id: client_id,
+      client_name: client_id,
+      token_endpoint_auth_method: 'client_secret_basic',
+      response_types: ['code'],
+      grant_types: ['authorization_code', 'refresh_token'],
+      groups: [],
+      declared: true,
+    }
+    clients.set(client_id, client)
+  }
+
+  switch (variable.toUpperCase()) {
+    case 'CLIENT_DISPLAY_NAME':
+      client.client_name = value
+      break
+    case 'CLIENT_HOMEPAGE_URL':
+      client.client_uri = value
+      break
+    case 'CLIENT_LOGO_URL':
+      client.logo_uri = value
+      break
+    case 'CLIENT_SECRET':
+      client.client_secret = value
+      break
+    case 'CLIENT_AUTH_METHOD':
+      client.token_endpoint_auth_method = (value as ClientAuthMethod)
+      break
+    case 'CLIENT_GROUPS':
+      client.groups = value.replace(/\s/g, '').split(',')
+      break
+    case 'CLIENT_REDIRECT_URLS':
+      client.redirect_uris = value.replace(/\s/g, '').split(',')
+      break
+    case 'CLIENT_RESPONSE_TYPES':
+      client.response_types = value.replace(/\s/g, '').split(',') as ResponseType[]
+      break
+    case 'CLIENT_GRANT_TYPES':
+      client.grant_types = value.replace(/\s/g, '').split(',')
+      break
+    case 'CLIENT_POST_LOGOUT_URLS':
+      client.post_logout_redirect_uris = value.replace(/\s/g, '').split(',')
   }
 }
 
@@ -204,6 +318,8 @@ const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
 configKeys.forEach((key: keyof Config) => {
   assignConfigValue(key, process.env[key])
 })
+
+refreshDeclaredClients(await registerDockerListener())
 
 /**
  * Validations and Coercions

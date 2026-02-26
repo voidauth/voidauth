@@ -46,6 +46,9 @@ export async function getClients(): Promise<ClientResponse[]> {
       }
       return arr
     }, [])
+    .filter(s => !appConfig.DECLARED_CLIENTS.has(s.client_id))
+    .concat(appConfig.DECLARED_CLIENTS.values().toArray())
+
   return clients
 }
 

@@ -53,6 +53,10 @@ export class KnexAdapter implements Adapter {
   }
 
   _findBy(obj: Partial<OIDCPayload>): Promise<AdapterPayload | undefined> {
+    if (obj.id != undefined && this.payloadType === 'Client' && appConfig.DECLARED_CLIENTS.has(obj.id)) {
+      return Promise.resolve(appConfig.DECLARED_CLIENTS.get(obj.id) as ClientMetadata)
+    }
+
     return this._rows(obj).then((r) => {
       try {
         const first = r[0]
@@ -70,6 +74,10 @@ export class KnexAdapter implements Adapter {
   }
 
   async upsert(id: string, payload: AdapterPayload, expiresIn: number) {
+    if (this.payloadType === 'Client' && appConfig.DECLARED_CLIENTS.has(id)) {
+      return
+    }
+
     const expiresAt = getExpireAt(expiresIn)
     await db()
       .table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
@@ -100,7 +108,9 @@ export class KnexAdapter implements Adapter {
   }
 
   async destroy(id: string) {
-    await this._rows({ id }).delete()
+    if (!(this.payloadType === 'Client' && appConfig.DECLARED_CLIENTS.has(id))) {
+      await this._rows({ id }).delete()
+    }
     return
   }
 
