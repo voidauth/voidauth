@@ -30,6 +30,7 @@ rmSync(outDir, {
 
 // dependencies that cannot be bundled
 const externalDeps = [
+  'better-sqlite3',
   '@angular/material',
 ]
 
