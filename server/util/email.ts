@@ -34,13 +34,16 @@ const transportOptions: SMTPTransport.Options = {
 
 const transporter = nodemailer.createTransport(transportOptions)
 if (appConfig.SMTP_HOST) {
+  logger.debug('Attempting SMTP email connection.')
   transporter.verify().then(() => {
     SMTP_VERIFIED = true
     logger.info('SMTP email connection verified.')
   }).catch((e: unknown) => {
-    logger.error('SMTP email connection ERROR:')
+    logger.error('SMTP email connection failed; ERROR:')
     logger.error(e)
   })
+} else {
+  logger.debug('Skipping SMTP email connection, SMTP_HOST is not set.')
 }
 
 // move default email templates to email templates dir
