@@ -78,12 +78,10 @@
 
       <h2 style="margin-top: -16px">Passkeys</h2>
 
-      <mat-card-actions>
-        <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
-          Register Passkey
-          <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
-        </button>
-      </mat-card-actions>
+      <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
+        Register Passkey
+        <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
+      </button>
 
       @if (passkeys.data.length) {
         <mat-expansion-panel class="key-manage-panel">
