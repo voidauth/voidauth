@@ -1,4 +1,3 @@
-import { generate } from 'generate-password'
 import type { Knex } from 'knex'
 import knex from 'knex'
 import fs from 'node:fs'
@@ -51,36 +50,27 @@ function getConnectionOptions(options: DBConnectionOptions): knex.Knex.Config {
   }
 }
 
-function connectionPg(options: DBConnectionOptions): Knex.Config {
-  // DB_HOST is required (can be a socket path starting with /)
+function connectionPg(options: DBConnectionOptions): Knex.Config & { connection: Knex.PgConnectionConfig } {
+  // check that DB_HOST is set
   if (!options.DB_HOST?.length) {
-    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_HOST must be set. To use a Unix socket, set it to the socket directory path (e.g., /var/run/postgresql).`)
-  }
-
-  const isSocketPath = options.DB_HOST.startsWith('/')
-
-  const connection: Knex.Config['connection'] = {
-    host: options.DB_HOST,
-    port: options.DB_PORT ?? 5432,
-    user: options.DB_USER ?? 'postgres',
-    database: options.DB_NAME ?? 'postgres',
-  }
-
-  if (options.DB_PASSWORD?.length) {
-    connection.password = options.DB_PASSWORD
-  } else if (!isSocketPath) {
-    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_PASSWORD must be set when DB_ADAPTER is 'postgres' and DB_HOST is not a socket directory path. If you don't already have one, use something long and random like:
-    ${generate({ length: 32, numbers: true })}`)
-  }
-
-  if (!isSocketPath) {
-    connection.ssl = options.DB_SSL ? { rejectUnauthorized: !!options.DB_SSL_VERIFICATION } : false
+    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_HOST must be set.`)
   }
 
   return {
     client: 'pg',
     useNullAsDefault: true,
-    connection,
+    connection: {
+      host: options.DB_HOST,
+      port: options.DB_PORT ?? 5432,
+      user: options.DB_USER ?? 'postgres',
+      database: options.DB_NAME ?? 'postgres',
+      ...(options.DB_PASSWORD ? { password: options.DB_PASSWORD } satisfies Pick<Knex.PgConnectionConfig, 'password'> : {}),
+      ...(options.DB_SSL
+        ? {
+          ssl: { rejectUnauthorized: !!options.DB_SSL_VERIFICATION },
+        } satisfies Pick<Knex.PgConnectionConfig, 'ssl'>
+        : {}),
+    } satisfies Knex.PgConnectionConfig,
   }
 }
 
