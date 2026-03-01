@@ -72,29 +72,73 @@
         >
           {{ user?.hasPassword ? "Change " : "Set " }} Password
         </button>
+      </mat-card-actions>
 
-        <mat-divider class="disabled"></mat-divider>
+      <mat-divider class="disabled"></mat-divider>
 
-        <h2 style="margin-top: -16px">Passkeys</h2>
+      <h2 style="margin-top: -16px">Passkeys</h2>
 
-        <p style="text-align: center">You have {{ user?.hasPasskeys ? "at least one registered passkey" : "no registered passkeys" }}.</p>
-
+      <mat-card-actions>
         <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
           Register Passkey
           <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
         </button>
+      </mat-card-actions>
 
-        <mat-divider class="disabled"></mat-divider>
+      @if (passkeys.data.length) {
+        <mat-expansion-panel class="key-manage-panel">
+          <mat-expansion-panel-header>
+            <mat-panel-title>Manage Passkeys</mat-panel-title>
+          </mat-expansion-panel-header>
+          <table mat-table [dataSource]="passkeys" matSort>
+            @for (column of passkeyColumns; track column) {
+              <ng-container [matColumnDef]="column.columnDef">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  {{ column.header }}
+                </th>
+                <td mat-cell *matCellDef="let row">
+                  @if (column.isIcon) {
+                    <mat-icon fontSet="material-icons-round">{{ column.cell(row) }}</mat-icon>
+                  } @else {
+                    {{ column.cell(row) }}
+                  }
+                </td>
+              </ng-container>
+            }
 
-        <h2 style="margin-top: -16px">Multi-Factor Authentication</h2>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <button
+                  mat-icon-button
+                  type="button"
+                  [disabled]="passkeys.data.length < 2 && !user?.hasPassword"
+                  (click)="deletePasskey(row.id)"
+                  matTooltip="Delete"
+                >
+                  <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
+                </button>
+              </td>
+            </ng-container>
 
-        <p style="text-align: center">
-          Multi-Factor Authentication is <b>{{ user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired ? "" : "not" }} enabled</b>.
-        </p>
-        <p style="text-align: center">
-          You have {{ user?.hasTotp ? "at least one registered Authenticator" : "no registered Authenticators" }}.
-        </p>
+            <tr mat-header-row *matHeaderRowDef="displayedPasskeyColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedPasskeyColumns"></tr>
+          </table>
+        </mat-expansion-panel>
+      }
 
+      <mat-divider class="disabled"></mat-divider>
+
+      <h2 style="margin-top: -16px">Multi-Factor Authentication</h2>
+
+      <p style="text-align: center">
+        Multi-Factor Authentication is <b>{{ user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired ? "" : "not" }} enabled</b>.
+      </p>
+      <p style="text-align: center">
+        You have {{ user?.hasTotp ? "at least one registered Authenticator" : "no registered Authenticators" }}.
+      </p>
+
+      <mat-card-actions>
         <button mat-flat-button type="button" (click)="addAuthenticator()">
           {{ user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired ? "Add Authenticator" : "Enable MFA" }}
           <mat-icon fontSet="material-icons-round" matSuffix>lock</mat-icon>

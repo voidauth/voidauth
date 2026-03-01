@@ -5,6 +5,7 @@ import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 import { firstValueFrom } from 'rxjs'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,7 @@ export class UserService {
     return this.me
   }
 
-  passkeySession(user: CurrentUserDetails) {
+  isPasskeySession(user: CurrentUserDetails) {
     return user.amr.includes('webauthn')
   }
 
@@ -42,6 +43,14 @@ export class UserService {
 
   async updatePassword(passwordUpdate: UpdatePassword) {
     return firstValueFrom(this.http.patch<null>('/api/user/password', passwordUpdate))
+  }
+
+  async getPasskeys() {
+    return firstValueFrom(this.http.get<PasskeyResponse[]>('/api/user/passkeys'))
+  }
+
+  async removePasskey(passkey_id: string) {
+    return firstValueFrom(this.http.delete<null[]>(`/api/user/passkey/${passkey_id}`))
   }
 
   async removeAllPasskeys() {

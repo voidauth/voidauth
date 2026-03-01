@@ -1,6 +1,7 @@
+import type { Audit } from './Audit'
 import type { User } from './User'
 
-export type Passkey = {
+export type Passkey = Pick<Audit, 'createdAt'> & {
   id: string
   publicKey: Uint8Array<ArrayBuffer>
   userId: User['id']
@@ -9,6 +10,8 @@ export type Passkey = {
   deviceType: string
   backedUp: boolean | number
   transports?: string | null // CSV array
+
+  lastUsed: Date | number
 }
 
 export type PasskeyRegistration = {
