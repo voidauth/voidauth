@@ -124,8 +124,8 @@ When using the `sqlite` database adapter type, no additional database connection
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | DB_ADAPTER | `postgres` | Allowed values are `postgres` and `sqlite`. | | |
-| DB_HOST | | Host address of the database. | 🔴 (unless using SQLite database) | |
-| DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless using SQLite database) | |
+| DB_HOST | | Host address of the database. May also be a postgres Unix Domain Socket, see node-postgres Unix Domain Socket documentation [here](https://node-postgres.com/features/connecting#unix-domain-sockets). | 🔴 (unless using SQLite database) | |
+| DB_PASSWORD | | Password of the database. Not used if using SQLite database. | | ✅ |
 | DB_PORT | `5432` | Port of the database. Not used if using SQLite database. | | |
 | DB_USER | `postgres` | Username used to sign into the database by the app. Not used if using SQLite database. | | |
 | DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if using SQLite database. | | |
@@ -139,7 +139,7 @@ Use the following environment variables to configure a database migration. These
 | :------ | :-- | :-------- | :--- | :--- |
 | MIGRATE_TO_DB_ADAPTER | `postgres` | Allowed values are `postgres` and `sqlite`. | | |
 | MIGRATE_TO_DB_HOST | | Host address of the database. | 🔴 (unless migrating to SQLite database) | |
-| MIGRATE_TO_DB_PASSWORD | | Password of the database. If you do not enter one VoidAuth will recommend one to you. | 🔴 (unless migrating to SQLite database) | |
+| MIGRATE_TO_DB_PASSWORD | | Password of the database. Not used if migrating to SQLite database. | | ✅ |
 | MIGRATE_TO_DB_PORT | `5432` | Port of the database. Not used if migrating to SQLite database. | | |
 | MIGRATE_TO_DB_USER | `postgres` | Username used to sign into the database by the app. Not used if migrating to SQLite database. | | |
 | MIGRATE_TO_DB_NAME | `postgres` | Database name used to connect to the database by the app. Not used if migrating to SQLite database. | | |
