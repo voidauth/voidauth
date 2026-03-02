@@ -64,6 +64,7 @@ await esbuild.build({
     'pg-query-stream',
     'tedious',
     'oracledb',
+    'cpu-features',
   ]),
 }).catch(() => process.exit(1))
 
