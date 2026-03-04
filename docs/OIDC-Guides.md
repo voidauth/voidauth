@@ -747,6 +747,34 @@ Redirect URLs: https://unraid.example.com/graphql/api/auth/oidc/callback
 
 <br>
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/vaultwarden.svg" width="28" /> Vaultwarden
+
+> [!NOTE]
+> Vaultwarden can be configured in three different ways: environment variables, ENV_FILE or via a config.json (editable through the admin page). The steps below assumes the [admin page has been enabled](https://github.com/dani-garcia/vaultwarden/wiki/Enabling-admin-page), but can be applied to all options. For details on the environment variables options, refer to the [Vaultwarden documentation](https://github.com/dani-garcia/vaultwarden/wiki/Enabling-SSO-support-using-OpenId-Connect).
+
+Navigate to the **Vaultwarden Admin Panel**, and expand the **OpenID Connect SSO settings** section. 
+
+**Vaultwarden Admin Panel Configuration:**
+
+```
+Enabled: (check)
+Client ID: your-client-id
+Client Key: your-client-secret
+Authority Server: Copy from VoidAuth OIDC Info (OIDC Issuer Endpoint)
+Authorization request scopes: email profile
+```
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://vaultwarden.example.com/identity/connect/oidc-signin
+```
+
+<br>
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/wiki-js.svg" width="28" /> WikiJS
 
 Connect to WikiJS portal as an admin. Go to Configuration Panel, and then Authentication Tab. Create a new authentication strategy using "Generic OpenID Connect / OAuth 2".
