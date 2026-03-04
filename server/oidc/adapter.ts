@@ -52,9 +52,12 @@ export class KnexAdapter implements Adapter {
     return this._table.where(obj)
   }
 
-  _findBy(obj: Partial<OIDCPayload>): Promise<AdapterPayload | undefined> {
-    if (obj.id != undefined && this.payloadType === 'Client' && appConfig.DECLARED_CLIENTS.has(obj.id)) {
-      return Promise.resolve(appConfig.DECLARED_CLIENTS.get(obj.id) as ClientMetadata)
+  async _findBy(obj: Partial<OIDCPayload>): Promise<AdapterPayload | undefined> {
+    if (obj.id != undefined && this.payloadType === 'Client') {
+      const declaredClient = appConfig.DECLARED_CLIENTS.get(obj.id)
+      if (declaredClient) {
+        return declaredClient satisfies ClientMetadata
+      }
     }
 
     return this._rows(obj).then((r) => {
@@ -75,7 +78,7 @@ export class KnexAdapter implements Adapter {
 
   async upsert(id: string, payload: AdapterPayload, expiresIn: number) {
     if (this.payloadType === 'Client' && appConfig.DECLARED_CLIENTS.has(id)) {
-      return
+      throw new Error('Cannot upsert Client that is statically declared.')
     }
 
     const expiresAt = getExpireAt(expiresIn)
@@ -108,9 +111,11 @@ export class KnexAdapter implements Adapter {
   }
 
   async destroy(id: string) {
-    if (!(this.payloadType === 'Client' && appConfig.DECLARED_CLIENTS.has(id))) {
-      await this._rows({ id }).delete()
+    if (this.payloadType === 'Client' && appConfig.DECLARED_CLIENTS.has(id)) {
+      throw new Error('Cannot destroy Client that is statically declared.')
     }
+
+    await this._rows({ id }).delete()
     return
   }
 
