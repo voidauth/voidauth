@@ -237,7 +237,7 @@
         <mat-label>PostLogout URL</mat-label>
         <input matInput type="text" formControlName="post_logout_redirect_uri" />
         <mat-hint>Allowed post-logout redirect url on client initiated logout.</mat-hint>
-        @if (form.controls.post_logout_redirect_uri) {
+        @if (form.controls.post_logout_redirect_uri.errors) {
           <mat-error>{{ form.controls.post_logout_redirect_uri.errors | validationError }}</mat-error>
         }
       </mat-form-field>

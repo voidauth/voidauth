@@ -6,7 +6,7 @@ In the guides below, there may be omitted options when those options are set to 
 > Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `your-admin-role`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC App pages, and is the recommended source of OIDC related Endpoint URLs.
 
 > [!CAUTION]
-> Client IDs **must** be unique between OIDC Apps. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC App page can be randomly generated and copied it to the clipboard for use within the OIDC App. Client Secrets are encrypted on disk.
+> Client IDs **must** be unique between OIDC Apps. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC App page can be randomly generated and copied to the clipboard for use within the OIDC App. Client Secrets are encrypted on disk.
 
 > [!NOTE]
 > The guides below are maintained by the community and may not always be accurate or current. If you notice any inaccuracies or have suggestions for improvements, please feel free to submit a pull request on the GitHub repository [here](https://github.com/voidauth/voidauth).
@@ -77,7 +77,7 @@ In AutoCaliWeb:
 
 1. Navigate to **Settings** → **Configuration** → **Edit Basic Configuration** → **Feature Configuration**
 2. In the **Login Type** dropdown, select `Use OAuth`.
-3. Scroll down to **Generic** Fill out the config as follows:
+3. Scroll down to **Generic** and fill out the config as follows:
 
 **AutoCaliWeb OAuth Configuration:**
 
@@ -734,7 +734,7 @@ OAuth Scopes: openid profile email
 ```
 
 > [!NOTE]
-> You will need to set at least one athorization rule and verify that the provider settings are applied. A simple authorization rule can be used to allow specific email domains, email addresses or specific users. Refer to the Unraid documentation for examples.
+> You will need to set at least one authorization rule and verify that the provider settings are applied. A simple authorization rule can be used to allow specific email domains, email addresses or specific users. Refer to the Unraid documentation for examples.
 
 **In VoidAuth OIDC App Page:**
 
