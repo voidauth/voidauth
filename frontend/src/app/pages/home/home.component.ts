@@ -1,4 +1,5 @@
-import { Component, inject, type OnDestroy, type OnInit } from '@angular/core'
+/* eslint-disable @stylistic/lines-between-class-members */
+import { Component, inject, viewChild, type OnDestroy, type OnInit } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
@@ -15,6 +16,10 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
 import { isValidEmail } from '../../validators/validators'
+import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
+import { MatTableDataSource } from '@angular/material/table'
+import type { TableColumn } from '../admin/clients/clients.component'
+import { MatSort } from '@angular/material/sort'
 
 @Component({
   selector: 'app-home',
@@ -29,6 +34,7 @@ import { isValidEmail } from '../../validators/validators'
 })
 export class HomeComponent implements OnInit, OnDestroy {
   user?: CurrentUserDetails
+
   public passkeySupport?: PasskeySupport
   public isPasskeySession: boolean = false
   config?: ConfigResponse
@@ -72,6 +78,36 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   })
 
+  passkeyColumns: TableColumn<PasskeyResponse>[] = [
+    {
+      columnDef: 'id',
+      header: 'ID',
+      // Convert from base64Url to base64, then convert to hex
+      cell: element => atob(element.id.replace(/-/g, '+').replace(/_/g, '/'))
+        .split('')
+        .map(function (aChar) {
+          return ('00' + aChar.charCodeAt(0).toString(16)).slice(-2)
+        }).join('').slice(0, 4),
+    },
+    {
+      columnDef: 'lastUsed',
+      header: 'Last Used',
+      cell: element => element.lastUsed
+        ? new Date(element.lastUsed).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+        : '-',
+    },
+    {
+      columnDef: 'createdAt',
+      header: 'Created At',
+      cell: element => element.createdAt
+        ? new Date(element.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+        : '-',
+    },
+  ]
+  displayedPasskeyColumns = ([] as string[]).concat(this.passkeyColumns.map(c => c.columnDef)).concat(['actions'])
+  passkeys: MatTableDataSource<PasskeyResponse> = new MatTableDataSource()
+  readonly passkeySort = viewChild.required(MatSort)
+
   private configService = inject(ConfigService)
   private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
@@ -104,7 +140,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         return
       }
 
-      this.isPasskeySession = this.userService.passkeySession(this.user)
+      try {
+        this.passkeys.data = await this.userService.getPasskeys()
+        this.passkeys.sort = this.passkeySort()
+      } catch (_e) {
+        // Do nothing
+      }
+
+      this.isPasskeySession = this.userService.isPasskeySession(this.user)
 
       this.profileForm.reset({
         name: this.user.name ?? '',
@@ -201,6 +244,32 @@ export class HomeComponent implements OnInit, OnDestroy {
     } finally {
       this.spinnerService.hide()
     }
+  }
+
+  deletePasskey(id: string) {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      data: {
+        message: `Are you sure you want to delete this Passkey?`,
+        header: 'Delete',
+      },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.userService.removePasskey(id)
+        this.snackbarService.message('Passkey deleted.')
+      } catch (_e) {
+        this.snackbarService.error('Passkey could not be deleted.')
+      } finally {
+        await this.loadUser()
+        this.spinnerService.hide()
+      }
+    })
   }
 
   addAuthenticator() {
