@@ -4,6 +4,6 @@ import type { ClientMetadata } from 'oidc-provider'
 export type ClientResponse = ClientMetadata & {
   skip_consent?: boolean
   require_mfa?: boolean
-  declared?: boolean
+  declared?: 'env' | 'label' | false
   groups: Group['name'][]
 }

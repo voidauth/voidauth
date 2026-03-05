@@ -3,9 +3,10 @@ import { exit } from 'node:process'
 import { booleanString } from './util'
 import { logger } from './logger'
 import * as psl from 'psl'
-import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
 import type { ClientResponse } from '@shared/api-response/ClientResponse.js'
 import Docker from 'dockerode'
+import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
+import zod from 'zod'
 
 // basic config for app
 class Config {
@@ -166,9 +167,9 @@ function refreshDeclaredClients(docker: Docker | undefined) {
         for (const [rawKey, value] of Object.entries(info.Config.Labels)) {
           const key = rawKey.toLowerCase()
           if (!key.startsWith('voidauth.oidc.')) continue
-          const [, , client, variable] = key.split('.', 4)
-          if (!client || !variable) continue
-          registerClientVariable(clients, client, variable, value)
+          const [, , client_id, variable] = key.split('.', 4)
+          if (!client_id || !variable) continue
+          registerClientVariable(clients, client_id, variable, value, 'label')
         }
       }
     })
@@ -185,62 +186,105 @@ function refreshDeclaredClients(docker: Docker | undefined) {
       raw.slice(2).join('_'),
     ]
 
-    const client_id = parts[1]?.toLowerCase()
+    const client_id = parts[1]
     const value = process.env[key]
     const variable = parts[2]
     if (client_id === undefined || variable === undefined || value === undefined) return
 
-    registerClientVariable(clients, client_id, variable, value)
+    registerClientVariable(clients, client_id, variable, value, 'env')
   })
 
   appConfig.DECLARED_CLIENTS = clients
 }
 
-function registerClientVariable(clients: Map<string, ClientResponse>, client_id: string, variable: string, value: string) {
-  let client = clients.get(client_id)
-  if (!client) {
-    client = {
-      client_id: client_id,
-      client_name: client_id,
-      token_endpoint_auth_method: 'client_secret_basic',
-      response_types: ['code'],
-      grant_types: ['authorization_code', 'refresh_token'],
-      groups: [],
-      declared: true,
-    }
-    clients.set(client_id, client)
+function registerClientVariable(clients: Map<string, ClientResponse>,
+  client_id: string,
+  variable: string,
+  value: string,
+  source: 'env' | 'label') {
+  // Skip when value is empty
+  if (!value) {
+    return
   }
 
-  switch (variable.toUpperCase()) {
-    case 'CLIENT_DISPLAY_NAME':
-      client.client_name = value
-      break
-    case 'CLIENT_HOMEPAGE_URL':
-      client.client_uri = value
-      break
-    case 'CLIENT_LOGO_URL':
-      client.logo_uri = value
-      break
-    case 'CLIENT_SECRET':
-      client.client_secret = value
-      break
-    case 'CLIENT_AUTH_METHOD':
-      client.token_endpoint_auth_method = (value as ClientAuthMethod)
-      break
-    case 'CLIENT_GROUPS':
-      client.groups = value.replace(/\s/g, '').split(',')
-      break
-    case 'CLIENT_REDIRECT_URLS':
-      client.redirect_uris = value.replace(/\s/g, '').split(',')
-      break
-    case 'CLIENT_RESPONSE_TYPES':
-      client.response_types = value.replace(/\s/g, '').split(',') as ResponseType[]
-      break
-    case 'CLIENT_GRANT_TYPES':
-      client.grant_types = value.replace(/\s/g, '').split(',')
-      break
-    case 'CLIENT_POST_LOGOUT_URLS':
-      client.post_logout_redirect_uris = value.replace(/\s/g, '').split(',')
+  // Helper function to validate client variables
+  const validateClientVar = <T>(input: string | string[],
+    validator: zod.ZodType<T, string | undefined> | zod.ZodType<T, string[] | undefined>) => {
+    const validated = validator.safeParse(input)
+    if (validated.error) {
+      throw new Error(zod.prettifyError(validated.error))
+    }
+    return validated.data
+  }
+
+  try {
+    validateClientVar(client_id, clientUpsertValidator.client_id)
+
+    let client = clients.get(client_id)
+    if (!client) {
+      client = {
+        client_id: client_id,
+        token_endpoint_auth_method: 'client_secret_basic',
+        response_types: ['code'],
+        grant_types: ['authorization_code', 'refresh_token'],
+        groups: [],
+        skip_consent: false,
+        declared: source,
+      }
+      clients.set(client_id, client)
+    }
+
+    value = value.trim()
+
+    // Check that the values are valid, and if so use them
+    switch (variable.toUpperCase()) {
+      case 'CLIENT_DISPLAY_NAME':
+        client.client_name = validateClientVar(value, clientUpsertValidator.client_name)
+        break
+      case 'CLIENT_HOMEPAGE_URL':
+        client.client_uri = validateClientVar(value, clientUpsertValidator.client_uri)
+        break
+      case 'CLIENT_LOGO_URL':
+        client.logo_uri = validateClientVar(value, clientUpsertValidator.logo_uri)
+        break
+      case 'CLIENT_SECRET':
+        client.client_secret = validateClientVar(value, clientUpsertValidator.client_secret)
+        break
+      case 'CLIENT_AUTH_METHOD':
+        client.token_endpoint_auth_method = validateClientVar(value, clientUpsertValidator.token_endpoint_auth_method)
+        break
+      case 'CLIENT_GROUPS':
+        client.groups = validateClientVar(value.split(',').map(v => v.trim()), clientUpsertValidator.groups)
+        break
+      case 'CLIENT_REDIRECT_URLS':
+        client.redirect_uris = validateClientVar(value.split(',').map(v => v.trim()), clientUpsertValidator.redirect_uris)
+        break
+      case 'CLIENT_RESPONSE_TYPES':
+        client.response_types = validateClientVar(value.split(',').map(v => v.trim()), clientUpsertValidator.response_types)
+        break
+      case 'CLIENT_GRANT_TYPES':
+        client.grant_types = validateClientVar(value.split(',').map(v => v.trim()), clientUpsertValidator.grant_types)
+        break
+      case 'CLIENT_POST_LOGOUT_URLS':
+        client.post_logout_redirect_uris = [validateClientVar(value, clientUpsertValidator.post_logout_redirect_uri.nonoptional())]
+        break
+      case 'CLIENT_SKIP_CONSENT':
+        client.skip_consent = validateClientVar(value, zod.stringbool()) // booleanString(value) ?? client.skip_consent
+        break
+    }
+  } catch (e) {
+    // Log error as debug, then continue
+    const debugInfo = {
+      client_id,
+      source,
+      variable,
+      value,
+    }
+    if (e instanceof Error) {
+      logger.debug(JSON.stringify({ ...debugInfo, error: e.message }))
+    } else {
+      logger.debug(JSON.stringify({ ...debugInfo, error: e }))
+    }
   }
 }
 
