@@ -56,7 +56,13 @@
         <div mat-subheader>Allowed Groups:</div>
         @for (g of form.value.groups; track g) {
           <mat-list-item>
-            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
+            <mat-icon
+              fontSet="material-icons-round"
+              matListItemIcon
+              [ngClass]="{ clickable: !form.controls.groups.disabled }"
+              (click)="!form.controls.groups.disabled && removeGroup(g)"
+              >cancel</mat-icon
+            >
             <div matListItemTitle>{{ g }}</div>
           </mat-list-item>
         }
@@ -186,7 +192,13 @@
         <div mat-subheader>Redirect URLs:</div>
         @for (uri of form.value.redirect_uris; track uri) {
           <mat-list-item>
-            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeRedirectUrl(uri)">cancel</mat-icon>
+            <mat-icon
+              fontSet="material-icons-round"
+              matListItemIcon
+              [ngClass]="{ clickable: !form.controls.redirect_uris.disabled }"
+              (click)="!form.controls.redirect_uris.disabled && removeRedirectUrl(uri)"
+              >cancel</mat-icon
+            >
             <div matListItemTitle>{{ uri }}</div>
           </mat-list-item>
         }
