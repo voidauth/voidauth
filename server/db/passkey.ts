@@ -14,8 +14,22 @@ export async function getUserPasskeys(userId: string) {
   })
 }
 
+export async function getUserPasskeysResponse(userId: string) {
+  return (await getUserPasskeys(userId)).map((p) => {
+    return {
+      id: p.id,
+      createdAt: p.createdAt,
+      lastUsed: p.lastUsed,
+    }
+  })
+}
+
 export async function deleteUserPasskeys(userId: string) {
   return await db().delete().table<Passkey>(TABLES.PASSKEY).where({ userId })
+}
+
+export async function deleteUserPasskey(id: string, userId: string) {
+  return await db().delete().table<Passkey>(TABLES.PASSKEY).where({ id, userId })
 }
 
 export async function getPasskey(id: string) {
@@ -69,5 +83,5 @@ export async function deleteAuthenticationOptions(interactionId: string) {
 }
 
 export async function updatePasskeyCounter(id: string, counter: number) {
-  return await db().table<Passkey>(TABLES.PASSKEY).update({ counter }).where({ id })
+  return await db().table<Passkey>(TABLES.PASSKEY).update({ counter, lastUsed: new Date() }).where({ id })
 }

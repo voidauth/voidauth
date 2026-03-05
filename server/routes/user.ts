@@ -8,7 +8,7 @@ import { createEmailVerification } from './interaction'
 import { updatePasswordValidator } from '@shared/api-request/UpdatePassword'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
-import { deleteUserPasskeys } from '../db/passkey'
+import { deleteUserPasskey, deleteUserPasskeys, getUserPasskeys, getUserPasskeysResponse } from '../db/passkey'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/constants'
 import type { TOTP } from '@shared/db/TOTP'
@@ -16,6 +16,8 @@ import { argon2 } from '../util/argon2id'
 import { zodValidate } from '../util/zodValidate'
 import { passwordStrength } from '../util/zxcvbn'
 import { checkPrivileged } from '../util/authMiddleware'
+import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
+import zod from 'zod'
 
 export const userRouter = Router()
 
@@ -91,6 +93,51 @@ userRouter.patch('/password',
     }
 
     await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
+    res.send()
+  })
+
+userRouter.get('/passkeys', async (req, res) => {
+  const user = req.user
+  if (!user) {
+    res.sendStatus(500)
+    return
+  }
+
+  const passkeys = await getUserPasskeysResponse(user.id)
+
+  res.send(passkeys satisfies PasskeyResponse[])
+})
+
+userRouter.delete('/passkey/:id',
+  zodValidate({
+    params: {
+      id: zod.string(),
+    },
+  }),
+  async (req, res) => {
+    const user = req.user
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+
+    // make sure that either user has password or will have passkey(s) remaining after delete
+    if (!user.hasPassword && ((await getUserPasskeys(user.id)).length) < 2) {
+      res.sendStatus(400)
+      return
+    }
+
+    const deleted = await deleteUserPasskey(req.params.id, user.id)
+
+    if (!deleted) {
+      res.sendStatus(404)
+      return
+    }
+
+    if (deleted > 1) {
+      throw new Error('Deleted multiple passkeys in a single request.')
+    }
+
     res.send()
   })
 
