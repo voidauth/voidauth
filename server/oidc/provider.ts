@@ -17,6 +17,7 @@ import assert from 'assert'
 import { wildcardRedirect } from '@shared/utils'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { getProxyAuthWithCache } from '../db/proxyAuth'
+import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -325,12 +326,7 @@ const configuration: Configuration = {
     // Additional
     groups: ['groups'],
   },
-  responseTypes: [
-    'code',
-    'id_token', 'id_token token',
-    'code id_token', 'code token', 'code id_token token',
-    'none',
-  ],
+  responseTypes: RESPONSE_TYPES.slice(),
   conformIdTokenClaims: false,
   extraClientMetadata: {
     properties: ['skip_consent', 'require_mfa'],
@@ -439,6 +435,9 @@ provider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutR
 }
 
 export async function getProviderClient(client_id: string) {
+  const declaredClient = appConfig.DECLARED_CLIENTS.get(client_id)
+  if (declaredClient != undefined) return declaredClient
+
   const client = (await provider.Client.find(client_id))?.metadata()
   if (!client) {
     return
@@ -447,7 +446,7 @@ export async function getProviderClient(client_id: string) {
     .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ oidcId: client_id }))
     .map(g => g.name)
-  return { ...client, groups }
+  return { ...client, groups, declared: false as const }
 }
 
 export async function getSession(req: IncomingMessage, res: ServerResponse) {

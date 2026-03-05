@@ -16,6 +16,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./voidauth/config:/app/config
+      # Only required for declaring OIDC Apps via docker labels (see OIDC-Setup documentation)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
