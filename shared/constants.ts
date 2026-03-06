@@ -3,7 +3,7 @@ import type { ValueOf } from './utils'
 export const ADMIN_GROUP = 'auth_admins' as const
 export const ADMIN_USER = 'auth_admin' as const
 
-export const USERNAME_REGEX = /^[A-Za-z0-9_]{3,32}$/
+export const USERNAME_REGEX = /^[A-Za-z0-9_]{1,32}$/
 
 // Paths that the server might redirect the frontend toward
 export const REDIRECT_PATHS = {
