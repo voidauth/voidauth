@@ -83,28 +83,28 @@ function compileTemplates(name: string) {
     html?: pug.compileTemplate | ejs.TemplateFunction
     text?: pug.compileTemplate | ejs.TemplateFunction
   } = {}
-  const template_dir = path.join('./config', 'email_templates', name)
+  const templateDir = path.join('./config', 'email_templates', name)
   // Use *.ejs, then *.pug, otherwise use *.default.ejs
-  if (fs.existsSync(path.join(template_dir, 'subject.ejs'))) {
-    templates.subject = ejs.compile(fs.readFileSync(path.join(template_dir, 'subject.ejs'), 'utf-8'))
-  } else if (fs.existsSync(path.join(template_dir, 'subject.pug'))) {
-    templates.subject = pug.compileFile(path.join(template_dir, 'subject.pug'))
-  } else if (fs.existsSync(path.join(template_dir, 'subject.default.ejs'))) {
-    templates.subject = ejs.compile(fs.readFileSync(path.join(template_dir, 'subject.default.ejs'), 'utf-8'))
+  if (fs.existsSync(path.join(templateDir, 'subject.ejs'))) {
+    templates.subject = ejs.compile(fs.readFileSync(path.join(templateDir, 'subject.ejs'), 'utf-8'))
+  } else if (fs.existsSync(path.join(templateDir, 'subject.pug'))) {
+    templates.subject = pug.compileFile(path.join(templateDir, 'subject.pug'))
+  } else if (fs.existsSync(path.join(templateDir, 'subject.default.ejs'))) {
+    templates.subject = ejs.compile(fs.readFileSync(path.join(templateDir, 'subject.default.ejs'), 'utf-8'))
   }
-  if (fs.existsSync(path.join(template_dir, 'html.ejs'))) {
-    templates.html = ejs.compile(fs.readFileSync(path.join(template_dir, 'html.ejs'), 'utf-8'))
-  } else if (fs.existsSync(path.join(template_dir, 'html.pug'))) {
-    templates.html = pug.compileFile(path.join(template_dir, 'html.pug'))
-  } else if (fs.existsSync(path.join(template_dir, 'html.default.ejs'))) {
-    templates.html = ejs.compile(fs.readFileSync(path.join(template_dir, 'html.default.ejs'), 'utf-8'))
+  if (fs.existsSync(path.join(templateDir, 'html.ejs'))) {
+    templates.html = ejs.compile(fs.readFileSync(path.join(templateDir, 'html.ejs'), 'utf-8'))
+  } else if (fs.existsSync(path.join(templateDir, 'html.pug'))) {
+    templates.html = pug.compileFile(path.join(templateDir, 'html.pug'))
+  } else if (fs.existsSync(path.join(templateDir, 'html.default.ejs'))) {
+    templates.html = ejs.compile(fs.readFileSync(path.join(templateDir, 'html.default.ejs'), 'utf-8'))
   }
-  if (fs.existsSync(path.join(template_dir, 'text.ejs'))) {
-    templates.text = ejs.compile(fs.readFileSync(path.join(template_dir, 'text.ejs'), 'utf-8'))
-  } else if (fs.existsSync(path.join(template_dir, 'text.pug'))) {
-    templates.text = pug.compileFile(path.join(template_dir, 'text.pug'))
-  } else if (fs.existsSync(path.join(template_dir, 'text.default.ejs'))) {
-    templates.text = ejs.compile(fs.readFileSync(path.join(template_dir, 'text.default.ejs'), 'utf-8'))
+  if (fs.existsSync(path.join(templateDir, 'text.ejs'))) {
+    templates.text = ejs.compile(fs.readFileSync(path.join(templateDir, 'text.ejs'), 'utf-8'))
+  } else if (fs.existsSync(path.join(templateDir, 'text.pug'))) {
+    templates.text = pug.compileFile(path.join(templateDir, 'text.pug'))
+  } else if (fs.existsSync(path.join(templateDir, 'text.default.ejs'))) {
+    templates.text = ejs.compile(fs.readFileSync(path.join(templateDir, 'text.default.ejs'), 'utf-8'))
   }
   return (locals: pug.LocalsObject | ejs.Data) => {
     return {
@@ -368,9 +368,14 @@ export async function sendAdminNotifications() {
     .orderBy('createdAt', 'desc').first()
 
   // If an admin notification has been recently sent, do not send more
-  if (recentAdminEmail
-    && recentAdminEmail.createdAt >= new Date(new Date().getTime() - (appConfig.ADMIN_EMAILS * 1000))) {
-    return
+  if (recentAdminEmail) {
+    const adminEmailCooldown = appConfig.ADMIN_EMAILS * 1000 // in ms
+    const now = new Date()
+    const cutoff = new Date(now.getTime() - adminEmailCooldown)
+
+    if (recentAdminEmail.createdAt >= cutoff) {
+      return
+    }
   }
 
   const adminUsers: User[] = await db().select<User[]>('user.*').table<User>(TABLES.USER)

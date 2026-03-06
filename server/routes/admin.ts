@@ -284,7 +284,7 @@ adminRouter.delete('/proxyauth/:id',
 adminRouter.get('/users{/:searchTerm}',
   zodValidate({
     params: {
-      searchTerm: zod.string().optional(),
+      searchTerm: zod.string().trim().optional(),
     },
   }), async (req, res) => {
     const { searchTerm } = req.params

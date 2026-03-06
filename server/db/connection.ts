@@ -16,6 +16,7 @@ export type DBConnectionOptions = {
 }
 
 async function runSchemaUpdates(connectionOptions: Knex.Config) {
+  // When running schema migrations with sqlite make sure foreign key checking is DISABLED to prevent data loss
   if (connectionOptions.client === 'sqlite3' || connectionOptions.client === 'better-sqlite') {
     const { pool, ...rest } = connectionOptions
     connectionOptions = rest
