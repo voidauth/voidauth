@@ -6,6 +6,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { getBaseHrefPath } from './services/config.service'
 import { provideTranslateService } from '@ngx-translate/core'
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader'
+import { OVERLAY_DEFAULT_CONFIG, type OverlayDefaultConfig } from '@angular/cdk/overlay'
 
 const baseHrefInterceptor: HttpInterceptorFn = (req, next) => {
   // Skip external URLs
@@ -20,6 +21,12 @@ const baseHrefInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Proceed with modified request
   return next(modifiedReq)
+}
+
+// avoid using popover for overlays, rely on z-index instead.
+// prevents issue with ngx-spinner being behind dialogs
+const overlayDefaultConfig: OverlayDefaultConfig = {
+  usePopover: false,
 }
 
 export const appConfig: ApplicationConfig = {
@@ -37,5 +44,6 @@ export const appConfig: ApplicationConfig = {
         suffix: '.json',
       }),
     }),
+    { provide: OVERLAY_DEFAULT_CONFIG, useValue: overlayDefaultConfig },
   ],
 }

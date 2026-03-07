@@ -3,11 +3,11 @@ import zod from 'zod'
 
 export const groupUpsertValidator = {
   id: zod.uuidv4().optional(),
-  name: zod.string().regex(new RegExp('^[A-Za-z0-9_-]+$')),
+  name: zod.string().trim().regex(new RegExp('^[A-Za-z0-9_-]+$')),
   mfaRequired: zod.union([zod.boolean(), zod.number()]),
   users: zod.array(zod.object({
     id: zod.uuidv4(),
-    username: zod.string(),
+    username: zod.string().trim(),
   })),
 } as const
 

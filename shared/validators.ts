@@ -4,7 +4,7 @@ export const emptyString = zod.string().max(0)
 
 export const coerceEmailOrNull = zod.union([emptyString, zod.email()]).transform(val => val || null).nullable()
 
-export const nameValidation = zod.string().min(3).max(64).nullish()
+export const nameValidation = zod.string().trim().max(64).transform(v => v || undefined).nullish()
 
 export const passkeyRegistrationValidator = {
   id: zod.string(),

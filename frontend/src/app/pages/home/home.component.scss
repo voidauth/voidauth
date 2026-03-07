@@ -4,3 +4,12 @@ mat-divider {
   min-width: calc(var(--form-min-width) * 0.8);
   max-width: calc(var(--form-max-width) * 0.8);
 }
+mat-expansion-panel.key-manage-panel {
+  min-width: 100%;
+}
+
+::ng-deep mat-expansion-panel.key-manage-panel {
+  .mat-expansion-panel-body {
+    padding: 0 12px 8px
+  }
+}

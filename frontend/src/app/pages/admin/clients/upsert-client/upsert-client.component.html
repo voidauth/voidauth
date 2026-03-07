@@ -1,4 +1,4 @@
-<h1>{{ this.client_id ? "Update" : "Create" }} OIDC App</h1>
+<h1>{{ form.disabled ? "View" : client_id ? "Update" : "Create" }} OIDC App</h1>
 <app-oidc-info style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
 <mat-card class="form-card">
   <mat-card-content>
@@ -27,7 +27,10 @@
         }
       </mat-form-field>
 
-      <mat-list [ngClass]="{ invalid: form.controls.groups.errors }">
+      <mat-list
+        [ngClass]="{ invalid: form.controls.groups.errors, disabled: form.controls.groups.disabled }"
+        [disabled]="form.controls.groups.disabled"
+      >
         <mat-form-field>
           <mat-label>Add Group</mat-label>
           <input
@@ -53,7 +56,13 @@
         <div mat-subheader>Allowed Groups:</div>
         @for (g of form.value.groups; track g) {
           <mat-list-item>
-            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
+            <mat-icon
+              fontSet="material-icons-round"
+              matListItemIcon
+              [ngClass]="{ clickable: !form.controls.groups.disabled }"
+              (click)="!form.controls.groups.disabled && removeGroup(g)"
+              >cancel</mat-icon
+            >
             <div matListItemTitle>{{ g }}</div>
           </mat-list-item>
         }
@@ -126,7 +135,7 @@
         <button
           class="field-suffix"
           type="button"
-          [disabled]="!!secret.value"
+          [disabled]="!!secret.value || form.controls.client_secret.disabled"
           mat-icon-button
           matSuffix
           (click)="$event.stopPropagation(); generateSecret()"
@@ -159,7 +168,10 @@
         }
       </mat-form-field>
 
-      <mat-list [ngClass]="{ invalid: form.controls.redirect_uris.errors }">
+      <mat-list
+        [ngClass]="{ invalid: form.controls.redirect_uris.errors, disabled: form.controls.redirect_uris.disabled }"
+        [disabled]="form.controls.redirect_uris.disabled"
+      >
         <mat-form-field>
           <mat-label>New Redirect URL</mat-label>
           <input #redirect matInput type="text" [formControl]="redirectUrlControl" />
@@ -180,7 +192,13 @@
         <div mat-subheader>Redirect URLs:</div>
         @for (uri of form.value.redirect_uris; track uri) {
           <mat-list-item>
-            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeRedirectUrl(uri)">cancel</mat-icon>
+            <mat-icon
+              fontSet="material-icons-round"
+              matListItemIcon
+              [ngClass]="{ clickable: !form.controls.redirect_uris.disabled }"
+              (click)="!form.controls.redirect_uris.disabled && removeRedirectUrl(uri)"
+              >cancel</mat-icon
+            >
             <div matListItemTitle>{{ uri }}</div>
           </mat-list-item>
         }
@@ -219,15 +237,17 @@
         <mat-label>PostLogout URL</mat-label>
         <input matInput type="text" formControlName="post_logout_redirect_uri" />
         <mat-hint>Allowed post-logout redirect url on client initiated logout.</mat-hint>
-        @if (form.controls.post_logout_redirect_uri) {
+        @if (form.controls.post_logout_redirect_uri.errors) {
           <mat-error>{{ form.controls.post_logout_redirect_uri.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{ this.client_id ? "Update" : "Create" }}</button>
+        <button mat-flat-button [disabled]="form.invalid || form.pristine || form.disabled" type="submit">
+          {{ this.client_id ? "Update" : "Create" }}
+        </button>
         @if (client_id) {
-          <button mat-button type="button" (click)="deleteClient()">Delete</button>
+          <button mat-button type="button" [disabled]="form.disabled" (click)="deleteClient()">Delete</button>
         }
       </mat-card-actions>
     </form>

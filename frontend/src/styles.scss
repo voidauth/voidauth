@@ -138,6 +138,15 @@ mat-card.form-card {
       border-color: var(--mat-sys-error);
       color: var(--mat-sys-error);
     }
+
+    mat-list.disabled {
+      border-color: var(--mat-form-field-outlined-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent));
+      color: var(--mat-form-field-outlined-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent));
+
+      > * {
+        color: var(--mat-form-field-outlined-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent));
+      }
+    }
   }
 
   mat-card-actions {

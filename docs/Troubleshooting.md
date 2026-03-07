@@ -10,7 +10,7 @@ This may also be caused by an invalid `SESSION_DOMAIN` environment variable valu
 
 ### Invalid Client
 
-Make sure that an OIDC App has been created, and that the `Client ID` parameter in VoidAuth and the 'Client' application match exactly.
+Make sure that an OIDC App has been created, and that the `Client ID` parameter in VoidAuth and the OIDC App match exactly.
 
 ### Invalid Redirect Uri
 

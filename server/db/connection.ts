@@ -1,4 +1,3 @@
-import { generate } from 'generate-password'
 import type { Knex } from 'knex'
 import knex from 'knex'
 import fs from 'node:fs'
@@ -17,6 +16,7 @@ export type DBConnectionOptions = {
 }
 
 async function runSchemaUpdates(connectionOptions: Knex.Config) {
+  // When running schema migrations with sqlite make sure foreign key checking is DISABLED to prevent data loss
   if (connectionOptions.client === 'sqlite3' || connectionOptions.client === 'better-sqlite') {
     const { pool, ...rest } = connectionOptions
     connectionOptions = rest
@@ -51,13 +51,7 @@ function getConnectionOptions(options: DBConnectionOptions): knex.Knex.Config {
   }
 }
 
-function connectionPg(options: DBConnectionOptions): Knex.Config {
-  // check that DB_PASSWORD is set
-  if (!options.DB_PASSWORD?.length) {
-    throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_PASSWORD must be set when DB_ADAPTER is 'postgres'. If you don't already have one, use something long and random like:
-    ${generate({ length: 32, numbers: true })}`)
-  }
-
+function connectionPg(options: DBConnectionOptions): Knex.Config & { connection: Knex.PgConnectionConfig } {
   // check that DB_HOST is set
   if (!options.DB_HOST?.length) {
     throw new Error(`${options.isMigration ? 'MIGRATE_TO_' : ''}DB_HOST must be set.`)
@@ -71,9 +65,13 @@ function connectionPg(options: DBConnectionOptions): Knex.Config {
       port: options.DB_PORT ?? 5432,
       user: options.DB_USER ?? 'postgres',
       database: options.DB_NAME ?? 'postgres',
-      password: options.DB_PASSWORD,
-      ssl: options.DB_SSL ? { rejectUnauthorized: !!options.DB_SSL_VERIFICATION } : false,
-    },
+      ...(options.DB_PASSWORD ? { password: options.DB_PASSWORD } satisfies Pick<Knex.PgConnectionConfig, 'password'> : {}),
+      ...(options.DB_SSL
+        ? {
+          ssl: { rejectUnauthorized: !!options.DB_SSL_VERIFICATION },
+        } satisfies Pick<Knex.PgConnectionConfig, 'ssl'>
+        : {}),
+    } satisfies Knex.PgConnectionConfig,
   }
 }
 
@@ -85,7 +83,7 @@ function connectionSQLite(): Knex.Config {
   }
 
   return {
-    client: 'sqlite3',
+    client: 'better-sqlite3',
     connection: {
       filename: './db/db.sqlite',
     },
