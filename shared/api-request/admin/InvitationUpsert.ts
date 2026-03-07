@@ -9,7 +9,7 @@ export const invitationUpsertValidator = {
   name: nameValidation,
   email: coerceEmailOrNull.optional(),
   emailVerified: zod.union([zod.boolean(), zod.number()]),
-  groups: zod.array(zod.string()),
+  groups: zod.array(zod.string().trim()),
 } as const
 
 export type InvitationUpsert = SchemaInfer<typeof invitationUpsertValidator>

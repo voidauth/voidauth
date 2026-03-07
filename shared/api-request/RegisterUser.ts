@@ -4,7 +4,7 @@ import { coerceEmailOrNull, nameValidation } from '@shared/validators.js'
 import type { SchemaInfer } from '@shared/utils.js'
 
 export const registerUserValidator = {
-  username: zod.string().regex(USERNAME_REGEX),
+  username: zod.string().trim().regex(USERNAME_REGEX),
   name: nameValidation,
   email: coerceEmailOrNull.optional(),
   inviteId: zod.string().optional(),

@@ -17,7 +17,7 @@ export const CLIENT_AUTH_METHODS = [
   'none'] as const satisfies ClientAuthMethod[]
 
 export const clientUpsertValidator = {
-  client_id: zod.string().min(1).trim(),
+  client_id: zod.string().trim().min(1).trim(),
   client_name: zod.string().trim().transform(v => v || undefined).optional(),
   redirect_uris: zod.array(zod.string().trim().refine((input) => {
     return typeof input === 'string' && isValidWildcardRedirect(input)

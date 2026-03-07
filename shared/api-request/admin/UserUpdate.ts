@@ -5,14 +5,14 @@ import zod from 'zod'
 
 export const userUpdateValidator = {
   id: zod.uuidv4(),
-  username: zod.string().regex(USERNAME_REGEX),
+  username: zod.string().trim().regex(USERNAME_REGEX),
   name: nameValidation,
   email: coerceEmailOrNull.optional(),
   emailVerified: zod.union([zod.boolean(), zod.number()]),
   approved: zod.union([zod.boolean(), zod.number()]),
   mfaRequired: zod.union([zod.boolean(), zod.number()]),
   groups: zod.array(zod.object({
-    name: zod.string(),
+    name: zod.string().trim(),
     id: zod.uuidv4(),
   })),
 } as const
