@@ -6,7 +6,7 @@
     "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "watch:prod": "ng build --watch --configuration production",
-    "i18n:extract": "ngx-translate-extract -s --input ./src --output ./public/i18n/en.json --format namespaced-json --format-indentation=\"  \"",
+    "i18n:extract": "ngx-translate-extract -s --input ./src --output ./public/i18n/en-US.json --format namespaced-json --format-indentation=\"  \"",
     "test": "ng test"
   },
   "dependencies": {

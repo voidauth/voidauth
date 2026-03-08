@@ -1,20 +1,20 @@
-<h1>Settings</h1>
+<h1>{{ "settings.title" | translate }}</h1>
 
 <!-- profile card -->
 <mat-card class="form-card">
   <mat-card-header>
-    <mat-card-title> Profile </mat-card-title>
+    <mat-card-title> {{ "settings.sections.profile.title" | translate }} </mat-card-title>
   </mat-card-header>
 
   <mat-card-content>
     <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
       <mat-form-field>
-        <mat-label>Username</mat-label>
+        <mat-label>{{ "settings.sections.profile.username.label" | translate }}</mat-label>
         <input matInput type="text" [value]="user?.username ?? ''" readonly disabled />
       </mat-form-field>
 
       <mat-form-field>
-        <mat-label>Name</mat-label>
+        <mat-label>{{ "settings.sections.profile.name.label" | translate }}</mat-label>
         <input matInput type="text" formControlName="name" />
         @if (profileForm.controls.name.errors) {
           <mat-error>{{ profileForm.controls.name.errors | validationError | async }}</mat-error>
@@ -23,7 +23,7 @@
 
       <mat-card-actions>
         <button mat-flat-button type="submit" [disabled]="!profileForm.enabled || !profileForm.valid || !profileForm.dirty">
-          Update Profile
+          {{ "settings.sections.profile.actions.submit.label" | translate }}
         </button>
       </mat-card-actions>
     </form>
@@ -32,7 +32,7 @@
 
     <form [formGroup]="emailForm" (ngSubmit)="updateEmail()">
       <mat-form-field>
-        <mat-label>Email</mat-label>
+        <mat-label>{{ "settings.sections.profile.email.label" | translate }}</mat-label>
         <input matInput type="text" formControlName="email" />
         @if (emailForm.controls.email.errors) {
           <mat-error>{{ emailForm.controls.email.errors | validationError | async }}</mat-error>
@@ -40,7 +40,9 @@
       </mat-form-field>
 
       <mat-card-actions>
-        <button mat-flat-button type="submit" [disabled]="!emailForm.enabled || !emailForm.valid || !emailForm.dirty">Update Email</button>
+        <button mat-flat-button type="submit" [disabled]="!emailForm.enabled || !emailForm.valid || !emailForm.dirty">
+          {{ "settings.sections.profile.email.actions.submit.label" | translate }}
+        </button>
       </mat-card-actions>
     </form>
   </mat-card-content>
@@ -51,7 +53,7 @@
 <!-- security card -->
 <mat-card class="form-card">
   <mat-card-header>
-    <mat-card-title> Security </mat-card-title>
+    <mat-card-title> {{ "settings.sections.security.title" | translate }} </mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <form [formGroup]="passwordForm">

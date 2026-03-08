@@ -1,12 +1,4 @@
 {
-  "home": {
-    "security": {
-      "passkey": {
-        "hasAny": "You have at least one registered passkey.",
-        "hasNone": "You have no registered passkeys."
-      }
-    }
-  },
   "login": {
     "password": {
       "label": "Password"
@@ -19,7 +11,8 @@
     "actions": {
       "login": "Login",
       "sign-up": "Sign Up"
-    }
+    },
+    "title": "Login"
   },
   "contact-us": {
     "actions": {
@@ -82,7 +75,8 @@
     "info": {
       "sign-into-question": "Do you want to sign in to <br /> <h2>{{destination}}</h2>",
       "post-signin-redir-notice": "After you sign in, you will be sent to <b>{{redirect}}</b>"
-    }
+    },
+    "title": "Confirm"
   },
   "forgot-password": {
     "username": {
@@ -93,7 +87,8 @@
       "send-again": "Send Again",
       "create-again": "Create Again",
       "create": "Create"
-    }
+    },
+    "title": "Forgot Password"
   },
   "form-errors": {
     "required": "Required.",
@@ -145,6 +140,36 @@
         "logout": "Logout",
         "send-again": "Send Again",
         "send-verification": "Send Verification"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "profile": {
+        "title": "Profile",
+        "username": {
+          "label": "Username"
+        },
+        "name": {
+          "label": "Name"
+        },
+        "actions": {
+          "submit": {
+            "label": "Update Profile"
+          }
+        },
+        "email": {
+          "label": "Email",
+          "actions": {
+            "submit": {
+              "label": "Update Email"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "Security"
       }
     }
   }
