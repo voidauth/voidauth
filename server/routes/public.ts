@@ -55,7 +55,7 @@ publicRouter.post('/passwordStrength',
 publicRouter.post('/send_password_reset',
   zodValidate({
     body: {
-      input: zod.string().trim(),
+      input: zod.string().trim().toLowerCase(),
     },
   }), async (req, res) => {
     const { input } = req.body
