@@ -957,12 +957,12 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
     const interaction = await getInteractionDetails(req, res)
 
     if (interaction) {
-      if (interaction.result?.login?.accountId === userId) {
+      if (interaction.lastSubmission?.login?.accountId === userId) {
         // merge amr if amr is not firstFactor
         if (!includesFirstFactorAmr) {
-          amr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
+          amr = [...new Set([...amr, ...(interaction.lastSubmission.login.amr ?? [])])]
         }
-        interaction.result.login.amr = amr
+        interaction.lastSubmission.login.amr = amr
         await interaction.save(TTLs.INTERACTION)
       }
 
@@ -971,7 +971,7 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
         location: await provider.interactionResult(req, res, {
           login: {
             accountId: userId,
-            remember: interaction.result?.login?.remember || remember,
+            remember: interaction.lastSubmission?.login?.remember || remember,
             amr: amr,
           },
         },
