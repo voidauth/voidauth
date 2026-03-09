@@ -962,8 +962,13 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
         if (!includesFirstFactorAmr) {
           amr = [...new Set([...amr, ...(interaction.lastSubmission.login.amr ?? [])])]
         }
-        interaction.lastSubmission.login.amr = amr
-        await interaction.save(TTLs.INTERACTION)
+      }
+
+      if (interaction.result?.login?.accountId === userId) {
+        // merge amr if amr is not firstFactor
+        if (!includesFirstFactorAmr) {
+          amr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
+        }
       }
 
       return {
@@ -971,7 +976,7 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
         location: await provider.interactionResult(req, res, {
           login: {
             accountId: userId,
-            remember: interaction.lastSubmission?.login?.remember || remember,
+            ...(remember ? { remember } : {}), // only include 'remember' in login options if it is true
             amr: amr,
           },
         },
