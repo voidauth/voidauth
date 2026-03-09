@@ -2,7 +2,7 @@ import type { SchemaInfer } from '@shared/utils'
 import zod from 'zod'
 
 export const loginUserValidator = {
-  input: zod.string().trim().min(1).max(32).toLowerCase(),
+  input: zod.string().trim().toLowerCase(),
   password: zod.string(),
   remember: zod.boolean().optional(),
 } as const
