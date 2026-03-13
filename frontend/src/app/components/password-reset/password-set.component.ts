@@ -3,6 +3,7 @@ import { ReactiveFormsModule, FormControl } from '@angular/forms'
 import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { NewPasswordInputComponent } from '../new-password-input/new-password-input.component'
+import { AsyncPipe } from '@angular/common'
 
 @Component({
   selector: 'app-password-set',
@@ -11,6 +12,7 @@ import { NewPasswordInputComponent } from '../new-password-input/new-password-in
     MaterialModule,
     ValidationErrorPipe,
     NewPasswordInputComponent,
+    AsyncPipe,
   ],
   templateUrl: './password-set.component.html',
   styleUrl: './password-set.component.scss',

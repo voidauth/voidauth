@@ -16,6 +16,7 @@ import { ConfigService } from '../../../services/config.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { humanDuration } from '@shared/utils'
+import { AsyncPipe } from '@angular/common'
 
 @Component({
   selector: 'app-password-sets',
@@ -23,6 +24,7 @@ import { humanDuration } from '@shared/utils'
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
+    AsyncPipe,
   ],
   templateUrl: './password-resets.component.html',
   styleUrl: './password-resets.component.scss',

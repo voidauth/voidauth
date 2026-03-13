@@ -16,6 +16,8 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
 import { isValidEmail } from '../../validators/validators'
+import { TranslatePipe } from '@ngx-translate/core'
+import { AsyncPipe } from '@angular/common'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import { MatTableDataSource } from '@angular/material/table'
 import type { TableColumn } from '../admin/clients/clients.component'
@@ -28,6 +30,8 @@ import { MatSort } from '@angular/material/sort'
     MaterialModule,
     ValidationErrorPipe,
     PasswordSetComponent,
+    TranslatePipe,
+    AsyncPipe,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',

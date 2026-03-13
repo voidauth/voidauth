@@ -14,6 +14,7 @@ import { SnackbarService } from './snackbar.service'
 import { SpinnerService } from './spinner.service'
 import { MaterialModule } from '../material-module'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import { _, TranslatePipe } from '@ngx-translate/core'
 
 @Injectable({
   providedIn: 'root',
@@ -57,7 +58,7 @@ export class PasskeyService {
       }
     }
 
-    let name: string | undefined
+    let name: PasskeySupport['platformName']
     let icon: string | undefined
     if (await platformAuthenticatorIsAvailable()) {
       const { os } = UAParser(navigator.userAgent)
@@ -159,7 +160,7 @@ export class PasskeyService {
 
 export type PasskeySupport = {
   enabled: boolean
-  platformName?: string
+  platformName?: 'Face ID' | 'Touch ID'
   platformIcon?: string
 }
 
@@ -167,16 +168,17 @@ export type PasskeySupport = {
   selector: 'app-passkey-dialog',
   imports: [
     MaterialModule,
+    TranslatePipe,
   ],
   template: `
-    <h1 mat-dialog-title>{{ passkeySupport?.platformName ? "Enable " + passkeySupport?.platformName + "?" : "Register Passkey?" }}</h1>
+    <h1 mat-dialog-title>{{ 'passkey-dialog.title' | translate:{ platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}</h1>
     <mat-dialog-content style="height: 200px; display: flex; justify-content: center; align-items: center;">
       <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px;" fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button matButton mat-dialog-close>Skip</button>
       <button mat-flat-button type="button" [mat-dialog-close]="true" cdkFocusInitial>
-        {{ passkeySupport?.platformName ? 'Enable' : "Register" }}
+        {{ 'passkey-dialog.actions.passkey' | translate:{ platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}
         <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
       </button>
     </mat-dialog-actions>

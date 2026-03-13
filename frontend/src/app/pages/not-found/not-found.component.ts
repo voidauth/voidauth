@@ -3,10 +3,11 @@ import { MaterialModule } from '../../material-module'
 import { RouterLink } from '@angular/router'
 import { ConfigService } from '../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-not-found',
-  imports: [MaterialModule, RouterLink],
+  imports: [MaterialModule, RouterLink, TranslatePipe],
   templateUrl: './not-found.component.html',
   styleUrl: './not-found.component.scss',
 })

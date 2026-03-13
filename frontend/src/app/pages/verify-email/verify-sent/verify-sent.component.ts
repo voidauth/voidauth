@@ -7,11 +7,12 @@ import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService, getCurrentHost } from '../../../services/config.service'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-verify-sent',
   imports: [
-    MaterialModule,
+    MaterialModule, TranslatePipe,
   ],
   templateUrl: './verify-sent.component.html',
   styleUrl: './verify-sent.component.scss',
