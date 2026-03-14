@@ -133,8 +133,8 @@ export function validateWildcardRedirects(inputs: string[]) {
     for (const input of inputs) {
       wildcardRedirect(input)
     }
-  } catch (_e) {
-    throw new TypeError('A Redirect URL is invalid.')
+  } catch (e) {
+    throw new TypeError('A Redirect URL is invalid.', { cause: e })
   }
 
   let hasHttpProtocol = false

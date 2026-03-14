@@ -18,7 +18,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   const proxyAuthorizationHeader = req.headersDistinct['proxy-authorization']?.[0]
   const authorizationHeader = req.headersDistinct['authorization']?.[0]
   let user: UserDetails | undefined
-  let amr: string[] = []
+  let amr: string[]
 
   if (!sessionDomainReaches(url.hostname)) {
     res.status(400).send({ message: `ProxyAuth Domain hostname '${url.hostname}' is not covered by session domain '${String(getSessionDomain())}'` })
