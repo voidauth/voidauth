@@ -43,7 +43,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     name: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.minLength(3)]),
+    }, [Validators.minLength(1)]),
   })
 
   public emailForm = new FormGroup({
