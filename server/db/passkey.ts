@@ -6,7 +6,7 @@ import { createExpiration } from './util'
 import { TABLES, TTLs } from '@shared/constants'
 
 export async function getUserPasskeys(userId: string) {
-  return (await db().select().table<Passkey>(TABLES.PASSKEY).where({ userId })).map((p) => {
+  return (await db().select().table<Passkey>(TABLES.PASSKEY).where({ userId }).orderBy('createdAt', 'desc')).map((p) => {
     return {
       ...p,
       transports: p.transports?.split(',') as AuthenticatorTransportFuture[] | undefined,

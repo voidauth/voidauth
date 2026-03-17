@@ -20,6 +20,7 @@ import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import { MatTableDataSource } from '@angular/material/table'
 import type { TableColumn } from '../admin/clients/clients.component'
 import { MatSort } from '@angular/material/sort'
+import { CommonModule } from '@angular/common'
 
 @Component({
   selector: 'app-home',
@@ -28,6 +29,7 @@ import { MatSort } from '@angular/material/sort'
     MaterialModule,
     ValidationErrorPipe,
     PasswordSetComponent,
+    CommonModule,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
