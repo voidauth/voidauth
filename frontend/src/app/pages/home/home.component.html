@@ -78,6 +78,10 @@
 
       <h2 style="margin-top: -16px">Passkeys</h2>
 
+      @if (!passkeys.data.length) {
+        <p style="text-align: center">You have no registered passkeys.</p>
+      }
+
       <button mat-flat-button type="button" (click)="registerPasskey()" [disabled]="!passkeySupport?.enabled">
         Register Passkey
         <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
@@ -106,6 +110,9 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let row">
+              <button mat-icon-button (click)="updatePasskey(row.id, row.displayName)" matTooltip="Edit">
+                <mat-icon fontSet="material-icons-round">edit</mat-icon>
+              </button>
               <button
                 mat-icon-button
                 type="button"
