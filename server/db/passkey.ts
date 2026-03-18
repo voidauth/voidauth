@@ -18,6 +18,7 @@ export async function getUserPasskeysResponse(userId: string) {
   return (await getUserPasskeys(userId)).map((p) => {
     return {
       id: p.id,
+      displayName: p.displayName,
       createdAt: p.createdAt,
       lastUsed: p.lastUsed,
     }
@@ -43,6 +44,10 @@ export async function getPasskey(id: string) {
 
 export async function savePasskey(passkey: Passkey) {
   await db().table<Passkey>(TABLES.PASSKEY).insert(passkey)
+}
+
+export async function updateUserPasskey(id: string, userId: string, updates: Partial<Pick<Passkey, 'displayName'>>) {
+  await db().table<Passkey>(TABLES.PASSKEY).update(updates).where({ id, userId })
 }
 
 export async function saveRegistrationOptions(registration: PublicKeyCredentialCreationOptionsJSON, uniqueId: string) {

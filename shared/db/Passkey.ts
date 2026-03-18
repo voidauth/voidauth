@@ -3,6 +3,7 @@ import type { User } from './User'
 
 export type Passkey = Pick<Audit, 'createdAt'> & {
   id: string
+  displayName: string | null
   publicKey: Uint8Array<ArrayBuffer>
   userId: User['id']
   webAuthnUserID: string

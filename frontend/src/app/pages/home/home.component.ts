@@ -15,6 +15,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
+import { PasskeyEditDialog } from '../../dialogs/passkey-edit/passkey-edit.component'
 import { isValidEmail } from '../../validators/validators'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import { MatTableDataSource } from '@angular/material/table'
@@ -82,10 +83,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   passkeyColumns: TableColumn<PasskeyResponse>[] = [
     {
-      columnDef: 'id',
-      header: 'ID',
-      // Convert from base64Url to base64, then convert to hex
-      cell: element => atob(element.id.replace(/-/g, '+').replace(/_/g, '/'))
+      columnDef: 'displayName',
+      header: 'Name',
+      // User name if exists, otherwise use id convert from base64Url to base64, then convert to hex
+      cell: element => element.displayName || atob(element.id.replace(/-/g, '+').replace(/_/g, '/'))
         .split('')
         .map(function (aChar) {
           return ('00' + aChar.charCodeAt(0).toString(16)).slice(-2)
@@ -144,6 +145,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       try {
         this.passkeys.data = await this.userService.getPasskeys()
+        // Set the default sort to createdAt desc
+        this.passkeySort().active = 'createdAt'
+        this.passkeySort().direction = 'desc'
+        this.passkeySort().sortChange.emit({ active: 'createdAt', direction: 'desc' })
         this.passkeys.sort = this.passkeySort()
       } catch (_e) {
         // Do nothing
@@ -246,6 +251,32 @@ export class HomeComponent implements OnInit, OnDestroy {
     } finally {
       this.spinnerService.hide()
     }
+  }
+
+  updatePasskey(id: string, displayName: string | null) {
+    const dialogRef = this.dialog.open(PasskeyEditDialog, {
+      data: { id, displayName },
+    })
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result || typeof result !== 'string') {
+        return
+      }
+
+      try {
+        this.spinnerService.show()
+        await this.userService.updatePasskey(
+          id,
+          result,
+        )
+        this.snackbarService.message('Passkey updated.')
+      } catch (_e) {
+        this.snackbarService.error('Could not update Passkey.')
+      } finally {
+        await this.loadUser()
+        this.spinnerService.hide()
+      }
+    })
   }
 
   deletePasskey(id: string) {
