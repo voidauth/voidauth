@@ -119,6 +119,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog)
 
   async ngOnInit() {
+    this.passkeySort().active = 'createdAt'
+    this.passkeySort().direction = 'desc'
+
     await this.loadUser()
 
     this.passkeySupport = await this.passkeyService.getPasskeySupport()
@@ -146,10 +149,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       try {
         this.passkeys.data = await this.userService.getPasskeys()
         // Set the default sort to createdAt desc
-        this.passkeySort().active = 'createdAt'
-        this.passkeySort().direction = 'desc'
-        this.passkeySort().sortChange.emit({ active: 'createdAt', direction: 'desc' })
         this.passkeys.sort = this.passkeySort()
+        this.passkeySort().sortChange.emit({ active: this.passkeySort().active, direction: this.passkeySort().direction })
       } catch (_e) {
         // Do nothing
       }
