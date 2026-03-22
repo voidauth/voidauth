@@ -16,7 +16,7 @@ import { sendAdminNotifications } from '../util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from '../db/tableMaintenance'
 import { createInitialAdmin } from '../db/user'
 import { logger, purgeAsyncLog } from '../util/logger'
-import { standardRateLimit } from '../util/rateLimit'
+import { sensitiveRateLimit, standardRateLimit } from '../util/rateLimit'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -47,6 +47,12 @@ export async function serve() {
 
   // apply rate limiter to all requests
   app.use(standardRateLimit)
+
+  // use sensitiveRateLimit on all post-put-patch-delete requests
+  app.post(new RegExp(`(.*)`), sensitiveRateLimit)
+  app.put(new RegExp(`(.*)`), sensitiveRateLimit)
+  app.patch(new RegExp(`(.*)`), sensitiveRateLimit)
+  app.delete(new RegExp(`(.*)`), sensitiveRateLimit)
 
   function noCache(_req: Request, res: Response, next: NextFunction) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
@@ -82,7 +88,7 @@ export async function serve() {
   }
 
   function setAsyncLocalStorage(req: Request, res: Response, next: NextFunction) {
-    void als.run({}, async () => {
+    als.run({}, () => {
       logger({
         level: 'debug',
         message: 'API Request Started',
@@ -94,10 +100,6 @@ export async function serve() {
           },
         },
       })
-      // If method is post-put-patch-delete then use transaction
-      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method.toUpperCase())) {
-        await transaction()
-      }
       res.on('finish', async () => {
         try {
           // finalize the log with the res details
@@ -107,6 +109,7 @@ export async function serve() {
             details: {
               response: {
                 statusCode: res.statusCode,
+                location: res.getHeader('Location') ? String(res.getHeader('Location')) : undefined,
               },
             },
           })

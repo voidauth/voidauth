@@ -39,6 +39,10 @@ export const argv = yargs(hideBin(process.argv))
 
 `)
     try {
+      logger({
+        level: 'info',
+        message: 'Starting VoidAuth Server',
+      })
       const server = await import('./cli/server.ts')
       void server.serve()
     } catch (e) {

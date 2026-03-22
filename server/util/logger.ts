@@ -14,6 +14,7 @@ export type LogShape = {
     }
     response?: {
       statusCode: number
+      location?: string
     }
     user?: {
       id: string

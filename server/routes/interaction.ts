@@ -944,6 +944,17 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
   const { userId, remember = false } = options
   const includesFirstFactorAmr = amrFactors.firstFactors.some(f => amr.includes(f))
 
+  logger({
+    level: 'debug',
+    message: 'Adding login factor to user',
+    details: {
+      login: {
+        userId,
+        amr,
+      },
+    },
+  })
+
   try {
     const session = await getSession(req, res)
     if (session?.accountId === userId) {

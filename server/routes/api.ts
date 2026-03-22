@@ -11,8 +11,8 @@ import appConfig, { getSessionDomain, sessionDomainReaches } from '../util/confi
 import { loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
 import { userCanLogin } from '../util/auth'
-import { sensitiveRateLimit } from '../util/rateLimit'
 import { getSession } from '../oidc/provider'
+import { transaction } from '../db/db'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -25,11 +25,13 @@ declare global {
 
 export const router = Router()
 
-// use sensitiveRateLimit on all post-put-patch-delete requests
-router.post(new RegExp(`(.*)`), sensitiveRateLimit)
-router.put(new RegExp(`(.*)`), sensitiveRateLimit)
-router.patch(new RegExp(`(.*)`), sensitiveRateLimit)
-router.delete(new RegExp(`(.*)`), sensitiveRateLimit)
+router.use(async (req, _res, next) => {
+  // If method is post-put-patch-delete then use transaction
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method.toUpperCase())) {
+    await transaction()
+  }
+  next()
+})
 
 // Set user on request
 router.use(async (req: Request, res: Response, next) => {
