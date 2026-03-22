@@ -360,7 +360,11 @@ adminRouter.patch('/user',
         try {
           await sendApproved(userUpdate, userUpdate.email)
         } catch (e) {
-          logger.error(e)
+          logger({
+            level: 'error',
+            message: 'Error occurred while sending approved email.',
+            error: e instanceof Error ? e : { message: String(e) },
+          })
         }
       }
     }
@@ -448,7 +452,11 @@ adminRouter.patch('/users/approve',
         try {
           await sendApproved(user, user.email)
         } catch (e) {
-          logger.error(e)
+          logger({
+            level: 'error',
+            message: 'Error occurred while sending approved email.',
+            error: e instanceof Error ? e : { message: String(e) },
+          })
         }
       }
     }

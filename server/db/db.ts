@@ -34,7 +34,10 @@ const _db = await createDB({
   DB_SSL_VERIFICATION: appConfig.DB_SSL_VERIFICATION,
 })
 
-logger.info(`Connected to ${appConfig.DB_ADAPTER} database.`)
+logger({
+  level: 'info',
+  message: `Connected to ${appConfig.DB_ADAPTER} database.`,
+})
 
 export function db() {
   return als.getStore()?.transaction ?? _db

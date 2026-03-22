@@ -79,14 +79,19 @@ router.get('/', async (req, res) => {
   const accountId = session?.accountId ?? interaction.result?.login?.accountId
   const user = accountId ? await getUserById(accountId) : undefined
 
-  const logInfo = {
-    prompt: prompt.name,
-    reasons: prompt.reasons,
-    client_id: params.client_id,
-    username: user?.username ?? null,
-    proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
-  }
-  logger.debug(`interaction required: ${JSON.stringify(logInfo)}`)
+  logger({
+    level: 'debug',
+    message: `Interaction required`,
+    details: {
+      interaction: {
+        prompt: prompt.name,
+        reasons: prompt.reasons,
+        client_id: params.client_id,
+        username: user?.username ?? null,
+        proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
+      },
+    },
+  })
 
   if (prompt.name === 'login') {
     // Check for prompt reasons that cause special redirects

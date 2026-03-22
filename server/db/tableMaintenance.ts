@@ -45,11 +45,14 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
   const cookieKeys = await getCookieKeys()
   const jwks = await getJWKs()
   if (enableWarnings && lockedKeys.length > 0 && (cookieKeys.length === 0 || jwks.length === 0)) {
-    logger.error(`WARNING!!!
-      You have key(s) that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
-      This could be due to a mistake while rotating the storage key.
-      New keys were generated to replace them, this invalidated all sessions and tokens.
-      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY and get your keys back.`)
+    logger({
+      level: 'error',
+      message: 'WARNING!!!'
+        + ' You have key(s) that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
+        + ' This could be due to a mistake while rotating the storage key.'
+        + ' New keys were generated to replace them, this invalidated all sessions and tokens.'
+        + ' If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY and get your keys back.',
+    })
   }
 
   // Do the same for clients
@@ -72,11 +75,14 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
     }).where({ id: k.id, type: 'Client' })
   }
   if (enableWarnings && lockedClients.length > 0) {
-    logger.error(`WARNING!!!
-      You have OIDC Apps that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
-      This could be due to a mistake while rotating the storage key.
-      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.
-      Non-decryptable Clients: ${lockedClients.map(c => c.id).join(', ')}`)
+    logger({
+      level: 'error',
+      message: 'WARNING!!!'
+        + ' You have OIDC Apps that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
+        + ' This could be due to a mistake while rotating the storage key.'
+        + ' If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.'
+        + ' Non-decryptable Clients: ' + lockedClients.map(c => c.id).join(', '),
+    })
   }
 
   // Do the same for TOTPs
@@ -89,14 +95,20 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
     }).where({ id: t.id })
   }
   if (enableWarnings && lockedTOTPs.length > 0) {
-    logger.error(`WARNING!!!
-      You have MFA TOTP codes that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.
-      This could be due to a mistake while rotating the storage key.
-      If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.`)
+    logger({
+      level: 'error',
+      message: 'WARNING!!!'
+        + ' You have MFA TOTP codes that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
+        + ' This could be due to a mistake while rotating the storage key.'
+        + ' If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.',
+    })
   }
 
   if (decryptableKeys.length || decryptableClients.length || decryptableTOTPs.length) {
-    console.log('A storage key rotation was detected, re-encrypted with new STORAGE_KEY.')
+    logger({
+      level: 'info',
+      message: 'A storage key rotation was detected, re-encrypted with new STORAGE_KEY.',
+    })
   }
 }
 
