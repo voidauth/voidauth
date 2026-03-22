@@ -4,11 +4,14 @@ import appConfig from '../util/config'
 import { exit } from 'process'
 import { TABLES_ORDER } from '@shared/constants'
 import { createDB } from '../db/connection'
-import { logger } from '../util/logger'
+import { logger, purgeAsyncLog } from '../util/logger'
 
 export async function migrate() {
   if (appConfig.DB_ADAPTER === appConfig.MIGRATE_TO_DB_ADAPTER) {
-    logger.error('Cannot migrate databases between the same DB_ADAPTER types.')
+    logger({
+      level: 'error',
+      message: 'Cannot migrate databases between the same DB_ADAPTER types.',
+    })
     exit(1)
   }
 
@@ -68,6 +71,8 @@ export async function migrate() {
     } catch (e) {
       await rollback()
       throw e
+    } finally {
+      purgeAsyncLog()
     }
   })
 }

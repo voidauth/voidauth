@@ -36,7 +36,7 @@ export async function createDB(options: DBConnectionOptions) {
   const connOptions = getConnectionOptions(options)
   const migrations = await runSchemaUpdates(connOptions)
   if (migrations.length) {
-    logger.info('Database schema updated.')
+    logger({ level: 'info', message: 'Database schema updated.' })
   }
   return knex(connOptions)
 }

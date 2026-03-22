@@ -55,6 +55,10 @@ export async function generateTheme() {
 
     fs.writeFileSync(path.join('./theme', 'generated-mat-theme.css'), compiled.css)
   } catch (error) {
-    logger.error(error)
+    logger({
+      level: 'error',
+      message: 'Error occurred while generating theme.',
+      error: error instanceof Error ? error : { message: String(error) },
+    })
   }
 }

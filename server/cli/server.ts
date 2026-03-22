@@ -15,8 +15,8 @@ import { als } from '../util/als'
 import { sendAdminNotifications } from '../util/email'
 import { clearAllExpiredEntries, updateEncryptedTables } from '../db/tableMaintenance'
 import { createInitialAdmin } from '../db/user'
-import { logger } from '../util/logger'
-import { standardRateLimit } from '../util/rateLimit'
+import { logger, purgeAsyncLog } from '../util/logger'
+import { sensitiveRateLimit, standardRateLimit } from '../util/rateLimit'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -48,6 +48,12 @@ export async function serve() {
   // apply rate limiter to all requests
   app.use(standardRateLimit)
 
+  // use sensitiveRateLimit on all post-put-patch-delete requests
+  app.post(new RegExp(`(.*)`), sensitiveRateLimit)
+  app.put(new RegExp(`(.*)`), sensitiveRateLimit)
+  app.patch(new RegExp(`(.*)`), sensitiveRateLimit)
+  app.delete(new RegExp(`(.*)`), sensitiveRateLimit)
+
   function noCache(_req: Request, res: Response, next: NextFunction) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     res.setHeader('Pragma', 'no-cache')
@@ -72,17 +78,67 @@ export async function serve() {
         + 'Session Domain is \'' + String(getSessionDomain()) + '\'. '
         + 'If \'' + req.hostname + '\' does not match what is displayed in the browser URL bar '
         + 'this may indicate a reverse-proxy misconfiguration.'
-      logger.debug(message)
+      logger({
+        level: 'debug',
+        message: message,
+      })
     }
 
     next()
   }
 
-  app.use(`${basePath()}/oidc`, noCache, checkAPPUrl, provider.callback())
+  function setAsyncLocalStorage(req: Request, res: Response, next: NextFunction) {
+    als.run({}, () => {
+      logger({
+        level: 'debug',
+        message: 'API Request Started',
+        details: {
+          request: {
+            method: req.method,
+            // show only original path without query to avoid logging sensitive info
+            path: req.baseUrl + req.path,
+          },
+        },
+      })
+      res.on('finish', async () => {
+        try {
+          // finalize the log with the res details
+          logger({
+            level: 'debug',
+            message: 'API Response Sent',
+            details: {
+              response: {
+                statusCode: res.statusCode,
+                location: res.getHeader('Location') ? String(res.getHeader('Location')) : undefined,
+              },
+            },
+          })
+
+          // commit or rollback transaction based on res statusCode
+          if (res.statusCode >= 500 && res.statusCode < 600) {
+            await rollback()
+          } else {
+            await commit()
+          }
+        } catch (error) {
+          logger({
+            level: 'error',
+            message: 'Error occurred during transaction commit/rollback',
+            error: error instanceof Error ? error : { message: String(error) },
+          })
+        } finally {
+          purgeAsyncLog()
+        }
+      })
+      next()
+    })
+  }
+
+  app.use(`${basePath()}/oidc`, noCache, checkAPPUrl, setAsyncLocalStorage, provider.callback())
 
   app.use(express.json({ limit: '1Mb' }))
 
-  app.use(`${basePath()}/api`, noCache, router)
+  app.use(`${basePath()}/api`, noCache, setAsyncLocalStorage, router)
 
   // branding folder static assets
   if (!fs.existsSync(path.join('./config', 'branding'))) {
@@ -162,12 +218,16 @@ export async function serve() {
 
   // Last chance error handler
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    logger.error(err) // log here, ideally this will never be called
+    logger({
+      level: 'error',
+      message: 'Unhandled API error',
+      error: err,
+    })
     res.sendStatus(500)
   })
 
   app.listen(appConfig.APP_PORT, () => {
-    console.log(`Listening on ${typeof appConfig.APP_PORT === 'number' ? 'port' : 'socket'}: ${String(appConfig.APP_PORT)}`)
+    logger({ level: 'info', message: `Listening on ${typeof appConfig.APP_PORT === 'number' ? 'port' : 'socket'}: ${String(appConfig.APP_PORT)}` })
   })
 
   function modifyIndex() {
@@ -249,14 +309,26 @@ export async function serve() {
         await commit()
       } catch (e) {
         await rollback()
-        logger.error(e)
+        logger({
+          level: 'error',
+          message: 'Error occurred during table maintenance',
+          error: e instanceof Error ? e : { message: String(e) },
+        })
+      } finally {
+        purgeAsyncLog()
       }
 
       // Send admin notification emails
       try {
         await sendAdminNotifications()
       } catch (e) {
-        logger.error(e)
+        logger({
+          level: 'error',
+          message: 'Error occurred while sending admin notifications',
+          error: e instanceof Error ? e : { message: String(e) },
+        })
+      } finally {
+        purgeAsyncLog()
       }
     })
   }

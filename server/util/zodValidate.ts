@@ -95,8 +95,16 @@ export function zodValidate<
     }
 
     if (errors.params || errors.query || errors.body) {
+      logger({
+        level: 'debug',
+        message: 'API Validation failed',
+        details: {
+          api_validation: {
+            error: errors,
+          },
+        },
+      })
       res.status(422).json(errors)
-      logger.debug({ message: 'API Validation failed', path: req.path, method: req.method, error: errors })
       return
     }
 

@@ -27,7 +27,7 @@ export const argv = yargs(hideBin(process.argv))
   .scriptName('voidauth')
   .usage('Usage: voidauth <command> [options]')
   .command(['serve', '$0'], 'Default, serve voidauth application.', {}, async () => {
-    logger.info(`
+    console.log(`
 
  __   __ ______   __   _____    ______   __  __   ______  __  __   
 /\\ \\ / //\\  __ \\ /\\ \\ /\\  __ \\ /\\  __ \\ /\\ \\/\\ \\ /\\__  _\\/\\ \\_\\ \\  
@@ -39,10 +39,18 @@ export const argv = yargs(hideBin(process.argv))
 
 `)
     try {
+      logger({
+        level: 'info',
+        message: 'Starting VoidAuth Server',
+      })
       const server = await import('./cli/server.ts')
       void server.serve()
     } catch (e) {
-      logger.error(e)
+      logger({
+        level: 'error',
+        message: 'Server failed to start',
+        error: e instanceof Error ? e : { message: String(e) },
+      })
       exit(1)
     }
   })
@@ -53,10 +61,14 @@ export const argv = yargs(hideBin(process.argv))
       try {
         const migrate = await import('./cli/migrateDB.ts')
         await migrate.migrate()
-        logger.info('Database migration completed successfully, adjust your DB_* environment variables and restart.')
+        console.log('Database migration completed successfully, adjust your DB_* environment variables and restart.')
         exit(0)
       } catch (e) {
-        logger.error(e)
+        logger({
+          level: 'error',
+          message: 'Database migration failed',
+          error: e instanceof Error ? e : { message: String(e) },
+        })
         exit(1)
       }
     })
@@ -73,15 +85,22 @@ export const argv = yargs(hideBin(process.argv))
     async (argv) => {
       try {
         if (!argv.username) {
-          logger.error('Username must be specified')
+          logger({
+            level: 'error',
+            message: 'Username must be specified',
+          })
           exit(2)
         }
         const gpr = await import('./cli/generatePasswordReset.ts')
         const result = await gpr.generatePasswordReset(argv.username)
-        logger.info(`\nPassword Reset link created (valid for ${humanDuration(TTLs.PASSWORD_RESET * 1000)}): \n\n${result}\n`)
+        console.log(`\nPassword Reset link created (valid for ${humanDuration(TTLs.PASSWORD_RESET * 1000)}): \n\n${result}\n`)
         exit(0)
       } catch (e) {
-        logger.error(e)
+        logger({
+          level: 'error',
+          message: 'Failed to generate password reset link',
+          error: e instanceof Error ? e : { message: String(e) },
+        })
         exit(1)
       }
     },

@@ -1,20 +1,18 @@
 import { Router, type Request, type Response } from 'express'
 import { getInteractionDetails, router as interactionRouter } from './interaction'
-import { commit, transaction, rollback } from '../db/db'
 import { getUserById } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
 import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
-import { als } from '../util/als'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import appConfig, { getSessionDomain, sessionDomainReaches } from '../util/config'
 import { loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
 import { userCanLogin } from '../util/auth'
-import { sensitiveRateLimit } from '../util/rateLimit'
 import { getSession } from '../oidc/provider'
+import { transaction } from '../db/db'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -27,32 +25,13 @@ declare global {
 
 export const router = Router()
 
-router.use((_req, _res, next) => {
-  als.run({}, () => {
-    next()
-  })
-})
-
-// If method is post-put-patch-delete then use transaction
-router.use(async (req, res, next) => {
+router.use(async (req, _res, next) => {
+  // If method is post-put-patch-delete then use transaction
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method.toUpperCase())) {
     await transaction()
-    res.on('finish', async () => {
-      if (res.statusCode >= 500 && res.statusCode < 600) {
-        await rollback()
-      } else {
-        await commit()
-      }
-    })
   }
   next()
 })
-
-// use sensitiveRateLimit on all post-put-patch-delete requests
-router.post(new RegExp(`(.*)`), sensitiveRateLimit)
-router.put(new RegExp(`(.*)`), sensitiveRateLimit)
-router.patch(new RegExp(`(.*)`), sensitiveRateLimit)
-router.delete(new RegExp(`(.*)`), sensitiveRateLimit)
 
 // Set user on request
 router.use(async (req: Request, res: Response, next) => {
@@ -75,7 +54,10 @@ router.get('/authz/forward-auth', async (req: Request, res) => {
   const path = req.headersDistinct['x-forwarded-uri']?.[0]
   const url = proto && host ? URL.parse(`${proto}://${host}${path ?? ''}`) : null
   if (!url) {
-    logger.error(`invalid x-forwarded headers in ProxyAuth Domain request.`)
+    logger({
+      level: 'error',
+      message: 'Invalid x-forwarded headers in ProxyAuth Domain request.',
+    })
     res.sendStatus(400)
     return
   }
@@ -86,7 +68,10 @@ router.get('/authz/auth-request', async (req: Request, res) => {
   const headerUrl = req.headersDistinct['x-original-url']?.[0]
   const url = headerUrl ? URL.parse(headerUrl) : null
   if (!url) {
-    logger.error(`invalid x-original-url header in ProxyAuth Domain request.`)
+    logger({
+      level: 'error',
+      message: 'Invalid x-original-url header in ProxyAuth Domain request.',
+    })
     res.sendStatus(400)
     return
   }
@@ -134,7 +119,7 @@ router.use((_req, res) => {
   res.end()
 })
 
-async function getUserSessionInteraction(req: Request, res: Response) {
+export async function getUserSessionInteraction(req: Request, res: Response) {
   // get user from session or interaction
   let user: UserDetails | undefined
   let amr: string[] = []
@@ -162,20 +147,31 @@ async function getUserSessionInteraction(req: Request, res: Response) {
     }
   }
 
+  if (!user) {
+    return undefined
+  }
+
   const canLogin = userCanLogin(user, amr)
 
-  const currentUser: CurrentUserDetails | undefined = user
-    ? {
-        ...user,
-        amr,
-        canLogin: canLogin,
-        isPrivileged: canLogin && (!user.hasTotp || loginFactors(amr) > 1),
-      }
-    : undefined
-
-  if (currentUser) {
-    logger.debug(`user found in ${String(source)}`)
+  const currentUser: CurrentUserDetails | undefined = {
+    ...user,
+    amr,
+    canLogin: canLogin,
+    isPrivileged: canLogin && (!user.hasTotp || loginFactors(amr) > 1),
   }
+
+  logger({
+    level: 'debug',
+    message: `User found in ${String(source)}`,
+    details: {
+      user: {
+        id: currentUser.id,
+        username: currentUser.username,
+        source: source ?? 'unknown',
+        amr: currentUser.amr,
+      },
+    },
+  })
 
   return currentUser
 }
