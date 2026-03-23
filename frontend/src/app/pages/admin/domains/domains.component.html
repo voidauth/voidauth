@@ -3,16 +3,6 @@
     <a mat-flat-button routerLink="/admin/domain">Create ProxyAuth Domain</a>
   </span>
 
-  <mat-expansion-panel style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px">
-    <mat-expansion-panel-header>
-      <mat-panel-title> Domain Info </mat-panel-title>
-    </mat-expansion-panel-header>
-    <p>
-      Domains will be checked from most to least specific. Once a match is found, user groups are checked and the user will be rejected or
-      allowed access.
-    </p>
-  </mat-expansion-panel>
-
   <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
     @for (column of columns; track column) {
       <ng-container [matColumnDef]="column.columnDef">
