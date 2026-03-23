@@ -9,6 +9,7 @@ export type LogShape = {
   message: string
   details?: Record<string, unknown> & {
     request?: {
+      ip: string | undefined
       method: string
       path: string
     }

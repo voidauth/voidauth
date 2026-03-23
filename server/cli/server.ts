@@ -94,6 +94,7 @@ export async function serve() {
         message: 'API Request Started',
         details: {
           request: {
+            ip: req.ip,
             method: req.method,
             // show only original path without query to avoid logging sensitive info
             path: req.baseUrl + req.path,
