@@ -46,7 +46,7 @@ export class UserComponent implements OnInit {
     username: new FormControl<string>({
       value: '',
       disabled: false,
-    }, [Validators.required, Validators.minLength(3), Validators.pattern(USERNAME_REGEX)]),
+    }, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
     email: new FormControl<string>({
       value: '',
       disabled: false,
@@ -54,7 +54,7 @@ export class UserComponent implements OnInit {
     name: new FormControl<string | null>({
       value: null,
       disabled: false,
-    }, [Validators.minLength(3)]),
+    }, [Validators.minLength(1)]),
     emailVerified: new FormControl<boolean>({
       value: false,
       disabled: false,

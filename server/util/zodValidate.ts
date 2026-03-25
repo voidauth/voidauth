@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { SchemaInfer } from '@shared/utils'
 import type { RequestHandler } from 'express'
 import type { ParsedQs } from 'qs'
 import zod from 'zod'
+import { logger } from './logger'
 
 // Enforce proper typing of params and query inputs
 type ZodParamsShape = {
@@ -56,41 +55,57 @@ export function zodValidate<
   body?: BodyShape
   query?: QueryShape
   params?: ParamsShape
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): RequestHandler<ShapeOrUndefined<ParamsShape>, any, ShapeOrUndefined<BodyShape>, ShapeOrUndefined<QueryShape>> {
   return (req, res, next) => {
+    const errors: Record<string, unknown> = {}
     if (schema.params) {
       const output = zod.object(schema.params).safeParse(req.params)
-      if (!output.success) {
-        res.status(422).json(zod.treeifyError(output.error))
-        return
+      if (output.success) {
+        req.params = output.data as ShapeOrUndefined<ParamsShape>
+      } else {
+        errors.params = zod.treeifyError(output.error)
       }
-      req.params = output.data as any
     } else {
-      req.params = undefined as any
+      req.params = undefined as ShapeOrUndefined<ParamsShape>
     }
 
     // Needed to make req.query writable
     Object.defineProperty(req, 'query', { ...Object.getOwnPropertyDescriptor(req, 'query'), value: req.query, writable: true })
     if (schema.query) {
       const output = zod.object(schema.query).safeParse(req.query)
-      if (!output.success) {
-        res.status(422).json(zod.treeifyError(output.error))
-        return
+      if (output.success) {
+        req.query = output.data as ShapeOrUndefined<QueryShape>
+      } else {
+        errors.query = zod.treeifyError(output.error)
       }
-      req.query = output.data as any
     } else {
-      req.query = undefined as any
+      req.query = undefined as ShapeOrUndefined<QueryShape>
     }
 
     if (schema.body) {
       const output = zod.object(schema.body).safeParse(req.body)
-      if (!output.success) {
-        res.status(422).json(zod.treeifyError(output.error))
-        return
+      if (output.success) {
+        req.body = output.data as ShapeOrUndefined<BodyShape>
+      } else {
+        errors.body = zod.treeifyError(output.error)
       }
-      req.body = output.data as any
     } else {
-      req.body = undefined as any
+      req.body = undefined as ShapeOrUndefined<BodyShape>
+    }
+
+    if (errors.params || errors.query || errors.body) {
+      logger({
+        level: 'debug',
+        message: 'API Validation failed',
+        details: {
+          api_validation: {
+            error: errors,
+          },
+        },
+      })
+      res.status(422).json(errors)
+      return
     }
 
     next()

@@ -21,7 +21,7 @@ ProxyAuth can identify a user attempting a request to a protected domain using t
 > [!CAUTION]
 > If no group is assigned to a ProxyAuth Domain, then **any signed in user** will have access to that domain.
 
-When a user navigates to a protected domain their access will be checked against the first matching ProxyAuth Domain, from **most specific** to **least specific**. In the example below, a user with only the group **[users]** would **not** have access to `app.example.com/admin/user_accounts` but would have access to `app.example.com/home`. They would likewise not have access to `secret.example.com`, which would be matched by `*.example.com/*` and is only allowed to a user with the `admin` group.
+When a user navigates to a protected domain their access will be checked against the first matching ProxyAuth Domain, from **most specific** to **least specific**. This is the same order that the ProxyAuth Domains are displayed by default on the Admin ProxyAuth Domain page. In the example below, a user with only the group **[users]** would **not** have access to `app.example.com/admin/user_accounts` but would have access to `app.example.com/home`. They would likewise not have access to `secret.example.com`, which would be matched by `*.example.com/*` and is only allowed to a user with the `admin` group.
 
 <p align=center>
 <img align=center src="/public/screenshots/3f0b0afc-5bcf-436c-8def-f45e68adb019.png" width="800" />

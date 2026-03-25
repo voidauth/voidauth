@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>Edit Passkey Name</h2>
+<mat-dialog-content>
+  <p>Enter a name for this passkey.</p>
+  <mat-form-field style="width: 100%">
+    <input matInput type="text" [formControl]="displayNameControl" placeholder="Passkey Name" />
+    @if (displayNameControl.errors) {
+      <mat-error>{{ displayNameControl.errors | validationError }}</mat-error>
+    }
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-flat-button [mat-dialog-close]="displayNameControl.value" [disabled]="!displayNameControl.value || displayNameControl.errors">
+    Save
+  </button>
+</mat-dialog-actions>

@@ -79,14 +79,19 @@ router.get('/', async (req, res) => {
   const accountId = session?.accountId ?? interaction.result?.login?.accountId
   const user = accountId ? await getUserById(accountId) : undefined
 
-  const logInfo = {
-    prompt: prompt.name,
-    reasons: prompt.reasons,
-    client_id: params.client_id,
-    username: user?.username ?? null,
-    proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
-  }
-  logger.debug(`interaction required: ${JSON.stringify(logInfo)}`)
+  logger({
+    level: 'debug',
+    message: `Interaction required`,
+    details: {
+      interaction: {
+        prompt: prompt.name,
+        reasons: prompt.reasons,
+        client_id: params.client_id,
+        username: user?.username ?? null,
+        proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
+      },
+    },
+  })
 
   if (prompt.name === 'login') {
     // Check for prompt reasons that cause special redirects
@@ -939,6 +944,17 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
   const { userId, remember = false } = options
   const includesFirstFactorAmr = amrFactors.firstFactors.some(f => amr.includes(f))
 
+  logger({
+    level: 'debug',
+    message: 'Adding login factor to user',
+    details: {
+      login: {
+        userId,
+        amr,
+      },
+    },
+  })
+
   try {
     const session = await getSession(req, res)
     if (session?.accountId === userId) {
@@ -957,13 +973,18 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
     const interaction = await getInteractionDetails(req, res)
 
     if (interaction) {
+      if (interaction.lastSubmission?.login?.accountId === userId) {
+        // merge amr if amr is not firstFactor
+        if (!includesFirstFactorAmr) {
+          amr = [...new Set([...amr, ...(interaction.lastSubmission.login.amr ?? [])])]
+        }
+      }
+
       if (interaction.result?.login?.accountId === userId) {
         // merge amr if amr is not firstFactor
         if (!includesFirstFactorAmr) {
           amr = [...new Set([...amr, ...(interaction.result.login.amr ?? [])])]
         }
-        interaction.result.login.amr = amr
-        await interaction.save(TTLs.INTERACTION)
       }
 
       return {
@@ -971,7 +992,7 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
         location: await provider.interactionResult(req, res, {
           login: {
             accountId: userId,
-            remember: interaction.result?.login?.remember || remember,
+            ...(remember ? { remember } : {}), // only include 'remember' in login options if it is true
             amr: amr,
           },
         },

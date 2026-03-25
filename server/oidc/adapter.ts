@@ -70,7 +70,11 @@ export class KnexAdapter implements Adapter {
             }
           : undefined
       } catch (e) {
-        logger.error(e)
+        logger({
+          level: 'error',
+          message: 'Error occurred while parsing OIDC payload.',
+          error: e instanceof Error ? e : { message: String(e) },
+        })
         return undefined
       }
     })

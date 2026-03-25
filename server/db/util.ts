@@ -39,7 +39,10 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
 
   if (encrypted.metadata.alg === 'aes-256-gcm') {
     if (!encrypted.metadata.iv || !encrypted.metadata.tag) {
-      logger.error('Encrypted metadata is missing required properties.')
+      logger({
+        level: 'error',
+        message: 'Encrypted metadata is missing required properties.',
+      })
       return null
     }
 
@@ -61,7 +64,10 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
       }
     }
   } else {
-    logger.error('Encrypted value storage algorithm not recognized.')
+    logger({
+      level: 'error',
+      message: 'Encrypted value storage algorithm not recognized.',
+    })
     return null
   }
 

@@ -18,7 +18,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   const proxyAuthorizationHeader = req.headersDistinct['proxy-authorization']?.[0]
   const authorizationHeader = req.headersDistinct['authorization']?.[0]
   let user: UserDetails | undefined
-  let amr: string[] = []
+  let amr: string[]
 
   if (!sessionDomainReaches(url.hostname)) {
     res.status(400).send({ message: `ProxyAuth Domain hostname '${url.hostname}' is not covered by session domain '${String(getSessionDomain())}'` })
@@ -55,7 +55,18 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     }
     amr = ['pwd']
 
-    logger.debug(`user found in proxy-authorization header`)
+    logger({
+      level: 'debug',
+      message: `User found in proxy-authorization header`,
+      details: {
+        user: {
+          id: user.id,
+          username: user.username,
+          source: 'proxy-authorization',
+          amr,
+        },
+      },
+    })
   } else if (authorizationHeader) {
     // Authorization header flow
     // Decode the Basic Authorization header
@@ -71,15 +82,32 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     }
     amr = ['pwd']
 
-    logger.debug(`user found in authorization header`)
+    logger({
+      level: 'debug',
+      message: `User found in authorization header`,
+      details: {
+        user: {
+          id: user.id,
+          username: user.username,
+          source: 'authorization',
+          amr,
+        },
+      },
+    })
   } else {
     // User not logged in, redirect to login
-    const logInfo = {
-      reason: 'session_not_found',
-      url: url.href,
-      domain: match?.domain,
-    }
-    logger.debug(`session not found, redirect to login: ${JSON.stringify(logInfo)}`)
+    logger({
+      level: 'debug',
+      message: `Session not found, redirect to login`,
+      details: {
+        proxyauth: {
+          action: 'redirect_to_login',
+          reason: 'session_not_found',
+          url: url.href,
+          domain: match?.domain,
+        },
+      },
+    })
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return
@@ -88,12 +116,18 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // Check that user is approved and verified and should be able to continue
   if (!userCanLogin(user, amr)) {
     // If not, redirect to login flow, which will send to correct redirect
-    const logInfo = {
-      reason: 'login_not_finished',
-      url: url.href,
-      domain: match?.domain,
-    }
-    logger.debug(`user has not finished login: ${JSON.stringify(logInfo)}`)
+    logger({
+      level: 'debug',
+      message: `User has not finished login`,
+      details: {
+        proxyauth: {
+          action: 'redirect_to_login',
+          reason: 'login_not_finished',
+          url: url.href,
+          domain: match?.domain,
+        },
+      },
+    })
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return
@@ -102,12 +136,18 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // Check that proxyAuth domain does not require MFA or user is logged in with MFA already
   if (!!match?.mfaRequired && loginFactors(amr) < 2) {
     // If not, redirect to login flow, which will send to correct redirect
-    const logInfo = {
-      reason: 'domain_mfa_required',
-      url: url.href,
-      domain: match.domain,
-    }
-    logger.debug(`mfa required for domain: ${JSON.stringify(logInfo)}`)
+    logger({
+      level: 'debug',
+      message: `MFA required for domain`,
+      details: {
+        proxyauth: {
+          action: 'redirect_to_login',
+          reason: 'domain_mfa_required',
+          url: url.href,
+          domain: match.domain,
+        },
+      },
+    })
     res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
     res.send()
     return
@@ -116,29 +156,41 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // Check user groups for access if not an admin
   if (!user.groups.some(g => g.name === ADMIN_GROUP)) {
     if (!match) {
-      const logInfo = {
-        reason: 'no_domain_match',
-        url: url.href,
-        urlDomain: formattedUrl,
-      }
-      logger.debug(`proxyauth forbidden: ${JSON.stringify(logInfo)}`)
+      logger({
+        level: 'debug',
+        message: `ProxyAuth forbidden due to no domain match`,
+        details: {
+          proxyauth: {
+            action: 'forbidden',
+            reason: 'no_domain_match',
+            url: url.href,
+            urlDomain: formattedUrl,
+          },
+        },
+      })
       res.status(403).send({
         status: 'Forbidden',
-        reason: logInfo.reason,
+        reason: 'no_domain_match',
       })
       return
     } else if (match.groups.length && !user.groups.some(g => match.groups.includes(g.name))) {
-      const logInfo = {
-        reason: 'user_group_missing',
-        url: url.href,
-        urlDomain: formattedUrl,
-        domain: match.domain,
-        domainGroups: match.groups,
-      }
-      logger.debug(`proxyauth forbidden: ${JSON.stringify(logInfo)}`)
+      logger({
+        level: 'debug',
+        message: `ProxyAuth forbidden due to user groups missing any group for domain`,
+        details: {
+          proxyauth: {
+            action: 'forbidden',
+            reason: 'user_group_missing',
+            url: url.href,
+            urlDomain: formattedUrl,
+            domain: match.domain,
+            domainGroups: match.groups,
+          },
+        },
+      })
       res.status(403).send({
         status: 'Forbidden',
-        reason: logInfo.reason,
+        reason: 'user_group_missing',
       })
       return
     }
@@ -176,6 +228,15 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       }
     }
   }
-  logger.debug(`proxyauth access granted${match ? ` to domain: ${match.domain}` : ''}`)
+  logger({
+    level: 'debug',
+    message: `ProxyAuth access granted`,
+    details: {
+      proxyauth: {
+        action: 'access_granted',
+        domain: match?.domain,
+      },
+    },
+  })
   res.status(200).send()
 }

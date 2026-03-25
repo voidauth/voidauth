@@ -6,7 +6,7 @@ import { createExpiration } from './util'
 import { TABLES, TTLs } from '@shared/constants'
 
 export async function getUserPasskeys(userId: string) {
-  return (await db().select().table<Passkey>(TABLES.PASSKEY).where({ userId })).map((p) => {
+  return (await db().select().table<Passkey>(TABLES.PASSKEY).where({ userId }).orderBy('createdAt', 'desc')).map((p) => {
     return {
       ...p,
       transports: p.transports?.split(',') as AuthenticatorTransportFuture[] | undefined,
@@ -18,6 +18,7 @@ export async function getUserPasskeysResponse(userId: string) {
   return (await getUserPasskeys(userId)).map((p) => {
     return {
       id: p.id,
+      displayName: p.displayName,
       createdAt: p.createdAt,
       lastUsed: p.lastUsed,
     }
@@ -43,6 +44,10 @@ export async function getPasskey(id: string) {
 
 export async function savePasskey(passkey: Passkey) {
   await db().table<Passkey>(TABLES.PASSKEY).insert(passkey)
+}
+
+export async function updateUserPasskey(id: string, userId: string, updates: Partial<Pick<Passkey, 'displayName'>>) {
+  await db().table<Passkey>(TABLES.PASSKEY).update(updates).where({ id, userId })
 }
 
 export async function saveRegistrationOptions(registration: PublicKeyCredentialCreationOptionsJSON, uniqueId: string) {

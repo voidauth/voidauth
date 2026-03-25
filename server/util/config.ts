@@ -273,18 +273,20 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
         break
     }
   } catch (e) {
-    // Log error as debug, then continue
-    const debugInfo = {
-      client_id,
-      source,
-      variable,
-      value,
-    }
-    if (e instanceof Error) {
-      logger.debug(JSON.stringify({ ...debugInfo, error: e.message }))
-    } else {
-      logger.debug(JSON.stringify({ ...debugInfo, error: e }))
-    }
+    // Log error then continue
+    logger({
+      level: 'error',
+      message: 'Error processing declared client variable',
+      details: {
+        declared_client: {
+          client_id,
+          source,
+          variable,
+          value,
+        },
+      },
+      error: e instanceof Error ? e : { message: String(e) },
+    })
   }
 }
 
@@ -374,48 +376,71 @@ appConfig.APP_URL = appConfig.APP_URL.replace(/\/+$/, '')
 
 // check APP_URL is set
 if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
-  logger.error('APP_URL must be set and be a valid URL, starting with http(s)://')
+  logger({
+    level: 'error',
+    message: 'APP_URL must be set and be a valid URL, starting with http(s)://',
+  })
   exit(1)
 }
 
 // If APP_URL hostname seems to be a private dns zone, debug log that
 const pslParsedAppUrl = psl.parse(appUrl().hostname)
 if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
-  logger.debug(`APP_URL: '${appConfig.APP_URL}' appears to be a private DNS zone.`)
+  logger({
+    level: 'debug',
+    message: `APP_URL: '${appConfig.APP_URL}' appears to be a private DNS zone.`,
+  })
 }
 
 // If SESSION_DOMAIN is set, make sure APP_URL endsWith SESSION_DOMAIN
 if (appConfig.SESSION_DOMAIN) {
   const dotSD = (!appConfig.SESSION_DOMAIN.startsWith('.') ? '.' : '') + appConfig.SESSION_DOMAIN
   if (appUrl().hostname !== appConfig.SESSION_DOMAIN && !appUrl().hostname.endsWith(dotSD)) {
-    logger.error('If SESSION_DOMAIN is set, the APP_URL hostname must end with the SESSION_DOMAIN.')
+    logger({
+      level: 'error',
+      message: 'If SESSION_DOMAIN is set, the APP_URL hostname must end with the SESSION_DOMAIN.',
+    })
     exit(1)
   }
   if (appConfig.SESSION_DOMAIN !== getBaseDomain(appUrl().hostname)) {
-    logger.debug(`SESSION_DOMAIN: '${appConfig.SESSION_DOMAIN}'`)
+    logger({
+      level: 'debug',
+      message: `SESSION_DOMAIN: '${appConfig.SESSION_DOMAIN}'`,
+    })
   }
 }
-logger.debug(`Session Domain: '${String(getSessionDomain())}'`)
+logger({
+  level: 'debug',
+  message: `Session Domain: '${String(getSessionDomain())}'`,
+})
 
 // check DEFAULT_REDIRECT is valid if set
 if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
-  logger.error('DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.')
+  logger({
+    level: 'error',
+    message: 'DEFAULT_REDIRECT must be a valid URL starting with http(s):// if it is set.',
+  })
   exit(1)
 }
 
 // check that STORAGE_KEY is set
 if (appConfig.STORAGE_KEY.length < 32) {
-  logger.error('STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: ')
-  logger.error(generate({
-    length: 32,
-    numbers: true,
-  }))
+  logger({
+    level: 'error',
+    message: 'STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: ' + generate({
+      length: 32,
+      numbers: true,
+    }),
+  })
   exit(1)
 }
 
 // check PASSWORD_STRENGTH is between 0 and 4
 if (appConfig.PASSWORD_STRENGTH < 0 || appConfig.PASSWORD_STRENGTH > 4) {
-  logger.error('PASSWORD_STRENGTH must be between 0 and 4.')
+  logger({
+    level: 'error',
+    message: 'PASSWORD_STRENGTH must be between 0 and 4.',
+  })
   exit(1)
 }
 
