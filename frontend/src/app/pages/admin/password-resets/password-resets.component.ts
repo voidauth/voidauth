@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { humanDuration } from '@shared/utils'
 import { AsyncPipe } from '@angular/common'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-password-sets',
@@ -25,6 +26,7 @@ import { AsyncPipe } from '@angular/common'
     ValidationErrorPipe,
     ReactiveFormsModule,
     AsyncPipe,
+    TranslatePipe,
   ],
   templateUrl: './password-resets.component.html',
   styleUrl: './password-resets.component.scss',
@@ -61,7 +63,7 @@ export class PasswordResetsComponent {
   private spinnerService = inject(SpinnerService)
   private configService = inject(ConfigService)
   private dialog = inject(MatDialog)
-
+  private translateService = inject(TranslateService)
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
     try {
@@ -136,6 +138,10 @@ export class PasswordResetsComponent {
 
   displayUser(user?: UserWithoutPassword) {
     return user?.username ?? ''
+  }
+
+  onCopyResetLink() {
+    this.snackbarService.message(String(this.translateService.instant('admin.password-resets.messages.link-copied')))
   }
 
   async sendEmail(reset: PasswordResetUser) {

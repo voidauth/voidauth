@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { ItemIn } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-user',
@@ -26,6 +27,7 @@ import { isValidEmail } from '../../../../validators/validators'
     RouterLink,
     ValidationErrorPipe,
     ReactiveFormsModule,
+    TranslatePipe,
   ],
   templateUrl: './user.component.html',
   styleUrl: './user.component.scss',

@@ -1,5 +1,5 @@
 <div class="container">
-  <a mat-flat-button style="align-self: end" routerLink="/admin/group">Create Group</a>
+  <a mat-flat-button style="align-self: end" routerLink="/admin/group">{{ "admin.groups.actions.create" | translate }}</a>
 
   <table mat-table [dataSource]="dataSource" matSort>
     @for (column of columns; track column) {
@@ -20,10 +20,16 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
-        <a mat-icon-button [routerLink]="['/admin', 'group', row.id]" matTooltip="Edit">
+        <a mat-icon-button [routerLink]="['/admin', 'group', row.id]" [matTooltip]="'admin.common.actions.edit' | translate">
           <mat-icon fontSet="material-icons-round">edit</mat-icon>
         </a>
-        <button mat-icon-button [disabled]="row.name === ADMIN_GROUP" type="button" (click)="delete(row.id)" matTooltip="Delete">
+        <button
+          mat-icon-button
+          [disabled]="row.name === ADMIN_GROUP"
+          type="button"
+          (click)="delete(row.id)"
+          [matTooltip]="'admin.common.actions.delete' | translate"
+        >
           <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
         </button>
       </td>
@@ -34,7 +40,9 @@
 
     <!-- Row shown when there is no matching data. -->
     <tr *matNoDataRow>
-      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1"><h1>No groups.</h1></td>
+      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1">
+        <h1>{{ "admin.groups.empty-state" | translate }}</h1>
+      </td>
     </tr>
   </table>
 

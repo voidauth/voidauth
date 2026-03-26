@@ -172,5 +172,250 @@
         "title": "Security"
       }
     }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete",
+        "update": "Update",
+        "create": "Create",
+        "view": "View",
+        "open": "Open",
+        "remove": "Remove"
+      },
+      "labels": {
+        "mfa-required": "MFA Required",
+        "email-verified": "Email Verified",
+        "approved": "Approved"
+      },
+      "messages": {
+        "all-users-have-access": "No Groups, ALL users will have access."
+      }
+    },
+    "users": {
+      "empty-state": "No users.",
+      "actions": {
+        "select": "Select",
+        "approve": "Approve"
+      },
+      "labels": {
+        "search": "Search"
+      }
+    },
+    "user": {
+      "title": "Update User",
+      "labels": {
+        "username": "Username",
+        "name": "Name",
+        "email": "Email",
+        "add-group": "Add Group",
+        "security-groups": "Security Groups:"
+      },
+      "actions": {
+        "sign-out": "Sign Out"
+      },
+      "tooltips": {
+        "remove": "Remove",
+        "open": "Open"
+      }
+    },
+    "clients": {
+      "empty-state": "No OIDC Apps.",
+      "actions": {
+        "create": "Create OIDC App"
+      }
+    },
+    "client": {
+      "title": "OIDC App",
+      "labels": {
+        "name": "Name",
+        "home-page-url": "Home Page URL",
+        "logo-url": "Logo URL",
+        "add-group": "Add Group",
+        "client-id": "Client ID",
+        "auth-method": "Auth Method",
+        "client-secret": "Client Secret",
+        "redirect-url": "New Redirect URL",
+        "response-types": "Response Types",
+        "grant-types": "Grant Types",
+        "postlogout-url": "PostLogout URL",
+        "allowed-groups": "Allowed Groups:",
+        "redirect-urls": "Redirect URLs:"
+      },
+      "hints": {
+        "pkce-required": "PKCE Required with this Auth Method.",
+        "not-required": "Not required for current Auth Method.",
+        "postlogout-redirect": "Allowed post-logout redirect url on client initiated logout."
+      },
+      "checkboxes": {
+        "skip-consent": "Skip Consent",
+        "mfa-required": "MFA Required"
+      },
+      "tooltips": {
+        "skip-consent": "Skip user confirmation for this app.",
+        "mfa-required": "Users will have to use mfa to access this app.",
+        "copy-client-id": "Copy Client ID",
+        "copy-secret": "Copy Secret"
+      },
+      "messages": {
+        "client-id-copied": "Client ID copied to clipboard.",
+        "secret-copied": "Secret copied to clipboard."
+      }
+    },
+    "domains": {
+      "empty-state": "No Domains.",
+      "actions": {
+        "create": "Create ProxyAuth Domain"
+      }
+    },
+    "domain": {
+      "title": "ProxyAuth Domain",
+      "labels": {
+        "domain": "Domain",
+        "max-session-length": "Max Session Age (Minutes)",
+        "add-group": "Add Group",
+        "allowed-groups": "Allowed Groups:"
+      },
+      "placeholders": {
+        "domain": "ex. *.your.domain.com/path/"
+      },
+      "sections": {
+        "domain-help": "Domain Help"
+      },
+      "help-text": [
+        "Domain should not include protocol, may include a path and port, and supports wildcards (*) at any position.",
+        "<b>example.domain.com/api/alive</b> will only check access to a single endpoint.",
+        "<b>example.domain.com/api/*</b> will check access for all endpoints under /api."
+      ],
+      "hints": {
+        "no-re-auth": "Blank means no re-authentication required."
+      }
+    },
+    "password-resets": {
+      "labels": {
+        "create-link": "Create Password Reset Link"
+      },
+      "tooltips": {
+        "send-email": "Send Email To {{email}}",
+        "copy-link": "Copy Link",
+        "delete": "Delete"
+      },
+      "messages": {
+        "link-copied": "Reset link copied to clipboard."
+      }
+    },
+    "emails": {
+      "empty-state": "No Sent Mail.",
+      "actions": {
+        "send-test": "Send Test Email"
+      },
+      "tooltips": {
+        "preview": "Preview",
+        "view-user": "View User"
+      }
+    },
+    "groups": {
+      "empty-state": "No groups.",
+      "actions": {
+        "create": "Create Group"
+      }
+    },
+    "group": {
+      "title": "Group",
+      "labels": {
+        "name": "Name",
+        "add-user": "Add User",
+        "users": "Users:"
+      },
+      "checkboxes": {
+        "mfa-required": "MFA Required"
+      }
+    },
+    "invitations": {
+      "empty-state": "No invitations.",
+      "actions": {
+        "create": "Create Invitation"
+      }
+    },
+    "invitation": {
+      "title": "Invitation",
+      "labels": {
+        "invite-link": "Invite Link",
+        "username": "Username",
+        "email": "Email",
+        "name": "Name",
+        "add-group": "Add Group",
+        "security-groups": "Security Groups:"
+      },
+      "tooltips": {
+        "copy-invite-link": "Copy Invite Link",
+        "unsaved-changes": "You have unsaved changes.",
+        "send-to": "Send invite to: {{email}}"
+      },
+      "messages": {
+        "link-copied": "Invite link copied to clipboard.",
+        "email-not-verified": "Cannot email invitation link, email connection not verified.",
+        "no-email": "Cannot email invitation link, invite does not include an email address."
+      },
+      "actions": {
+        "send": "Send Invite"
+      },
+      "checkboxes": {
+        "email-verified": "Email Verified"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "Login"
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": "{{label}} copied to clipboard."
+      }
+    },
+    "oidc-info": {
+      "title": "OIDC Endpoints",
+      "labels": {
+        "issuer": "OIDC Issuer Endpoint",
+        "well-known": "Well-Known Endpoint",
+        "authorization": "Authorization Endpoint",
+        "token": "Token Endpoint",
+        "userinfo": "UserInfo Endpoint",
+        "logout": "Logout Endpoint",
+        "jwks": "JWKs Endpoint"
+      },
+      "actions": {
+        "all-info": "All Info"
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "New Password",
+        "old-password": "Old Password",
+        "confirm-password": "Confirm Password"
+      }
+    },
+    "totp-input": {
+      "title": "This will enable Multi-Factor Authentication on your account.",
+      "labels": {
+        "show-secret": "Show Secret"
+      },
+      "text": {
+        "qrcode-instruction": "Scan the QRCode or Enter the Secret in your Authenticator",
+        "then": "then",
+        "enter-token": "Enter Token from Authenticator to Continue"
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      }
+    }
   }
 }

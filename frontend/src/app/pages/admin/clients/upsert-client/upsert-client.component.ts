@@ -21,6 +21,8 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { isValidWildcardRedirect, optionalizeNullable, validateWildcardRedirects } from '@shared/utils'
+import { TranslatePipe } from '@ngx-translate/core'
+import { TranslateService } from '@ngx-translate/core'
 
 export type TypedControls<T> = {
   [K in keyof T]-?: FormControl<Required<T>[K] | null>
@@ -34,6 +36,7 @@ export type TypedControls<T> = {
     ValidationErrorPipe,
     ReactiveFormsModule,
     OidcInfoComponent,
+    TranslatePipe,
   ],
   templateUrl: './upsert-client.component.html',
   styleUrl: './upsert-client.component.scss',
@@ -133,6 +136,7 @@ export class UpsertClientComponent implements OnInit {
   snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
+  private translateService = inject(TranslateService)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
@@ -319,6 +323,14 @@ export class UpsertClientComponent implements OnInit {
       strict: true,
     }))
     this.form.controls.client_id.markAsDirty()
+  }
+
+  onCopyClientID() {
+    this.snackbarService.message(String(this.translateService.instant('admin.client.messages.client-id-copied')))
+  }
+
+  onSecretCopied() {
+    this.snackbarService.message(String(this.translateService.instant('admin.client.messages.secret-copied')))
   }
 
   generateSecret() {

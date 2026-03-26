@@ -4,12 +4,14 @@ import { catchError, debounceTime, distinctUntilChanged, from, map, of, switchMa
 import { MaterialModule } from '../../material-module'
 import { ConfigService } from '../../services/config.service'
 import { UserService } from '../../services/user.service'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-new-password-input',
   imports: [
     ReactiveFormsModule,
     MaterialModule,
+    TranslatePipe,
   ],
   templateUrl: './new-password-input.component.html',
   styleUrl: './new-password-input.component.scss',

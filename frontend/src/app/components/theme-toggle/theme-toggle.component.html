@@ -12,14 +12,14 @@
 <mat-menu #menu="matMenu">
   <button mat-menu-item (click)="setTheme('system')">
     <mat-icon fontSet="material-icons-round"> brightness_medium </mat-icon>
-    System
+    {{ "components.theme-toggle.options.system" | translate }}
   </button>
   <button mat-menu-item (click)="setTheme('light')">
     <mat-icon fontSet="material-icons-round"> light_mode </mat-icon>
-    Light
+    {{ "components.theme-toggle.options.light" | translate }}
   </button>
   <button mat-menu-item (click)="setTheme('dark')">
     <mat-icon fontSet="material-icons-round"> dark_mode </mat-icon>
-    Dark
+    {{ "components.theme-toggle.options.dark" | translate }}
   </button>
 </mat-menu>

@@ -4,6 +4,7 @@ import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { NewPasswordInputComponent } from '../new-password-input/new-password-input.component'
 import { AsyncPipe } from '@angular/common'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-password-set',
@@ -13,6 +14,7 @@ import { AsyncPipe } from '@angular/common'
     ValidationErrorPipe,
     NewPasswordInputComponent,
     AsyncPipe,
+    TranslatePipe,
   ],
   templateUrl: './password-set.component.html',
   styleUrl: './password-set.component.scss',

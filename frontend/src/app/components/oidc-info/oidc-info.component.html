@@ -1,17 +1,31 @@
 <span style="display: block">
   <mat-expansion-panel>
     <mat-expansion-panel-header>
-      <mat-panel-title>OIDC Endpoints</mat-panel-title>
+      <mat-panel-title>{{ "components.oidc-info.title" | translate }}</mat-panel-title>
     </mat-expansion-panel-header>
-    <app-copy-field [value]="currentHost + '/oidc'" label="OIDC Issuer Endpoint"></app-copy-field>
-    <app-copy-field [value]="currentHost + '/oidc/.well-known/openid-configuration'" label="Well-Known Endpoint"></app-copy-field>
-    <app-copy-field [value]="oidcConfig?.authorization_endpoint" label="Authorization Endpoint"></app-copy-field>
-    <app-copy-field [value]="oidcConfig?.token_endpoint" label="Token Endpoint"></app-copy-field>
-    <app-copy-field [value]="oidcConfig?.userinfo_endpoint" label="UserInfo Endpoint"></app-copy-field>
-    <app-copy-field [value]="currentHost + '/oidc/session/end'" label="Logout Endpoint"></app-copy-field>
-    <app-copy-field [value]="oidcConfig?.jwks_uri" label="JWKs Endpoint"></app-copy-field>
+    <app-copy-field [value]="currentHost + '/oidc'" label="{{ 'components.oidc-info.labels.issuer' | translate }}"></app-copy-field>
+    <app-copy-field
+      [value]="currentHost + '/oidc/.well-known/openid-configuration'"
+      label="{{ 'components.oidc-info.labels.well-known' | translate }}"
+    ></app-copy-field>
+    <app-copy-field
+      [value]="oidcConfig?.authorization_endpoint"
+      label="{{ 'components.oidc-info.labels.authorization' | translate }}"
+    ></app-copy-field>
+    <app-copy-field [value]="oidcConfig?.token_endpoint" label="{{ 'components.oidc-info.labels.token' | translate }}"></app-copy-field>
+    <app-copy-field
+      [value]="oidcConfig?.userinfo_endpoint"
+      label="{{ 'components.oidc-info.labels.userinfo' | translate }}"
+    ></app-copy-field>
+    <app-copy-field
+      [value]="currentHost + '/oidc/session/end'"
+      label="{{ 'components.oidc-info.labels.logout' | translate }}"
+    ></app-copy-field>
+    <app-copy-field [value]="oidcConfig?.jwks_uri" label="{{ 'components.oidc-info.labels.jwks' | translate }}"></app-copy-field>
     <mat-action-row>
-      <a mat-button target="_blank" [href]="currentHost + '/oidc/.well-known/openid-configuration'">All Info</a>
+      <a mat-button target="_blank" [href]="currentHost + '/oidc/.well-known/openid-configuration'">{{
+        "components.oidc-info.actions.all-info" | translate
+      }}</a>
     </mat-action-row>
   </mat-expansion-panel>
 </span>

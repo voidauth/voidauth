@@ -14,6 +14,7 @@ import { isValidWildcardDomain } from '@shared/utils'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-domain',
@@ -22,6 +23,7 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
+    TranslatePipe,
   ],
   templateUrl: './domain.component.html',
   styleUrl: './domain.component.scss',

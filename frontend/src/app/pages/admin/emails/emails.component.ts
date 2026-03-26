@@ -17,12 +17,14 @@ import { UserService } from '../../../services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-emails',
   imports: [
     MaterialModule,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './emails.component.html',
   styleUrl: './emails.component.scss',

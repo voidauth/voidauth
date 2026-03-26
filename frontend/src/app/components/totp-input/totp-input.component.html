@@ -1,13 +1,15 @@
 <div class="totp-input-container">
   @if (qrcodeData) {
-    <p style="text-align: center; margin-top: -4px"><small>This will enable Multi-Factor Authentication on your account.</small></p>
+    <p style="text-align: center; margin-top: -4px">
+      <small>{{ "components.totp-input.title" | translate }}</small>
+    </p>
 
     <img style="border-radius: 4px" width="240" height="240" [src]="qrcodeData" />
 
     <mat-accordion>
       <mat-expansion-panel>
         <mat-expansion-panel-header>
-          <mat-panel-title> Show Secret </mat-panel-title>
+          <mat-panel-title> {{ "components.totp-input.labels.show-secret" | translate }} </mat-panel-title>
         </mat-expansion-panel-header>
         <p style="text-align: center; margin: 0px">
           <small
@@ -17,9 +19,9 @@
       </mat-expansion-panel>
     </mat-accordion>
 
-    <p style="padding: 0px 16px; text-align: center">Scan the QRCode or Enter the Secret in your Authenticator</p>
+    <p style="padding: 0px 16px; text-align: center">{{ "components.totp-input.text.qrcode-instruction" | translate }}</p>
 
-    <app-text-divider text="then"></app-text-divider>
+    <app-text-divider [text]="'components.totp-input.text.then' | translate"></app-text-divider>
   }
 
   <div class="totp-digit-container">
@@ -40,5 +42,5 @@
       </mat-form-field>
     }
   </div>
-  <p style="text-align: center; margin-top: 0px">Enter Token from Authenticator to Continue</p>
+  <p style="text-align: center; margin-top: 0px">{{ "components.totp-input.text.enter-token" | translate }}</p>
 </div>

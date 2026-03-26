@@ -1,9 +1,16 @@
-<h1>{{ id ? "Update" : "Create" }} Group</h1>
+<h1>
+  @if (id) {
+    {{ "admin.common.actions.update" | translate }}
+  } @else {
+    {{ "admin.common.actions.create" | translate }}
+  }
+  {{ "admin.group.title" | translate }}
+</h1>
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
-        <mat-label>Name</mat-label>
+        <mat-label>{{ "admin.group.labels.name" | translate }}</mat-label>
         <input matInput type="text" formControlName="name" />
         @if (form.controls.name.errors) {
           <mat-error>{{ form.controls.name.errors | validationError | async }}</mat-error>
@@ -12,7 +19,7 @@
 
       <mat-list [ngClass]="{ invalid: form.controls.users.errors }">
         <mat-form-field>
-          <mat-label>Add User</mat-label>
+          <mat-label>{{ "admin.group.labels.add-user" | translate }}</mat-label>
           <input
             #input
             type="text"
@@ -33,17 +40,29 @@
           }
         </mat-form-field>
 
-        <div mat-subheader>Users:</div>
+        <div mat-subheader>{{ "admin.group.labels.users" | translate }}</div>
         @for (u of form.value.users; track u) {
           <mat-list-item>
             @if (form.controls.name.value === ADMIN_GROUP && (!form.controls.users.value || 2 > form.controls.users.value.length)) {
               <mat-icon class="disabled" fontSet="material-icons-round" matListItemIcon>cancel</mat-icon>
             } @else {
-              <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeUser(u.id)" matTooltip="Remove">
+              <mat-icon
+                fontSet="material-icons-round"
+                matListItemIcon
+                class="clickable"
+                (click)="removeUser(u.id)"
+                [matTooltip]="'admin.common.actions.remove' | translate"
+              >
                 cancel
               </mat-icon>
             }
-            <a matListItemIcon style="margin-left: 0px" [routerLink]="['/admin', 'user', u.id]" target="_blank" matTooltip="Open">
+            <a
+              matListItemIcon
+              style="margin-left: 0px"
+              [routerLink]="['/admin', 'user', u.id]"
+              target="_blank"
+              [matTooltip]="'admin.common.actions.open' | translate"
+            >
               <mat-icon fontSet="material-icons-round">open_in_new</mat-icon>
             </a>
             <div matListItemTitle>{{ u.username }}</div>
@@ -59,12 +78,18 @@
         </mat-error>
       }
 
-      <mat-checkbox formControlName="mfaRequired">MFA Required</mat-checkbox>
+      <mat-checkbox formControlName="mfaRequired">{{ "admin.group.checkboxes.mfa-required" | translate }}</mat-checkbox>
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">{{ id ? "Update" : "Create" }}</button>
+        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">
+          @if (id) {
+            {{ "admin.common.actions.update" | translate }}
+          } @else {
+            {{ "admin.common.actions.create" | translate }}
+          }
+        </button>
         @if (id && form.controls.name.value !== ADMIN_GROUP) {
-          <button mat-button type="button" (click)="remove()">Delete</button>
+          <button mat-button type="button" (click)="remove()">{{ "admin.common.actions.delete" | translate }}</button>
         }
       </mat-card-actions>
     </form>

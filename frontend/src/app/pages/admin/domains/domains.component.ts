@@ -12,12 +12,14 @@ import { MaterialModule } from '../../../material-module'
 import { sortWildcardDomains } from '@shared/utils'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-domains',
   imports: [
     MaterialModule,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './domains.component.html',
   styleUrl: './domains.component.scss',
