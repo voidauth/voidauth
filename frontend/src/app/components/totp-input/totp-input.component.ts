@@ -38,10 +38,12 @@ export class TotpInputComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    const firstInput = document.getElementById(`totp-digit-0`)
-    if (firstInput) {
-      firstInput.focus()
-    }
+    setTimeout(() => {
+      const firstInput = document.getElementById(`totp-digit-0`)
+      if (firstInput) {
+        firstInput.focus()
+      }
+    }, 100)
   }
 
   checkFinished() {
