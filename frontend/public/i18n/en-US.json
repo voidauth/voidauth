@@ -169,7 +169,76 @@
         }
       },
       "security": {
-        "title": "Security"
+        "title": "Security",
+        "password": {
+          "set": {
+            "label": "Set Password"
+          },
+          "change": {
+            "label": "Change Password"
+          }
+        },
+        "passkeys": {
+          "title": "Passkeys",
+          "noPasskeys": "You have no registered passkeys.",
+          "register": {
+            "label": "Register Passkey"
+          },
+          "manage": {
+            "title": "Manage Passkeys"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "Edit"
+            },
+            "delete": {
+              "tooltip": "Delete"
+            }
+          }
+        },
+        "mfa": {
+          "title": "Multi-Factor Authentication",
+          "status": {
+            "enabled": "Multi-Factor Authentication is enabled.",
+            "disabled": "Multi-Factor Authentication is not enabled."
+          },
+          "authenticators": {
+            "has": "You have at least one registered Authenticator.",
+            "none": "You have no registered Authenticators."
+          },
+          "add": {
+            "label": "Add Authenticator"
+          },
+          "enable": {
+            "label": "Enable MFA"
+          }
+        }
+      },
+      "account": {
+        "title": "Account",
+        "removePassword": {
+          "label": "Remove Password",
+          "tooltip": {
+            "noPassword": "You have no password to remove",
+            "noPasskeys": "You do not have any passkeys"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "Remove All Passkeys",
+          "tooltip": {
+            "noPasskeys": "You have no passkeys to remove",
+            "noPassword": "You do not have a password"
+          }
+        },
+        "disableMfa": {
+          "label": "Disable MFA"
+        },
+        "removeAuthenticators": {
+          "label": "Remove Authenticators"
+        },
+        "deleteAccount": {
+          "label": "Delete Account"
+        }
       }
     }
   },
