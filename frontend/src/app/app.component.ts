@@ -8,6 +8,7 @@ import { SpinnerService } from './services/spinner.service'
 import { getCurrentHost } from './services/config.service'
 import { isAdmin } from '@shared/user'
 import { TranslationService } from './services/translation.service'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ import { TranslationService } from './services/translation.service'
     MaterialModule,
     HeaderComponent,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

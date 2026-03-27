@@ -1,12 +1,12 @@
 @if (translationService.currentLang(); as currentLang) {
   <button mat-button [matMenuTriggerFor]="menu">
-    <span>{{ currentLang.flag }}</span>
+    <span>{{ getFlagEmoji(currentLang.code) }}</span>
     {{ currentLang.display }}
   </button>
   <mat-menu #menu="matMenu" class="flag-emojis">
     @for (lang of translationService.availableLangs; track lang) {
-      <button mat-menu-item [disabled]="lang.value === currentLang.value" (click)="selectLang(lang.value)">
-        <span>{{ lang.flag }}</span>
+      <button mat-menu-item [disabled]="lang.code === currentLang.code" (click)="selectLang(lang.code)">
+        <span>{{ getFlagEmoji(lang.code) }}</span>
         {{ lang.display }}
       </button>
     }

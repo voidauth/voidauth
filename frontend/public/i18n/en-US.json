@@ -19,6 +19,23 @@
       "label": "Contact"
     }
   },
+  "app": {
+    "loading": "Loading...",
+    "navigation": {
+      "profile": "Profile",
+      "admin": {
+        "title": "Admin",
+        "oidc-apps": "OIDC Apps",
+        "proxyauth-domains": "ProxyAuth Domains",
+        "users": "Users",
+        "groups": "Groups",
+        "invitations": "Invitations",
+        "password-resets": "Password Resets",
+        "sent-mail": "Sent Mail"
+      },
+      "logout": "Logout"
+    }
+  },
   "passkey-title": "Passkey",
   "passkey-dialog": {
     "title": "Enable {{platformName}}?",
@@ -352,13 +369,13 @@
       "sections": {
         "domain-help": "Domain Help"
       },
-      "help-text": [
-        "Domain should not include protocol, may include a path and port, and supports wildcards (*) at any position.",
-        "<b>example.domain.com/api/alive</b> will only check access to a single endpoint.",
-        "<b>example.domain.com/api/*</b> will check access for all endpoints under /api."
-      ],
       "hints": {
         "no-re-auth": "Blank means no re-authentication required."
+      },
+      "help-text": {
+        "0": "Domain should not include protocol, may include a path and port, and supports wildcards (*) at any position.",
+        "1": "<b>example.domain.com/api/alive</b> will only check access to a single endpoint.",
+        "2": "<b>example.domain.com/api/*</b> will check access for all endpoints under /api."
       }
     },
     "password-resets": {

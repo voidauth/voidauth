@@ -1,5 +1,5 @@
 <ngx-spinner bdColor="rgba(0,0,0,0.9)" size="large" color="#fff" type="square-jelly-box" [fullScreen]="true">
-  <p style="color: white">Loading...</p>
+  <p style="color: white">{{ "app.loading" | translate }}</p>
 </ngx-spinner>
 
 <div class="container" style="min-height: 100%">
@@ -9,35 +9,45 @@
       <mat-nav-list>
         @if (user && user.isPrivileged) {
           <div mat-subheader>{{ user.username }}</div>
-          <a mat-list-item routerLink="/"><mat-icon fontSet="material-icons-round" matListItemIcon>account_circle</mat-icon>Profile</a>
+          <a mat-list-item routerLink="/"
+            ><mat-icon fontSet="material-icons-round" matListItemIcon>account_circle</mat-icon>{{ "app.navigation.profile" | translate }}</a
+          >
           <mat-divider></mat-divider>
 
           @if (isAdmin) {
-            <div mat-subheader>Admin</div>
+            <div mat-subheader>{{ "app.navigation.admin.title" | translate }}</div>
             <a mat-list-item routerLink="/admin/clients"
-              ><mat-icon fontSet="material-icons-round" matListItemIcon>security</mat-icon>OIDC Apps</a
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>security</mat-icon
+              >{{ "app.navigation.admin.oidc-apps" | translate }}</a
             >
             <a mat-list-item routerLink="/admin/domains"
-              ><mat-icon fontSet="material-icons-round" matListItemIcon>domain</mat-icon>ProxyAuth Domains</a
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>domain</mat-icon
+              >{{ "app.navigation.admin.proxyauth-domains" | translate }}</a
             >
             <a mat-list-item routerLink="/admin/users"
-              ><mat-icon fontSet="material-icons-round" matListItemIcon>supervised_user_circle</mat-icon>Users</a
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>supervised_user_circle</mat-icon
+              >{{ "app.navigation.admin.users" | translate }}</a
             >
-            <a mat-list-item routerLink="/admin/groups"><mat-icon fontSet="material-icons-round" matListItemIcon>group</mat-icon>Groups</a>
+            <a mat-list-item routerLink="/admin/groups"
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>group</mat-icon>{{ "app.navigation.admin.groups" | translate }}</a
+            >
             <a mat-list-item routerLink="/admin/invitations"
-              ><mat-icon fontSet="material-icons-round" matListItemIcon>mail</mat-icon>Invitations</a
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>mail</mat-icon
+              >{{ "app.navigation.admin.invitations" | translate }}</a
             >
             <a mat-list-item routerLink="/admin/passwordresets"
-              ><mat-icon fontSet="material-icons-round" matListItemIcon>lock_reset</mat-icon>Password Resets</a
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>lock_reset</mat-icon
+              >{{ "app.navigation.admin.password-resets" | translate }}</a
             >
             <a mat-list-item routerLink="/admin/emails"
-              ><mat-icon fontSet="material-icons-round" matListItemIcon>outbox</mat-icon>Sent Mail</a
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>outbox</mat-icon
+              >{{ "app.navigation.admin.sent-mail" | translate }}</a
             >
             <mat-divider></mat-divider>
           }
         }
         <a mat-list-item [href]="host + '/oidc/session/end'"
-          ><mat-icon fontSet="material-icons-round" matListItemIcon>logout</mat-icon>Logout</a
+          ><mat-icon fontSet="material-icons-round" matListItemIcon>logout</mat-icon>{{ "app.navigation.logout" | translate }}</a
         >
       </mat-nav-list>
     </mat-drawer>
