@@ -14,7 +14,7 @@ import { SnackbarService } from './snackbar.service'
 import { SpinnerService } from './spinner.service'
 import { MaterialModule } from '../material-module'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
-import { _, TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Injectable({
   providedIn: 'root',
