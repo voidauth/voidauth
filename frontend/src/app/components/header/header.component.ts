@@ -8,7 +8,7 @@ import { ConfigService } from '../../services/config.service'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { LogoComponent } from './logo.component'
-import { LangSwitcherComponent } from '../lang-switcher/lang-switcher.component'
+// import { LangSwitcherComponent } from '../lang-switcher/lang-switcher.component'
 import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
@@ -18,7 +18,7 @@ import { TranslatePipe } from '@ngx-translate/core'
     ThemeToggleComponent,
     RouterLink,
     LogoComponent,
-    LangSwitcherComponent,
+    // LangSwitcherComponent,
     TranslatePipe,
   ],
   templateUrl: './header.component.html',

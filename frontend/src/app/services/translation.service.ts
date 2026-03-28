@@ -1,6 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core'
 import { TranslateService } from '@ngx-translate/core'
-import translationsEN from '../../../public/i18n/en-US.json'
 import locales from '../../../public/locales.json'
 import { firstValueFrom } from 'rxjs'
 import { SpinnerService } from './spinner.service'
@@ -28,8 +27,6 @@ export class TranslationService {
   })
 
   constructor() {
-    this.translate.setTranslation('en-US', translationsEN)
-    this.translate.setFallbackLang('en-US')
     this.setLang(this.getInitialLang(), true)
   }
 
