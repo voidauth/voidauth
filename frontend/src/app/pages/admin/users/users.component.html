@@ -2,11 +2,11 @@
   <div class="multi-select-actions">
     @if (this.selectEnabled) {
       <button mat-button [disabled]="!selected.length || currentUserSelected()" (click)="deleteSelected()">
-        Delete
+        {{ "admin.common.actions.delete" | translate }}
         <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
       </button>
       <button mat-flat-button [disabled]="!selected.length" (click)="approveSelected()">
-        Approve
+        {{ "admin.users.actions.approve" | translate }}
         <mat-icon fontSet="material-icons-round">check</mat-icon>
       </button>
       <button mat-icon-button (click)="toggleSelectEnabled()">
@@ -14,14 +14,14 @@
       </button>
     } @else {
       <button mat-flat-button (click)="toggleSelectEnabled()">
-        Select
+        {{ "admin.users.actions.select" | translate }}
         <mat-icon fontSet="material-icons-round">check</mat-icon>
       </button>
     }
   </div>
 
   <mat-form-field>
-    <mat-label>Search</mat-label>
+    <mat-label>{{ "admin.users.labels.search" | translate }}</mat-label>
     <input matInput type="text" [formControl]="search" />
     <button class="field-suffix" mat-icon-button matSuffix (click)="search.setValue('')">
       <mat-icon fontSet="material-icons-round">cancel</mat-icon>
@@ -54,10 +54,16 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
-        <a mat-icon-button [routerLink]="['/admin', 'user', row.id]" matTooltip="Edit">
+        <a mat-icon-button [routerLink]="['/admin', 'user', row.id]" [matTooltip]="'admin.common.actions.edit' | translate">
           <mat-icon fontSet="material-icons-round">edit</mat-icon>
         </a>
-        <button mat-icon-button type="button" [disabled]="row.id === me?.id" (click)="delete(row.id)" matTooltip="Delete">
+        <button
+          mat-icon-button
+          type="button"
+          [disabled]="row.id === me?.id"
+          (click)="delete(row.id)"
+          [matTooltip]="'admin.common.actions.delete' | translate"
+        >
           <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
         </button>
       </td>
@@ -68,7 +74,9 @@
 
     <!-- Row shown when there is no matching data. -->
     <tr *matNoDataRow>
-      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1"><h1>No users.</h1></td>
+      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1">
+        <h1>{{ "admin.users.empty-state" | translate }}</h1>
+      </td>
     </tr>
   </table>
 

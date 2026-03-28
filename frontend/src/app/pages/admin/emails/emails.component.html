@@ -1,6 +1,8 @@
 <div class="container">
   <span style="align-self: end">
-    <button [disabled]="!config?.emailActive" mat-flat-button (click)="sendTestEmail()">Send Test Email</button>
+    <button [disabled]="!config?.emailActive" mat-flat-button (click)="sendTestEmail()">
+      {{ "admin.emails.actions.send-test" | translate }}
+    </button>
   </span>
   <table mat-table [dataSource]="dataSource" matSort>
     @for (column of columns; track column) {
@@ -21,10 +23,16 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
-        <a mat-icon-button matTooltip="Preview" (click)="previewEmail(row)">
+        <a mat-icon-button [matTooltip]="'admin.emails.tooltips.preview' | translate" (click)="previewEmail(row)">
           <mat-icon fontSet="material-icons-round">open_in_new</mat-icon>
         </a>
-        <a mat-icon-button matTooltip="View User" [disabled]="!row.toUser" target="_blank" [routerLink]="['/admin', 'user', row.toUser]">
+        <a
+          mat-icon-button
+          [matTooltip]="'admin.emails.tooltips.view-user' | translate"
+          [disabled]="!row.toUser"
+          target="_blank"
+          [routerLink]="['/admin', 'user', row.toUser]"
+        >
           <mat-icon fontSet="material-icons-round">account_circle</mat-icon>
         </a>
       </td>
@@ -35,7 +43,9 @@
 
     <!-- Row shown when there is no matching data. -->
     <tr *matNoDataRow>
-      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1"><h1>No Sent Mail.</h1></td>
+      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1">
+        <h1>{{ "admin.emails.empty-state" | translate }}</h1>
+      </td>
     </tr>
   </table>
 

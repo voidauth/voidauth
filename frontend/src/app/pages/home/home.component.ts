@@ -17,6 +17,8 @@ import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
 import { PasskeyEditDialog } from '../../dialogs/passkey-edit/passkey-edit.component'
 import { isValidEmail } from '../../validators/validators'
+import { TranslatePipe } from '@ngx-translate/core'
+import { AsyncPipe } from '@angular/common'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import { MatTableDataSource } from '@angular/material/table'
 import type { TableColumn } from '../admin/clients/clients.component'
@@ -30,6 +32,8 @@ import { CommonModule } from '@angular/common'
     MaterialModule,
     ValidationErrorPipe,
     PasswordSetComponent,
+    TranslatePipe,
+    AsyncPipe,
     CommonModule,
   ],
   templateUrl: './home.component.html',

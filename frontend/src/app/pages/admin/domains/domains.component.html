@@ -1,6 +1,6 @@
 <div class="container">
   <span style="align-self: end">
-    <a mat-flat-button routerLink="/admin/domain">Create ProxyAuth Domain</a>
+    <a mat-flat-button routerLink="/admin/domain">{{ "admin.domains.actions.create" | translate }}</a>
   </span>
 
   <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
@@ -22,10 +22,10 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
-        <a mat-icon-button [routerLink]="['/admin', 'domain', row.id]" matTooltip="Edit">
+        <a mat-icon-button [routerLink]="['/admin', 'domain', row.id]" [matTooltip]="'admin.common.actions.edit' | translate">
           <mat-icon fontSet="material-icons-round">edit</mat-icon>
         </a>
-        <button mat-icon-button type="button" (click)="delete(row.id)" matTooltip="Delete">
+        <button mat-icon-button type="button" (click)="delete(row.id)" [matTooltip]="'admin.common.actions.delete' | translate">
           <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
         </button>
       </td>
@@ -37,7 +37,7 @@
     <!-- Row shown when there is no matching data. -->
     <tr *matNoDataRow>
       <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1">
-        <h1>No Domains.</h1>
+        <h1>{{ "admin.domains.empty-state" | translate }}</h1>
       </td>
     </tr>
   </table>

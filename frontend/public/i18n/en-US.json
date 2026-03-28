@@ -1,0 +1,507 @@
+{
+  "login": {
+    "password": {
+      "label": "Password"
+    },
+    "username": {
+      "label": "Username or Email"
+    },
+    "forgot-password": "Forgot Password",
+    "remember-me": "Remember Me",
+    "actions": {
+      "login": "Login",
+      "sign-up": "Sign Up"
+    },
+    "title": "Login"
+  },
+  "contact-us": {
+    "actions": {
+      "label": "Contact"
+    }
+  },
+  "app": {
+    "loading": "Loading...",
+    "navigation": {
+      "profile": "Profile",
+      "admin": {
+        "title": "Admin",
+        "oidc-apps": "OIDC Apps",
+        "proxyauth-domains": "ProxyAuth Domains",
+        "users": "Users",
+        "groups": "Groups",
+        "invitations": "Invitations",
+        "password-resets": "Password Resets",
+        "sent-mail": "Sent Mail"
+      },
+      "logout": "Logout"
+    }
+  },
+  "passkey-title": "Passkey",
+  "passkey-dialog": {
+    "title": "Enable {{platformName}}?",
+    "actions": {
+      "passkey": "Enable {{platformName}}"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "Use {{platformName}}",
+      "register-passkey": "Register Passkey",
+      "back": "Back"
+    },
+    "title": "Multi-Factor Authentication Required"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "Sign Up With {{platformName}}",
+      "sign-up": "Sign Up",
+      "login": "Login"
+    },
+    "title": {
+      "accept-invitation": "Accept Invitation",
+      "sign-up": "Sign Up"
+    },
+    "username": {
+      "label": "Username"
+    },
+    "email": {
+      "label": "Email"
+    },
+    "name": {
+      "label": "Name"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "Enable {{platformName}}",
+      "reset-password": "Reset Password"
+    },
+    "title": "Reset Password"
+  },
+  "approval-required": {
+    "content": "You need administrator approval before you can log in. Please wait or contact an Admin for help.",
+    "title": "Approval Required",
+    "actions": {
+      "login": "Login"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "Sign In"
+    },
+    "info": {
+      "sign-into-question": "Do you want to sign in to <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "After you sign in, you will be sent to <b>{{redirect}}</b>"
+    },
+    "title": "Confirm"
+  },
+  "forgot-password": {
+    "username": {
+      "label": "Email or Username"
+    },
+    "actions": {
+      "send": "Send",
+      "send-again": "Send Again",
+      "create-again": "Create Again",
+      "create": "Create"
+    },
+    "title": "Forgot Password"
+  },
+  "form-errors": {
+    "required": "Required.",
+    "min": "Must be at least {{min}}.",
+    "max": "Cannot be greater than {{max}}.",
+    "minLength": "Must be at least {{requiredLength}} characters long.",
+    "maxLength": "Must be less than {{requiredLength}} characters long.",
+    "email": "Not a valid email.",
+    "default": "Invalid value.",
+    "alpha-num-underscore-only": "Only A-Z,0-9,and _ allowed"
+  },
+  "logout": {
+    "title": "Logout",
+    "info": {
+      "logout-question": "Do you want to log out?"
+    },
+    "actions": {
+      "yes": "Yes",
+      "back": "Back",
+      "no": "No"
+    }
+  },
+  "page-not-found": {
+    "title": "The Page Cannot Be Found",
+    "": {
+      "actions": {
+        "go-home": "Go Home"
+      }
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "Verifying Email...",
+        "email-could-not-be-verified": "Email Could Not Be Verified",
+        "sending-new-verification": "Sending New Verification...",
+        "email-verification-could-not-be-sent": "Email Verification Could Not Be Sent"
+      },
+      "actions": {
+        "send-again": "Send Again"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "Verification Email Sent",
+        "email-verification-required": "Email Verification Required"
+      },
+      "actions": {
+        "logout": "Logout",
+        "send-again": "Send Again",
+        "send-verification": "Send Verification"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "profile": {
+        "title": "Profile",
+        "username": {
+          "label": "Username"
+        },
+        "name": {
+          "label": "Name"
+        },
+        "actions": {
+          "submit": {
+            "label": "Update Profile"
+          }
+        },
+        "email": {
+          "label": "Email",
+          "actions": {
+            "submit": {
+              "label": "Update Email"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "Security",
+        "password": {
+          "set": {
+            "label": "Set Password"
+          },
+          "change": {
+            "label": "Change Password"
+          }
+        },
+        "passkeys": {
+          "title": "Passkeys",
+          "noPasskeys": "You have no registered passkeys.",
+          "register": {
+            "label": "Register Passkey"
+          },
+          "manage": {
+            "title": "Manage Passkeys"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "Edit"
+            },
+            "delete": {
+              "tooltip": "Delete"
+            }
+          }
+        },
+        "mfa": {
+          "title": "Multi-Factor Authentication",
+          "status": {
+            "enabled": "Multi-Factor Authentication is enabled.",
+            "disabled": "Multi-Factor Authentication is not enabled."
+          },
+          "authenticators": {
+            "has": "You have at least one registered Authenticator.",
+            "none": "You have no registered Authenticators."
+          },
+          "add": {
+            "label": "Add Authenticator"
+          },
+          "enable": {
+            "label": "Enable MFA"
+          }
+        }
+      },
+      "account": {
+        "title": "Account",
+        "removePassword": {
+          "label": "Remove Password",
+          "tooltip": {
+            "noPassword": "You have no password to remove",
+            "noPasskeys": "You do not have any passkeys"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "Remove All Passkeys",
+          "tooltip": {
+            "noPasskeys": "You have no passkeys to remove",
+            "noPassword": "You do not have a password"
+          }
+        },
+        "disableMfa": {
+          "label": "Disable MFA"
+        },
+        "removeAuthenticators": {
+          "label": "Remove Authenticators"
+        },
+        "deleteAccount": {
+          "label": "Delete Account"
+        }
+      }
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete",
+        "update": "Update",
+        "create": "Create",
+        "view": "View",
+        "open": "Open",
+        "remove": "Remove"
+      },
+      "labels": {
+        "mfa-required": "MFA Required",
+        "email-verified": "Email Verified",
+        "approved": "Approved"
+      },
+      "messages": {
+        "all-users-have-access": "No Groups, ALL users will have access."
+      }
+    },
+    "users": {
+      "empty-state": "No users.",
+      "actions": {
+        "select": "Select",
+        "approve": "Approve"
+      },
+      "labels": {
+        "search": "Search"
+      }
+    },
+    "user": {
+      "title": "Update User",
+      "labels": {
+        "username": "Username",
+        "name": "Name",
+        "email": "Email",
+        "add-group": "Add Group",
+        "security-groups": "Security Groups:"
+      },
+      "actions": {
+        "sign-out": "Sign Out"
+      },
+      "tooltips": {
+        "remove": "Remove",
+        "open": "Open"
+      }
+    },
+    "clients": {
+      "empty-state": "No OIDC Apps.",
+      "actions": {
+        "create": "Create OIDC App"
+      }
+    },
+    "client": {
+      "title": "OIDC App",
+      "labels": {
+        "name": "Name",
+        "home-page-url": "Home Page URL",
+        "logo-url": "Logo URL",
+        "add-group": "Add Group",
+        "client-id": "Client ID",
+        "auth-method": "Auth Method",
+        "client-secret": "Client Secret",
+        "redirect-url": "New Redirect URL",
+        "response-types": "Response Types",
+        "grant-types": "Grant Types",
+        "postlogout-url": "PostLogout URL",
+        "allowed-groups": "Allowed Groups:",
+        "redirect-urls": "Redirect URLs:"
+      },
+      "hints": {
+        "pkce-required": "PKCE Required with this Auth Method.",
+        "not-required": "Not required for current Auth Method.",
+        "postlogout-redirect": "Allowed post-logout redirect url on client initiated logout."
+      },
+      "checkboxes": {
+        "skip-consent": "Skip Consent",
+        "mfa-required": "MFA Required"
+      },
+      "tooltips": {
+        "skip-consent": "Skip user confirmation for this app.",
+        "mfa-required": "Users will have to use mfa to access this app.",
+        "copy-client-id": "Copy Client ID",
+        "copy-secret": "Copy Secret"
+      },
+      "messages": {
+        "client-id-copied": "Client ID copied to clipboard.",
+        "secret-copied": "Secret copied to clipboard."
+      }
+    },
+    "domains": {
+      "empty-state": "No Domains.",
+      "actions": {
+        "create": "Create ProxyAuth Domain"
+      }
+    },
+    "domain": {
+      "title": "ProxyAuth Domain",
+      "labels": {
+        "domain": "Domain",
+        "max-session-length": "Max Session Age (Minutes)",
+        "add-group": "Add Group",
+        "allowed-groups": "Allowed Groups:"
+      },
+      "placeholders": {
+        "domain": "ex. *.your.domain.com/path/"
+      },
+      "sections": {
+        "domain-help": "Domain Help"
+      },
+      "hints": {
+        "no-re-auth": "Blank means no re-authentication required."
+      },
+      "help-text": {
+        "0": "Domain should not include protocol, may include a path and port, and supports wildcards (*) at any position.",
+        "1": "<b>example.domain.com/api/alive</b> will only check access to a single endpoint.",
+        "2": "<b>example.domain.com/api/*</b> will check access for all endpoints under /api."
+      }
+    },
+    "password-resets": {
+      "labels": {
+        "create-link": "Create Password Reset Link"
+      },
+      "tooltips": {
+        "send-email": "Send Email To {{email}}",
+        "copy-link": "Copy Link",
+        "delete": "Delete"
+      },
+      "messages": {
+        "link-copied": "Reset link copied to clipboard."
+      }
+    },
+    "emails": {
+      "empty-state": "No Sent Mail.",
+      "actions": {
+        "send-test": "Send Test Email"
+      },
+      "tooltips": {
+        "preview": "Preview",
+        "view-user": "View User"
+      }
+    },
+    "groups": {
+      "empty-state": "No groups.",
+      "actions": {
+        "create": "Create Group"
+      }
+    },
+    "group": {
+      "title": "Group",
+      "labels": {
+        "name": "Name",
+        "add-user": "Add User",
+        "users": "Users:"
+      },
+      "checkboxes": {
+        "mfa-required": "MFA Required"
+      }
+    },
+    "invitations": {
+      "empty-state": "No invitations.",
+      "actions": {
+        "create": "Create Invitation"
+      }
+    },
+    "invitation": {
+      "title": "Invitation",
+      "labels": {
+        "invite-link": "Invite Link",
+        "username": "Username",
+        "email": "Email",
+        "name": "Name",
+        "add-group": "Add Group",
+        "security-groups": "Security Groups:"
+      },
+      "tooltips": {
+        "copy-invite-link": "Copy Invite Link",
+        "unsaved-changes": "You have unsaved changes.",
+        "send-to": "Send invite to: {{email}}"
+      },
+      "messages": {
+        "link-copied": "Invite link copied to clipboard.",
+        "email-not-verified": "Cannot email invitation link, email connection not verified.",
+        "no-email": "Cannot email invitation link, invite does not include an email address."
+      },
+      "actions": {
+        "send": "Send Invite"
+      },
+      "checkboxes": {
+        "email-verified": "Email Verified"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "Login"
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": "{{label}} copied to clipboard."
+      }
+    },
+    "oidc-info": {
+      "title": "OIDC Endpoints",
+      "labels": {
+        "issuer": "OIDC Issuer Endpoint",
+        "well-known": "Well-Known Endpoint",
+        "authorization": "Authorization Endpoint",
+        "token": "Token Endpoint",
+        "userinfo": "UserInfo Endpoint",
+        "logout": "Logout Endpoint",
+        "jwks": "JWKs Endpoint"
+      },
+      "actions": {
+        "all-info": "All Info"
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "New Password",
+        "old-password": "Old Password",
+        "confirm-password": "Confirm Password"
+      }
+    },
+    "totp-input": {
+      "title": "This will enable Multi-Factor Authentication on your account.",
+      "labels": {
+        "show-secret": "Show Secret"
+      },
+      "text": {
+        "qrcode-instruction": "Scan the QRCode or Enter the Secret in your Authenticator",
+        "then": "then",
+        "enter-token": "Enter Token from Authenticator to Continue"
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      }
+    }
+  }
+}

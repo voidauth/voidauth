@@ -1,34 +1,39 @@
-import { Pipe, type PipeTransform } from '@angular/core'
+import { inject, Pipe, type PipeTransform } from '@angular/core'
 import type { ValidationErrors } from '@angular/forms'
+import { TranslateService } from '@ngx-translate/core'
+import { of, type Observable } from 'rxjs'
 @Pipe({
   name: 'validationError',
 })
 export class ValidationErrorPipe implements PipeTransform {
-  transform(errors: ValidationErrors | null | undefined, defaultMessage: string = 'Invalid value.'): string {
+  private translate = inject(TranslateService)
+  transform(errors: ValidationErrors | null | undefined, defaultErrorMessage?: string): Observable<unknown> {
     if (!errors) {
-      return ''
+      return of('')
     }
     return Object.keys(errors).map((k) => {
       switch (k.toLowerCase()) {
         case 'required':
-          return 'Required.'
+          return this.translate.stream('form-errors.required')
         case 'min':
-          return `Must be at least ${String(errors[k]?.min)}.`
+          return this.translate.stream('form-errors.min', { min: String(errors[k]?.min) })
         case 'max':
-          return `Cannot be greater than ${String(errors[k]?.max)}.`
+          return this.translate.stream('form-errors.max', { max: String(errors[k]?.max) })
         case 'minlength':
-          return `Must be at least ${String(errors[k]?.requiredLength)} characters long.`
+          return this.translate.stream('form-errors.minLength', { requiredLength: String(errors[k]?.requiredLength) })
         case 'maxlength':
-          return `Must be less than ${String(errors[k]?.requiredLength)} characters long.`
+          return this.translate.stream('form-errors.maxLength', { requiredLength: String(errors[k]?.requiredLength) })
         case 'email':
-          return 'Not a valid email.'
+          return this.translate.stream('form-errors.email')
         default:
           if (typeof errors[k] === 'string') {
             // If custom error message, use that
-            return errors[k]
+            return of(errors[k])
+          } else if (defaultErrorMessage) {
+            return of(defaultErrorMessage)
           }
-          return defaultMessage
+          return this.translate.stream('form-errors.default')
       }
-    })[0] ?? ''
+    })[0] ?? of('')
   }
 }

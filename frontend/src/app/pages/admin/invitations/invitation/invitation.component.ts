@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common'
+import { AsyncPipe, CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
@@ -17,6 +17,7 @@ import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { isValidEmail } from '../../../../validators/validators'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-invitation',
@@ -25,6 +26,8 @@ import { isValidEmail } from '../../../../validators/validators'
     MaterialModule,
     ValidationErrorPipe,
     ReactiveFormsModule,
+    AsyncPipe,
+    TranslatePipe,
   ],
   templateUrl: './invitation.component.html',
   styleUrl: './invitation.component.scss',
@@ -77,6 +80,7 @@ export class InvitationComponent {
   public snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
+  private translateService = inject(TranslateService)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
@@ -161,6 +165,10 @@ export class InvitationComponent {
     } else {
       this.form.controls.emailVerified.disable()
     }
+  }
+
+  onCopyInviteLink() {
+    this.snackbarService.message(String(this.translateService.instant('admin.invitation.messages.link-copied')))
   }
 
   async sendEmail() {

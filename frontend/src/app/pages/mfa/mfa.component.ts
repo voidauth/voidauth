@@ -15,10 +15,11 @@ import { UserService } from '../../services/user.service'
 import { WebAuthnError } from '@simplewebauthn/browser'
 import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { Router } from '@angular/router'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-mfa',
-  imports: [TotpInputComponent, TextDividerComponent, MatButtonModule, MaterialModule],
+  imports: [TotpInputComponent, TextDividerComponent, MatButtonModule, MaterialModule, TranslatePipe],
   templateUrl: './mfa.component.html',
   styleUrl: './mfa.component.scss',
 })

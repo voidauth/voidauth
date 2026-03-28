@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core'
 import { ThemeService, type ThemeMode } from '../../services/theme.service'
 import { MaterialModule } from '../../material-module'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-theme-toggle',
-  imports: [MaterialModule],
+  imports: [MaterialModule, TranslatePipe],
   templateUrl: './theme-toggle.component.html',
   styleUrl: './theme-toggle.component.scss',
 })

@@ -11,6 +11,7 @@ import { OidcInfoComponent } from '../../../components/oidc-info/oidc-info.compo
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
+import { TranslatePipe } from '@ngx-translate/core'
 
 export type TableColumn<T> = {
   columnDef: keyof T & string
@@ -25,6 +26,7 @@ export type TableColumn<T> = {
     MaterialModule,
     RouterLink,
     OidcInfoComponent,
+    TranslatePipe,
   ],
   templateUrl: './clients.component.html',
   styleUrl: './clients.component.scss',

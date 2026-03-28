@@ -4,11 +4,13 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { getCurrentHost } from '../../services/config.service'
 import { UserService } from '../../services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-logout',
   imports: [
     MaterialModule,
+    TranslatePipe,
   ],
   templateUrl: './logout.component.html',
   styleUrl: './logout.component.scss',

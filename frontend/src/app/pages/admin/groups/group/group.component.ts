@@ -15,6 +15,7 @@ import { ADMIN_GROUP } from '@shared/constants'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-group',
@@ -24,6 +25,7 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
     ValidationErrorPipe,
     ReactiveFormsModule,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './group.component.html',
   styleUrl: './group.component.scss',

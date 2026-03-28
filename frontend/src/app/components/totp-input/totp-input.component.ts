@@ -3,10 +3,11 @@ import { MaterialModule } from '../../material-module'
 import { ReactiveFormsModule } from '@angular/forms'
 import QRCode from 'qrcode'
 import { TextDividerComponent } from '../text-divider/text-divider.component'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-totp-input',
-  imports: [MaterialModule, ReactiveFormsModule, TextDividerComponent],
+  imports: [MaterialModule, ReactiveFormsModule, TextDividerComponent, TranslatePipe],
   templateUrl: './totp-input.component.html',
   styleUrl: './totp-input.component.scss',
 })

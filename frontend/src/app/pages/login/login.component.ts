@@ -12,6 +12,8 @@ import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { WebAuthnAbortService } from '@simplewebauthn/browser'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
+import { TranslatePipe } from '@ngx-translate/core'
+import { AsyncPipe } from '@angular/common'
 
 @Component({
   selector: 'app-login',
@@ -23,6 +25,8 @@ import { TextDividerComponent } from '../../components/text-divider/text-divider
     ValidationErrorPipe,
     RouterLink,
     TextDividerComponent,
+    TranslatePipe,
+    AsyncPipe,
   ],
 })
 export class LoginComponent implements OnInit, OnDestroy {

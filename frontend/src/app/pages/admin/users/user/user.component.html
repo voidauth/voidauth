@@ -1,34 +1,34 @@
-<h1>Update User</h1>
+<h1>{{ "admin.user.title" | translate }}</h1>
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
-        <mat-label>Username</mat-label>
+        <mat-label>{{ "admin.user.labels.username" | translate }}</mat-label>
         <input matInput type="text" formControlName="username" />
         @if (form.controls.username.errors) {
-          <mat-error>{{ form.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" }}</mat-error>
+          <mat-error>{{ form.controls.username.errors | validationError: "Only A-Z,0-9,and _ allowed" | async }}</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field>
-        <mat-label>Name</mat-label>
+        <mat-label>{{ "admin.user.labels.name" | translate }}</mat-label>
         <input matInput type="text" formControlName="name" />
         @if (form.controls.name.errors) {
-          <mat-error>{{ form.controls.name.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.name.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field>
-        <mat-label>Email</mat-label>
+        <mat-label>{{ "admin.user.labels.email" | translate }}</mat-label>
         <input matInput type="text" formControlName="email" />
         @if (form.controls.email.errors) {
-          <mat-error>{{ form.controls.email.errors | validationError }}</mat-error>
+          <mat-error>{{ form.controls.email.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
 
       <mat-list [ngClass]="{ invalid: form.controls.groups.errors }">
         <mat-form-field>
-          <mat-label>Add Group</mat-label>
+          <mat-label>{{ "admin.user.labels.add-group" | translate }}</mat-label>
           <input
             #input
             type="text"
@@ -45,17 +45,29 @@
             }
           </mat-autocomplete>
           @if (groupSelect.errors) {
-            <mat-error>{{ groupSelect.errors | validationError }}</mat-error>
+            <mat-error>{{ groupSelect.errors | validationError | async }}</mat-error>
           }
         </mat-form-field>
 
-        <div mat-subheader>Security Groups:</div>
+        <div mat-subheader>{{ "admin.user.labels.security-groups" | translate }}</div>
         @for (g of form.value.groups; track g) {
           <mat-list-item>
-            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g.name)" matTooltip="Remove">
+            <mat-icon
+              fontSet="material-icons-round"
+              matListItemIcon
+              class="clickable"
+              (click)="removeGroup(g.name)"
+              [matTooltip]="'admin.user.tooltips.remove' | translate"
+            >
               cancel
             </mat-icon>
-            <a matListItemIcon style="margin-left: 0px" [routerLink]="['/admin', 'group', g.id]" target="_blank" matTooltip="Open">
+            <a
+              matListItemIcon
+              style="margin-left: 0px"
+              [routerLink]="['/admin', 'group', g.id]"
+              target="_blank"
+              [matTooltip]="'admin.user.tooltips.open' | translate"
+            >
               <mat-icon fontSet="material-icons-round">open_in_new</mat-icon>
             </a>
             <div matListItemTitle>{{ g.name }}</div>
@@ -67,21 +79,25 @@
       </mat-list>
       @if (form.controls.groups.errors) {
         <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
-          {{ form.controls.groups.errors | validationError }}
+          {{ form.controls.groups.errors | validationError | async }}
         </mat-error>
       }
 
-      <mat-checkbox formControlName="emailVerified">Email Verified</mat-checkbox>
+      <mat-checkbox formControlName="emailVerified">{{ "admin.common.labels.email-verified" | translate }}</mat-checkbox>
 
-      <mat-checkbox formControlName="approved">Approved</mat-checkbox>
+      <mat-checkbox formControlName="approved">{{ "admin.common.labels.approved" | translate }}</mat-checkbox>
 
-      <mat-checkbox formControlName="mfaRequired" matTooltip="Requires user MFA during login.">MFA Required</mat-checkbox>
+      <mat-checkbox formControlName="mfaRequired" matTooltip="{{ 'admin.common.labels.mfa-required' | translate }}">{{
+        "admin.common.labels.mfa-required" | translate
+      }}</mat-checkbox>
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">Update</button>
+        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">
+          {{ "admin.common.actions.update" | translate }}
+        </button>
         @if (id !== me?.id) {
-          <button mat-button type="button" (click)="signout()">Sign Out</button>
-          <button mat-button type="button" (click)="remove()">Delete</button>
+          <button mat-button type="button" (click)="signout()">{{ "admin.user.actions.sign-out" | translate }}</button>
+          <button mat-button type="button" (click)="remove()">{{ "admin.common.actions.delete" | translate }}</button>
         }
       </mat-card-actions>
     </form>

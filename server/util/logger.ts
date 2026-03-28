@@ -58,13 +58,17 @@ export function logger(log: LogShape) {
         ? Math.min(higherLog.timestamp, lowerLog.timestamp)
         : lowerLog.timestamp || higherLog.timestamp
 
+      const error = higherLog.error
+        ? { name: higherLog.error.name, message: higherLog.error.message, stack: higherLog.error.stack }
+        : undefined
+
       store.log = {
         ...lowerLog, ...higherLog,
         // earlier timestamp takes precedence
         timestamp: earlierTimestamp,
         details: lowerLog.details || higherLog.details ? { ...lowerLog.details, ...higherLog.details } : undefined,
         // error and stack should be taken from the log with the higher level, and if they do not exist should be unset
-        error: higherLog.error,
+        error,
       }
     }
     return // do not print the log immediately, it will be printed when purgeAsyncLog is called

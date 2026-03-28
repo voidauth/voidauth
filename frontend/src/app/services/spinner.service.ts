@@ -5,7 +5,7 @@ import { NgxSpinnerService } from 'ngx-spinner'
   providedIn: 'root',
 })
 export class SpinnerService {
-  private spinnerService = inject(NgxSpinnerService)
+  private ngxSpinnerService = inject(NgxSpinnerService)
 
   private count = 0
 
@@ -23,9 +23,9 @@ export class SpinnerService {
 
   private checkStatus() {
     if (this.count > 0) {
-      void this.spinnerService.show()
+      void this.ngxSpinnerService.show()
     } else {
-      void this.spinnerService.hide()
+      void this.ngxSpinnerService.hide()
     }
   }
 }

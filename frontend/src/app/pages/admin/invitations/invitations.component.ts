@@ -12,12 +12,14 @@ import { SpinnerService } from '../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { humanDuration } from '@shared/utils'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-invitations',
   imports: [
     MaterialModule,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './invitations.component.html',
   styleUrl: './invitations.component.scss',

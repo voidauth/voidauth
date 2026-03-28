@@ -7,9 +7,9 @@
       type="button"
       mat-icon-button
       matSuffix
-      [matTooltip]="label() + ' Endpoint'"
+      [matTooltip]="label()"
       [cdkCopyToClipboard]="val"
-      (click)="snackbarService.message(label() + ' copied to clipboard.')"
+      (click)="onCopy()"
     >
       <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
     </button>

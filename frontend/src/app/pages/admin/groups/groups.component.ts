@@ -12,12 +12,14 @@ import { RouterLink } from '@angular/router'
 import { SpinnerService } from '../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-groups',
   imports: [
     MaterialModule,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './groups.component.html',
   styleUrl: './groups.component.scss',

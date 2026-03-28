@@ -8,6 +8,8 @@ import { ConfigService } from '../../services/config.service'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { LogoComponent } from './logo.component'
+// import { LangSwitcherComponent } from '../lang-switcher/lang-switcher.component'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-header',
@@ -16,6 +18,8 @@ import { LogoComponent } from './logo.component'
     ThemeToggleComponent,
     RouterLink,
     LogoComponent,
+    // LangSwitcherComponent,
+    TranslatePipe,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',

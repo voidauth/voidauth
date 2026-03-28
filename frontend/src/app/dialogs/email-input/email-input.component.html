@@ -8,7 +8,7 @@
   <mat-form-field style="width: 100%">
     <input matInput type="text" [formControl]="emailControl" />
     @if (emailControl.errors) {
-      <mat-error>{{ emailControl.errors | validationError }}</mat-error>
+      <mat-error>{{ emailControl.errors | validationError | async }}</mat-error>
     }
   </mat-form-field>
 </mat-dialog-content>

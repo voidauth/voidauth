@@ -1,3 +1,5 @@
+import translationsEN from '../../public/i18n/en-US.json'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { Component, inject, type OnInit } from '@angular/core'
 import { RouterLink, RouterOutlet } from '@angular/router'
 import { HeaderComponent } from './components/header/header.component'
@@ -15,6 +17,7 @@ import { isAdmin } from '@shared/user'
     MaterialModule,
     HeaderComponent,
     RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -26,6 +29,13 @@ export class AppComponent implements OnInit {
 
   private userService = inject(UserService)
   private spinnerService = inject(SpinnerService)
+  private translate = inject(TranslateService)
+
+  constructor() {
+    this.translate.setTranslation('en-US', translationsEN)
+    this.translate.setFallbackLang('en-US')
+    this.translate.use('en-US')
+  }
 
   async ngOnInit() {
     try {

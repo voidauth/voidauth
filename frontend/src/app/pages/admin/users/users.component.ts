@@ -15,6 +15,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged } from 'rxjs'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-users',
@@ -22,6 +23,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs'
     MaterialModule,
     RouterLink,
     ReactiveFormsModule,
+    TranslatePipe,
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
