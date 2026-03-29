@@ -5,7 +5,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { initialJwks, provider, providerCookieKeys } from '../oidc/provider'
 import { generateTheme } from '../util/theme'
-import { router } from '../routes/api'
+import { getUserSessionInteraction, router } from '../routes/api'
 import helmet from 'helmet'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import { randomInt } from 'node:crypto'
@@ -135,7 +135,18 @@ export async function serve() {
     })
   }
 
-  app.use(`${basePath()}/oidc`, noCache, checkAPPUrl, setAsyncLocalStorage, provider.callback())
+  app.use(`${basePath()}/oidc`, noCache, checkAPPUrl, setAsyncLocalStorage, async (req, res, next) => {
+    try {
+      const user = await getUserSessionInteraction(req, res)
+
+      if (user) {
+        req.user = user
+      }
+    } catch (_e) {
+      // do nothing
+    }
+    next()
+  }, provider.callback())
 
   app.use(express.json({ limit: '1Mb' }))
 

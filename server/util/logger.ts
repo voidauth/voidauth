@@ -36,7 +36,7 @@ export type LogShape = {
 
 export function logger(log: LogShape) {
   if (!log.timestamp) {
-    log.timestamp = Date.now()
+    log = { timestamp: Date.now(), ...log }
   }
 
   // Store the log in the ALS context if it exists
@@ -71,10 +71,11 @@ export function logger(log: LogShape) {
         error,
       }
     }
-    return // do not print the log immediately, it will be printed when purgeAsyncLog is called
+    return log // do not print the log immediately, it will be printed when purgeAsyncLog is called
   }
 
   printLog(log)
+  return log
 }
 
 export function purgeAsyncLog() {
