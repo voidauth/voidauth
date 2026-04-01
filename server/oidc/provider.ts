@@ -9,7 +9,7 @@ import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import Keygrip from 'keygrip'
 import { interactionPolicy } from 'oidc-provider'
-import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import { isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
 import { isMatch } from 'matcher'
@@ -68,7 +68,7 @@ loginPromptPolicy.checks.add(new Check('user_email_not_validated',
     const { oidc } = ctx
     if (oidc.account?.accountId && appConfig.EMAIL_VERIFICATION) {
       const user = await getUserById(oidc.account.accountId)
-      if (user && isUnverified(user, appConfig.EMAIL_VERIFICATION)) {
+      if (user && isUnverifiedEmail(user, appConfig.EMAIL_VERIFICATION)) {
         return Check.REQUEST_PROMPT
       }
     }

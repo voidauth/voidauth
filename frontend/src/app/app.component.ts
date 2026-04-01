@@ -8,7 +8,6 @@ import { UserService } from './services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { SpinnerService } from './services/spinner.service'
 import { getCurrentHost } from './services/config.service'
-import { isAdmin } from '@shared/user'
 
 @Component({
   selector: 'app-root',
@@ -24,7 +23,6 @@ import { isAdmin } from '@shared/user'
 })
 export class AppComponent implements OnInit {
   user?: CurrentUserDetails
-  isAdmin: boolean = false
   host = getCurrentHost()
 
   private userService = inject(UserService)
@@ -41,7 +39,6 @@ export class AppComponent implements OnInit {
     try {
       this.spinnerService.show()
       this.user = await this.userService.getMyUser()
-      this.isAdmin = isAdmin(this.user)
     } catch (_e) {
       // user just isn't logged in
     } finally {

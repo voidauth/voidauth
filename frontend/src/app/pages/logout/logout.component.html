@@ -3,8 +3,8 @@
   <mat-card-content>
     <form autocomplete="off" [action]="host + '/oidc/session/end/confirm'" method="post">
       <!-- TODO: Display OIDC App name/id if provided -->
-      @if (user) {
-        <h2>{{ user.name ?? user.username }}</h2>
+      @if (privUser) {
+        <h2>{{ privUser.name ?? privUser.username }}</h2>
       }
       <p>{{ "logout.info.logout-question" | translate }}</p>
       <input type="hidden" name="xsrf" [value]="challenge" />

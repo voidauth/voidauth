@@ -1,13 +1,13 @@
 import { Component, inject, type OnInit } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { MaterialModule } from '../../../material-module'
-import { AuthService } from '../../../services/auth.service'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService, getCurrentHost } from '../../../services/config.service'
 import { TranslatePipe } from '@ngx-translate/core'
+import { UserService } from '../../../services/user.service'
 
 @Component({
   selector: 'app-verify-sent',
@@ -19,13 +19,12 @@ import { TranslatePipe } from '@ngx-translate/core'
 })
 export class VerifySentComponent implements OnInit {
   sent: boolean = false
-  userId: string | null = null
   config?: ConfigResponse
   host = getCurrentHost()
 
   private router = inject(Router)
   private activatedRoute = inject(ActivatedRoute)
-  private authService = inject(AuthService)
+  private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private configService = inject(ConfigService)
@@ -33,10 +32,6 @@ export class VerifySentComponent implements OnInit {
   async ngOnInit() {
     this.activatedRoute.queryParamMap.subscribe((queryParams) => {
       this.sent = queryParams.get('sent') === 'true'
-    })
-
-    this.activatedRoute.paramMap.subscribe((paramMap) => {
-      this.userId = paramMap.get('id')
     })
 
     try {
@@ -50,10 +45,7 @@ export class VerifySentComponent implements OnInit {
   public async sendVerification() {
     try {
       this.spinnerService.show()
-      if (!this.userId) {
-        throw new Error('Missing User ID.')
-      }
-      await this.authService.sendEmailVerification({ id: this.userId })
+      await this.userService.sendEmailVerification()
       await this.router.navigate([], {
         queryParams: {
           sent: true,

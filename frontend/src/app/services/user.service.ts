@@ -4,7 +4,7 @@ import type { UpdateProfile } from '@shared/api-request/UpdateProfile'
 import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 import { firstValueFrom } from 'rxjs'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 
 @Injectable({
@@ -14,6 +14,7 @@ export class UserService {
   private http = inject(HttpClient)
 
   private me?: Promise<CurrentUserDetails>
+  private privMe?: Promise<CurrentUserPrivateDetails>
 
   async getMyUser(options?: {
     disableCache?: boolean
@@ -25,12 +26,26 @@ export class UserService {
     return this.me
   }
 
-  isPasskeySession(user: CurrentUserDetails) {
+  async getMyPrivateUser(options?: {
+    disableCache?: boolean
+  }) {
+    if (!this.privMe || !!options?.disableCache) {
+      this.privMe = firstValueFrom(this.http.get<CurrentUserPrivateDetails>(`/api/user/me/private`))
+    }
+
+    return this.privMe
+  }
+
+  isPasskeySession(user: Pick<CurrentUserDetails, 'amr'>) {
     return user.amr.includes('webauthn')
   }
 
   async updateProfile(profile: UpdateProfile) {
     return firstValueFrom(this.http.patch<null>('/api/user/profile', profile))
+  }
+
+  async sendEmailVerification() {
+    return firstValueFrom(this.http.post<null>('/api/user/send_verify_email', {}))
   }
 
   async updateEmail(emailUpdate: UpdateEmail) {

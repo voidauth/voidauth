@@ -3,14 +3,13 @@ import { getInteractionDetails, router as interactionRouter } from './interactio
 import { getUserById } from '../db/user'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
-import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserPrivateDetails, UserDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import appConfig, { getSessionDomain, sessionDomainReaches } from '../util/config'
-import { loginFactors } from '@shared/user'
 import { logger } from '../util/logger'
-import { userCanLogin } from '../util/auth'
+import { userCanLogin, userIsPrivileged, userIsPrivilegedForEmail, userIsPrivilegedForTotpCreate } from '../util/auth'
 import { getSession } from '../oidc/provider'
 import { transaction } from '../db/db'
 
@@ -18,7 +17,7 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user: CurrentUserDetails | undefined // user indicated by the session
+      user: CurrentUserPrivateDetails | undefined // user indicated by the session
     }
   }
 }
@@ -151,13 +150,13 @@ export async function getUserSessionInteraction(req: Request, res: Response) {
     return undefined
   }
 
-  const canLogin = userCanLogin(user, amr)
-
-  const currentUser: CurrentUserDetails | undefined = {
+  const currentUser: CurrentUserPrivateDetails | undefined = {
     ...user,
     amr,
-    canLogin: canLogin,
-    isPrivileged: canLogin && (!user.hasTotp || loginFactors(amr) > 1),
+    canLogin: userCanLogin(user, amr),
+    isPrivilegedForTotpCreate: userIsPrivilegedForTotpCreate(user, amr),
+    isPrivilegedForEmail: userIsPrivilegedForEmail(user, amr),
+    isPrivileged: userIsPrivileged(user, amr),
   }
 
   logger({

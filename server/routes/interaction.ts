@@ -47,13 +47,14 @@ import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
-import { amrFactors, isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import { amrFactors, isUnapproved } from '@shared/user'
 import { logger } from '../util/logger'
 import { argon2 } from '../util/argon2id'
 import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 import { passkeyRegistrationValidator } from '../../shared/validators'
 import { passwordStrength } from '../util/zxcvbn'
+import { checkPrivileged, checkPrivilegedForTotpCreate, checkPrivilegedForTotpValidate } from '../util/authMiddleware'
 
 export const router = Router()
 
@@ -76,8 +77,7 @@ router.get('/', async (req, res) => {
   const { uid, prompt, params } = interaction
 
   const session = await getSession(req, res)
-  const accountId = session?.accountId ?? interaction.result?.login?.accountId
-  const user = accountId ? await getUserById(accountId) : undefined
+  const user = req.user
 
   logger({
     level: 'debug',
@@ -87,7 +87,6 @@ router.get('/', async (req, res) => {
         prompt: prompt.name,
         reasons: prompt.reasons,
         client_id: params.client_id,
-        username: user?.username ?? null,
         proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
       },
     },
@@ -104,6 +103,11 @@ router.get('/', async (req, res) => {
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`)
       res.send()
       return
+    } else if (prompt.reasons.includes('user_mfa_required')) {
+      // User has MFA required, direct them to MFA page
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.send()
+      return
     } else if (prompt.reasons.includes('user_email_not_validated')) {
       // User does not have a validated email and needs one
       // Send a verification email if possible
@@ -112,12 +116,7 @@ router.get('/', async (req, res) => {
         verificationSent = await createEmailVerification(user, null)
       }
 
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user?.id ?? ''}?sent=${verificationSent ? 'true' : 'false'}`)
-      res.send()
-      return
-    } else if (prompt.reasons.includes('user_mfa_required')) {
-      // User has MFA required, direct them to MFA page
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}?sent=${verificationSent ? 'true' : 'false'}`)
       res.send()
       return
     }
@@ -167,7 +166,7 @@ router.get('/', async (req, res) => {
       }
 
       // Check if the user has already consented to this client/redirect
-      const existingConsent = accountId && await getExistingConsent(accountId, redirect_uri)
+      const existingConsent = user?.id && await getExistingConsent(user.id, redirect_uri)
       if (existingConsent && !consentMissingScopes(existingConsent, scope).length) {
         const grantId = await applyConsent(interaction)
         const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
@@ -580,12 +579,13 @@ router.post('/register/passkey/end',
  * Start registering a passkey
  */
 router.post('/passkey/registration/start',
+  checkPrivileged,
   async (req, res) => {
     // Should only be able to register if fully logged in
     const user = req.user
 
-    if (!user?.isPrivileged) {
-      res.sendStatus(401)
+    if (!user) {
+      res.sendStatus(500)
       return
     }
 
@@ -601,6 +601,7 @@ router.post('/passkey/registration/start',
  * Finish registering a passkey, finishes login and adds webauthn to amr
  */
 router.post('/passkey/registration/end',
+  checkPrivileged,
   zodValidate({ body: passkeyRegistrationValidator }),
   async (req, res) => {
     const body = req.body
@@ -608,8 +609,8 @@ router.post('/passkey/registration/end',
     // Should only be able to register if fully logged in
     const user = req.user
 
-    if (!user?.isPrivileged) {
-      res.sendStatus(401)
+    if (!user) {
+      res.sendStatus(500)
       return
     }
 
@@ -635,22 +636,12 @@ router.post('/passkey/registration/end',
  * Register a new totp, needs to be verified afterwards or it expires
  */
 router.post('/totp/registration',
+  checkPrivilegedForTotpCreate,
   async (req, res) => {
-    // Should only be able to register if fully logged in,
-    // OR could not otherwise MFA
-    // partially logged in users may be prompted to add MFA
     const user = req.user
 
     if (!user) {
-      res.sendStatus(401)
-      return
-    }
-
-    const firstTotpAllowed = !user.hasTotp && !!loginFactors(user.amr)
-      && !isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) && !isUnverified(user, !!appConfig.EMAIL_VERIFICATION)
-
-    if (!user.isPrivileged && !firstTotpAllowed) {
-      res.sendStatus(401)
+      res.sendStatus(500)
       return
     }
 
@@ -838,25 +829,17 @@ router.post('/passkey/end',
  * Validate totp and add totp to amr
  */
 router.post('/totp',
+  checkPrivilegedForTotpValidate,
   zodValidate({
     body: {
       enableMfa: zod.boolean().optional(),
       token: zod.string(),
     },
   }), async (req, res) => {
-    // Should only be able to register if fully logged in,
-    // OR could not otherwise MFA
-    // partially logged in users may be prompted to add MFA
     const user = req.user
 
     if (!user) {
-      res.sendStatus(401)
-      return
-    }
-
-    if (!loginFactors(user.amr)
-      || isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) || isUnverified(user, !!appConfig.EMAIL_VERIFICATION)) {
-      res.sendStatus(401)
+      res.sendStatus(500)
       return
     }
 

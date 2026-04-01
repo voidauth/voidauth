@@ -57,9 +57,10 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
 
   const hasTotp = await hasTOTP(id)
   const hasPasskeys = !!(await getUserPasskeys(user.id)).length
+  const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash }
+  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
