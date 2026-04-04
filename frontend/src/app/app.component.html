@@ -14,7 +14,7 @@
           >
           <mat-divider></mat-divider>
 
-          @if (isAdmin) {
+          @if (user.isAdmin) {
             <div mat-subheader>{{ "app.navigation.admin.title" | translate }}</div>
             <a mat-list-item routerLink="/admin/clients"
               ><mat-icon fontSet="material-icons-round" matListItemIcon>security</mat-icon

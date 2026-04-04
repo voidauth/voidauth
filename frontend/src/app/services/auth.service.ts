@@ -85,7 +85,7 @@ export class AuthService {
   }
 
   async sendEmailVerification(body: { id: string }) {
-    return firstValueFrom(this.http.post<Redirect | undefined>('/api/auth/send_verify_email', body))
+    return firstValueFrom(this.http.post<null>('/api/auth/send_verify_email', body))
   }
 
   async getInviteDetails(id: string, challenge: string) {

@@ -15,26 +15,118 @@ import type { TOTP } from '@shared/db/TOTP'
 import { argon2 } from '../util/argon2id'
 import { zodValidate } from '../util/zodValidate'
 import { passwordStrength } from '../util/zxcvbn'
-import { checkPrivileged } from '../util/authMiddleware'
+import { checkPrivileged, checkPrivilegedForEmail, checkUserExists } from '../util/authMiddleware'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import zod from 'zod'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 
 export const userRouter = Router()
+
+userRouter.use(checkUserExists)
 
 userRouter.get('/me',
   (req, res) => {
     const user = req.user
 
     if (!user) {
-      res.sendStatus(401)
+      res.sendStatus(500)
+      return
+    }
+
+    const response: CurrentUserDetails = {
+      id: user.id,
+      isAdmin: user.isAdmin,
+      emailVerified: user.emailVerified,
+      hasTotp: user.hasTotp,
+      hasPasskeys: user.hasPasskeys,
+
+      amr: user.amr,
+      canLogin: user.canLogin,
+      isPrivilegedForTotpCreate: user.isPrivilegedForTotpCreate,
+      isPrivilegedForEmail: user.isPrivilegedForEmail,
+      isPrivileged: user.isPrivileged,
+
+      hasEmail: user.hasEmail,
+    }
+
+    res.send(response)
+    return
+  },
+)
+
+userRouter.post('/send_verify_email',
+  async (req, res) => {
+    if (!appConfig.EMAIL_VERIFICATION) {
+      res.sendStatus(400)
+      return
+    }
+    const user = req.user
+
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+
+    if (user.emailVerified) {
+      res.status(400).send({ message: 'Email is already verified.' })
+      return
+    }
+
+    const sent = await createEmailVerification(user)
+    if (!sent) {
+      res.status(400).send({ message: 'Verification Email could not be sent.' })
+      return
+    }
+
+    res.send()
+    return
+  })
+
+// Update user email address
+userRouter.patch('/email',
+  checkPrivilegedForEmail,
+  zodValidate({ body: updateEmailValidator }),
+  async (req, res) => {
+    const user = req.user
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+
+    const { email } = req.body
+
+    let sentVerification = false
+
+    if (appConfig.EMAIL_VERIFICATION && email) {
+      sentVerification = await createEmailVerification(user, email)
+      if (!sentVerification) {
+        res.status(400).send({ message: 'Verification Email could not be sent.' })
+        return
+      }
+    }
+
+    if (!appConfig.EMAIL_VERIFICATION || !user.hasEmail) {
+      await db().table<User>(TABLES.USER).update({ email }).where({ id: user.id })
+    }
+
+    res.send({ sentVerification })
+  })
+
+userRouter.use(checkPrivileged)
+
+userRouter.get('/me/private',
+  (req, res) => {
+    const user = req.user
+
+    if (!user) {
+      res.sendStatus(500)
+      return
     }
 
     res.send(user)
     return
   },
 )
-
-userRouter.use(checkPrivileged)
 
 // Update user profile information
 userRouter.patch('/profile',
@@ -48,26 +140,6 @@ userRouter.patch('/profile',
     const profile = req.body
 
     await db().table<User>(TABLES.USER).update(profile).where({ id: user.id })
-
-    res.send()
-  })
-
-// Update user email address
-userRouter.patch('/email',
-  zodValidate({ body: updateEmailValidator }), async (req, res) => {
-    const user = req.user
-    if (!user) {
-      res.sendStatus(500)
-      return
-    }
-
-    const { email } = req.body
-
-    if (appConfig.EMAIL_VERIFICATION && email) {
-      await createEmailVerification(user, email)
-    } else {
-      await db().table<User>(TABLES.USER).update({ email }).where({ id: user.id })
-    }
 
     res.send()
   })

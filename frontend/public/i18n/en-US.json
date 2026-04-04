@@ -157,6 +157,9 @@
         "logout": "Logout",
         "send-again": "Send Again",
         "send-verification": "Send Verification"
+      },
+      "email": {
+        "label": "Email"
       }
     }
   },

@@ -89,7 +89,9 @@
           }
         </button>
         @if (id && form.controls.name.value !== ADMIN_GROUP) {
-          <button mat-button type="button" (click)="remove()">{{ "admin.common.actions.delete" | translate }}</button>
+          <button mat-flat-button class="danger-button" type="button" (click)="remove()">
+            {{ "admin.common.actions.delete" | translate }}
+          </button>
         }
       </mat-card-actions>
     </form>
