@@ -264,7 +264,7 @@
           }
         </button>
         @if (client_id) {
-          <button mat-button type="button" [disabled]="form.disabled" (click)="deleteClient()">
+          <button mat-flat-button class="danger-button" type="button" [disabled]="form.disabled" (click)="deleteClient()">
             {{ "admin.common.actions.delete" | translate }}
           </button>
         }

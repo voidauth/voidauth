@@ -96,7 +96,9 @@
           {{ "admin.common.actions.update" | translate }}
         </button>
         @if (id !== me?.id) {
-          <button mat-flat-button type="button" (click)="signout()">{{ "admin.user.actions.sign-out" | translate }}</button>
+          <button mat-flat-button class="error-button" type="button" (click)="signout()">
+            {{ "admin.user.actions.sign-out" | translate }}
+          </button>
           <button mat-flat-button class="danger-button" type="button" (click)="remove()">
             {{ "admin.common.actions.delete" | translate }}
           </button>
