@@ -1,6 +1,7 @@
 <h1>{{ title | async }}</h1>
 <mat-card class="form-card">
   <mat-card-content>
+    <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px" fontSet="material-icons-round" matSuffix>mail</mat-icon>
     <button [ngClass]="{ hidden: !userid }" mat-button (click)="sendVerification()">
       {{ "verify-email.verify.actions.send-again" | translate }}
     </button>

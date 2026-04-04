@@ -10,7 +10,7 @@ import type { TypedControls } from '../../clients/upsert-client/upsert-client.co
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { USERNAME_REGEX } from '@shared/constants'
-import type { UserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../../../services/user.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
@@ -33,7 +33,7 @@ import { TranslatePipe } from '@ngx-translate/core'
   styleUrl: './user.component.scss',
 })
 export class UserComponent implements OnInit {
-  public me?: UserDetails
+  public me?: CurrentUserDetails
   public id: string | null = null
 
   public groups: ItemIn<UserDetails['groups']>[] = []

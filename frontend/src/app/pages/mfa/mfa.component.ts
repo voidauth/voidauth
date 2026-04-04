@@ -13,7 +13,6 @@ import { HttpErrorResponse } from '@angular/common/http'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../services/user.service'
 import { WebAuthnError } from '@simplewebauthn/browser'
-import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { Router } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
 
@@ -53,8 +52,7 @@ export class MfaComponent implements OnInit {
       this.config = await this.configService.getConfig()
 
       // User does not have a totp, but should be able to register one
-      if (this.user && !this.user.hasTotp && !!loginFactors(this.user.amr)
-        && !isUnapproved(this.user, this.config.signupRequiresApproval) && !isUnverified(this.user, this.config.emailVerification)) {
+      if (this.user && !this.user.hasTotp && this.user.isPrivilegedForTotpCreate) {
         try {
           const { secret, uri } = await this.authService.registerTotp()
           this.secret.set(secret)

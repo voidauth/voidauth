@@ -15,7 +15,7 @@
     <!-- <app-lang-switcher></app-lang-switcher> -->
     <app-theme-toggle></app-theme-toggle>
     <span>
-      @if (!user?.canLogin && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {
+      @if (!user && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {
         <span>
           <a mat-flat-button routerLink="/login">{{ "components.header.actions.login" | translate }}</a>
         </span>

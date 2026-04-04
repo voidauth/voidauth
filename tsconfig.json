@@ -9,7 +9,7 @@
     "verbatimModuleSyntax": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "moduleResolution": "node10",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "target": "ESNext",

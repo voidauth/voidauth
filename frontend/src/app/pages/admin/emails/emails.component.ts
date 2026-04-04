@@ -108,7 +108,7 @@ export class EmailsComponent {
       EmailInputComponent, {
         data: {
           header: 'Send Test Email',
-          initial: this.me?.email ?? undefined,
+          initial: this.me?.email,
         },
         disableClose: true,
       })

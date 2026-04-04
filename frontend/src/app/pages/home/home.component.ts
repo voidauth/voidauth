@@ -5,7 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
 import { UserService } from '../../services/user.service'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import { ConfigService } from '../../services/config.service'
 import { PasswordSetComponent } from '../../components/password-reset/password-set.component'
 import { SpinnerService } from '../../services/spinner.service'
@@ -40,7 +40,7 @@ import { CommonModule } from '@angular/common'
   styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  user?: CurrentUserDetails
+  user?: CurrentUserPrivateDetails
 
   public passkeySupport?: PasskeySupport
   public isPasskeySession: boolean = false
@@ -141,7 +141,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.spinnerService.show()
 
       try {
-        this.user = await this.userService.getMyUser({
+        this.user = await this.userService.getMyPrivateUser({
           disableCache: true,
         })
       } catch (_e) {
