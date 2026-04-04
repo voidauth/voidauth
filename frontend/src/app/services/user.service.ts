@@ -49,7 +49,7 @@ export class UserService {
   }
 
   async updateEmail(emailUpdate: UpdateEmail) {
-    return firstValueFrom(this.http.patch<null>('/api/user/email', emailUpdate))
+    return firstValueFrom(this.http.patch<{ sentVerification: boolean }>('/api/user/email', emailUpdate))
   }
 
   async passwordStrength(password: string) {

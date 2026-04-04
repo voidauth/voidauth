@@ -27,6 +27,6 @@ export function isUnapproved(user: Pick<UserDetails, 'approved' | 'isAdmin'>, SI
   return !user.isAdmin && SIGNUP_REQUIRES_APPROVAL && !user.approved
 }
 
-export function isUnverifiedEmail(user: Pick<UserDetails, 'email' | 'emailVerified' | 'isAdmin'>, EMAIL_VERIFICATION: boolean) {
-  return !user.isAdmin && EMAIL_VERIFICATION && (!user.email || !user.emailVerified)
+export function isUnverifiedEmail(user: Pick<UserDetails, 'hasEmail' | 'emailVerified' | 'isAdmin'>, EMAIL_VERIFICATION: boolean) {
+  return !user.isAdmin && EMAIL_VERIFICATION && (!user.hasEmail || !user.emailVerified)
 }

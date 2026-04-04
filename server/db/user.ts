@@ -37,6 +37,7 @@ export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndica
       ...u,
       isAdmin: !!isAdmin,
       hasPassword: !!passwordHash,
+      hasEmail: !!user.email,
     }
   })
 }
@@ -60,7 +61,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin }
+  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {

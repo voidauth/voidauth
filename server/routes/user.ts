@@ -46,7 +46,7 @@ userRouter.get('/me',
       isPrivilegedForEmail: user.isPrivilegedForEmail,
       isPrivileged: user.isPrivileged,
 
-      hasEmail: !!user.email,
+      hasEmail: user.hasEmail,
     }
 
     res.send(response)
@@ -95,17 +95,21 @@ userRouter.patch('/email',
 
     const { email } = req.body
 
+    let sentVerification = false
+
     if (appConfig.EMAIL_VERIFICATION && email) {
-      const sent = await createEmailVerification(user, email)
-      if (!sent) {
+      sentVerification = await createEmailVerification(user, email)
+      if (!sentVerification) {
         res.status(400).send({ message: 'Verification Email could not be sent.' })
         return
       }
-    } else {
+    }
+
+    if (!appConfig.EMAIL_VERIFICATION || !user.hasEmail) {
       await db().table<User>(TABLES.USER).update({ email }).where({ id: user.id })
     }
 
-    res.send()
+    res.send({ sentVerification })
   })
 
 userRouter.use(checkPrivileged)

@@ -85,7 +85,8 @@ export function userIsPrivilegedForEmail(user: UserDetails | undefined, amr: str
     return false
   }
 
-  if (user.email && isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
+  // A user that doesn't have an email can still manage their email, even if email verification is required
+  if (user.hasEmail && isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
     return false
   }
 
@@ -106,12 +107,14 @@ export function userIsPrivilegedForTotpCreate(user: UserDetails | undefined, amr
   }
 
   // Can still set up totp if they don't have an email, even if it is required
-  if (user.email && isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
+  if (user.hasEmail && isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
     return false
   }
 
+  const firstTotpSetupAllowed = !user.hasTotp && !!loginFactors(amr)
+
   // If they already have totp, require strict privilege to manage it. Otherwise allow set up without being privileged
-  if ((!userMfaComplete(user, amr) || !usingMfaIfExists(user, amr)) && (user.hasTotp || !loginFactors(amr))) {
+  if ((!userMfaComplete(user, amr) || !usingMfaIfExists(user, amr)) && !firstTotpSetupAllowed) {
     return false
   }
 
@@ -128,11 +131,11 @@ export function userIsPrivilegedForTotpValidate(user: UserDetails | undefined, a
   }
 
   // Can still validate up totp if they don't have an email, even if it is required
-  if (user.email && isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
+  if (user.hasEmail && isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
     return false
   }
 
-  // Users can only validate a totp if they are already partially logged in with a first factor
+  // Users can only validate a totp if they are already at least partially logged in with a first factor
   if (!loginFactors(amr)) {
     return false
   }
