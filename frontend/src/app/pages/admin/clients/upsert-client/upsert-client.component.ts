@@ -89,6 +89,7 @@ export class UpsertClientComponent implements OnInit {
     require_mfa: new FormControl<boolean>(false),
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     client_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
+    backchannel_logout_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     groups: new FormControl<string[]>([]),
   }) satisfies FormGroup<TypedControls<ClientUpsert>>
 
@@ -163,6 +164,7 @@ export class UpsertClientComponent implements OnInit {
             require_mfa: client.require_mfa ?? false,
             logo_uri: client.logo_uri ?? null,
             client_uri: client.client_uri ?? null,
+            backchannel_logout_uri: client.backchannel_logout_uri ?? null,
             groups: client.groups,
           })
 

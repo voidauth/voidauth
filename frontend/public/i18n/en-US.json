@@ -330,12 +330,14 @@
         "grant-types": "Grant Types",
         "postlogout-url": "PostLogout URL",
         "allowed-groups": "Allowed Groups:",
-        "redirect-urls": "Redirect URLs:"
+        "redirect-urls": "Redirect URLs:",
+        "backchannel-logout-url": "Back-Channel Logout URL"
       },
       "hints": {
         "pkce-required": "PKCE Required with this Auth Method.",
         "not-required": "Not required for current Auth Method.",
-        "postlogout-redirect": "Allowed post-logout redirect url on client initiated logout."
+        "postlogout-redirect": "Allowed post-logout redirect url on client initiated logout.",
+        "backchannel-logout-uri": "Client notification url for back-channel logout."
       },
       "checkboxes": {
         "skip-consent": "Skip Consent",

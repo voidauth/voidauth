@@ -33,6 +33,7 @@ export const clientUpsertValidator = {
   require_mfa: zod.boolean(),
   logo_uri: zod.union([zod.url().trim(), emptyString]).transform(v => v || undefined).optional(),
   client_uri: zod.union([zod.url().trim(), emptyString]).transform(v => v || undefined).optional(),
+  backchannel_logout_uri: zod.union([zod.url().trim(), emptyString]).transform(v => v || undefined).optional(),
   groups: zod.array(zod.string().trim().min(1)),
 }
 

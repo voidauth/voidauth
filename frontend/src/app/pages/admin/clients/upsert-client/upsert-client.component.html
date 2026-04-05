@@ -255,6 +255,15 @@
         }
       </mat-form-field>
 
+      <mat-form-field>
+        <mat-label>{{ "admin.client.labels.backchannel-logout-url" | translate }}</mat-label>
+        <input matInput type="text" formControlName="backchannel_logout_uri" />
+        <mat-hint>{{ "admin.client.hints.backchannel-logout-uri" | translate }}</mat-hint>
+        @if (form.controls.backchannel_logout_uri.errors) {
+          <mat-error>{{ form.controls.backchannel_logout_uri.errors | validationError | async }}</mat-error>
+        }
+      </mat-form-field>
+
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || form.pristine || form.disabled" type="submit">
           @if (client_id) {
