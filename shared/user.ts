@@ -23,8 +23,12 @@ export function loginFactors(amr: string[]) {
   return 0
 }
 
-export function isUnapproved(user: Pick<UserDetails, 'approved' | 'isAdmin'>, SIGNUP_REQUIRES_APPROVAL: boolean) {
-  return !user.isAdmin && SIGNUP_REQUIRES_APPROVAL && !user.approved
+export function isUnapproved(user: Pick<UserDetails, 'approved' | 'isAdmin' | 'expiresAt'>, SIGNUP_REQUIRES_APPROVAL: boolean) {
+  return !user.isAdmin && SIGNUP_REQUIRES_APPROVAL
+}
+
+export function isExpired(user: Pick<UserDetails, 'expiresAt' | 'isAdmin'>) {
+  return !user.isAdmin && !!user.expiresAt && new Date(user.expiresAt) < new Date()
 }
 
 export function isUnverifiedEmail(user: Pick<UserDetails, 'hasEmail' | 'emailVerified' | 'isAdmin'>, EMAIL_VERIFICATION: boolean) {

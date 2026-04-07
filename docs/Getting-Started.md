@@ -165,7 +165,8 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | PASSWORD_STRENGTH | `3` | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | |
-| ADMIN_EMAILS | `hourly` | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. If set to 'false', admin notification emails are disabled. | | | 
+| ADMIN_EMAILS | `hourly` | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. or in seconds. If set to 'false', admin notification emails are disabled. | | | 
+| DEFAULT_USER_EXPIRES_IN | | The default duration before a new users access will expire as shown on the Invitation page. Can be set to values like: '4 hours', '30 minutes', '1 week', '2 days', etc. or in seconds. | | | 
 
 > [!IMPORTANT]
 > Some configuration options only make sense when used together. **EMAIL_VERIFICATION** should only be set if the **SMTP_** options are also set. Likewise, **SIGNUP_REQUIRES_APPROVAL** does nothing unless **SIGNUP** is set.

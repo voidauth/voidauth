@@ -18,6 +18,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
+import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 
 @Component({
   selector: 'app-invitation',
@@ -35,6 +36,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 export class InvitationComponent {
   public id: string | null = null
   public config?: ConfigResponse
+  public adminConfig?: AdminConfig
 
   public groups: string[] = []
   public unselectedGroups: string[] = []
@@ -47,31 +49,20 @@ export class InvitationComponent {
   public inviteLink?: string
   public inviteEmail?: string | null
 
-  public form = new FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>({
-    username: new FormControl<string | null>({
-      value: null,
-      disabled: false,
-    }, [Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
-    email: new FormControl<string | null>({
-      value: null,
-      disabled: false,
-    }, [isValidEmail]),
-    name: new FormControl<string | null>({
-      value: null,
-      disabled: false,
-    }, [Validators.minLength(1)]),
-    emailVerified: new FormControl<boolean>({ value: true, disabled: true }),
-    groups: new FormControl<string[]>({
-      value: [],
-      disabled: false,
-    }, []),
+  public form = new FormGroup({
+    username: new FormControl<string | null>(null, [Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
+    email: new FormControl<string | null>(null, [isValidEmail]),
+    name: new FormControl<string | null>(null, [Validators.minLength(1)]),
+    userExpiresAt: new FormControl<Date | null>(null, []),
+    emailVerified: new FormControl<boolean>({ value: true, disabled: true }, { nonNullable: true }),
+    groups: new FormControl<string[]>([], { nonNullable: true }),
   }, [(c) => {
     const f = c as FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
     if (!f.controls.email.value && !f.controls.username.value) {
       return { usernameOrEmail: 'Username or Email are required.' }
     }
     return null
-  }])
+  }]) satisfies FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
 
   private adminService = inject(AdminService)
   private configService = inject(ConfigService)
@@ -90,12 +81,16 @@ export class InvitationComponent {
         const id = params.get('id')
 
         this.config = await this.configService.getConfig()
+        this.adminConfig = await this.adminService.config()
 
         if (id) {
           this.id = id
           const invitation = await this.adminService.invitation(this.id)
           await this.formSet(invitation)
           this.setEmailVerifiedState()
+        } else if (this.adminConfig.defaultUserExpireDuration) {
+          const defaultExpireDate = new Date(Date.now() + this.adminConfig.defaultUserExpireDuration * 1000)
+          this.form.controls.userExpiresAt.setValue(defaultExpireDate)
         }
 
         this.groups = (await this.adminService.groups()).map(g => g.name)
@@ -103,6 +98,11 @@ export class InvitationComponent {
 
         this.form.controls.email.valueChanges.subscribe(() => {
           this.setEmailVerifiedState()
+        })
+
+        // Keeps the userExpiresAt datepicker and timepicker in sync
+        this.form.controls.userExpiresAt.valueChanges.subscribe((value) => {
+          this.form.controls.userExpiresAt.setValue(value, { emitEvent: false })
         })
       } catch (e) {
         console.error(e)
@@ -119,7 +119,10 @@ export class InvitationComponent {
       name: invitation.name ?? null,
       email: invitation.email ?? null,
       groups: invitation.groups,
-      emailVerified: invitation.emailVerified,
+      emailVerified: !!invitation.emailVerified,
+      userExpiresAt: invitation.userExpiresAt
+        ? new Date(invitation.userExpiresAt)
+        : null,
     })
     this.inviteEmail = invitation.email
     if (!this.config) {
@@ -130,7 +133,7 @@ export class InvitationComponent {
 
   groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.groups.filter((g) => {
-      return !this.form.controls.groups.value?.includes(g)
+      return !this.form.controls.groups.value.includes(g)
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
       return g.toLowerCase().includes(value.toLowerCase())
@@ -147,14 +150,14 @@ export class InvitationComponent {
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value ?? []).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value ?? []).filter(g => g !== value))
+    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }
@@ -194,16 +197,9 @@ export class InvitationComponent {
       this.spinnerService.show()
 
       const values = this.form.getRawValue()
-      const { groups, emailVerified } = values
-
-      if (groups == null || emailVerified == null) {
-        throw new Error('Missing required information.')
-      }
 
       const invitation = await this.adminService.upsertInvitation({
         ...values,
-        groups,
-        emailVerified,
         id: this.id ?? undefined,
       })
 

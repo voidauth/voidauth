@@ -4,7 +4,7 @@ import zod from 'zod'
 export const proxyAuthUpsertValidator = {
   id: zod.uuidv4().optional(),
   domain: zod.string().trim().refine(val => isValidWildcardDomain(val)).transform(val => formatWildcardDomain(val)),
-  mfaRequired: zod.union([zod.boolean(), zod.number()]),
+  mfaRequired: zod.boolean(),
   maxSessionLength: zod.int().min(5).max(525600).nullable(),
   groups: zod.array(zod.string().trim()),
 } as const

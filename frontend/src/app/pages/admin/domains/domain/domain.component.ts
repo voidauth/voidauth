@@ -10,7 +10,7 @@ import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
-import { isValidWildcardDomain } from '@shared/utils'
+import { isValidWildcardDomain, type Nullable } from '@shared/utils'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
@@ -39,23 +39,17 @@ export class DomainComponent {
     disabled: false,
   }, [])
 
-  public form = new FormGroup<TypedControls<Omit<ProxyAuthUpsert, 'id'>>>({
-    domain: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required, (c) => {
+  public form = new FormGroup({
+    domain: new FormControl<string | null>(null, [Validators.required, (c) => {
       if (!isValidWildcardDomain(c.value as string)) {
         return { invalid: 'Must be a valid domain with optional path, supports wildcard (*)' }
       }
       return null
     }]),
-    groups: new FormControl<string[]>({
-      value: [],
-      disabled: false,
-    }, []),
+    groups: new FormControl<string[]>([], { nonNullable: true }),
     maxSessionLength: new FormControl<number | null>(null, [Validators.min(5), Validators.max(525600)]),
-    mfaRequired: new FormControl<boolean>(false),
-  })
+    mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
+  }) satisfies FormGroup<TypedControls<Omit<ProxyAuthUpsert, 'id' | 'domain'> & Nullable<Pick<ProxyAuthUpsert, 'domain'>>>>
 
   private adminService = inject(AdminService)
   private route = inject(ActivatedRoute)
@@ -90,14 +84,14 @@ export class DomainComponent {
   resetForm(proxyAuth: ProxyAuthResponse) {
     this.form.reset({ domain: proxyAuth.domain,
       groups: proxyAuth.groups,
-      mfaRequired: proxyAuth.mfaRequired,
+      mfaRequired: !!proxyAuth.mfaRequired,
       maxSessionLength: proxyAuth.maxSessionLength,
     })
   }
 
   groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.groups.filter((g) => {
-      return !this.form.controls.groups.value?.includes(g)
+      return !this.form.controls.groups.value.includes(g)
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
       return g.toLowerCase().includes(value.toLowerCase())
@@ -114,14 +108,14 @@ export class DomainComponent {
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value ?? []).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value ?? []).filter(g => g !== value))
+    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }
@@ -129,13 +123,13 @@ export class DomainComponent {
   async submit() {
     try {
       const values = this.form.getRawValue()
-      const { domain, mfaRequired, groups } = values
-      if (domain === null || mfaRequired === null || groups === null) {
-        throw new Error('Missing required information.')
+      const { domain } = values
+      if (domain === null) {
+        throw new Error('Missing domain.')
       }
 
       this.spinnerService.show()
-      const response = await this.adminService.upsertProxyAuth({ ...values, domain, mfaRequired, groups, id: this.id ?? undefined })
+      const response = await this.adminService.upsertProxyAuth({ ...values, domain, id: this.id ?? undefined })
       this.snackbarService.message(`Domain ${this.id ? 'updated' : 'created'}.`)
 
       this.id = response.id

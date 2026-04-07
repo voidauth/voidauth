@@ -435,7 +435,9 @@
         "email": "Email",
         "name": "Name",
         "add-group": "Add Group",
-        "security-groups": "Security Groups:"
+        "security-groups": "Security Groups:",
+        "user-expiration-date": "User Expiration Date",
+        "user-expiration-time": "User Expiration Time"
       },
       "tooltips": {
         "copy-invite-link": "Copy Invite Link",
@@ -505,6 +507,13 @@
         "light": "Light",
         "dark": "Dark"
       }
+    }
+  },
+  "user-expired": {
+    "title": "Account Expired",
+    "content": "Your account access has expired.",
+    "actions": {
+      "login": "Login"
     }
   }
 }

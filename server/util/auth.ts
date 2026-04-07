@@ -1,5 +1,5 @@
 import type { UserDetails } from '@shared/api-response/UserDetails'
-import { isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
+import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
 import { userRequiresMfa } from '../db/user'
 import appConfig from './config'
 
@@ -38,6 +38,10 @@ export function userCanLogin(user: UserDetails | undefined, amr: string[]): user
     return false
   }
 
+  if (isExpired(user)) {
+    return false
+  }
+
   if (isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
     return false
   }
@@ -56,6 +60,10 @@ export function userIsPrivileged(user: UserDetails | undefined, amr: string[]): 
   }
 
   if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
+    return false
+  }
+
+  if (isExpired(user)) {
     return false
   }
 
@@ -85,6 +93,10 @@ export function userIsPrivilegedForEmail(user: UserDetails | undefined, amr: str
     return false
   }
 
+  if (isExpired(user)) {
+    return false
+  }
+
   // A user that doesn't have an email can still manage their email, even if email verification is required
   if (user.hasEmail && isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
     return false
@@ -103,6 +115,10 @@ export function userIsPrivilegedForTotpCreate(user: UserDetails | undefined, amr
   }
 
   if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
+    return false
+  }
+
+  if (isExpired(user)) {
     return false
   }
 
@@ -127,6 +143,10 @@ export function userIsPrivilegedForTotpValidate(user: UserDetails | undefined, a
   }
 
   if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
+    return false
+  }
+
+  if (isExpired(user)) {
     return false
   }
 

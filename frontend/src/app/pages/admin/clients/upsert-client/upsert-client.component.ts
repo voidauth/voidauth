@@ -11,9 +11,9 @@ import { generate } from 'generate-password-browser'
 import { CLIENT_AUTH_METHODS,
   GRANT_TYPES, RESPONSE_TYPES,
   UNIQUE_RESPONSE_TYPES,
-  type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
+  type ClientUpsertRequest } from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
-import type { ItemIn } from '@shared/utils'
+import type { ItemIn, Nullable } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.component'
@@ -25,7 +25,7 @@ import { TranslatePipe } from '@ngx-translate/core'
 import { TranslateService } from '@ngx-translate/core'
 
 export type TypedControls<T> = {
-  [K in keyof T]-?: FormControl<Required<T>[K] | null>
+  [K in keyof T]-?: FormControl<Required<T>[K]>
 }
 
 @Component({
@@ -61,18 +61,21 @@ export class UpsertClientComponent implements OnInit {
   form = new FormGroup({
     client_id: new FormControl<string | null>(null, [Validators.required]),
     client_name: new FormControl<string | null>(null),
-    redirect_uris: new FormControl<string[]>([]),
+    redirect_uris: new FormControl<string[]>([], { nonNullable: true }),
     client_secret: new FormControl<string | null>(null, [Validators.required, Validators.minLength(4)]),
-    token_endpoint_auth_method: new FormControl<Required<ClientUpsert>['token_endpoint_auth_method']>('client_secret_basic'),
-    response_types: new FormControl<ResponseType[]>(['code']),
-    grant_types: new FormControl<Required<ClientUpsert>['grant_types']>(['authorization_code', 'refresh_token']),
+    token_endpoint_auth_method: new FormControl<Required<ClientUpsertRequest>['token_endpoint_auth_method']>('client_secret_basic', {
+      nonNullable: true,
+    }),
+    response_types: new FormControl<ResponseType[]>(['code'], { nonNullable: true }),
+    grant_types: new FormControl<Required<ClientUpsertRequest>['grant_types']>(['authorization_code', 'refresh_token'], {
+      nonNullable: true,
+    }),
     post_logout_redirect_uri: new FormControl<string | null>(null, [
       isValidWildcardRedirectControl,
       (c: AbstractControl<string | null>) => {
         const url = c.value
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const existing = this.form?.controls.redirect_uris.value
-        if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
+        const existing = this.form.controls.redirect_uris.value
+        if (!url || !existing.length || !isValidWildcardRedirect(url)) {
           return null
         }
         const all = existing.concat([url])
@@ -85,12 +88,12 @@ export class UpsertClientComponent implements OnInit {
         }
         return null
       }]),
-    skip_consent: new FormControl<boolean>(true),
-    require_mfa: new FormControl<boolean>(false),
+    skip_consent: new FormControl<boolean>(true, { nonNullable: true }),
+    require_mfa: new FormControl<boolean>(false, { nonNullable: true }),
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     client_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
-    groups: new FormControl<string[]>([]),
-  }) satisfies FormGroup<TypedControls<ClientUpsert>>
+    groups: new FormControl<string[]>([], { nonNullable: true }),
+  }) satisfies FormGroup<TypedControls<Omit<ClientUpsertRequest, 'client_id'> & Nullable<Pick<ClientUpsertRequest, 'client_id'>>>>
 
   public groups: string[] = []
   public unselectedGroups: string[] = []
@@ -106,7 +109,7 @@ export class UpsertClientComponent implements OnInit {
   }, [isValidWildcardRedirectControl, (c: AbstractControl<string>) => {
     const url = c.value
     const existing = this.form.controls.redirect_uris.value
-    if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
+    if (!url || !existing.length || !isValidWildcardRedirect(url)) {
       return null
     }
     const all = existing.concat([url])
@@ -157,7 +160,8 @@ export class UpsertClientComponent implements OnInit {
             token_endpoint_auth_method: client.token_endpoint_auth_method as ItemIn<typeof CLIENT_AUTH_METHODS> | undefined
               ?? 'client_secret_basic',
             response_types: client.response_types ?? ['code'],
-            grant_types: client.grant_types as ClientUpsert['grant_types'] ?? ['authorization_code', 'refresh_token'],
+            grant_types: client.grant_types as (ClientUpsertRequest['grant_types'] | undefined)
+              ?? ['authorization_code', 'refresh_token'],
             post_logout_redirect_uri: client.post_logout_redirect_uris?.[0] ?? null,
             skip_consent: client.skip_consent ?? true,
             require_mfa: client.require_mfa ?? false,
@@ -207,7 +211,7 @@ export class UpsertClientComponent implements OnInit {
     })
 
     this.form.controls.token_endpoint_auth_method.valueChanges.subscribe((value) => {
-      if (value && this.nonClientSecretAuthMethods.includes(value)) {
+      if (this.nonClientSecretAuthMethods.includes(value)) {
         this.form.controls.client_secret.removeValidators(Validators.required)
       } else {
         this.form.controls.client_secret.addValidators(Validators.required)
@@ -236,24 +240,13 @@ export class UpsertClientComponent implements OnInit {
 
       const values = optionalizeNullable(this.form.getRawValue())
 
-      if (!values.client_id) {
+      const { client_id } = values
+
+      if (!client_id) {
         throw new Error('Client ID missing.')
       }
 
-      const { client_id, redirect_uris, groups, skip_consent, require_mfa } = values
-
-      if (redirect_uris == null || groups == null || skip_consent == null || require_mfa == null) {
-        throw new Error('Required field missing.')
-      }
-
-      const submitValues = {
-        ...values,
-        client_id,
-        redirect_uris,
-        groups,
-        skip_consent,
-        require_mfa,
-      } satisfies ClientUpsert
+      const submitValues = { ...values, client_id } satisfies ClientUpsertRequest
 
       if (this.client_id) {
         await this.adminService.updateClient(submitValues)
@@ -344,7 +337,7 @@ export class UpsertClientComponent implements OnInit {
 
   groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.groups.filter((g) => {
-      return !this.form.controls.groups.value?.includes(g)
+      return !this.form.controls.groups.value.includes(g)
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
       return g.toLowerCase().includes(value.toLowerCase())
@@ -361,23 +354,23 @@ export class UpsertClientComponent implements OnInit {
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value ?? []).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value ?? []).filter(g => g !== value))
+    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }
 
   addRedirectUrl(value: string) {
-    if (this.form.controls.redirect_uris.value?.includes(value)) {
+    if (this.form.controls.redirect_uris.value.includes(value)) {
       return
     }
-    this.form.controls.redirect_uris.setValue([value].concat(this.form.controls.redirect_uris.value ?? []).sort())
+    this.form.controls.redirect_uris.setValue([value].concat(this.form.controls.redirect_uris.value).sort())
     this.form.controls.redirect_uris.markAsDirty()
     this.form.controls.redirect_uris.updateValueAndValidity()
     this.form.controls.post_logout_redirect_uri.markAsTouched()
@@ -385,7 +378,7 @@ export class UpsertClientComponent implements OnInit {
   }
 
   removeRedirectUrl(value: string) {
-    this.form.controls.redirect_uris.setValue((this.form.controls.redirect_uris.value ?? []).filter(r => r !== value))
+    this.form.controls.redirect_uris.setValue((this.form.controls.redirect_uris.value).filter(r => r !== value))
     this.form.updateValueAndValidity()
     this.redirectUrlControl.updateValueAndValidity()
     this.form.controls.redirect_uris.markAsDirty()

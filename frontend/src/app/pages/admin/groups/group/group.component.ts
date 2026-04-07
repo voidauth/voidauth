@@ -16,6 +16,7 @@ import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { TranslatePipe } from '@ngx-translate/core'
+import type { Nullable } from '@shared/utils'
 
 @Component({
   selector: 'app-group',
@@ -40,14 +41,12 @@ export class GroupComponent {
   public selectableUsers: UserWithoutPassword[] = []
   userSelect = new FormControl<UserWithoutPassword | null>(null)
 
-  public form = new FormGroup<TypedControls<Omit<GroupUpsert, 'id'>>>({
-    name: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required, Validators.pattern('^[A-Za-z0-9_-]+$')]), // only alphanumeric, underscore, and hyphen
-    users: new FormControl<GroupUsers['users']>([], []),
-    mfaRequired: new FormControl<boolean>(false),
-  })
+  public form = new FormGroup({
+    // only alphanumeric, underscore, and hyphen
+    name: new FormControl<string | null>(null, [Validators.required, Validators.pattern('^[A-Za-z0-9_-]+$')]),
+    users: new FormControl<GroupUsers['users']>([], { nonNullable: true }),
+    mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
+  }) satisfies FormGroup<TypedControls<Omit<GroupUpsert, 'id' | 'name'> & Nullable<Pick<GroupUpsert, 'name'>>>>
 
   private adminService = inject(AdminService)
   private route = inject(ActivatedRoute)
@@ -67,7 +66,7 @@ export class GroupComponent {
           const group = await this.adminService.group(this.id)
           this.form.reset({
             name: group.name,
-            mfaRequired: group.mfaRequired,
+            mfaRequired: !!group.mfaRequired,
             users: group.users.map((u) => {
               return { id: u.id, username: u.username }
             }),
@@ -91,7 +90,7 @@ export class GroupComponent {
 
   userAutoFilter(value: string = '') {
     this.unselectedUsers = this.users.filter((u) => {
-      return !this.form.controls.users.value?.find(gu => u.id === gu.id)
+      return !this.form.controls.users.value.find(gu => u.id === gu.id)
     })
     this.selectableUsers = this.unselectedUsers.filter((u) => {
       return u.username.toLowerCase().includes(value.toLowerCase())
@@ -111,7 +110,7 @@ export class GroupComponent {
       return
     }
     this.form.controls.users.setValue([{ id: value.id, username: value.username }]
-      .concat(this.form.controls.users.value ?? []).sort((a, b) => {
+      .concat(this.form.controls.users.value).sort((a, b) => {
         return a.id > b.id ? 1 : -1
       }))
     this.form.controls.users.markAsDirty()
@@ -120,7 +119,7 @@ export class GroupComponent {
   }
 
   removeUser(value: string) {
-    this.form.controls.users.setValue((this.form.controls.users.value ?? []).filter(u => u.id !== value))
+    this.form.controls.users.setValue((this.form.controls.users.value).filter(u => u.id !== value))
     this.form.controls.users.markAsDirty()
     this.userAutoFilter()
   }
@@ -128,13 +127,13 @@ export class GroupComponent {
   async submit() {
     try {
       const values = this.form.getRawValue()
-      const { name, mfaRequired, users } = values
-      if (name == null || mfaRequired == null || users == null) {
-        throw new Error('Missing required information.')
+      const { name } = values
+      if (name == null) {
+        throw new Error('Missing name.')
       }
 
       this.spinnerService.show()
-      const group = await this.adminService.upsertGroup({ ...values, name, mfaRequired, users, id: this.id ?? undefined })
+      const group = await this.adminService.upsertGroup({ ...values, name, id: this.id ?? undefined })
       this.snackbarService.message(`Group ${this.id ? 'updated' : 'created'}.`)
 
       this.id = group.id
