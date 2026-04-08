@@ -257,6 +257,16 @@ function sortWildcardParts(aParts: string[], bParts: string[]) {
 }
 
 export function humanDuration(ms: number): string {
+  const negative = ms < 0
+  ms = Math.abs(ms)
+  const result = humanDurationHelper(ms)
+  if (!result) {
+    return 'now'
+  }
+  return negative ? `${result} ago` : result
+}
+
+function humanDurationHelper(ms: number): string | null {
   const MINUTE = 60
   const HOUR = MINUTE * 60
   const DAY = HOUR * 24
@@ -299,5 +309,5 @@ export function humanDuration(ms: number): string {
   if (ms > 999) {
     return String(seconds) + ' second' + ((seconds > 1) ? 's' : '')
   }
-  return 'now'
+  return null
 }

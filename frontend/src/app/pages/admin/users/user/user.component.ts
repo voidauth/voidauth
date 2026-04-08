@@ -98,6 +98,11 @@ export class UserComponent implements OnInit {
         this.spinnerService.hide()
       }
     })
+
+    // Keeps the expiresAt datepicker and timepicker in sync
+    this.form.controls.expiresAt.valueChanges.subscribe((value) => {
+      this.form.controls.expiresAt.setValue(value, { emitEvent: false })
+    })
   }
 
   groupAutoFilter(value: string = '') {

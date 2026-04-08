@@ -17,15 +17,17 @@ services:
     volumes:
       - ./voidauth/config:/app/config
       # Only required for declaring OIDC Apps via docker labels (see OIDC-Setup documentation)
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
-      # Required environment variables
-      APP_URL: # required, ex. https://auth.example.com
-      STORAGE_KEY: # required
-      DB_PASSWORD: # required
+      # Required environment variables, set in .env file or replace ${...} with value
+      # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
+      APP_URL: ${APP_URL} # required
+      DB_ADAPTER: postgres # this is the default value
       DB_HOST: voidauth-db # required
+      DB_PASSWORD: ${DB_PASSWORD} # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service
+      STORAGE_KEY: ${STORAGE_KEY} # required
     depends_on:
       voidauth-db:
         condition: service_healthy
@@ -34,14 +36,14 @@ services:
     image: postgres:18
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: # required
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # required, and must be the same as DB_PASSWORD in voidauth service
+    ports:
+      - "5432:5432"
     volumes:
-      - db:/var/lib/postgresql/18/docker
+      - ./voidauth/db:/var/lib/postgresql/18/docker
     healthcheck:
       test: "pg_isready -U postgres -h localhost"
 
-volumes:
-  db:
 ```
 
 Below is an alternate Docker Compose setup using a SQLite database:
@@ -60,10 +62,13 @@ services:
     volumes:
       - ./voidauth/config:/app/config
       - ./voidauth/db:/app/db
+      # Only required for declaring OIDC Apps via docker labels (see OIDC-Setup documentation)
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
-      # Required environment variables
+      # Required environment variables, set in .env file or replace ${...} with value
+      # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
       APP_URL: # required, ex. https://auth.example.com
       STORAGE_KEY: # required
       DB_ADAPTER: sqlite
@@ -165,8 +170,8 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | PASSWORD_STRENGTH | `3` | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | |
-| ADMIN_EMAILS | `hourly` | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. or in seconds. If set to 'false', admin notification emails are disabled. | | | 
-| DEFAULT_USER_EXPIRES_IN | | The default duration before a new users access will expire as shown on the Invitation page. Can be set to values like: '4 hours', '30 minutes', '1 week', '2 days', etc. or in seconds. | | | 
+| ADMIN_EMAILS | `hourly` | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. or a number in seconds. If set to 'false', admin notification emails are disabled. | | | 
+| DEFAULT_USER_EXPIRES_IN | | The default duration before a new users access will expire as shown on the Invitation page. Can be set to values like: '4 hours', '30 minutes', '1 week', '2 days', etc. or a number in seconds. | | | 
 
 > [!IMPORTANT]
 > Some configuration options only make sense when used together. **EMAIL_VERIFICATION** should only be set if the **SMTP_** options are also set. Likewise, **SIGNUP_REQUIRES_APPROVAL** does nothing unless **SIGNUP** is set.

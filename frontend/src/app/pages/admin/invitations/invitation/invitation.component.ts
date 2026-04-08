@@ -95,21 +95,21 @@ export class InvitationComponent {
 
         this.groups = (await this.adminService.groups()).map(g => g.name)
         this.groupAutoFilter()
-
-        this.form.controls.email.valueChanges.subscribe(() => {
-          this.setEmailVerifiedState()
-        })
-
-        // Keeps the userExpiresAt datepicker and timepicker in sync
-        this.form.controls.userExpiresAt.valueChanges.subscribe((value) => {
-          this.form.controls.userExpiresAt.setValue(value, { emitEvent: false })
-        })
       } catch (e) {
         console.error(e)
         this.snackbarService.error('Error loading invitation.')
       } finally {
         this.spinnerService.hide()
       }
+    })
+
+    this.form.controls.email.valueChanges.subscribe(() => {
+      this.setEmailVerifiedState()
+    })
+
+    // Keeps the userExpiresAt datepicker and timepicker in sync
+    this.form.controls.userExpiresAt.valueChanges.subscribe((value) => {
+      this.form.controls.userExpiresAt.setValue(value, { emitEvent: false })
     })
   }
 

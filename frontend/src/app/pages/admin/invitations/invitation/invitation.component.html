@@ -129,7 +129,7 @@
       }
 
       <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; width: 100%">
-        <mat-form-field style="flex: 1 1 240px">
+        <mat-form-field style="flex: 1 1 260px">
           <mat-label>{{ "admin.invitation.labels.user-expiration-date" | translate }}</mat-label>
           <input matInput [matDatepicker]="picker" formControlName="userExpiresAt" />
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
@@ -139,7 +139,7 @@
           }
         </mat-form-field>
 
-        <mat-form-field style="flex: 1 1 240px">
+        <mat-form-field style="flex: 1 1 260px">
           <mat-label>{{ "admin.invitation.labels.user-expiration-time" | translate }}</mat-label>
           <input matInput [matTimepicker]="timepicker" formControlName="userExpiresAt" />
           <mat-timepicker #timepicker />

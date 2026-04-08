@@ -26,6 +26,8 @@
         }
       </mat-form-field>
 
+      <mat-checkbox formControlName="emailVerified">{{ "admin.common.labels.email-verified" | translate }}</mat-checkbox>
+
       <mat-list [ngClass]="{ invalid: form.controls.groups.errors }">
         <mat-form-field>
           <mat-label>{{ "admin.user.labels.add-group" | translate }}</mat-label>
@@ -83,7 +85,24 @@
         </mat-error>
       }
 
-      <mat-checkbox formControlName="emailVerified">{{ "admin.common.labels.email-verified" | translate }}</mat-checkbox>
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; width: 100%">
+        <mat-form-field style="flex: 1 1 260px">
+          <mat-label>{{ "admin.user.labels.user-expiration-date" | translate }}</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="expiresAt" />
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          @if (form.controls.expiresAt.errors) {
+            <mat-error>{{ form.controls.expiresAt.errors | validationError | async }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field style="flex: 1 1 260px">
+          <mat-label>{{ "admin.user.labels.user-expiration-time" | translate }}</mat-label>
+          <input matInput [matTimepicker]="timepicker" formControlName="expiresAt" />
+          <mat-timepicker #timepicker />
+          <mat-timepicker-toggle [for]="timepicker" matSuffix />
+        </mat-form-field>
+      </div>
 
       <mat-checkbox formControlName="approved">{{ "admin.common.labels.approved" | translate }}</mat-checkbox>
 

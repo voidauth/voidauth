@@ -1,17 +1,18 @@
 services:
   voidauth: 
-    build:
-      context: .
-      target: serve
     image: voidauth/voidauth:latest
-    ports:
-      - "3000:3000" # The default port is 3000, configurable with environment variable APP_PORT
+    restart: unless-stopped
     volumes:
-      - "./config:/app/config"
+      - ./voidauth/config:/app/config
+      # Only required for declaring OIDC Apps via docker labels (see OIDC-Setup documentation)
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "3000:3000" # may not be needed, depending on reverse-proxy setup
     environment:
       # Required environment variables, set in .env file or replace ${...} with value
       # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
       APP_URL: ${APP_URL} # required
+      DB_ADAPTER: postgres # this is the default value
       DB_HOST: voidauth-db # required
       DB_PASSWORD: ${DB_PASSWORD} # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service
       STORAGE_KEY: ${STORAGE_KEY} # required
@@ -21,12 +22,12 @@ services:
 
   voidauth-db:
     image: postgres:18
+    restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # required, and must be the same as DB_PASSWORD in voidauth service
     ports:
       - "5432:5432"
     volumes:
-      - ./db/data:/var/lib/postgresql/18/docker
-    restart: unless-stopped
+      - ./voidauth/db:/var/lib/postgresql/18/docker
     healthcheck:
       test: "pg_isready -U postgres -h localhost"
