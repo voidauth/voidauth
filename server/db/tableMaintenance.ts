@@ -117,22 +117,22 @@ function checkEncrypted<T extends EncryptedTable>(entries: T[]) {
   const stale = entries.filter(d => d.value && decryptString(d.value, [appConfig.STORAGE_KEY]) === null)
 
   // find those that CAN be decrypted with STORAGE_KEY_SECONDARY
-  const decryptable = stale.reduce<T[]>((ks, k) => {
-    if (k.value == null) {
-      return ks
+  const decryptable = stale.reduce<T[]>((d, s) => {
+    if (s.value == null) {
+      return d
     }
-    const value = decryptString(k.value, [appConfig.STORAGE_KEY_SECONDARY])
+    const value = decryptString(s.value, [appConfig.STORAGE_KEY_SECONDARY])
     if (value) {
-      ks.push({ ...k, value })
+      d.push({ ...s, value })
     }
-    return ks
+    return d
   }, [])
 
   // find keys that could not be decrypted
-  const locked = stale.filter(k => !decryptable.some(r => r.id === k.id))
+  const locked = stale.filter(s => !decryptable.some(d => d.id === s.id))
 
   return {
-    locked: locked,
-    decryptable: decryptable,
+    locked,
+    decryptable,
   }
 }

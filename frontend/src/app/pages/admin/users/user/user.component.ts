@@ -15,7 +15,7 @@ import { UserService } from '../../../../services/user.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
-import type { ItemIn } from '@shared/utils'
+import type { ItemIn, Nullable } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe } from '@ngx-translate/core'
 
@@ -44,30 +44,16 @@ export class UserComponent implements OnInit {
     disabled: false,
   }, [])
 
-  public form = new FormGroup<TypedControls<Omit<UserUpdate, 'id'>>>({
-    username: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
-    email: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [isValidEmail]),
-    name: new FormControl<string | null>({
-      value: null,
-      disabled: false,
-    }, [Validators.minLength(1)]),
-    emailVerified: new FormControl<boolean>({
-      value: false,
-      disabled: false,
-    }, [Validators.required]),
-    approved: new FormControl<boolean>({
-      value: false,
-      disabled: false,
-    }, [Validators.required]),
-    mfaRequired: new FormControl<boolean>(false),
-    groups: new FormControl<UserDetails['groups']>([], []),
-  })
+  public form = new FormGroup({
+    username: new FormControl<string | null>(null, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
+    email: new FormControl<string | null>(null, [isValidEmail]),
+    name: new FormControl<string | null>(null, [Validators.minLength(1)]),
+    expiresAt: new FormControl<Date | null>(null, []),
+    emailVerified: new FormControl<boolean>(false, { nonNullable: true }),
+    approved: new FormControl<boolean>(false, { nonNullable: true }),
+    mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
+    groups: new FormControl<UserDetails['groups']>([], { nonNullable: true }),
+  }) satisfies FormGroup<TypedControls<Omit<UserUpdate, 'id' | 'username'> & Nullable<Pick<UserUpdate, 'username'>>>>
 
   private adminService = inject(AdminService)
   private userService = inject(UserService)
@@ -96,10 +82,11 @@ export class UserComponent implements OnInit {
           username: user.username,
           name: user.name ?? null,
           email: user.email ?? '',
-          emailVerified: user.emailVerified,
-          approved: user.approved,
-          mfaRequired: user.mfaRequired,
+          emailVerified: !!user.emailVerified,
+          approved: !!user.approved,
+          mfaRequired: !!user.mfaRequired,
           groups: user.groups,
+          expiresAt: user.expiresAt ? new Date(user.expiresAt) : null,
         })
 
         this.groups = await this.adminService.groups()
@@ -111,11 +98,16 @@ export class UserComponent implements OnInit {
         this.spinnerService.hide()
       }
     })
+
+    // Keeps the expiresAt datepicker and timepicker in sync
+    this.form.controls.expiresAt.valueChanges.subscribe((value) => {
+      this.form.controls.expiresAt.setValue(value, { emitEvent: false })
+    })
   }
 
   groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.groups.filter((g) => {
-      return !this.form.controls.groups.value?.some(f => f.name === g.name)
+      return !this.form.controls.groups.value.some(f => f.name === g.name)
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
       return g.name.toLowerCase().includes(value.toLowerCase())
@@ -132,7 +124,7 @@ export class UserComponent implements OnInit {
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value ?? [])
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value)
       .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
@@ -140,7 +132,7 @@ export class UserComponent implements OnInit {
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value ?? []).filter(g => g.name !== value))
+    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g.name !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }
@@ -148,15 +140,15 @@ export class UserComponent implements OnInit {
   async submit() {
     try {
       const values = this.form.getRawValue()
-      const { username, emailVerified, approved, mfaRequired, groups } = values
+      const { username } = values
 
-      if (!this.id || !username || emailVerified == null || approved == null || mfaRequired == null || groups == null) {
+      if (!this.id || !username) {
         throw new Error('Missing required information.')
       }
 
       this.spinnerService.show()
 
-      await this.adminService.updateUser({ ...values, username, emailVerified, approved, mfaRequired, groups, id: this.id })
+      await this.adminService.updateUser({ ...values, username, id: this.id })
       this.snackbarService.message('User updated.')
     } catch (_e) {
       this.snackbarService.error('Could not update user.')

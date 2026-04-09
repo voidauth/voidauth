@@ -8,7 +8,8 @@ export const invitationUpsertValidator = {
   username: zod.string().trim().regex(USERNAME_REGEX).nullish(),
   name: nameValidation,
   email: coerceEmailOrNull.optional(),
-  emailVerified: zod.union([zod.boolean(), zod.number()]),
+  userExpiresAt: zod.iso.datetime().transform(val => val ? new Date(val) : null).nullable(),
+  emailVerified: zod.boolean(),
   groups: zod.array(zod.string().trim()),
 } as const
 

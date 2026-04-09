@@ -16,6 +16,7 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged } from 'rxjs'
 import { TranslatePipe } from '@ngx-translate/core'
+import { humanDuration } from '@shared/utils'
 
 @Component({
   selector: 'app-users',
@@ -58,6 +59,11 @@ export class UsersComponent {
       header: 'Approved',
       isIcon: true,
       cell: element => element.approved ? 'done' : 'not_interested',
+    },
+    {
+      columnDef: 'expiresAt',
+      header: 'Expires',
+      cell: element => element.expiresAt ? humanDuration(new Date(element.expiresAt).getTime() - new Date().getTime()) : '-',
     },
   ]
 

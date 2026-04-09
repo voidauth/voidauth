@@ -47,7 +47,7 @@ import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
-import { amrFactors, isUnapproved } from '@shared/user'
+import { amrFactors, isExpired, isUnapproved } from '@shared/user'
 import { logger } from '../util/logger'
 import { argon2 } from '../util/argon2id'
 import { zodValidate } from '../util/zodValidate'
@@ -101,6 +101,16 @@ router.get('/', async (req, res) => {
         await session.destroy()
       }
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`)
+      res.send()
+      return
+    } else if (prompt.reasons.includes('user_expired')) {
+      // User is expired, destroy their session/interaction so they can re-attempt login
+      // User is not approved, destroy their session/interaction so they can re-attempt login
+      await interaction.destroy()
+      if (session) {
+        await session.destroy()
+      }
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.USER_EXPIRED}`)
       res.send()
       return
     } else if (prompt.reasons.includes('user_mfa_required')) {
@@ -355,6 +365,7 @@ router.post('/register',
       email: invitation?.email || registration.email,
       passwordHash,
       approved: !!invitationValid, // invited users are approved by default
+      expiresAt: invitation?.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
       emailVerified: !!invitation?.email && invitation.emailVerified,
       mfaRequired: false,
       createdAt: new Date(),
@@ -503,6 +514,7 @@ router.post('/register/passkey/end',
       name: invitation?.name || registration.name,
       email: invitation?.email || registration.email,
       approved: !!invitationValid, // invited users are approved by default
+      expiresAt: invitation?.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
       emailVerified: !!invitation?.email && invitation.emailVerified,
       mfaRequired: false,
       createdAt: new Date(),
@@ -1043,8 +1055,8 @@ async function applyConsent(interactionDetails: Interaction) {
 export async function createEmailVerification(
   user: UserDetails,
   email?: string | null) {
-  // Do not create an email verification for an unapproved user
-  if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
+  // Do not create an email verification for an unapproved user or expired
+  if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) || isExpired(user)) {
     return false
   }
 

@@ -46,6 +46,11 @@ export class InvitationsComponent {
       header: 'Expires In',
       cell: element => humanDuration(new Date(element.expiresAt).getTime() - new Date().getTime()),
     },
+    {
+      columnDef: 'userExpiresAt',
+      header: 'Access Expires',
+      cell: element => element.userExpiresAt ? humanDuration(new Date(element.userExpiresAt).getTime() - new Date().getTime()) : '-',
+    },
   ]
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])

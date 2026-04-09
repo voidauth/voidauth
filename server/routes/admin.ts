@@ -36,14 +36,21 @@ import { createPasswordReset } from '../db/passwordReset'
 import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
+import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 
 export const adminRouter = Router()
 
 adminRouter.use(checkPrivileged, checkAdmin)
 
+adminRouter.get('/config', (_req, res) => {
+  res.send({
+    defaultUserExpireDuration: appConfig.DEFAULT_USER_EXPIRES_IN,
+  } satisfies AdminConfig)
+})
+
 adminRouter.get('/clients', async (_req, res) => {
   const clients = await getClients()
-  res.send(clients)
+  res.send(clients satisfies ClientResponse[])
 })
 
 adminRouter.get('/client/:client_id',
@@ -53,7 +60,7 @@ adminRouter.get('/client/:client_id',
     const { client_id } = req.params
     const client = await getClient(client_id)
     if (client) {
-      res.send(client)
+      res.send(client satisfies ClientResponse)
     } else {
       res.sendStatus(404)
     }

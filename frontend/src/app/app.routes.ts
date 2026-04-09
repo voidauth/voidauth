@@ -26,6 +26,8 @@ export const routes: Routes = [
 
   { path: REDIRECT_PATHS.APPROVAL_REQUIRED, loadComponent: () => import('./pages/approval-required/approval-required.component').then(m => m.ApprovalRequiredComponent) },
 
+  { path: REDIRECT_PATHS.USER_EXPIRED, loadComponent: () => import('./pages/user-expired/user-expired.component').then(m => m.UserExpiredComponent) },
+
   { path: 'consent/:uid', loadComponent: () => import('./pages/consent/consent.component').then(m => m.ConsentComponent), canActivate: [PrivilegedGuard] },
 
   { path: REDIRECT_PATHS.REGISTER, loadComponent: () => import('./pages/registration/registration.component').then(m => m.RegistrationComponent) },

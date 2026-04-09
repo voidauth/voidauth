@@ -12,6 +12,7 @@ export const REDIRECT_PATHS = {
   RESET_PASSWORD: 'reset_password',
   LOGOUT: 'logout',
   APPROVAL_REQUIRED: 'approval_required',
+  USER_EXPIRED: 'user_expired',
   VERIFICATION_EMAIL_SENT: 'verification_email_sent',
   VERIFY_EMAIL: 'verify_email',
   REGISTER: 'register',

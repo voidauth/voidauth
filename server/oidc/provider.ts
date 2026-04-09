@@ -9,7 +9,7 @@ import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import Keygrip from 'keygrip'
 import { interactionPolicy } from 'oidc-provider'
-import { isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
+import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
 import { db } from '../db/db'
 import type { OIDCGroup, Group } from '@shared/db/Group'
 import { isMatch } from 'matcher'
@@ -55,6 +55,21 @@ loginPromptPolicy.checks.add(new Check('user_not_approved',
       // using a short cache
       const user = await getUserById(oidc.account.accountId)
       if (user && isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
+        return Check.REQUEST_PROMPT
+      }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
+loginPromptPolicy.checks.add(new Check('user_expired',
+  'user account access has expired',
+  'user_expired', async (ctx) => {
+    const { oidc } = ctx
+    if (oidc.account?.accountId) {
+      // using a short cache
+      const user = await getUserById(oidc.account.accountId)
+      if (user && isExpired(user)) {
         return Check.REQUEST_PROMPT
       }
     }
@@ -208,7 +223,7 @@ const configuration: Configuration = {
         ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGOUT}${typeof secret === 'string' ? `/${secret}` : ''}`)
       },
       postLogoutSuccessSource: (ctx) => {
-        // TODO: custom logout success page?
+        // TODO: custom logout success page
         ctx.redirect(appConfig.DEFAULT_REDIRECT || appConfig.APP_URL)
       },
     },

@@ -15,14 +15,22 @@
     <!-- <app-lang-switcher></app-lang-switcher> -->
     <app-theme-toggle></app-theme-toggle>
     <span>
-      @if (!user && !location.pathname.endsWith("/login") && !location.pathname.endsWith("/mfa")) {
-        <span>
-          <a mat-flat-button routerLink="/login">{{ "components.header.actions.login" | translate }}</a>
-        </span>
-      } @else if (!location.pathname.endsWith("/login") && !location.pathname.endsWith("/register")) {
-        <button mat-icon-button (click)="toggleSidenav.emit()">
-          <mat-icon fontSet="material-icons-round">menu</mat-icon>
-        </button>
+      <!-- These pages include a specific 'login' button as an action -->
+      @if (
+        !location.pathname.endsWith("/login") &&
+        !location.pathname.endsWith("/register") &&
+        !location.pathname.endsWith("/approval_required") &&
+        !location.pathname.endsWith("/user_expired")
+      ) {
+        @if (!user) {
+          <span>
+            <a mat-flat-button routerLink="/login">{{ "components.header.actions.login" | translate }}</a>
+          </span>
+        } @else {
+          <button mat-icon-button (click)="toggleSidenav.emit()">
+            <mat-icon fontSet="material-icons-round">menu</mat-icon>
+          </button>
+        }
       }
     </span>
   </span>

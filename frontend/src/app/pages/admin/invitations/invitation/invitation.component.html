@@ -73,6 +73,13 @@
         }
       </mat-form-field>
 
+      <!-- Tricky set false while disabled, while keeping previous value -->
+      @if (form.controls.emailVerified.enabled) {
+        <mat-checkbox formControlName="emailVerified">{{ "admin.invitation.checkboxes.email-verified" | translate }}</mat-checkbox>
+      } @else {
+        <mat-checkbox disabled>{{ "admin.invitation.checkboxes.email-verified" | translate }}</mat-checkbox>
+      }
+
       <mat-form-field>
         <mat-label>{{ "admin.invitation.labels.name" | translate }}</mat-label>
         <input matInput type="text" formControlName="name" />
@@ -80,13 +87,6 @@
           <mat-error>{{ form.controls.name.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
-
-      <!-- Tricky set false while disabled, while keeping previous value -->
-      @if (form.controls.emailVerified.enabled) {
-        <mat-checkbox formControlName="emailVerified">{{ "admin.invitation.checkboxes.email-verified" | translate }}</mat-checkbox>
-      } @else {
-        <mat-checkbox disabled>{{ "admin.invitation.checkboxes.email-verified" | translate }}</mat-checkbox>
-      }
 
       <mat-list [ngClass]="{ invalid: form.controls.groups.errors }">
         <mat-form-field>
@@ -128,11 +128,24 @@
         </mat-error>
       }
 
-      @if (form.errors) {
-        <mat-error>
-          {{ form.errors | validationError | async }}
-        </mat-error>
-      }
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; width: 100%">
+        <mat-form-field style="flex: 1 1 260px">
+          <mat-label>{{ "admin.invitation.labels.user-expiration-date" | translate }}</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="userExpiresAt" />
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          @if (form.controls.userExpiresAt.errors) {
+            <mat-error>{{ form.controls.userExpiresAt.errors | validationError | async }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field style="flex: 1 1 260px">
+          <mat-label>{{ "admin.invitation.labels.user-expiration-time" | translate }}</mat-label>
+          <input matInput [matTimepicker]="timepicker" formControlName="userExpiresAt" />
+          <mat-timepicker #timepicker />
+          <mat-timepicker-toggle [for]="timepicker" matSuffix />
+        </mat-form-field>
+      </div>
 
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">
