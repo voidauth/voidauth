@@ -460,7 +460,9 @@ router.post('/register/passkey/start',
       return
     }
 
-    const options = await createPasskeyRegistrationOptions(interaction.uid)
+    const options = await createPasskeyRegistrationOptions({
+      uniqueId: interaction.uid,
+    })
 
     res.send(options)
   })
@@ -572,10 +574,15 @@ router.post('/register/passkey/end',
 
     await createPasskey(createdUser.id, registrationInfo, currentOptions)
 
+    const addAmr = ['webauthn']
+    if (registrationInfo.userVerified) {
+      addAmr.push('webauthn_v')
+    }
+
     // See where we need to redirect the user to, depending on config
     const redir = await loginResult(req, res, {
       userId: user.id,
-      amr: ['webauthn'],
+      amr: addAmr,
     })
 
     res.send(redir)
@@ -592,6 +599,11 @@ router.post('/register/passkey/end',
  */
 router.post('/passkey/registration/start',
   checkPrivileged,
+  zodValidate({
+    body: {
+      requireVerified: zod.boolean().optional(),
+    },
+  }),
   async (req, res) => {
     // Should only be able to register if fully logged in
     const user = req.user
@@ -603,7 +615,12 @@ router.post('/passkey/registration/start',
 
     const userPasskeys = await getUserPasskeys(user.id)
 
-    const options = await createPasskeyRegistrationOptions(user.id, user.username, userPasskeys)
+    const options = await createPasskeyRegistrationOptions({
+      uniqueId: user.id,
+      username: user.username,
+      requireVerified: req.body.requireVerified,
+      excludeCredentials: userPasskeys,
+    })
 
     res.send(options)
   },
@@ -636,9 +653,14 @@ router.post('/passkey/registration/end',
 
     await createPasskey(user.id, registrationInfo, currentOptions)
 
+    const addAmr = ['webauthn']
+    if (registrationInfo.userVerified) {
+      addAmr.push('webauthn_v')
+    }
+
     const redir = await loginResult(req, res, {
       userId: user.id,
-      amr: ['webauthn'],
+      amr: addAmr,
     })
 
     res.send(redir)
@@ -711,6 +733,11 @@ router.post('/login',
  * Start login with passkey
  */
 router.post('/passkey/start',
+  zodValidate({
+    body: {
+      requireVerified: zod.boolean().optional(),
+    },
+  }),
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
@@ -727,6 +754,7 @@ router.post('/passkey/start',
     const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
       rpID: passkeyRpId,
       allowCredentials: passkeys,
+      userVerification: req.body.requireVerified ? 'required' : 'preferred',
     })
 
     // (Pseudocode) Remember this challenge for this user
@@ -828,9 +856,14 @@ router.post('/passkey/end',
       return
     }
 
+    const addAmr = ['webauthn']
+    if (authenticationInfo.userVerified) {
+      addAmr.push('webauthn_v')
+    }
+
     const redir = await loginResult(req, res, {
       userId: user.id,
-      amr: ['webauthn'],
+      amr: addAmr,
       remember,
     })
 

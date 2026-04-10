@@ -82,8 +82,8 @@ export class PasskeyService {
     }
   }
 
-  private async getAuthOptions() {
-    return firstValueFrom(this.http.post<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey/start', null))
+  private async getAuthOptions(requireVerified?: boolean) {
+    return firstValueFrom(this.http.post<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey/start', { requireVerified }))
   }
 
   private async sendAuth(auth: AuthenticationResponseJSON, remember?: boolean) {
@@ -95,16 +95,19 @@ export class PasskeyService {
     return result
   }
 
-  async login(remember: boolean = false) {
-    const optionsJSON = await this.getAuthOptions()
+  async login(opts: { remember?: boolean, requireVerified?: boolean } = {}) {
+    const { remember = false, requireVerified } = opts
+    const optionsJSON = await this.getAuthOptions(requireVerified)
     const auth = await startAuthentication({ optionsJSON })
     return await this.sendAuth(auth, remember)
   }
 
-  async register() {
+  async register(opts: { requireVerified?: boolean } = {}) {
+    const { requireVerified } = opts
+
     const options = await firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>(
       '/api/interaction/passkey/registration/start',
-      null,
+      { requireVerified },
     ))
     const reg = await startRegistration({ optionsJSON: options })
     try {
