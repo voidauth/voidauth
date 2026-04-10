@@ -165,6 +165,8 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | SMTP_USER | | SMTP username used to sign into email provider; ex `user@example.com` |
 | SMTP_PASS | | SMTP password used to sign into email provider |
 | SMTP_IGNORE_CERT | `false` | SMTP Connection will ignore invalid and self-signed certificates from SMTP providers |
+| SMTP_TLS_CIPHERS | | TLS cipher to use, only set if required by your SMTP provider |
+| SMTP_TLS_MIN_VERSION | | Minimum TLS version, only set if required by your SMTP provider. Possible values are `TLSv1.3`, `TLSv1.2`, `TLSv1.1`, `TLSv1` |
 
 #### Misc.
 | Name | Default | Description | Required | Recommended |

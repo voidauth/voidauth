@@ -7,6 +7,7 @@ import type { ClientResponse } from '@shared/api-response/ClientResponse.js'
 import Docker from 'dockerode'
 import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
 import zod from 'zod'
+import type { SecureVersion } from 'node:tls'
 
 // basic config for app
 class Config {
@@ -64,6 +65,8 @@ class Config {
   SMTP_USER?: string
   SMTP_PASS?: string
   SMTP_IGNORE_CERT: boolean = false
+  SMTP_TLS_CIPHERS?: string
+  SMTP_TLS_MIN_VERSION?: SecureVersion
 
   DECLARED_CLIENTS = new Map<string, ClientResponse>()
 }
@@ -126,7 +129,14 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SMTP_FROM':
     case 'SMTP_USER':
     case 'SMTP_PASS':
+    case 'SMTP_TLS_CIPHERS':
       appConfig[key] = stringOnly(value) ?? appConfig[key]
+      break
+
+    case 'SMTP_TLS_MIN_VERSION':
+      appConfig[key] = ['TLSv1.3', 'TLSv1.2', 'TLSv1.1', 'TLSv1'].includes(stringOnly(value) as SecureVersion)
+        ? value as SecureVersion
+        : appConfig[key]
       break
 
     // non default pos int variables
