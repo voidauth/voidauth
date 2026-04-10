@@ -155,7 +155,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   async passkeyLogin(auto: boolean) {
     try {
-      const redirect = await this.passkeyService.login(!!this.form.value.rememberMe)
+      const redirect = await this.passkeyService.login({ remember: !!this.form.value.rememberMe })
       if (redirect) {
         location.assign(redirect.location)
       }

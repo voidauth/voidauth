@@ -1,20 +1,26 @@
 import type { UserDetails } from './api-response/UserDetails'
 
 export const amrFactors = {
-  multiFactors: ['email', 'webauthn'], // something that should already require mfa to access
+  multiFactors: ['email'], // something that should already require mfa to access
   firstFactors: ['pwd'], // something you know (password, PIN)
-  secondFactors: ['totp'], // something you have or are (device, biometrics)
+  secondFactors: ['totp', 'webauthn_v'], // something you have or are (device, biometrics)
+  eitherFactors: ['webauthn'], // something that can be either first or second factor depending on context
 }
 
 export function loginFactors(amr: string[]) {
+  // clone the amr so we don't modify the original by accident
+  amr = [...amr]
+
   // Multi-factor AMRs allow access always
   if (amr.some(f => amrFactors.multiFactors.includes(f))) {
     return 2
   }
 
   // Single-factor AMRs allow access if mfa is not required, or if there is a second factor
-  if (amr.some(f => amrFactors.firstFactors.includes(f))) {
-    if (amr.some(f => amrFactors.secondFactors.includes(f))) {
+  const firstFactor = amr.find(f => amrFactors.firstFactors.includes(f)) || amr.find(f => amrFactors.eitherFactors.includes(f))
+  if (firstFactor) {
+    amr = amr.filter(f => f !== firstFactor)
+    if (amr.some(f => amrFactors.secondFactors.includes(f)) || amr.some(f => amrFactors.eitherFactors.includes(f))) {
       return 2
     }
     return 1

@@ -12,26 +12,30 @@ const passkeyRpName = appConfig.APP_TITLE
 export const passkeyRpId = appUrl().hostname
 export const passkeyRpOrigin = appUrl().origin
 
-export async function createPasskeyRegistrationOptions(uniqueId: string, username?: string, excludeCredentials?: {
-  id: Base64URLString
-  transports?: AuthenticatorTransportFuture[]
-}[]) {
+export async function createPasskeyRegistrationOptions(opts: {
+  uniqueId: string
+  username?: string
+  requireVerified?: boolean
+  excludeCredentials?: {
+    id: Base64URLString
+    transports?: AuthenticatorTransportFuture[]
+  }[] }) {
   const options = await generateRegistrationOptions({
     rpName: passkeyRpName,
     rpID: passkeyRpId,
-    userName: username ?? '',
-    userDisplayName: username ?? '',
+    userName: opts.username ?? '',
+    userDisplayName: opts.username ?? '',
     attestationType: 'none', // attestation not supported
     // Prevent users from re-registering existing authenticators
-    excludeCredentials: excludeCredentials,
+    excludeCredentials: opts.excludeCredentials,
     authenticatorSelection: {
       // Defaults
       residentKey: 'required',
-      userVerification: 'preferred',
+      userVerification: opts.requireVerified ? 'required' : 'preferred',
     },
   })
 
-  await saveRegistrationOptions(options, uniqueId)
+  await saveRegistrationOptions(options, opts.uniqueId)
 
   return options
 }

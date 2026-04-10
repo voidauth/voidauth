@@ -15,6 +15,7 @@ import { UserService } from '../../services/user.service'
 import { WebAuthnError } from '@simplewebauthn/browser'
 import { Router } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
+import { loginFactors } from '@shared/user'
 
 @Component({
   selector: 'app-mfa',
@@ -62,6 +63,11 @@ export class MfaComponent implements OnInit {
           this.snackbarService.error('Could not get authenticator options.')
         }
       }
+
+      // if user has 1 factor and amr includes webauth, notify that only verified passkeys will satisfy mfa
+      if (this.user && loginFactors(this.user.amr) < 2 && this.user.amr.includes('webauthn')) {
+        this.snackbarService.message('Only Passkeys that require MFA will satisfy MFA requirements by themselves.')
+      }
     } finally {
       this.spinnerService.hide()
       this.disabled.set(false)
@@ -104,7 +110,8 @@ export class MfaComponent implements OnInit {
   async passkeyLogin() {
     this.spinnerService.show()
     try {
-      const redirect = await this.passkeyService.login()
+      // Only require verified passkey if normal passkey would not improve user's mfa level
+      const redirect = await this.passkeyService.login({ requireVerified: this.user?.amr.includes('webauthn') })
       if (redirect) {
         location.assign(redirect.location)
       }
@@ -119,7 +126,8 @@ export class MfaComponent implements OnInit {
   async passkeyRegister() {
     this.spinnerService.show()
     try {
-      const redirect = await this.passkeyService.register()
+      // Only require verified passkey if normal passkey would not improve user's mfa level
+      const redirect = await this.passkeyService.register({ requireVerified: this.user?.amr.includes('webauthn') })
       if (redirect) {
         location.assign(redirect.location)
       }

@@ -124,7 +124,7 @@ publicRouter.post('/reset_password/passkey/start',
 
     const userPasskeys = await getUserPasskeys(user.id)
 
-    const options = await createPasskeyRegistrationOptions(user.id, user.username, userPasskeys)
+    const options = await createPasskeyRegistrationOptions({ uniqueId: user.id, username: user.username, excludeCredentials: userPasskeys })
 
     res.send(options)
   })
