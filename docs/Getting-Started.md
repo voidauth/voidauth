@@ -85,7 +85,7 @@ services:
 > The **APP_URL** environment variable **must** be set to the full external url of the VoidAuth service, ex. `APP_URL: https://auth.example.com` or `APP_URL: https://example.com/auth`
 
 > [!CAUTION]
-> During the first start of the app, the **initial admin username and password** will be shown in the logs. They will never be shown again. You will need to note them down and either change the username and password or create a user for yourself, which you should add to the **auth_admins** group. Afterwards you may delete the **auth_admin** user.
+> During the first start of the app, a **password reset link for the initial admin user** will be shown in the logs. This will never be shown again. You need to copy it, follow the link to your new VoidAuth instance, and set a password. After doing this you can either change the default username, or create a user for yourself which you can add to the **auth_admins** group.
 
 > [!IMPORTANT]
 > Any user in the **auth_admins** group will be an administrator in VoidAuth. You should make a different group for administrators of protected domains/apps.

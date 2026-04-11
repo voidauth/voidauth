@@ -62,14 +62,14 @@ export class PasskeyService {
     let icon: string | undefined
     if (await platformAuthenticatorIsAvailable()) {
       const { os } = UAParser(navigator.userAgent)
-      // if (os.name == 'Windows') {
+      // if (os.name === 'Windows') {
       //   name = 'Windows Hello'
       //   icon = 'sentiment_satisfied'
       // } else
-      if (os.name == 'iOS') {
+      if (os.name === 'iOS') {
         name = 'Face ID'
         icon = 'face'
-      } else if (os.name == 'macOS') {
+      } else if (os.name === 'macOS') {
         name = 'Touch ID'
         icon = 'fingerprint'
       }

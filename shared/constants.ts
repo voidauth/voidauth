@@ -49,6 +49,10 @@ export const TTLs = {
   // Should be longer than or equal to any OIDC TTLs
   OIDC_JWK: 1 * YEAR,
   COOKIE_KEY: 1 * YEAR,
+
+  // Util
+  DAY: 1 * DAY,
+  YEAR: 1 * YEAR,
 } as const
 
 export const TABLES = {

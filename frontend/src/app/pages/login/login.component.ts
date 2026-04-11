@@ -1,7 +1,7 @@
-import { Component, inject, type OnDestroy, type OnInit } from '@angular/core'
+import { ChangeDetectorRef, Component, ElementRef, inject, viewChild, type AfterViewInit, type OnDestroy, type OnInit } from '@angular/core'
 import { AuthService } from '../../services/auth.service'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import { Router, RouterLink } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { MaterialModule } from '../../material-module'
 import { HttpErrorResponse } from '@angular/common/http'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
@@ -29,24 +29,22 @@ import { AsyncPipe } from '@angular/common'
     AsyncPipe,
   ],
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   public config?: ConfigResponse
 
   public form = new FormGroup({
-    email: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required]),
+    email: new FormControl<string | null>(null, {
+      validators: [Validators.required],
+    }),
 
-    password: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required]),
+    password: new FormControl<string | null>(null, {
+      validators: [Validators.required],
+    }),
 
-    rememberMe: new FormControl<boolean>({
-      value: false,
-      disabled: false,
-    }, [Validators.required]),
+    rememberMe: new FormControl<boolean>(false, {
+      validators: [Validators.required],
+      nonNullable: true,
+    }),
   })
 
   public pwdShow: boolean = false
@@ -59,10 +57,22 @@ export class LoginComponent implements OnInit, OnDestroy {
   private spinnerService = inject(SpinnerService)
   passkeyService = inject(PasskeyService)
   private router = inject(Router)
+  private route = inject(ActivatedRoute)
+  private cd = inject(ChangeDetectorRef)
+
+  private passwordField = viewChild<ElementRef>('passwordField')
 
   async ngOnInit() {
     this.configService.getConfig().then(c => this.config = c).catch((e: unknown) => {
       throw e
+    })
+
+    this.route.queryParamMap.subscribe((p) => {
+      const username = p.get('username')
+      if (username) {
+        this.form.controls.email.setValue(username)
+        this.form.controls.email.updateValueAndValidity()
+      }
     })
 
     try {
@@ -97,19 +107,26 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngAfterViewInit(): void {
+    if (this.form.controls.email.value) {
+      (this.passwordField()?.nativeElement as HTMLInputElement | undefined)?.focus()
+      this.cd.detectChanges()
+    }
+  }
+
   ngOnDestroy(): void {
     WebAuthnAbortService.cancelCeremony()
   }
 
   async login() {
-    const { email, password, rememberMe: remember } = this.form.value
+    const { email, password, rememberMe: remember } = this.form.getRawValue()
     this.spinnerService.show()
     try {
       if (!email || !password) {
         throw new Error('Invalid email or password')
       }
 
-      const redirect = await this.authService.login({ input: email, password, remember: !!remember })
+      const redirect = await this.authService.login({ input: email, password, remember })
 
       // See if we want to ask the user to register a passkey
       try {
@@ -155,7 +172,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   async passkeyLogin(auto: boolean) {
     try {
-      const redirect = await this.passkeyService.login({ remember: !!this.form.value.rememberMe })
+      const redirect = await this.passkeyService.login({ remember: this.form.getRawValue().rememberMe })
       if (redirect) {
         location.assign(redirect.location)
       }

@@ -11,7 +11,13 @@
       </mat-form-field>
       <mat-form-field style="padding-right: 4px">
         <mat-label>{{ "login.password.label" | translate }}</mat-label>
-        <input matInput [type]="pwdShow ? 'text' : 'password'" formControlName="password" autocomplete="current-password webauthn" />
+        <input
+          matInput
+          #passwordField
+          [type]="pwdShow ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password webauthn"
+        />
         <button class="field-suffix" type="button" mat-icon-button matSuffix (click)="pwdShow = !pwdShow">
           <mat-icon fontSet="material-icons-round" matSuffix>{{ pwdShow ? "visibility" : "visibility_off" }}</mat-icon>
         </button>

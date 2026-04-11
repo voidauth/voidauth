@@ -33,7 +33,7 @@ export type LogShape = {
   }
   error?: {
     name?: string
-    message: string
+    message?: string
     stack?: string
   }
 }

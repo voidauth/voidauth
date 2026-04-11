@@ -3,7 +3,7 @@ import { db } from '../db/db'
 import { isOIDCProviderError, provider } from '../oidc/provider'
 import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
-import { randomUUID } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 import { getClient, getClients, removeClient, upsertClient } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
 import { groupUpsertValidator } from '@shared/api-request/admin/GroupUpsert'
@@ -16,7 +16,6 @@ import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import { invitationUpsertValidator } from '@shared/api-request/admin/InvitationUpsert'
 import { sendApproved, sendInvitation, sendPasswordReset, sendTestNotification, SMTP_VERIFIED } from '../util/email'
-import { generate } from 'generate-password'
 import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
 import { urlFromWildcardHref } from '@shared/utils'
@@ -501,8 +500,6 @@ adminRouter.post('/users/delete',
       return
     }
 
-    await db().table<User>(TABLES.USER).update({ approved: true }).whereIn('id', users)
-
     const count = await db().table<User>(TABLES.USER).delete().whereIn('id', users)
 
     if (!count) {
@@ -672,10 +669,7 @@ adminRouter.post('/invitation',
       await db().table<Invitation>(TABLES.INVITATION).insert({
         ...invitationData,
         id,
-        challenge: generate({
-          length: 32,
-          numbers: true,
-        }),
+        challenge: randomBytes(24).toString('base64url'),
         createdBy: currentUser.id,
         updatedBy: currentUser.id,
         createdAt: new Date(),
@@ -807,7 +801,8 @@ adminRouter.post('/send_passwordreset/:id',
     },
   }), async (req, res) => {
     const { id } = req.params
-    const reset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET).where({ id }).first()
+    const reset = await db().select().table<PasswordReset>(TABLES.PASSWORD_RESET).where({ id })
+      .andWhere('expiresAt', '>=', new Date()).first()
 
     if (!reset) {
       res.sendStatus(404)

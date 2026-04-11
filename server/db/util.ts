@@ -84,6 +84,11 @@ export function mergeKeys<T extends object>(inserted: T): (keyof T)[] {
   return Object.keys(inserted).filter(k => !exludedKeys.includes(k)) as (keyof T)[]
 }
 
+/**
+ * Creates expiration date from a ttl in seconds
+ * @param ttl in seconds
+ * @returns expiration date
+ */
 export function createExpiration(ttl: number) {
   return new Date(Date.now() + (ttl * 1000))
 }

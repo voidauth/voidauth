@@ -93,13 +93,17 @@ export class ResetPasswordComponent {
 
       this.spinnerService.show()
 
-      await this.authService.resetPassword({
+      const { username } = await this.authService.resetPassword({
         userId: this.userid,
         challenge: this.challenge,
         newPassword: this.passwordForm.controls.newPassword.value,
       })
       this.snackbarService.message('Password Reset Complete.')
-      await this.router.navigate([REDIRECT_PATHS.LOGIN])
+      await this.router.navigate([REDIRECT_PATHS.LOGIN], {
+        queryParams: {
+          username,
+        },
+      })
     } catch (e) {
       console.error(e)
 
@@ -127,9 +131,13 @@ export class ResetPasswordComponent {
       }
       const optionsJSON = await this.authService.resetPasswordPasskeyStart({ userId, challenge })
       const registration = await startRegistration({ optionsJSON })
-      await this.authService.resetPasswordPasskeyEnd({ ...registration, userId, challenge })
+      const { username } = await this.authService.resetPasswordPasskeyEnd({ ...registration, userId, challenge })
       this.snackbarService.message('Passkey created.')
-      await this.router.navigate([REDIRECT_PATHS.LOGIN])
+      await this.router.navigate([REDIRECT_PATHS.LOGIN], {
+        queryParams: {
+          username,
+        },
+      })
     } catch (error) {
       if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
         this.snackbarService.error('Passkey already registered.')

@@ -3,9 +3,8 @@ import { db } from './db'
 import type { UserGroup, Group } from '@shared/db/Group'
 import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import type { User } from '@shared/db/User'
-import { ADMIN_USER, ADMIN_GROUP, TABLES } from '@shared/constants'
-import { randomUUID } from 'crypto'
-import { generate } from 'generate-password'
+import { ADMIN_USER, ADMIN_GROUP, TABLES, TTLs } from '@shared/constants'
+import { randomBytes, randomUUID } from 'crypto'
 import type { Flag } from '@shared/db/Flag'
 import appConfig from '../util/config'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
@@ -13,6 +12,8 @@ import { hasTOTP } from './totp'
 import { getUserPasskeys } from './passkey'
 import { argon2 } from '../util/argon2id'
 import zod from 'zod'
+import { createPasswordReset, getPasswordResetURL } from './passwordReset'
+import { humanDuration } from '@shared/utils'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -128,10 +129,7 @@ export async function createInitialAdmin() {
   // Check if admin user and group have ever been created.
   const adminCreated = await db().table<Flag>(TABLES.FLAG).select().where({ name: 'ADMIN_CREATED' }).first()
   if (!zod.stringbool().safeParse(adminCreated?.value).data) {
-    const password = generate({
-      length: 32,
-      numbers: true,
-    })
+    const password = randomBytes(24).toString('hex')
 
     const initialAdminUser: User = {
       id: randomUUID(),
@@ -171,13 +169,15 @@ export async function createInitialAdmin() {
     await db().table<Flag>(TABLES.FLAG).insert({ name: 'ADMIN_CREATED', value: 'true', createdAt: new Date() })
       .onConflict(['name']).merge(['value'])
 
+    const passwordReset = await createPasswordReset(initialAdminUser.id, TTLs.DAY)
+    const resetUrl = getPasswordResetURL(passwordReset)
+
+    console.log('====================================================================================================')
     console.log('')
+    console.log(`Password reset link for the initial admin user, valid for ${humanDuration(TTLs.DAY * 1000)}:`)
     console.log('')
-    console.log('The following are the initial Admin username and password, use to create your own user.')
-    console.log('These will not be shown again:')
+    console.log(resetUrl)
     console.log('')
-    console.log(initialAdminUser.username)
-    console.log(password)
-    console.log('')
+    console.log('====================================================================================================')
   }
 }

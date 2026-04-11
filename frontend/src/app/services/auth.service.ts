@@ -14,6 +14,7 @@ import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResp
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 import { oidcLoginPath } from '@shared/oidc'
 import { getCurrentHost } from './config.service'
+import type { PasswordResetResponse } from '@shared/api-response/PasswordResetResponse'
 
 @Injectable({
   providedIn: 'root',
@@ -98,7 +99,7 @@ export class AuthService {
   }
 
   async resetPassword(body: ResetPassword) {
-    return firstValueFrom(this.http.post<null>('/api/public/reset_password', body))
+    return firstValueFrom(this.http.post<PasswordResetResponse>('/api/public/reset_password', body))
   }
 
   async resetPasswordPasskeyStart(body: Omit<ResetPassword, 'newPassword'>) {
@@ -107,7 +108,7 @@ export class AuthService {
 
   async resetPasswordPasskeyEnd(body: Omit<ResetPassword, 'newPassword'> & RegistrationResponseJSON) {
     try {
-      const result = await firstValueFrom(this.http.post<null>('/api/public/reset_password/passkey/end', body))
+      const result = await firstValueFrom(this.http.post<PasswordResetResponse>('/api/public/reset_password/passkey/end', body))
       localStorage.setItem('passkey_seen', 'true')
       return result
     } catch (error) {

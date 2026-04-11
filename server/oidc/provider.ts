@@ -2,7 +2,6 @@ import Provider, { type Configuration } from 'oidc-provider'
 import { findAccount, getUserById, userRequiresMfa } from '../db/user'
 import appConfig, { appUrl, basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
 import { KnexAdapter } from './adapter'
-import { generate } from 'generate-password'
 import { ADMIN_GROUP, REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
@@ -17,6 +16,7 @@ import { wildcardRedirect } from '@shared/utils'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { getProxyAuthWithCache } from '../db/proxyAuth'
 import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
+import { randomBytes } from 'crypto'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -329,10 +329,7 @@ const configuration: Configuration = {
     {
       client_id: 'auth_internal_client',
       // unique every time, never used
-      client_secret: generate({
-        length: 32,
-        numbers: true,
-      }),
+      client_secret: randomBytes(24).toString('hex'),
       // any redirect will work, injected custom redirect_uri validator below
       redirect_uris: [appConfig.APP_URL],
       response_modes: ['query'],
@@ -342,10 +339,7 @@ const configuration: Configuration = {
     }, {
       client_id: 'proxyauth_internal_client',
       // unique every time, never used
-      client_secret: generate({
-        length: 32,
-        numbers: true,
-      }),
+      client_secret: randomBytes(24).toString('hex'),
       // special redirect checking logic, injected custom redirect_uri validator below
       redirect_uris: [appConfig.APP_URL],
       response_modes: ['query'],
