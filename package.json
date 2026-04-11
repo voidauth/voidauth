@@ -34,7 +34,6 @@
     "ejs": "^5.0.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.2",
-    "generate-password": "^1.7.1",
     "helmet": "^8.1.0",
     "husky": "^9.1.7",
     "jose": "^6.2.2",

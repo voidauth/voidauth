@@ -19,6 +19,7 @@ import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 import { passkeyRegistrationValidator } from '../../shared/validators'
 import { userChallengeValidator } from '@shared/api-request/UserChallenge'
+import type { PasswordResetResponse } from '@shared/api-response/PasswordResetResponse'
 
 /**
  * routes that do not require any auth
@@ -107,7 +108,7 @@ publicRouter.post('/reset_password',
     await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
     await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id: passwordReset.id })
     await endSessions(user.id)
-    res.send()
+    res.send({ username: user.username } satisfies PasswordResetResponse)
   })
 
 publicRouter.post('/reset_password/passkey/start',
@@ -159,5 +160,5 @@ publicRouter.post('/reset_password/passkey/end',
 
     await createPasskey(user.id, registrationInfo, currentOptions)
 
-    res.send()
+    res.send({ username: user.username } satisfies PasswordResetResponse)
   })

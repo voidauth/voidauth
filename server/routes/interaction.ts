@@ -7,12 +7,11 @@ import { loginUserValidator } from '@shared/api-request/LoginUser'
 import appConfig from '../util/config'
 import { verifyUserEmailValidator } from '@shared/api-request/VerifyUserEmail'
 import { sendEmailVerification } from '../util/email'
-import { generate } from 'generate-password'
 import type { EmailVerification } from '@shared/db/EmailVerification'
 import type { User } from '@shared/db/User'
 import { db } from '../db/db'
 import { registerUserValidator } from '@shared/api-request/RegisterUser'
-import { randomUUID } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 import { REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { type Interaction } from 'oidc-provider'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
@@ -1086,10 +1085,7 @@ export async function createEmailVerification(
   }
 
   // generate email verification challenge
-  const challenge = generate({
-    length: 32,
-    numbers: true,
-  })
+  const challenge = randomBytes(24).toString('base64url')
   const email_verification: EmailVerification = {
     id: randomUUID(),
     userId: user.id,

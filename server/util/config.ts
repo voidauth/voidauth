@@ -1,4 +1,3 @@
-import { generate } from 'generate-password'
 import { exit } from 'node:process'
 import { booleanString } from './util'
 import { logger } from './logger'
@@ -8,6 +7,7 @@ import Docker from 'dockerode'
 import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
 import zod from 'zod'
 import type { SecureVersion } from 'node:tls'
+import { randomBytes } from 'node:crypto'
 
 // basic config for app
 class Config {
@@ -407,27 +407,21 @@ if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
   })
 }
 
-// If SESSION_DOMAIN is set, make sure APP_URL endsWith SESSION_DOMAIN
+logger({
+  level: 'debug',
+  message: `Session Domain: '${String(getSessionDomain())}'`,
+})
+
+// If SESSION_DOMAIN is set, make sure SESSION_DOMAIN cookies reach APP_URL
 if (appConfig.SESSION_DOMAIN) {
-  const dotSD = (!appConfig.SESSION_DOMAIN.startsWith('.') ? '.' : '') + appConfig.SESSION_DOMAIN
-  if (appUrl().hostname !== appConfig.SESSION_DOMAIN && !appUrl().hostname.endsWith(dotSD)) {
+  if (!sessionDomainReaches(appUrl().hostname)) {
     logger({
       level: 'error',
       message: 'If SESSION_DOMAIN is set, the APP_URL hostname must end with the SESSION_DOMAIN.',
     })
     exit(1)
   }
-  if (appConfig.SESSION_DOMAIN !== getBaseDomain(appUrl().hostname)) {
-    logger({
-      level: 'debug',
-      message: `SESSION_DOMAIN: '${appConfig.SESSION_DOMAIN}'`,
-    })
-  }
 }
-logger({
-  level: 'debug',
-  message: `Session Domain: '${String(getSessionDomain())}'`,
-})
 
 // check DEFAULT_REDIRECT is valid if set
 if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
@@ -442,10 +436,8 @@ if (appConfig.DEFAULT_REDIRECT && !URL.parse(appConfig.DEFAULT_REDIRECT)) {
 if (appConfig.STORAGE_KEY.length < 32) {
   logger({
     level: 'error',
-    message: 'STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: ' + generate({
-      length: 32,
-      numbers: true,
-    }),
+    message: 'STORAGE_KEY must be set and be at least 32 characters long. Use something long and random like: '
+      + randomBytes(24).toString('base64url'),
   })
   exit(1)
 }
@@ -492,7 +484,9 @@ export function getSessionDomain() {
 export function sessionDomainReaches(hostName: string) {
   const targetDomain = getBaseDomain(hostName)
   const sessionDomain = getSessionDomain()
-  return targetDomain === sessionDomain || (sessionDomain != null && hostName.endsWith(sessionDomain))
+  // Add dot to start of sessionDomain if it doesn't already have one, to prevent false positives
+  const dotSD = sessionDomain && !sessionDomain.startsWith('.') ? '.' + sessionDomain : sessionDomain
+  return targetDomain === sessionDomain || !dotSD || hostName.endsWith(dotSD)
 }
 
 //

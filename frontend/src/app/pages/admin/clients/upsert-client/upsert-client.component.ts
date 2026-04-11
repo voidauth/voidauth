@@ -7,7 +7,6 @@ import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import { isValidWebURLControl, isValidWildcardRedirectControl } from '../../../../validators/validators'
-import { generate } from 'generate-password-browser'
 import { CLIENT_AUTH_METHODS,
   GRANT_TYPES, RESPONSE_TYPES,
   UNIQUE_RESPONSE_TYPES,
@@ -26,6 +25,11 @@ import { TranslateService } from '@ngx-translate/core'
 
 export type TypedControls<T> = {
   [K in keyof T]-?: FormControl<Required<T>[K]>
+}
+
+export function generateBase64URLString(bytes: number) {
+  const randomString = window.crypto.getRandomValues(new Uint8Array(bytes)).reduce((data, byte) => data + String.fromCharCode(byte), '')
+  return btoa(randomString).replace(/\+/g, '-').replace(/\//g, '_')
 }
 
 @Component({
@@ -74,8 +78,8 @@ export class UpsertClientComponent implements OnInit {
       isValidWildcardRedirectControl,
       (c: AbstractControl<string | null>) => {
         const url = c.value
-        const existing = this.form.controls.redirect_uris.value
-        if (!url || !existing.length || !isValidWildcardRedirect(url)) {
+        const existing = (this.form as typeof this.form | undefined)?.controls.redirect_uris.value
+        if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
           return null
         }
         const all = existing.concat([url])
@@ -108,8 +112,8 @@ export class UpsertClientComponent implements OnInit {
     disabled: false,
   }, [isValidWildcardRedirectControl, (c: AbstractControl<string>) => {
     const url = c.value
-    const existing = this.form.controls.redirect_uris.value
-    if (!url || !existing.length || !isValidWildcardRedirect(url)) {
+    const existing = (this.form as typeof this.form | undefined)?.controls.redirect_uris.value
+    if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
       return null
     }
     const all = existing.concat([url])
@@ -310,11 +314,7 @@ export class UpsertClientComponent implements OnInit {
   }
 
   generateClientID() {
-    this.form.controls.client_id.setValue(generate({
-      length: 16,
-      numbers: true,
-      strict: true,
-    }))
+    this.form.controls.client_id.setValue(generateBase64URLString(12))
     this.form.controls.client_id.markAsDirty()
   }
 
@@ -327,11 +327,8 @@ export class UpsertClientComponent implements OnInit {
   }
 
   generateSecret() {
-    this.form.controls.client_secret.setValue(generate({
-      length: 32,
-      numbers: true,
-      strict: true,
-    }))
+    // generate a random base64 string
+    this.form.controls.client_secret.setValue(generateBase64URLString(24))
     this.form.controls.client_secret.markAsDirty()
   }
 

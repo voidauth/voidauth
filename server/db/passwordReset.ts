@@ -1,22 +1,27 @@
-import { TTLs, TABLES } from '@shared/constants'
+import { TTLs, TABLES, REDIRECT_PATHS } from '@shared/constants'
 import type { PasswordReset } from '@shared/db/PasswordReset'
-import { randomUUID } from 'crypto'
-import { generate } from 'generate-password'
+import { randomBytes, randomUUID } from 'crypto'
 import { db } from './db'
 import { createExpiration } from './util'
+import appConfig from '../util/config'
 
-export async function createPasswordReset(userId: string) {
+export async function createPasswordReset(userId: string, customTTL: number = 0) {
+  if (customTTL < 0) {
+    throw new Error('Invalid TTL for Password Reset.')
+  }
   const passwordReset: PasswordReset = {
     id: randomUUID(),
     userId: userId,
-    challenge: generate({
-      length: 32,
-      numbers: true,
-    }),
+    challenge: randomBytes(24).toString('base64url'),
     createdAt: new Date(),
-    expiresAt: createExpiration(TTLs.PASSWORD_RESET),
+    expiresAt: customTTL ? createExpiration(customTTL) : createExpiration(TTLs.PASSWORD_RESET),
   }
   await db().table<PasswordReset>(TABLES.PASSWORD_RESET).insert(passwordReset)
 
   return passwordReset
+}
+
+export function getPasswordResetURL(passwordReset: PasswordReset) {
+  const query = `id=${passwordReset.userId}&challenge=${passwordReset.challenge}`
+  return `${appConfig.APP_URL}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`
 }

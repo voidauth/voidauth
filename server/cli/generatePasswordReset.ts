@@ -1,8 +1,5 @@
-import type { PasswordReset } from '@shared/db/PasswordReset'
-import { createPasswordReset } from '../db/passwordReset'
+import { createPasswordReset, getPasswordResetURL } from '../db/passwordReset'
 import { getUserByInput } from '../db/user'
-import appConfig from '../util/config'
-import { REDIRECT_PATHS } from '@shared/constants'
 
 export async function generatePasswordReset(input: string) {
   input = input.trim()
@@ -16,9 +13,4 @@ export async function generatePasswordReset(input: string) {
   const passwordReset = await createPasswordReset(user.id)
 
   return getPasswordResetURL(passwordReset)
-}
-
-export function getPasswordResetURL(passwordReset: PasswordReset) {
-  const query = `id=${passwordReset.userId}&challenge=${passwordReset.challenge}`
-  return `${appConfig.APP_URL}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`
 }

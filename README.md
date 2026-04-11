@@ -98,7 +98,7 @@ volumes:
 After creating/updating the compose.yml file and filling in the required environment variables, run `docker compose up -d` and visit your `APP_URL` to get started.
 
 > [!IMPORTANT]
-> After VoidAuth starts for the first time, find the initial administrator username and password in the logs: `docker compose logs voidauth`. Use these credentials to log in and change the default username and password or create a separate user for yourself.
+> After VoidAuth starts for the first time, find a password reset link for the initial admin account in the logs: `docker compose logs voidauth`. Use this account and change the default username or create a separate user for yourself.
 
 > [!TIP]
 > Users are created by administrators on the Invitations page by creating a new Invitation, then sending the invitation link.

@@ -27,7 +27,6 @@
     "@simplewebauthn/browser": "^13.3.0",
     "@types/oidc-provider": "^9.5.0",
     "@types/qrcode": "^1.5.6",
-    "generate-password-browser": "^1.1.0",
     "isomorphic-dompurify": "^3.8.0",
     "ngx-spinner": "^21.1.0",
     "qrcode": "^1.5.4",

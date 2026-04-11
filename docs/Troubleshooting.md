@@ -2,6 +2,15 @@
 
 Some common issues and their causes.
 
+### Initial Admin Reset Link Not Working
+
+#### Link Expired
+
+If it has been longer than one day since the first start of VoidAuth, the password reset link generated for the initial `auth_admin` user may be expired. You will need to either:
+
+- Generate a new password reset link for the `auth_admin` account using the VoidAuth CLI. Documentation for this can be found on the [Generate Password Reset](CLI-Commands.md#generate-password-reset) section of the CLI Commands page.
+- Remove or reset your VoidAuth database and start over. For a database with VoidAuth as its only tenant, such as a sqlite database or postgres database container, this can be as simple as deleting the database and recreating it.
+
 ### Could Not Create Session
 
 The `x-voidauth-session` or `x-voidauth-interaction` cookies could not be set. Make sure that the `APP_URL` environment variable is set to the public URL of VoidAuth, and that you are accessing the app from that URL.

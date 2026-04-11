@@ -15,6 +15,7 @@ import type { User } from '@shared/db/User'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import ejs from 'ejs'
 import { logger } from './logger'
+import { getPasswordResetURL } from '../db/passwordReset'
 
 export let SMTP_VERIFIED = false
 const DEFAULT_EMAIL_TEMPLATE_DIR = './default_email_templates'
@@ -226,8 +227,6 @@ export async function sendPasswordReset(passwordReset: PasswordReset, user: User
     throw new Error('SMTP transport could not be validated.')
   }
 
-  const query = `id=${passwordReset.userId}&challenge=${passwordReset.challenge}`
-
   const { subject, html, text } = passwordResetTemplates({
     primary_color: PRIMARY_COLOR,
     primary_contrast_color: PRIMARY_CONTRAST_COLOR,
@@ -235,7 +234,7 @@ export async function sendPasswordReset(passwordReset: PasswordReset, user: User
     app_font: appConfig.APP_FONT,
     app_url: appConfig.APP_URL,
     name: user.name || user.username,
-    reset_url: `${appConfig.APP_URL}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`,
+    reset_url: getPasswordResetURL(passwordReset),
   })
 
   if (!subject || (!html && !text)) {
