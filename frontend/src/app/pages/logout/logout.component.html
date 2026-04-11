@@ -1,7 +1,7 @@
 <h1>{{ "logout.title" | translate }}</h1>
 <mat-card class="form-card">
   <mat-card-content>
-    <form autocomplete="off" [action]="host + '/oidc/session/end/confirm'" method="post">
+    <form autocomplete="off" [action]="baseHref + '/oidc/session/end/confirm'" method="post">
       <!-- TODO: Display OIDC App name/id if provided -->
       @if (privUser) {
         <h2>{{ privUser.name ?? privUser.username }}</h2>
