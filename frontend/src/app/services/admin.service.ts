@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
-import type { ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
+import type { ClientUpsertRequest } from '@shared/api-request/admin/ClientUpsert'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
@@ -18,6 +18,7 @@ import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordRese
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import type { SortDirection } from '@angular/material/sort'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
+import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 
 @Injectable({
   providedIn: 'root',
@@ -35,6 +36,10 @@ export class AdminService {
     return `${domain}/${REDIRECT_PATHS.RESET_PASSWORD}?${query}`
   }
 
+  async config() {
+    return firstValueFrom(this.http.get<AdminConfig>('/api/admin/config'))
+  }
+
   async clients() {
     return firstValueFrom(this.http.get<ClientResponse[]>('/api/admin/clients'))
   }
@@ -43,11 +48,11 @@ export class AdminService {
     return firstValueFrom(this.http.get<ClientResponse>(`/api/admin/client/${encodeURIComponent(client_id)}`))
   }
 
-  async addClient(client: ClientUpsert) {
+  async addClient(client: ClientUpsertRequest) {
     return firstValueFrom(this.http.post<null>('/api/admin/client', client))
   }
 
-  async updateClient(client: ClientUpsert) {
+  async updateClient(client: ClientUpsertRequest) {
     return firstValueFrom(this.http.patch<null>('/api/admin/client', client))
   }
 

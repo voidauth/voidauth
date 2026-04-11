@@ -47,13 +47,14 @@ import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { createTOTP, validateTOTP } from '../db/totp'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
-import { amrFactors, isUnapproved, isUnverified, loginFactors } from '@shared/user'
+import { amrFactors, isExpired, isUnapproved } from '@shared/user'
 import { logger } from '../util/logger'
 import { argon2 } from '../util/argon2id'
 import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 import { passkeyRegistrationValidator } from '../../shared/validators'
 import { passwordStrength } from '../util/zxcvbn'
+import { checkPrivileged, checkPrivilegedForTotpCreate, checkPrivilegedForTotpValidate } from '../util/authMiddleware'
 
 export const router = Router()
 
@@ -76,8 +77,7 @@ router.get('/', async (req, res) => {
   const { uid, prompt, params } = interaction
 
   const session = await getSession(req, res)
-  const accountId = session?.accountId ?? interaction.result?.login?.accountId
-  const user = accountId ? await getUserById(accountId) : undefined
+  const user = req.user
 
   logger({
     level: 'debug',
@@ -87,7 +87,6 @@ router.get('/', async (req, res) => {
         prompt: prompt.name,
         reasons: prompt.reasons,
         client_id: params.client_id,
-        username: user?.username ?? null,
         proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
       },
     },
@@ -104,6 +103,21 @@ router.get('/', async (req, res) => {
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`)
       res.send()
       return
+    } else if (prompt.reasons.includes('user_expired')) {
+      // User is expired, destroy their session/interaction so they can re-attempt login
+      // User is not approved, destroy their session/interaction so they can re-attempt login
+      await interaction.destroy()
+      if (session) {
+        await session.destroy()
+      }
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.USER_EXPIRED}`)
+      res.send()
+      return
+    } else if (prompt.reasons.includes('user_mfa_required')) {
+      // User has MFA required, direct them to MFA page
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.send()
+      return
     } else if (prompt.reasons.includes('user_email_not_validated')) {
       // User does not have a validated email and needs one
       // Send a verification email if possible
@@ -112,12 +126,7 @@ router.get('/', async (req, res) => {
         verificationSent = await createEmailVerification(user, null)
       }
 
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/${user?.id ?? ''}?sent=${verificationSent ? 'true' : 'false'}`)
-      res.send()
-      return
-    } else if (prompt.reasons.includes('user_mfa_required')) {
-      // User has MFA required, direct them to MFA page
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}?sent=${verificationSent ? 'true' : 'false'}`)
       res.send()
       return
     }
@@ -167,7 +176,7 @@ router.get('/', async (req, res) => {
       }
 
       // Check if the user has already consented to this client/redirect
-      const existingConsent = accountId && await getExistingConsent(accountId, redirect_uri)
+      const existingConsent = user?.id && await getExistingConsent(user.id, redirect_uri)
       if (existingConsent && !consentMissingScopes(existingConsent, scope).length) {
         const grantId = await applyConsent(interaction)
         const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
@@ -356,6 +365,7 @@ router.post('/register',
       email: invitation?.email || registration.email,
       passwordHash,
       approved: !!invitationValid, // invited users are approved by default
+      expiresAt: invitation?.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
       emailVerified: !!invitation?.email && invitation.emailVerified,
       mfaRequired: false,
       createdAt: new Date(),
@@ -450,7 +460,9 @@ router.post('/register/passkey/start',
       return
     }
 
-    const options = await createPasskeyRegistrationOptions(interaction.uid)
+    const options = await createPasskeyRegistrationOptions({
+      uniqueId: interaction.uid,
+    })
 
     res.send(options)
   })
@@ -504,6 +516,7 @@ router.post('/register/passkey/end',
       name: invitation?.name || registration.name,
       email: invitation?.email || registration.email,
       approved: !!invitationValid, // invited users are approved by default
+      expiresAt: invitation?.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
       emailVerified: !!invitation?.email && invitation.emailVerified,
       mfaRequired: false,
       createdAt: new Date(),
@@ -561,10 +574,15 @@ router.post('/register/passkey/end',
 
     await createPasskey(createdUser.id, registrationInfo, currentOptions)
 
+    const addAmr = ['webauthn']
+    if (registrationInfo.userVerified) {
+      addAmr.push('webauthn_v')
+    }
+
     // See where we need to redirect the user to, depending on config
     const redir = await loginResult(req, res, {
       userId: user.id,
-      amr: ['webauthn'],
+      amr: addAmr,
     })
 
     res.send(redir)
@@ -580,18 +598,29 @@ router.post('/register/passkey/end',
  * Start registering a passkey
  */
 router.post('/passkey/registration/start',
+  checkPrivileged,
+  zodValidate({
+    body: {
+      requireVerified: zod.boolean().optional(),
+    },
+  }),
   async (req, res) => {
     // Should only be able to register if fully logged in
     const user = req.user
 
-    if (!user?.isPrivileged) {
-      res.sendStatus(401)
+    if (!user) {
+      res.sendStatus(500)
       return
     }
 
     const userPasskeys = await getUserPasskeys(user.id)
 
-    const options = await createPasskeyRegistrationOptions(user.id, user.username, userPasskeys)
+    const options = await createPasskeyRegistrationOptions({
+      uniqueId: user.id,
+      username: user.username,
+      requireVerified: req.body.requireVerified,
+      excludeCredentials: userPasskeys,
+    })
 
     res.send(options)
   },
@@ -601,6 +630,7 @@ router.post('/passkey/registration/start',
  * Finish registering a passkey, finishes login and adds webauthn to amr
  */
 router.post('/passkey/registration/end',
+  checkPrivileged,
   zodValidate({ body: passkeyRegistrationValidator }),
   async (req, res) => {
     const body = req.body
@@ -608,8 +638,8 @@ router.post('/passkey/registration/end',
     // Should only be able to register if fully logged in
     const user = req.user
 
-    if (!user?.isPrivileged) {
-      res.sendStatus(401)
+    if (!user) {
+      res.sendStatus(500)
       return
     }
 
@@ -623,9 +653,14 @@ router.post('/passkey/registration/end',
 
     await createPasskey(user.id, registrationInfo, currentOptions)
 
+    const addAmr = ['webauthn']
+    if (registrationInfo.userVerified) {
+      addAmr.push('webauthn_v')
+    }
+
     const redir = await loginResult(req, res, {
       userId: user.id,
-      amr: ['webauthn'],
+      amr: addAmr,
     })
 
     res.send(redir)
@@ -635,22 +670,12 @@ router.post('/passkey/registration/end',
  * Register a new totp, needs to be verified afterwards or it expires
  */
 router.post('/totp/registration',
+  checkPrivilegedForTotpCreate,
   async (req, res) => {
-    // Should only be able to register if fully logged in,
-    // OR could not otherwise MFA
-    // partially logged in users may be prompted to add MFA
     const user = req.user
 
     if (!user) {
-      res.sendStatus(401)
-      return
-    }
-
-    const firstTotpAllowed = !user.hasTotp && !!loginFactors(user.amr)
-      && !isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) && !isUnverified(user, !!appConfig.EMAIL_VERIFICATION)
-
-    if (!user.isPrivileged && !firstTotpAllowed) {
-      res.sendStatus(401)
+      res.sendStatus(500)
       return
     }
 
@@ -708,6 +733,11 @@ router.post('/login',
  * Start login with passkey
  */
 router.post('/passkey/start',
+  zodValidate({
+    body: {
+      requireVerified: zod.boolean().optional(),
+    },
+  }),
   async (req, res) => {
     const interaction = await getInteractionDetails(req, res)
     const session = await getSession(req, res)
@@ -724,6 +754,7 @@ router.post('/passkey/start',
     const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
       rpID: passkeyRpId,
       allowCredentials: passkeys,
+      userVerification: req.body.requireVerified ? 'required' : 'preferred',
     })
 
     // (Pseudocode) Remember this challenge for this user
@@ -825,9 +856,14 @@ router.post('/passkey/end',
       return
     }
 
+    const addAmr = ['webauthn']
+    if (authenticationInfo.userVerified) {
+      addAmr.push('webauthn_v')
+    }
+
     const redir = await loginResult(req, res, {
       userId: user.id,
-      amr: ['webauthn'],
+      amr: addAmr,
       remember,
     })
 
@@ -838,25 +874,17 @@ router.post('/passkey/end',
  * Validate totp and add totp to amr
  */
 router.post('/totp',
+  checkPrivilegedForTotpValidate,
   zodValidate({
     body: {
       enableMfa: zod.boolean().optional(),
       token: zod.string(),
     },
   }), async (req, res) => {
-    // Should only be able to register if fully logged in,
-    // OR could not otherwise MFA
-    // partially logged in users may be prompted to add MFA
     const user = req.user
 
     if (!user) {
-      res.sendStatus(401)
-      return
-    }
-
-    if (!loginFactors(user.amr)
-      || isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) || isUnverified(user, !!appConfig.EMAIL_VERIFICATION)) {
-      res.sendStatus(401)
+      res.sendStatus(500)
       return
     }
 
@@ -1060,8 +1088,8 @@ async function applyConsent(interactionDetails: Interaction) {
 export async function createEmailVerification(
   user: UserDetails,
   email?: string | null) {
-  // Do not create an email verification for an unapproved user
-  if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
+  // Do not create an email verification for an unapproved user or expired
+  if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL) || isExpired(user)) {
     return false
   }
 

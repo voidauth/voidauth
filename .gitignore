@@ -131,6 +131,7 @@ dist
 .pnp.*
 
 # default project volume directories
+/voidauth
 /config
 /db
 *.sqlite

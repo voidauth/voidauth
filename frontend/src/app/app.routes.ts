@@ -22,9 +22,11 @@ export const routes: Routes = [
 
   { path: `${REDIRECT_PATHS.VERIFY_EMAIL}/:id/:challenge`, loadComponent: () => import('./pages/verify-email/verify/verify.component').then(m => m.VerifyComponent) },
 
-  { path: `${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}/:id`, loadComponent: () => import('./pages/verify-email/verify-sent/verify-sent.component').then(m => m.VerifySentComponent) },
+  { path: REDIRECT_PATHS.VERIFICATION_EMAIL_SENT, loadComponent: () => import('./pages/verify-email/verify-sent/verify-sent.component').then(m => m.VerifySentComponent) },
 
   { path: REDIRECT_PATHS.APPROVAL_REQUIRED, loadComponent: () => import('./pages/approval-required/approval-required.component').then(m => m.ApprovalRequiredComponent) },
+
+  { path: REDIRECT_PATHS.USER_EXPIRED, loadComponent: () => import('./pages/user-expired/user-expired.component').then(m => m.UserExpiredComponent) },
 
   { path: 'consent/:uid', loadComponent: () => import('./pages/consent/consent.component').then(m => m.ConsentComponent), canActivate: [PrivilegedGuard] },
 

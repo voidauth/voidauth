@@ -87,7 +87,9 @@
             {{ "admin.common.actions.create" | translate }}
           }
         </button>
-        <button mat-button type="button" (click)="remove()">{{ "admin.common.actions.delete" | translate }}</button>
+        <button mat-flat-button class="danger-button" type="button" (click)="remove()">
+          {{ "admin.common.actions.delete" | translate }}
+        </button>
       </mat-card-actions>
     </form>
   </mat-card-content>

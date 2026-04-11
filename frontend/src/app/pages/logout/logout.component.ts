@@ -3,7 +3,7 @@ import { MaterialModule } from '../../material-module'
 import { ActivatedRoute, Router } from '@angular/router'
 import { getCurrentHost } from '../../services/config.service'
 import { UserService } from '../../services/user.service'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
@@ -18,6 +18,7 @@ import { TranslatePipe } from '@ngx-translate/core'
 export class LogoutComponent implements OnInit {
   protected challenge?: string
   user?: CurrentUserDetails
+  privUser?: CurrentUserPrivateDetails
 
   private route = inject(ActivatedRoute)
   private userService = inject(UserService)
@@ -32,6 +33,13 @@ export class LogoutComponent implements OnInit {
 
     try {
       this.user = await this.userService.getMyUser()
+      if (this.user.isPrivileged) {
+        try {
+          this.privUser = await this.userService.getMyPrivateUser()
+        } catch (_e) {
+        // do nothing
+        }
+      }
     } catch (_e) {
       // User is not logged in, and therefore cannot log out
       await this.router.navigate(['/'], {

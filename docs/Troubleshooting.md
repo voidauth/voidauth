@@ -31,3 +31,9 @@ If you are attempting to authenticate to a ProxyAuth Domain and are not redirect
 #### IP Address Incorrect or Missing
 
 If the Request IP Address in logs is incorrect or invalid, it may be caused by a misconfiguration in your reverse proxy. Check documentation for your reverse proxy or proxy provider related to trusted IP addresses.
+
+### OIDC Endpoints List
+
+#### Incorrect Protocol
+
+The list of OIDC Endpoints on the OIDC Apps pages may show the incorrect protocol (`http://` vs `https://`). This can be caused by an intermittent proxy layer between the browser and VoidAuth either not setting the `X-Forwarded-Proto` header or not trusting an upstream proxy that has set it. Some reverse proxy providers set this header automatically, some require you to specify the header value manually. An example of how to set this can be seen in the NGINX reverse proxy snippets setup documentation [here](ProxyAuth-and-Trusted-Header-SSO-Setup.md#nginx-snippets).

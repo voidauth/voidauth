@@ -29,6 +29,8 @@ const transportOptions: SMTPTransport.Options = {
   },
   tls: {
     rejectUnauthorized: !appConfig.SMTP_IGNORE_CERT,
+    ciphers: appConfig.SMTP_TLS_CIPHERS,
+    minVersion: appConfig.SMTP_TLS_MIN_VERSION,
   },
 }
 

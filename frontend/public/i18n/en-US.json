@@ -79,7 +79,7 @@
     "title": "Reset Password"
   },
   "approval-required": {
-    "content": "You need administrator approval before you can log in. Please wait or contact an Admin for help.",
+    "content": "Your account needs approval before you can log in. Please wait or contact an administrator for help.",
     "title": "Approval Required",
     "actions": {
       "login": "Login"
@@ -157,6 +157,9 @@
         "logout": "Logout",
         "send-again": "Send Again",
         "send-verification": "Send Verification"
+      },
+      "email": {
+        "label": "Email"
       }
     }
   },
@@ -296,7 +299,9 @@
         "name": "Name",
         "email": "Email",
         "add-group": "Add Group",
-        "security-groups": "Security Groups:"
+        "security-groups": "Security Groups:",
+        "user-expiration-date": "Access Expiration Date",
+        "user-expiration-time": "Access Expiration Time"
       },
       "actions": {
         "sign-out": "Sign Out"
@@ -432,7 +437,9 @@
         "email": "Email",
         "name": "Name",
         "add-group": "Add Group",
-        "security-groups": "Security Groups:"
+        "security-groups": "Security Groups:",
+        "user-expiration-date": "Access Expiration Date",
+        "user-expiration-time": "Access Expiration Time"
       },
       "tooltips": {
         "copy-invite-link": "Copy Invite Link",
@@ -502,6 +509,13 @@
         "light": "Light",
         "dark": "Dark"
       }
+    }
+  },
+  "user-expired": {
+    "title": "Account Access Expired",
+    "content": "Your account access has expired, please contact an administrator to extend access.",
+    "actions": {
+      "login": "Login"
     }
   }
 }

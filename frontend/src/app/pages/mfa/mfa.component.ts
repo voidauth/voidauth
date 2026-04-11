@@ -13,9 +13,9 @@ import { HttpErrorResponse } from '@angular/common/http'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../services/user.service'
 import { WebAuthnError } from '@simplewebauthn/browser'
-import { isUnapproved, isUnverified, loginFactors } from '@shared/user'
 import { Router } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
+import { loginFactors } from '@shared/user'
 
 @Component({
   selector: 'app-mfa',
@@ -53,8 +53,7 @@ export class MfaComponent implements OnInit {
       this.config = await this.configService.getConfig()
 
       // User does not have a totp, but should be able to register one
-      if (this.user && !this.user.hasTotp && !!loginFactors(this.user.amr)
-        && !isUnapproved(this.user, this.config.signupRequiresApproval) && !isUnverified(this.user, this.config.emailVerification)) {
+      if (this.user && !this.user.hasTotp && this.user.isPrivilegedForTotpCreate) {
         try {
           const { secret, uri } = await this.authService.registerTotp()
           this.secret.set(secret)
@@ -63,6 +62,11 @@ export class MfaComponent implements OnInit {
           console.error(e)
           this.snackbarService.error('Could not get authenticator options.')
         }
+      }
+
+      // if user has 1 factor and amr includes webauth, notify that only verified passkeys will satisfy mfa
+      if (this.user && loginFactors(this.user.amr) < 2 && this.user.amr.includes('webauthn')) {
+        this.snackbarService.message('Only Passkeys that require MFA will satisfy MFA requirements by themselves.')
       }
     } finally {
       this.spinnerService.hide()
@@ -106,7 +110,8 @@ export class MfaComponent implements OnInit {
   async passkeyLogin() {
     this.spinnerService.show()
     try {
-      const redirect = await this.passkeyService.login()
+      // Only require verified passkey if normal passkey would not improve user's mfa level
+      const redirect = await this.passkeyService.login({ requireVerified: this.user?.amr.includes('webauthn') })
       if (redirect) {
         location.assign(redirect.location)
       }
@@ -121,7 +126,8 @@ export class MfaComponent implements OnInit {
   async passkeyRegister() {
     this.spinnerService.show()
     try {
-      const redirect = await this.passkeyService.register()
+      // Only require verified passkey if normal passkey would not improve user's mfa level
+      const redirect = await this.passkeyService.register({ requireVerified: this.user?.amr.includes('webauthn') })
       if (redirect) {
         location.assign(redirect.location)
       }

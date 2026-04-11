@@ -1,4 +1,4 @@
-import { isValidWildcardRedirect, type SchemaInfer } from '@shared/utils'
+import { isValidWildcardRedirect, type SchemaInfer, type SchemaInferInput } from '@shared/utils'
 import { emptyString } from '@shared/validators'
 import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
 import zod from 'zod'
@@ -18,22 +18,24 @@ export const CLIENT_AUTH_METHODS = [
 
 export const clientUpsertValidator = {
   client_id: zod.string().trim().min(1).trim(),
-  client_name: zod.string().trim().transform(v => v || undefined).optional(),
+  client_name: zod.string().trim().nullable().transform(v => v || undefined).optional(),
   redirect_uris: zod.array(zod.string().trim().refine((input) => {
     return typeof input === 'string' && isValidWildcardRedirect(input)
   })),
   post_logout_redirect_uri: zod.string().trim().refine((input) => {
     return typeof input === 'string' && isValidWildcardRedirect(input)
-  }).optional(),
-  client_secret: zod.string().trim().transform(v => v || undefined).optional(),
-  token_endpoint_auth_method: zod.enum(CLIENT_AUTH_METHODS).optional(),
-  response_types: zod.array(zod.enum(RESPONSE_TYPES)).optional(),
-  grant_types: zod.array(zod.enum(GRANT_TYPES)).optional(),
+  }).nullable().optional(),
+  client_secret: zod.string().trim().nullable().transform(v => v || undefined).optional(),
+  token_endpoint_auth_method: zod.enum(CLIENT_AUTH_METHODS),
+  response_types: zod.array(zod.enum(RESPONSE_TYPES)),
+  grant_types: zod.array(zod.enum(GRANT_TYPES)),
   skip_consent: zod.boolean(),
   require_mfa: zod.boolean(),
-  logo_uri: zod.union([zod.url().trim(), emptyString]).transform(v => v || undefined).optional(),
-  client_uri: zod.union([zod.url().trim(), emptyString]).transform(v => v || undefined).optional(),
+  logo_uri: zod.union([zod.url().trim(), emptyString]).nullable().transform(v => v || undefined).optional(),
+  client_uri: zod.union([zod.url().trim(), emptyString]).nullable().transform(v => v || undefined).optional(),
   groups: zod.array(zod.string().trim().min(1)),
 }
+
+export type ClientUpsertRequest = SchemaInferInput<typeof clientUpsertValidator>
 
 export type ClientUpsert = SchemaInfer<typeof clientUpsertValidator>

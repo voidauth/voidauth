@@ -32,7 +32,6 @@ publicRouter.get('/config', (_req, res) => {
     zxcvbnMin: appConfig.PASSWORD_STRENGTH,
     emailActive: SMTP_VERIFIED,
     emailVerification: !!appConfig.EMAIL_VERIFICATION,
-    signupRequiresApproval: appConfig.SIGNUP_REQUIRES_APPROVAL,
     registration: appConfig.SIGNUP,
     contactEmail: appConfig.CONTACT_EMAIL,
     defaultRedirect: appConfig.DEFAULT_REDIRECT,
@@ -125,7 +124,7 @@ publicRouter.post('/reset_password/passkey/start',
 
     const userPasskeys = await getUserPasskeys(user.id)
 
-    const options = await createPasskeyRegistrationOptions(user.id, user.username, userPasskeys)
+    const options = await createPasskeyRegistrationOptions({ uniqueId: user.id, username: user.username, excludeCredentials: userPasskeys })
 
     res.send(options)
   })

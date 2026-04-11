@@ -7,6 +7,7 @@ import type { ClientResponse } from '@shared/api-response/ClientResponse.js'
 import Docker from 'dockerode'
 import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
 import zod from 'zod'
+import type { SecureVersion } from 'node:tls'
 
 // basic config for app
 class Config {
@@ -54,6 +55,7 @@ class Config {
   DEFAULT_REDIRECT?: string
   CONTACT_EMAIL?: string
   ADMIN_EMAILS?: number
+  DEFAULT_USER_EXPIRES_IN?: number
 
   // SMTP
   SMTP_HOST?: string
@@ -63,6 +65,8 @@ class Config {
   SMTP_USER?: string
   SMTP_PASS?: string
   SMTP_IGNORE_CERT: boolean = false
+  SMTP_TLS_CIPHERS?: string
+  SMTP_TLS_MIN_VERSION?: SecureVersion
 
   DECLARED_CLIENTS = new Map<string, ClientResponse>()
 }
@@ -84,7 +88,11 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
       break
 
     case 'ADMIN_EMAILS':
-      appConfig[key] = stringDuration(value) ?? (booleanString(value) === false ? null : 3600) ?? appConfig[key]
+      appConfig[key] = stringDuration(value) ?? posInt(value) ?? (booleanString(value) === false ? null : 3600) ?? appConfig[key]
+      break
+
+    case 'DEFAULT_USER_EXPIRES_IN':
+      appConfig[key] = stringDuration(value) ?? posInt(value) ?? appConfig[key]
       break
 
     // booleans
@@ -121,7 +129,14 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SMTP_FROM':
     case 'SMTP_USER':
     case 'SMTP_PASS':
+    case 'SMTP_TLS_CIPHERS':
       appConfig[key] = stringOnly(value) ?? appConfig[key]
+      break
+
+    case 'SMTP_TLS_MIN_VERSION':
+      appConfig[key] = ['TLSv1.3', 'TLSv1.2', 'TLSv1.1', 'TLSv1'].includes(stringOnly(value) as SecureVersion)
+        ? value as SecureVersion
+        : appConfig[key]
       break
 
     // non default pos int variables
@@ -208,8 +223,8 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
   }
 
   // Helper function to validate client variables
-  const validateClientVar = <T>(input: string | string[],
-    validator: zod.ZodType<T, string | undefined> | zod.ZodType<T, string[] | undefined>) => {
+  const validateClientVar = <T, I extends string | string []>(input: I,
+    validator: zod.ZodType<T, I | undefined | null>) => {
     const validated = validator.safeParse(input)
     if (validated.error) {
       throw new Error(zod.prettifyError(validated.error))
@@ -266,10 +281,10 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
         client.grant_types = validateClientVar(value.split(',').map(v => v.trim()), clientUpsertValidator.grant_types)
         break
       case 'CLIENT_POST_LOGOUT_URLS':
-        client.post_logout_redirect_uris = [validateClientVar(value, clientUpsertValidator.post_logout_redirect_uri.nonoptional())]
+        client.post_logout_redirect_uris = [validateClientVar(value, clientUpsertValidator.post_logout_redirect_uri.unwrap().unwrap())]
         break
       case 'CLIENT_SKIP_CONSENT':
-        client.skip_consent = validateClientVar(value, zod.stringbool()) // booleanString(value) ?? client.skip_consent
+        client.skip_consent = validateClientVar(value, zod.stringbool())
         break
     }
   } catch (e) {
