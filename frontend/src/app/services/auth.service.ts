@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpErrorResponse } from '@angular/common/http'
 import { firstValueFrom } from 'rxjs'
 import type { RegisterUser } from '@shared/api-request/RegisterUser'
 import type { LoginUser } from '@shared/api-request/LoginUser'
@@ -31,12 +31,13 @@ export class AuthService {
 
   async createInteraction() {
     try {
-      await firstValueFrom(this.http.get<null>(oidcLoginPath(getCurrentHost(), {
-        prompt: 'login',
-      }), {
+      await firstValueFrom(this.http.get<null>(oidcLoginPath(getCurrentHost(), 'login'), {
         redirect: 'manual',
       }))
     } catch (e) {
+      if (e instanceof HttpErrorResponse && e.status > 200 && e.status < 400) {
+        return
+      }
       console.error(typeof e === 'object' && e && 'error' in e
         && typeof e.error === 'object' && e.error && 'error' in e.error
         ? e.error.error

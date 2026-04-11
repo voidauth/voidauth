@@ -133,10 +133,15 @@ location /api/authz/auth-request {
 ``` conf
 auth_request /api/authz/auth-request;
 
-proxy_set_header Remote-User $upstream_http_remote_user;
-proxy_set_header Remote-Groups $upstream_http_remote_groups;
-proxy_set_header Remote-Email $upstream_http_remote_email;
-proxy_set_header Remote-Name $upstream_http_remote_name;
+auth_request_set $user $upstream_http_remote_user;
+auth_request_set $groups $upstream_http_remote_groups;
+auth_request_set $name $upstream_http_remote_name;
+auth_request_set $email $upstream_http_remote_email;
+
+proxy_set_header Remote-User $user;
+proxy_set_header Remote-Groups $groups;
+proxy_set_header Remote-Name $name;
+proxy_set_header Remote-Email $email;
 
 # If response 401 or 407 code, try to redirect to Location Header as if 302.
 # NGINX auth_request cannot handle codes except 2xx and 4xx, this is a workaround

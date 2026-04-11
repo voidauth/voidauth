@@ -1,8 +1,10 @@
 <div class="totp-input-container">
   @if (qrcodeData) {
-    <p style="text-align: center; margin-top: -4px">
-      <small>{{ "components.totp-input.title" | translate }}</small>
-    </p>
+    @if (enableMfa()) {
+      <p style="text-align: center; margin-top: -4px">
+        <small>{{ "components.totp-input.title" | translate }}</small>
+      </p>
+    }
 
     <img style="border-radius: 4px" width="240" height="240" [src]="qrcodeData" />
 

@@ -1,7 +1,7 @@
 import { Component, inject, type OnInit } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { ActivatedRoute, Router } from '@angular/router'
-import { getCurrentHost } from '../../services/config.service'
+import { getBaseHrefPath } from '../../services/config.service'
 import { UserService } from '../../services/user.service'
 import type { CurrentUserDetails, CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import { TranslatePipe } from '@ngx-translate/core'
@@ -24,7 +24,7 @@ export class LogoutComponent implements OnInit {
   private userService = inject(UserService)
   private router = inject(Router)
 
-  public host = getCurrentHost()
+  public baseHref = getBaseHrefPath()
 
   history = window.history
 
@@ -52,7 +52,7 @@ export class LogoutComponent implements OnInit {
     if (challenge) {
       this.challenge = challenge
     } else {
-      window.location.assign(`${this.host}/oidc/session/end`)
+      window.location.assign(`${this.baseHref}/oidc/session/end`)
     }
   }
 }
