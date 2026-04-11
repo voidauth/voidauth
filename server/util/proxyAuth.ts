@@ -1,4 +1,4 @@
-import { oidcLoginPath } from '@shared/oidc'
+import { proxyAuthPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { formatProxyAuthDomain, getProxyAuthWithCache } from '../db/proxyAuth'
 import { checkPasswordHash, getUserByInput } from '../db/user'
@@ -36,8 +36,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     // Check that session is not too old
     const session = await getSession(req, res)
     if (match?.maxSessionLength && session?.past(match.maxSessionLength * 60)) {
-      res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true, prompt: 'login' })}`)
-      res.send()
+      res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(url.href, 'login')}`)
       return
     }
   } else if (proxyAuthorizationHeader) {
@@ -49,8 +48,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
       res.setHeader('Proxy-Authenticate', `Basic realm="${formattedUrl}"`)
-      res.redirect(407, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
-      res.send()
+      res.redirect(407, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
       return
     }
     amr = ['pwd']
@@ -76,8 +74,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
       res.setHeader('WWW-Authenticate', `Basic realm="${formattedUrl}"`)
-      res.redirect(401, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
-      res.send()
+      res.redirect(401, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
       return
     }
     amr = ['pwd']
@@ -108,8 +105,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
         },
       },
     })
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
-    res.send()
+    res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
     return
   }
 
@@ -128,8 +124,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
         },
       },
     })
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
-    res.send()
+    res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
     return
   }
 
@@ -148,8 +143,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
         },
       },
     })
-    res.redirect(redirCode, `${appConfig.APP_URL}${oidcLoginPath(appConfig.APP_URL, { redirectUrl: url.href, isProxyAuth: true })}`)
-    res.send()
+    res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
     return
   }
 

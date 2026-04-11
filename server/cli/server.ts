@@ -217,9 +217,12 @@ export async function serve() {
     fallthrough: false,
   }))
 
-  // Unresolved GET requests should return index if they start with it basePath
-  app.get(new RegExp(`(.*)`), (req, res) => {
-    if (req.originalUrl.startsWith(basePath())) {
+  // Unresolved GET requests should return index if they start with basePath
+  app.use((req, res, next) => {
+    if (req.method !== 'GET') {
+      next()
+      return
+    } else if (req.originalUrl.startsWith(basePath())) {
       const index = modifyIndex()
       res.send(index)
     } else {
@@ -245,6 +248,9 @@ export async function serve() {
       const errStatus = 'status' in err && typeof err.status === 'number' ? err.status : 500
       res.status(errStatus)
     }
+    if (res.headersSent) {
+      return
+    }
     res.sendStatus(res.statusCode)
   })
 
@@ -253,7 +259,7 @@ export async function serve() {
   })
 
   function modifyIndex() {
-  // add APP_TITLE
+    // add APP_TITLE
     let index = fs.readFileSync(path.join(FE_ROOT, './index.html')).toString().replace('<title>', '<title>' + appConfig.APP_TITLE)
 
     // Replace base href with path of APP_URL

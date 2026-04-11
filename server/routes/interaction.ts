@@ -71,7 +71,6 @@ router.get('/', async (req, res) => {
   const interaction = await getInteractionDetails(req, res)
   if (!interaction) {
     res.redirect(`${appConfig.APP_URL}/`)
-    res.send()
     return
   }
   const { uid, prompt, params } = interaction
@@ -87,7 +86,7 @@ router.get('/', async (req, res) => {
         prompt: prompt.name,
         reasons: prompt.reasons,
         client_id: params.client_id,
-        proxyauth: params.client_id === 'auth_internal_client' && !!params.proxyauth_url,
+        proxyauth: params.client_id === 'proxyauth_internal_client',
       },
     },
   })
@@ -101,7 +100,6 @@ router.get('/', async (req, res) => {
         await session.destroy()
       }
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`)
-      res.send()
       return
     } else if (prompt.reasons.includes('user_expired')) {
       // User is expired, destroy their session/interaction so they can re-attempt login
@@ -111,12 +109,10 @@ router.get('/', async (req, res) => {
         await session.destroy()
       }
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.USER_EXPIRED}`)
-      res.send()
       return
     } else if (prompt.reasons.includes('user_mfa_required')) {
       // User has MFA required, direct them to MFA page
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
-      res.send()
       return
     } else if (prompt.reasons.includes('user_email_not_validated')) {
       // User does not have a validated email and needs one
@@ -127,25 +123,21 @@ router.get('/', async (req, res) => {
       }
 
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.VERIFICATION_EMAIL_SENT}?sent=${verificationSent ? 'true' : 'false'}`)
-      res.send()
       return
     }
 
     res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGIN}`)
-    res.send()
     return
   } else if (prompt.name === 'consent') {
     if (prompt.reasons.includes('consent_prompt')) {
       // consent prompt was requested, always comply
       res.redirect(`${appConfig.APP_URL}/consent/${uid}`)
-      res.send()
       return
     }
 
     if (prompt.reasons.includes('client_mfa_required')) {
       // client requires mfa
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
-      res.send()
       return
     }
 
@@ -153,13 +145,12 @@ router.get('/', async (req, res) => {
     const { redirect_uri, client_id, scope } = params
     if (typeof redirect_uri === 'string' && typeof client_id === 'string' && typeof scope === 'string') {
       // Check if the client_id is auth_internal_client
-      if (client_id === 'auth_internal_client') {
+      if (client_id === 'auth_internal_client' || client_id === 'proxyauth_internal_client') {
         const grantId = await applyConsent(interaction)
         const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
-        res.send()
         return
       }
 
@@ -171,7 +162,6 @@ router.get('/', async (req, res) => {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
-        res.send()
         return
       }
 
@@ -183,13 +173,11 @@ router.get('/', async (req, res) => {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
-        res.send()
         return
       }
     }
 
     res.redirect(`${appConfig.APP_URL}/consent/${uid}`)
-    res.send()
     return
   } else {
     res.sendStatus(400)
@@ -306,7 +294,6 @@ router.post('/:uid/confirm/',
       mergeWithLastSubmission: true,
     })
     res.redirect(redir)
-    res.send()
     return
   })
 

@@ -22,7 +22,6 @@ type ShapeOrUndefined<T extends zod.ZodRawShape | undefined> = T extends zod.Zod
  * @param schema.body fields on the request body to be validated
  * @param schema.query fields on the request query to be validated
  * @param schema.params fields on the request params to be validated
- * @param controller callback function in the form of express middleware to handle the Request after validation
  * @example
  * app.post('/api/resource{/:b}', zodValidate({
  *   body: {
