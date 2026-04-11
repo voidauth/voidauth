@@ -135,6 +135,6 @@ export class KnexAdapter implements Adapter {
 };
 
 // type gates
-function isClientPayload(pt: PayloadType, payload: unknown): payload is ClientMetadata {
+function isClientPayload(pt: PayloadType, _payload: unknown): _payload is ClientMetadata {
   return pt === 'Client'
 }
