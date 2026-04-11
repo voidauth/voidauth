@@ -10,14 +10,10 @@ import { TTLs } from '@shared/constants.ts'
 // For this to work, no static import statement in this file can import the following:
 // 'express', 'oidc-provider'
 process.env.NODE_ENV ??= 'production'
-// determine correct DEBUG env var
-process.env.DEBUG_HIDE_DATE = 'true'
 if (booleanString(process.env.ENABLE_DEBUG) || booleanString(process.env.DEBUG)) {
   process.env.ENABLE_DEBUG = 'true'
-  process.env.DEBUG = 'oidc-provider:*'
 } else {
   process.env.ENABLE_DEBUG = 'false'
-  process.env.DEBUG = 'oidc-provider:server_error'
 }
 
 // Follow process flow depending on input arguments

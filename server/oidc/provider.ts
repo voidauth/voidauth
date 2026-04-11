@@ -1,8 +1,7 @@
 import Provider, { type Configuration } from 'oidc-provider'
 import { findAccount, getUserById, userRequiresMfa } from '../db/user'
-import appConfig, { appUrl, basePath, getSessionDomain } from '../util/config'
+import appConfig, { appUrl, basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
 import { KnexAdapter } from './adapter'
-import { type OIDCExtraParams } from '@shared/oidc'
 import { generate } from 'generate-password'
 import { ADMIN_GROUP, REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
@@ -156,22 +155,58 @@ consentPromptPolicy.checks.add(new Check('client_mfa_required',
   'client_mfa_required', async (ctx) => {
     const { oidc } = ctx
     const amr = oidc.session?.amr ?? []
+
+    // If client requires mfa, check for it
     if (oidc.client && !!oidc.client.require_mfa && loginFactors(amr) < 2) {
       return Check.REQUEST_PROMPT
     }
 
+    // auth internal client requires mfa if the user has it set up
     if (oidc.client?.clientId === 'auth_internal_client') {
-      if (typeof oidc.params?.proxyauth_url === 'string') {
-        const proxyAuthURL = URL.parse(oidc.params.proxyauth_url)
-        const domain = proxyAuthURL && await getProxyAuthWithCache(proxyAuthURL)
-        if ((domain || undefined)?.mfaRequired && loginFactors(amr) < 2) {
-          return Check.REQUEST_PROMPT
+      const user = oidc.account?.accountId ? await getUserById(oidc.account.accountId) : null
+      if (user?.hasTotp && loginFactors(amr) < 2) {
+        return Check.REQUEST_PROMPT
+      }
+    }
+
+    // proxyauth internal client requires mfa if proxyauth_url is for a domain that requires mfa
+    if (oidc.client?.clientId === 'proxyauth_internal_client') {
+      const redirectURL = typeof oidc.params?.redirect_uri === 'string' ? URL.parse(oidc.params.redirect_uri) : null
+      const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
+      const proxyAuthURL = proxyAuthURLParam ? new URL(proxyAuthURLParam) : null
+      const domain = proxyAuthURL && await getProxyAuthWithCache(proxyAuthURL)
+      if (domain?.mfaRequired && loginFactors(amr) < 2) {
+        return Check.REQUEST_PROMPT
+      }
+    }
+
+    return Check.NO_NEED_TO_PROMPT
+  },
+))
+
+consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
+  'proxyauth_url is invalid',
+  'proxyauth_url_invalid', async (ctx) => {
+    const { oidc } = ctx
+
+    // if client is proxyauth internal client, check that proxyauth_url is valid and can be reached by session domain
+    if (oidc.client?.clientId === 'proxyauth_internal_client') {
+      const redirectURL = typeof oidc.params?.redirect_uri === 'string' ? URL.parse(oidc.params.redirect_uri) : null
+      const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
+      const proxyAuthURL = proxyAuthURLParam ? new URL(proxyAuthURLParam) : null
+      if (!proxyAuthURL || !sessionDomainReaches(proxyAuthURL.hostname) || !(await getProxyAuthWithCache(proxyAuthURL))) {
+        // Throw oidc error
+        const error: errors.OIDCProviderError = {
+          statusCode: 400,
+          error: 'proxyauth_url_invalid',
+          error_description: 'proxyauth_url is invalid',
+          allow_redirect: false,
+          status: 400,
+          expose: true,
+          name: 'proxyauth_url_invalid',
+          message: 'proxyauth_url_invalid',
         }
-      } else {
-        const user = oidc.account?.accountId ? await getUserById(oidc.account.accountId) : null
-        if (user?.hasTotp && loginFactors(amr) < 2) {
-          return Check.REQUEST_PROMPT
-        }
+        throw error
       }
     }
 
@@ -191,7 +226,6 @@ export function isOIDCProviderError(e: unknown): e is errors.OIDCProviderError {
     && 'error_description' in e
 }
 
-const extraParams: (keyof OIDCExtraParams)[] = ['proxyauth_url']
 await makeKeysValid()
 export const initialJwks = { keys: (await getJWKs()).map(k => k.jwk) }
 export const providerCookieKeys = (await getCookieKeys()).map(k => k.value)
@@ -302,8 +336,20 @@ const configuration: Configuration = {
       // any redirect will work, injected custom redirect_uri validator below
       redirect_uris: [appConfig.APP_URL],
       response_modes: ['query'],
-      // not actually used for oidc, just for logging in for
-      // profile management and proxy auth
+      // not actually used for oidc, just for logging in for profile management
+      response_types: ['none'],
+      scope: 'openid',
+    }, {
+      client_id: 'proxyauth_internal_client',
+      // unique every time, never used
+      client_secret: generate({
+        length: 32,
+        numbers: true,
+      }),
+      // special redirect checking logic, injected custom redirect_uri validator below
+      redirect_uris: [appConfig.APP_URL],
+      response_modes: ['query'],
+      // not actually used for oidc, just for logging in for proxy auth
       response_types: ['none'],
       scope: 'openid',
     },
@@ -348,10 +394,10 @@ const configuration: Configuration = {
   },
   renderError: (ctx, out, _error) => {
     ctx.body = {
-      error: out,
+      error: out.error,
+      error_description: out.error_description,
     }
   },
-  extraParams: extraParams,
   clientBasedCORS: (_ctx, origin, client) => {
     const originUrl = URL.parse(origin)
     if (originUrl?.protocol === 'https:') {
@@ -425,6 +471,18 @@ provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(re
     // auth_internal_client redirect_uri is allowed if hostname matches APP_URL
     const redirectURL = URL.parse(redirectUri)
     return !!redirectURL && redirectURL.hostname === appUrl().hostname
+  }
+
+  // proxyauth_internal_client redirect_uri is formatted like proxyauth callback and proxyauth_url redirect can be reached by session domain
+  if (Provider.ctx?.oidc.params?.client_id === 'proxyauth_internal_client') {
+    const redirectURL = URL.parse(redirectUri)
+    const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
+    const proxyAuthURL = proxyAuthURLParam ? new URL(proxyAuthURLParam) : null
+    return !!redirectURL
+      && redirectURL.hostname === appUrl().hostname
+      && redirectURL.pathname.endsWith('/api/proxyauth_cb')
+      && !!proxyAuthURL
+      && sessionDomainReaches(proxyAuthURL.hostname)
   }
 
   // Check if any client redirectUris are a wildcard match

@@ -116,7 +116,11 @@ adminRouter.post('/client',
       await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
       res.send()
     } catch (e) {
-      res.status(400).send({ message: isOIDCProviderError(e) ? e.error_description : e })
+      if (isOIDCProviderError(e)) {
+        res.status(400).send({ message: e.error_description })
+      } else {
+        throw e
+      }
     }
   })
 

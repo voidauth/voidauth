@@ -15,6 +15,7 @@ export class TotpInputComponent implements AfterViewInit {
   disabled = input<boolean>()
   uri = input<string>()
   secret = input<string>()
+  enableMfa = input<boolean>()
 
   qrcodeData: string | null = null
 

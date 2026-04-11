@@ -7,11 +7,14 @@ import type { CurrentUserPrivateDetails, UserDetails } from '@shared/api-respons
 import { authRouter } from './auth'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
-import appConfig, { getSessionDomain, sessionDomainReaches } from '../util/config'
+import appConfig, { sessionDomainReaches } from '../util/config'
 import { logger } from '../util/logger'
 import { userCanLogin, userIsPrivileged, userIsPrivilegedForEmail, userIsPrivilegedForTotpCreate } from '../util/auth'
 import { getSession } from '../oidc/provider'
 import { transaction } from '../db/db'
+import { zodValidate } from '../util/zodValidate'
+import zod from 'zod'
+import { getProxyAuthWithCache } from '../db/proxyAuth'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -77,30 +80,58 @@ router.get('/authz/auth-request', async (req: Request, res) => {
   await proxyAuth(url, 'auth-request', req, res)
 })
 
-router.get('/cb', (req, res) => {
-  const { error, error_description, iss, redir } = req.query
-  if (error) {
-    res.status(500).send({
-      error,
-      error_description,
-      iss,
-    })
-    return
-  }
-
-  const r = (redir && typeof redir === 'string' && URL.parse(redir)) || undefined
-
-  if (r) {
-    if (!sessionDomainReaches(r.hostname)) {
-      res.status(400).send({ message: `ProxyAuth Domain hostname '${r.hostname}' is not covered by session domain '${String(getSessionDomain())}'` })
+router.get('/cb',
+  zodValidate({
+    query: {
+      error: zod.string().optional(),
+      error_description: zod.string().optional(),
+      iss: zod.string().optional(),
+    },
+  }),
+  (req, res) => {
+    const { error } = req.query
+    if (error) {
+      res.status(500).send({
+        message: 'Error occurred during authentication.',
+      })
       return
     }
-  }
 
-  res.redirect(r?.href || appConfig.APP_URL)
-  res.send()
-  return
-})
+    res.redirect(appConfig.APP_URL)
+    return
+  })
+
+router.get('/proxyauth_cb',
+  zodValidate({
+    query: {
+      error: zod.string().optional(),
+      error_description: zod.string().optional(),
+      iss: zod.string().optional(),
+      proxyauth_url: zod.string().optional(),
+    },
+  }),
+  async (req, res) => {
+    const { error, proxyauth_url } = req.query
+    if (error) {
+      res.status(500).send({
+        message: 'Error occurred during ProxyAuth authentication.',
+      })
+      return
+    }
+
+    const proxyAuthURL = typeof proxyauth_url === 'string' ? URL.parse(proxyauth_url) : null
+    if (!proxyAuthURL || !sessionDomainReaches(proxyAuthURL.hostname) || !(await getProxyAuthWithCache(proxyAuthURL))) {
+      logger({
+        level: 'error',
+        message: 'Invalid proxyauth_url query parameter in ProxyAuth callback.',
+      })
+      res.status(400).send({ message: 'Invalid proxyauth_url query parameter in ProxyAuth callback.' })
+      return
+    }
+
+    res.redirect(proxyAuthURL.href)
+    return
+  })
 
 router.use('/public', publicRouter)
 

@@ -160,7 +160,7 @@ userRouter.patch('/password',
     }
 
     if (user.hasPassword && (!oldPassword || !await checkPasswordHash(user.id, oldPassword))) {
-      res.sendStatus(403)
+      res.sendStatus(401)
       return
     }
 
