@@ -8,6 +8,13 @@ Security Groups are created from the admin Groups page, users can be added to gr
 > [!TIP]
 > Users with the `auth_admins` group will not be denied access to any resource, regardless of other security group restrictions.
 
+### Options
+
+Security Group settings also includes additional options:
+
+- MFA Required: Users in this group will need to use Multi-Factor Authentication to log in.
+- Auto Assign: This group will be added to new invitations by default.
+
 <p align=center>
 <img width="336" alt="image" src="/public/screenshots/91429974-7e2c-4c3a-80a4-ad25e5ea6416.png" />
 </p>
