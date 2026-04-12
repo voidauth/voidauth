@@ -41,9 +41,10 @@ export const adminRouter = Router()
 
 adminRouter.use(checkPrivileged, checkAdmin)
 
-adminRouter.get('/config', (_req, res) => {
+adminRouter.get('/config', async (_req, res) => {
   res.send({
     defaultUserExpireDuration: appConfig.DEFAULT_USER_EXPIRES_IN,
+    defaultGroups: (await db().table<Group>(TABLES.GROUP).select('name').where({ autoAssign: true })).map(g => g.name),
   } satisfies AdminConfig)
 })
 
@@ -548,7 +549,7 @@ adminRouter.post('/group',
       return
     }
 
-    const { id, name, mfaRequired, users } = req.body
+    const { id, name, mfaRequired, autoAssign, users } = req.body
 
     // Check for name conflict
     const conflictingGroup = await db().select()
@@ -562,26 +563,33 @@ adminRouter.post('/group',
 
     const groupId = id ?? randomUUID()
 
-    // Do not update the ADMIN_GROUP
-    if (name.toLowerCase() !== ADMIN_GROUP.toLowerCase()) {
-      const group: Group = {
-        id: groupId,
-        name,
-        mfaRequired,
-        createdBy: currentUser.id,
-        updatedBy: currentUser.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-
-      await db().table<Group>(TABLES.GROUP).insert(group).onConflict(['id']).merge(mergeKeys(group))
-    } else {
+    // Admin group has special checks
+    if (name.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
       // If this IS the ADMIN_GROUP, there should always be at least one user
       if (!users.length) {
         res.sendStatus(400)
         return
       }
+
+      // Admin group cannot be auto-assigned
+      if (autoAssign) {
+        res.sendStatus(400)
+        return
+      }
     }
+
+    const group: Group = {
+      id: groupId,
+      name,
+      mfaRequired,
+      autoAssign,
+      createdBy: currentUser.id,
+      updatedBy: currentUser.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    await db().table<Group>(TABLES.GROUP).insert(group).onConflict(['id']).merge(mergeKeys(group))
 
     const userGroups: UserGroup[] = users.map((u) => {
       return {

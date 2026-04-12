@@ -46,6 +46,7 @@ export class GroupComponent {
     name: new FormControl<string | null>(null, [Validators.required, Validators.pattern('^[A-Za-z0-9_-]+$')]),
     users: new FormControl<GroupUsers['users']>([], { nonNullable: true }),
     mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
+    autoAssign: new FormControl<boolean>(false, { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<GroupUpsert, 'id' | 'name'> & Nullable<Pick<GroupUpsert, 'name'>>>>
 
   private adminService = inject(AdminService)
@@ -67,6 +68,7 @@ export class GroupComponent {
           this.form.reset({
             name: group.name,
             mfaRequired: !!group.mfaRequired,
+            autoAssign: !!group.autoAssign,
             users: group.users.map((u) => {
               return { id: u.id, username: u.username }
             }),
@@ -78,6 +80,8 @@ export class GroupComponent {
 
         if (this.form.controls.name.value?.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
           this.form.controls.name.disable()
+          this.form.controls.autoAssign.setValue(false)
+          this.form.controls.autoAssign.disable()
         }
       } catch (e) {
         console.error(e)

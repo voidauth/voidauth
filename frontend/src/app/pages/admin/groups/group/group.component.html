@@ -80,6 +80,8 @@
 
       <mat-checkbox formControlName="mfaRequired">{{ "admin.group.checkboxes.mfa-required" | translate }}</mat-checkbox>
 
+      <mat-checkbox formControlName="autoAssign">{{ "admin.group.checkboxes.auto-assign" | translate }}</mat-checkbox>
+
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">
           @if (id) {

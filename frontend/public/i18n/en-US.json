@@ -420,7 +420,8 @@
         "users": "Users:"
       },
       "checkboxes": {
-        "mfa-required": "MFA Required"
+        "mfa-required": "MFA Required",
+        "auto-assign": "Auto Assign"
       }
     },
     "invitations": {

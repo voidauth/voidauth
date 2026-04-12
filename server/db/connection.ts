@@ -19,7 +19,16 @@ async function runSchemaUpdates(connectionOptions: Knex.Config) {
   // When running schema migrations with sqlite make sure foreign key checking is DISABLED to prevent data loss
   if (connectionOptions.client === 'sqlite3' || connectionOptions.client === 'better-sqlite') {
     const { pool, ...rest } = connectionOptions
-    connectionOptions = rest
+    // create new connectionOptions object with foreign key checking DISABLED
+    connectionOptions = { ...rest, pool: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      afterCreate: (conn: any, cb: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        conn.prepare('PRAGMA foreign_keys = OFF').run()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        cb()
+      },
+    } }
   }
 
   const db = knex(connectionOptions)
@@ -28,6 +37,18 @@ async function runSchemaUpdates(connectionOptions: Knex.Config) {
   const [,migrations]: [number, string[]] = await db.migrate.latest({
     loadExtensions: ['.ts'],
   })
+  if (connectionOptions.client === 'sqlite' || connectionOptions.client === 'better-sqlite3') {
+    const violations = await db.raw<unknown[]>('PRAGMA foreign_key_check')
+    if (violations.length) {
+      logger({ level: 'error', message: 'foreign_key_check constraint violations detected in database!',
+        error: {
+          name: 'Foreign Key Check Violation',
+          message: 'foreign_key_check constraint violations detected in database!',
+        },
+      })
+    }
+    console.log(violations)
+  }
   await db.destroy()
   return migrations
 }
@@ -82,13 +103,21 @@ function connectionSQLite(): Knex.Config {
     })
   }
 
-  return {
+  const connectionOptions: Knex.Config = {
     client: 'better-sqlite3',
     connection: {
       filename: './db/db.sqlite',
     },
     useNullAsDefault: true,
-    pool: {
+    migrations: {
+      // disable transactions for db migrations, they only work for postgres anyways and cause issues with sqlite dbs
+      disableTransactions: true,
+    },
+  }
+
+  // Make sure that for sqlite DBs foreign key checking is ENABLED
+  if (connectionOptions.client === 'sqlite3' || connectionOptions.client === 'better-sqlite') {
+    connectionOptions.pool = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       afterCreate: (conn: any, cb: any) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
@@ -96,6 +125,8 @@ function connectionSQLite(): Knex.Config {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         cb()
       },
-    },
+    }
   }
+
+  return connectionOptions
 }

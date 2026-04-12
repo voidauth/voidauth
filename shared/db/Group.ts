@@ -8,6 +8,7 @@ export type Group = Audit & {
   id: string
   name: string
   mfaRequired: boolean | number
+  autoAssign: boolean | number
 }
 
 export type UserGroup = Audit & {
