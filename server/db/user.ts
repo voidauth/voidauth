@@ -147,6 +147,7 @@ export async function createInitialAdmin() {
       id: randomUUID(),
       name: ADMIN_GROUP,
       mfaRequired: false,
+      autoAssign: false,
       createdBy: initialAdminUser.id,
       updatedBy: initialAdminUser.id,
       createdAt: new Date(),

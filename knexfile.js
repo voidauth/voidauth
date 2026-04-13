@@ -10,5 +10,4 @@ export default {
     migrations: {
         extension: 'ts',
     },
-    client: 'pg',
 }

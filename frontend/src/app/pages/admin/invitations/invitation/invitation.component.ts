@@ -82,18 +82,27 @@ export class InvitationComponent {
 
         this.config = await this.configService.getConfig()
         this.adminConfig = await this.adminService.config()
+        this.groups = (await this.adminService.groups()).map(g => g.name)
 
         if (id) {
+          // We are updating an invite
           this.id = id
           const invitation = await this.adminService.invitation(this.id)
           await this.formSet(invitation)
           this.setEmailVerifiedState()
-        } else if (this.adminConfig.defaultUserExpireDuration) {
-          const defaultExpireDate = new Date(Date.now() + this.adminConfig.defaultUserExpireDuration * 1000)
-          this.form.controls.userExpiresAt.setValue(defaultExpireDate)
+        } else {
+          // This is a new invite
+          if (this.adminConfig.defaultUserExpireDuration) {
+            const defaultExpireDate = new Date(Date.now() + this.adminConfig.defaultUserExpireDuration * 1000)
+            this.form.controls.userExpiresAt.setValue(defaultExpireDate)
+          }
+
+          if (this.adminConfig.defaultGroups.length) {
+            this.form.controls.groups.setValue(this.adminConfig.defaultGroups.sort())
+            this.form.controls.groups.markAsDirty()
+          }
         }
 
-        this.groups = (await this.adminService.groups()).map(g => g.name)
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)

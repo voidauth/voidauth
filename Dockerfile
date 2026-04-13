@@ -34,7 +34,7 @@ RUN npm run server:build
 # Build frontend
 RUN cd ./frontend && npm run build
 
-# Install external dependencies in dist folder
+# Install external dependencies that could not be bundled in dist folder
 RUN cd ./dist && npm i
 
 # 
