@@ -17,6 +17,7 @@ import type { IncomingMessage, ServerResponse } from 'http'
 import { getProxyAuthWithCache } from '../db/proxyAuth'
 import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
 import { randomBytes } from 'crypto'
+import { logger } from '../util/logger'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -203,6 +204,9 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
         errorMessage = 'proxyauth_internal_client but no proxyauth domain matches proxyauth redirect url.'
       }
       if (errorMessage) {
+        logger({ level: 'error', message: 'proxyauth_internal_client validation failed.', error: {
+          message: errorMessage + ` redirect_url = ${String(oidc.params?.redirect_uri)}`,
+        } })
         // Throw oidc error
         const error: errors.OIDCProviderError = {
           statusCode: 400,

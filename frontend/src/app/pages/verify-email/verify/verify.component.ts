@@ -43,9 +43,21 @@ export class VerifyComponent implements OnInit {
       this.spinnerService.show()
 
       try {
-        await this.authService.interactionExists()
+        const info = await this.authService.interactionExists()
+        if (info.successRedirect) {
+          window.location.assign(info.successRedirect.location)
+        }
       } catch (_e) {
+        // interaction is missing, could not continue without it
         await this.authService.createInteraction()
+        try {
+          await this.authService.interactionExists()
+        } catch (e) {
+          // attempted to create interaction and failed
+          console.error('Interaction cookie session not set even after creating one.')
+          console.error(e)
+          this.snackbarService.error('Could not create session.')
+        }
       }
 
       this.config = await this.configService.getConfig()
