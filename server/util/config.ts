@@ -300,7 +300,7 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
           value,
         },
       },
-      error: e instanceof Error ? e : { message: String(e) },
+      errors: e instanceof Error ? [e] : [{ message: String(e) }],
     })
   }
 }
@@ -393,7 +393,7 @@ appConfig.APP_URL = appConfig.APP_URL.replace(/\/+$/, '')
 if (!appConfig.APP_URL || !URL.parse(appConfig.APP_URL)) {
   logger({
     level: 'error',
-    message: 'APP_URL must be set and be a valid URL, starting with http(s)://',
+    message: 'APP_URL must be set and be a valid URL starting with http(s)://',
   })
   exit(1)
 }
@@ -482,11 +482,11 @@ export function getSessionDomain() {
 }
 
 export function sessionDomainReaches(hostName: string) {
-  const targetDomain = getBaseDomain(hostName)
-  const sessionDomain = getSessionDomain()
+  const targetDomain = getBaseDomain(hostName) || hostName
+  const sessionDomain = getSessionDomain() || appUrl().hostname
   // Add dot to start of sessionDomain if it doesn't already have one, to prevent false positives
-  const dotSD = sessionDomain && !sessionDomain.startsWith('.') ? '.' + sessionDomain : sessionDomain
-  return targetDomain === sessionDomain || !dotSD || hostName.endsWith(dotSD)
+  const dotSD = !sessionDomain.startsWith('.') ? '.' + sessionDomain : sessionDomain
+  return targetDomain === sessionDomain || hostName.endsWith(dotSD)
 }
 
 //

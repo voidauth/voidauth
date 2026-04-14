@@ -58,7 +58,7 @@ export async function generateTheme() {
     logger({
       level: 'error',
       message: 'Error occurred while generating theme.',
-      error: error instanceof Error ? error : { message: String(error) },
+      errors: error instanceof Error ? [error] : [{ message: String(error) }],
     })
   }
 }

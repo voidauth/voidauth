@@ -85,7 +85,7 @@ router.get('/', async (req, res) => {
         prompt: prompt.name,
         reasons: prompt.reasons,
         client_id: params.client_id,
-        proxyauth: params.client_id === 'proxyauth_internal_client',
+        redirect_uri: params.redirect_uri,
       },
     },
   })
@@ -393,13 +393,6 @@ router.post('/register',
       }
 
       await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
-
-      // Accepted Invitation should redirect to DEFAULT_REDIRECT if set
-      const defaultRedirect = appConfig.DEFAULT_REDIRECT
-      if (defaultRedirect) {
-        interaction.params.redirect_uri = defaultRedirect
-        await interaction.save(TTLs.INTERACTION)
-      }
     }
 
     const createdUser = await getUserById(user.id)
@@ -544,13 +537,6 @@ router.post('/register/passkey/end',
       }
 
       await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
-
-      // Accepted Invitation should redirect to DEFAULT_REDIRECT if set
-      const defaultRedirect = appConfig.DEFAULT_REDIRECT
-      if (defaultRedirect) {
-        interaction.params.redirect_uri = defaultRedirect
-        await interaction.save(TTLs.INTERACTION)
-      }
     }
 
     const createdUser = await getUserById(user.id)
@@ -932,13 +918,6 @@ router.post('/verify_email',
       email: emailVerification.email,
     })
     await db().delete().table<EmailVerification>(TABLES.EMAIL_VERIFICATION).where(emailVerification)
-
-    // Email verification should redirect to DEFAULT_REDIRECT if set
-    const defaultRedirect = appConfig.DEFAULT_REDIRECT
-    if (defaultRedirect && interaction) {
-      interaction.params.redirect_uri = defaultRedirect
-      await interaction.save(TTLs.INTERACTION)
-    }
 
     const redir = await loginResult(req, res, {
       userId: user.id,

@@ -41,10 +41,10 @@ async function runSchemaUpdates(connectionOptions: Knex.Config) {
     const violations = await db.raw<unknown[]>('PRAGMA foreign_key_check')
     if (violations.length) {
       logger({ level: 'error', message: 'foreign_key_check constraint violations detected in database!',
-        error: {
-          name: 'Foreign Key Check Violation',
+        errors: [{
+          name: 'ForeignKeyCheckViolation',
           message: 'foreign_key_check constraint violations detected in database!',
-        },
+        }],
       })
     }
     console.log(violations)

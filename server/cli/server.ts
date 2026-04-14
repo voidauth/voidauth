@@ -125,7 +125,7 @@ export async function serve() {
           logger({
             level: 'error',
             message: 'Error occurred during transaction commit/rollback',
-            error: error instanceof Error ? error : { message: String(error) },
+            errors: error instanceof Error ? [error] : [{ message: String(error) }],
           })
         } finally {
           purgeAsyncLog()
@@ -238,14 +238,14 @@ export async function serve() {
   })
 
   // Last chance error handler
-  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     logger({
       level: 'error',
       message: 'Unhandled API error',
-      error: err,
+      errors: err instanceof Error ? [err] : [{ message: String(err) }],
     })
     if (!res.statusCode || res.statusCode === 200) {
-      const errStatus = 'status' in err && typeof err.status === 'number' ? err.status : 500
+      const errStatus = err && typeof err === 'object' && 'status' in err && typeof err.status === 'number' ? err.status : 500
       res.status(errStatus)
     }
     if (res.headersSent) {
@@ -340,7 +340,7 @@ export async function serve() {
         logger({
           level: 'error',
           message: 'Error occurred during table maintenance',
-          error: e instanceof Error ? e : { message: String(e) },
+          errors: e instanceof Error ? [e] : [{ message: String(e) }],
         })
       } finally {
         purgeAsyncLog()
@@ -353,7 +353,7 @@ export async function serve() {
         logger({
           level: 'error',
           message: 'Error occurred while sending admin notifications',
-          error: e instanceof Error ? e : { message: String(e) },
+          errors: e instanceof Error ? [e] : [{ message: String(e) }],
         })
       } finally {
         purgeAsyncLog()

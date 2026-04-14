@@ -374,7 +374,7 @@ adminRouter.patch('/user',
           logger({
             level: 'error',
             message: 'Error occurred while sending approved email.',
-            error: e instanceof Error ? e : { message: String(e) },
+            errors: e instanceof Error ? [e] : [{ message: String(e) }],
           })
         }
       }
@@ -466,7 +466,7 @@ adminRouter.patch('/users/approve',
           logger({
             level: 'error',
             message: 'Error occurred while sending approved email.',
-            error: e instanceof Error ? e : { message: String(e) },
+            errors: e instanceof Error ? [e] : [{ message: String(e) }],
           })
         }
       }

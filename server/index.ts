@@ -45,7 +45,7 @@ export const argv = yargs(hideBin(process.argv))
       logger({
         level: 'error',
         message: 'Server failed to start',
-        error: e instanceof Error ? e : { message: String(e) },
+        errors: e instanceof Error ? [e] : [{ message: String(e) }],
       })
       exit(1)
     }
@@ -63,7 +63,7 @@ export const argv = yargs(hideBin(process.argv))
         logger({
           level: 'error',
           message: 'Database migration failed',
-          error: e instanceof Error ? e : { message: String(e) },
+          errors: e instanceof Error ? [e] : [{ message: String(e) }],
         })
         exit(1)
       }
@@ -95,7 +95,7 @@ export const argv = yargs(hideBin(process.argv))
         logger({
           level: 'error',
           message: 'Failed to generate password reset link',
-          error: e instanceof Error ? e : { message: String(e) },
+          errors: e instanceof Error ? [e] : [{ message: String(e) }],
         })
         exit(1)
       }

@@ -88,7 +88,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       } catch (_e) {
         // interaction is missing, could not log in without it
-        await this.authService.createInteraction()
+        await this.authService.createInteraction(false)
         try {
           await this.authService.interactionExists()
         } catch (e) {

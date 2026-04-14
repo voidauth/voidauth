@@ -45,7 +45,16 @@ export class VerifyComponent implements OnInit {
       try {
         await this.authService.interactionExists()
       } catch (_e) {
-        await this.authService.createInteraction()
+        // interaction is missing, could not continue without it
+        await this.authService.createInteraction(true)
+        try {
+          await this.authService.interactionExists()
+        } catch (e) {
+          // attempted to create interaction and failed
+          console.error('Interaction cookie session not set even after creating one.')
+          console.error(e)
+          this.snackbarService.error('Could not create session.')
+        }
       }
 
       this.config = await this.configService.getConfig()

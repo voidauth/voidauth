@@ -2,7 +2,7 @@ import { booleanString } from './util'
 import { als } from './als'
 
 export type LogShape = {
-  // debug logs are only printed when ENABLE_DEBUG is true, and do not include stack traces
+  // debug logs are only printed when ENABLE_DEBUG is true
   // error logs are reserved for configuration or runtime errors, and always printed
   level: 'debug' | 'info' | 'error'
   timestamp?: number
@@ -31,16 +31,24 @@ export type LogShape = {
       amr: string[]
     }
   }
-  error?: {
+  errors?: {
     name?: string
     message?: string
-    stack?: string
-  }
+  }[]
 }
 
 export function logger(log: LogShape) {
   if (!log.timestamp) {
     log = { timestamp: Date.now(), ...log }
+  }
+
+  if (log.errors) {
+    log.errors = log.errors.map((e) => {
+      return {
+        name: e.name,
+        message: e.message,
+      }
+    })
   }
 
   // Store the log in the ALS context if it exists
@@ -67,17 +75,15 @@ export function logger(log: LogShape) {
       ? Math.min(higherLog.timestamp, lowerLog.timestamp)
       : lowerLog.timestamp || higherLog.timestamp
 
-    const error = higherLog.error
-      ? { name: higherLog.error.name, message: higherLog.error.message, stack: higherLog.error.stack }
-      : undefined
+    const error = higherLog.errors && lowerLog.errors ? higherLog.errors.concat(lowerLog.errors) : higherLog.errors || lowerLog.errors
 
     store.log = {
       ...lowerLog, ...higherLog,
       // earlier timestamp takes precedence
       timestamp: earlierTimestamp,
       details: lowerLog.details || higherLog.details ? { ...lowerLog.details, ...higherLog.details } : undefined,
-      // error and stack should be taken from the log with the higher level, and if they do not exist should be unset
-      error,
+      // error should be taken from the log with the higher level, and if they do not exist should be unset
+      errors: error,
     }
   }
   return log // do not print the log immediately, it will be printed when purgeAsyncLog is called
@@ -102,13 +108,7 @@ function printLog(log: LogShape) {
       console.log(format(log))
       break
     case 'error':
-      // Only print the stack trace when ENABLE_DEBUG is enabled
-      if (!booleanString(process.env.ENABLE_DEBUG)) {
-        const { error, ...rest } = log
-        console.error(format({ ...rest, error: error ? { name: error.name, message: error.message } : undefined }))
-      } else {
-        console.error(format(log))
-      }
+      console.error(format(log))
       break
   }
 }

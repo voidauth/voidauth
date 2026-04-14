@@ -59,6 +59,9 @@ router.get('/authz/forward-auth', async (req: Request, res) => {
     logger({
       level: 'error',
       message: 'Invalid x-forwarded headers in ProxyAuth Domain request.',
+      errors: [{
+        message: 'X-Forwarded-* headers in a ProxyAuth Domain request were not properly set.',
+      }],
     })
     res.sendStatus(400)
     return
@@ -72,7 +75,10 @@ router.get('/authz/auth-request', async (req: Request, res) => {
   if (!url) {
     logger({
       level: 'error',
-      message: 'Invalid x-original-url header in ProxyAuth Domain request.',
+      message: 'Invalid X-Original-Url header in ProxyAuth Domain request.',
+      errors: [{
+        message: 'X-Original-Url header in a ProxyAuth Domain request was not properly set.',
+      }],
     })
     res.sendStatus(400)
     return
@@ -83,13 +89,14 @@ router.get('/authz/auth-request', async (req: Request, res) => {
 router.get('/cb',
   zodValidate({
     query: {
+      defaultRedir: zod.stringbool().optional(),
       error: zod.string().optional(),
       error_description: zod.string().optional(),
       iss: zod.string().optional(),
     },
   }),
   (req, res) => {
-    const { error } = req.query
+    const { error, defaultRedir } = req.query
     if (error) {
       res.status(500).send({
         message: 'Error occurred during authentication.',
@@ -97,7 +104,9 @@ router.get('/cb',
       return
     }
 
-    res.redirect(appConfig.APP_URL)
+    const redir = defaultRedir && appConfig.DEFAULT_REDIRECT ? appConfig.DEFAULT_REDIRECT : appConfig.APP_URL
+
+    res.redirect(redir)
     return
   })
 
@@ -124,6 +133,9 @@ router.get('/proxyauth_cb',
       logger({
         level: 'error',
         message: 'Invalid proxyauth_url query parameter in ProxyAuth callback.',
+        errors: [{
+          message: 'An invalid proxyauth_url parameter was provided to the proxy auth callback endpoint.',
+        }],
       })
       res.status(400).send({ message: 'Invalid proxyauth_url query parameter in ProxyAuth callback.' })
       return
