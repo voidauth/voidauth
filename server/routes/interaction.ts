@@ -85,7 +85,7 @@ router.get('/', async (req, res) => {
         prompt: prompt.name,
         reasons: prompt.reasons,
         client_id: params.client_id,
-        proxyauth: params.client_id === 'proxyauth_internal_client',
+        redirect_uri: params.redirect_uri,
       },
     },
   })
