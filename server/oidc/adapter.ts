@@ -74,7 +74,9 @@ export class KnexAdapter implements Adapter {
           level: 'error',
           message: 'Error occurred while parsing OIDC payload.',
           // do not leak error details, may contain secrets
-          error: e instanceof Error ? { name: e.name } : { message: 'Error parsing OIDC payload' },
+          errors: e instanceof Error
+            ? [{ name: e.name, message: 'Error parsing OIDC payload' }]
+            : [{ message: 'Error parsing OIDC payload' }],
         })
         throw e
       }

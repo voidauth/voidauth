@@ -204,10 +204,10 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
         errorMessage = 'proxyauth_internal_client but no proxyauth domain matches proxyauth redirect url.'
       }
       if (errorMessage) {
-        logger({ level: 'debug', message: 'proxyauth_internal_client validation failed.', error: {
+        logger({ level: 'debug', message: 'proxyauth_internal_client validation failed.', errors: [{
           name: 'ProxyAuthURLInvalid',
           message: errorMessage + ` redirect_url = ${String(oidc.params?.redirect_uri)}`,
-        } })
+        }] })
         // Throw oidc error
         const error: errors.OIDCProviderError = {
           statusCode: 400,

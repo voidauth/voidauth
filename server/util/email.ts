@@ -45,7 +45,7 @@ if (appConfig.SMTP_HOST) {
     logger({
       level: 'error',
       message: 'SMTP email connection failed',
-      error: e instanceof Error ? e : { message: String(e) },
+      errors: e instanceof Error ? [e] : [{ message: String(e) }],
     })
   })
 } else {

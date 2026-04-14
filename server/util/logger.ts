@@ -31,15 +31,24 @@ export type LogShape = {
       amr: string[]
     }
   }
-  error?: {
+  errors?: {
     name?: string
     message?: string
-  }
+  }[]
 }
 
 export function logger(log: LogShape) {
   if (!log.timestamp) {
     log = { timestamp: Date.now(), ...log }
+  }
+
+  if (log.errors) {
+    log.errors = log.errors.map((e) => {
+      return {
+        name: e.name,
+        message: e.message,
+      }
+    })
   }
 
   // Store the log in the ALS context if it exists
@@ -66,9 +75,7 @@ export function logger(log: LogShape) {
       ? Math.min(higherLog.timestamp, lowerLog.timestamp)
       : lowerLog.timestamp || higherLog.timestamp
 
-    const error = higherLog.error
-      ? { name: higherLog.error.name, message: higherLog.error.message }
-      : undefined
+    const error = higherLog.errors && lowerLog.errors ? higherLog.errors.concat(lowerLog.errors) : higherLog.errors || lowerLog.errors
 
     store.log = {
       ...lowerLog, ...higherLog,
@@ -76,7 +83,7 @@ export function logger(log: LogShape) {
       timestamp: earlierTimestamp,
       details: lowerLog.details || higherLog.details ? { ...lowerLog.details, ...higherLog.details } : undefined,
       // error should be taken from the log with the higher level, and if they do not exist should be unset
-      error,
+      errors: error,
     }
   }
   return log // do not print the log immediately, it will be printed when purgeAsyncLog is called

@@ -300,7 +300,7 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
           value,
         },
       },
-      error: e instanceof Error ? e : { message: String(e) },
+      errors: e instanceof Error ? [e] : [{ message: String(e) }],
     })
   }
 }

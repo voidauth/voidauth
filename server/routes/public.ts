@@ -81,7 +81,7 @@ publicRouter.post('/send_password_reset',
       logger({
         level: 'error',
         message: 'Error occurred while sending password reset email.',
-        error: e instanceof Error ? e : { message: String(e) },
+        errors: e instanceof Error ? [e] : [{ message: String(e) }],
       })
     }
 
