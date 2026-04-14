@@ -93,6 +93,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
           await this.authService.interactionExists()
         } catch (e) {
           // attempted to create interaction and failed
+          console.error('Interaction cookie session not set even after creating one.')
           console.error(e)
           this.snackbarService.error('Could not create session.')
           this.interactionAvailable = false

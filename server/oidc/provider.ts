@@ -194,12 +194,20 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
       const redirectURL = typeof oidc.params?.redirect_uri === 'string' ? URL.parse(oidc.params.redirect_uri) : null
       const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
       const proxyAuthURL = proxyAuthURLParam ? new URL(proxyAuthURLParam) : null
-      if (!proxyAuthURL || !sessionDomainReaches(proxyAuthURL.hostname) || !(await getProxyAuthWithCache(proxyAuthURL))) {
+      let errorMessage = ''
+      if (!proxyAuthURL) {
+        errorMessage = 'proxyauth_internal_client but no proxyauth redirect url.'
+      } else if (!sessionDomainReaches(proxyAuthURL.hostname)) {
+        errorMessage = 'proxyauth_internal_client but session domain does not reach proxyauth redirect url.'
+      } else if (!(await getProxyAuthWithCache(proxyAuthURL))) {
+        errorMessage = 'proxyauth_internal_client but no proxyauth domain matches proxyauth redirect url.'
+      }
+      if (errorMessage) {
         // Throw oidc error
         const error: errors.OIDCProviderError = {
           statusCode: 400,
           error: 'proxyauth_url_invalid',
-          error_description: 'proxyauth_url is invalid',
+          error_description: errorMessage,
           allow_redirect: false,
           status: 400,
           expose: true,
