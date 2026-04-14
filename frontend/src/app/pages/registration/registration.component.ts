@@ -84,7 +84,7 @@ export class RegistrationComponent implements OnInit {
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it
-        await this.authService.createInteraction()
+        await this.authService.createInteraction(true)
       } finally {
         this.spinnerService.hide()
       }

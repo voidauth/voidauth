@@ -83,13 +83,14 @@ router.get('/authz/auth-request', async (req: Request, res) => {
 router.get('/cb',
   zodValidate({
     query: {
+      defaultRedir: zod.stringbool().optional(),
       error: zod.string().optional(),
       error_description: zod.string().optional(),
       iss: zod.string().optional(),
     },
   }),
   (req, res) => {
-    const { error } = req.query
+    const { error, defaultRedir } = req.query
     if (error) {
       res.status(500).send({
         message: 'Error occurred during authentication.',
@@ -97,7 +98,9 @@ router.get('/cb',
       return
     }
 
-    res.redirect(appConfig.APP_URL)
+    const redir = defaultRedir && appConfig.DEFAULT_REDIRECT ? appConfig.DEFAULT_REDIRECT : appConfig.APP_URL
+
+    res.redirect(redir)
     return
   })
 

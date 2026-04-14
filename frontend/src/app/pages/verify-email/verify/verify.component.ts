@@ -43,13 +43,10 @@ export class VerifyComponent implements OnInit {
       this.spinnerService.show()
 
       try {
-        const info = await this.authService.interactionExists()
-        if (info.successRedirect) {
-          window.location.assign(info.successRedirect.location)
-        }
+        await this.authService.interactionExists()
       } catch (_e) {
         // interaction is missing, could not continue without it
-        await this.authService.createInteraction()
+        await this.authService.createInteraction(true)
         try {
           await this.authService.interactionExists()
         } catch (e) {
