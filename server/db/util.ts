@@ -42,6 +42,9 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
       logger({
         level: 'error',
         message: 'Encrypted metadata is missing required properties.',
+        errors: [{
+          message: 'An encrypted value in the database is improperly formatted.',
+        }],
       })
       return null
     }
@@ -67,6 +70,9 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
     logger({
       level: 'error',
       message: 'Encrypted value storage algorithm not recognized.',
+      errors: [{
+        message: 'An encrypted value in the database is using an encryption scheme that is not recognized.',
+      }],
     })
     return null
   }

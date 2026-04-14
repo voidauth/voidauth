@@ -48,7 +48,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
     logger({
       level: 'error',
       message: 'WARNING!!!'
-        + ' You have key(s) that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
+        + ' There are keys that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
         + ' This could be due to a mistake while rotating the storage key.'
         + ' New keys were generated to replace them, this invalidated all sessions and tokens.'
         + ' If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY and get your keys back.',
@@ -78,7 +78,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
     logger({
       level: 'error',
       message: 'WARNING!!!'
-        + ' You have OIDC Apps that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
+        + ' There are OIDC Apps that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
         + ' This could be due to a mistake while rotating the storage key.'
         + ' If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.'
         + ' Non-decryptable Clients: ' + lockedClients.map(c => c.id).join(', '),
@@ -98,9 +98,10 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
     logger({
       level: 'error',
       message: 'WARNING!!!'
-        + ' You have MFA TOTP codes that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
+        + ' There are MFA TOTP codes that could not be decrypted with the provided STORAGE_KEY or STORAGE_KEY_SECONDARY.'
         + ' This could be due to a mistake while rotating the storage key.'
-        + ' If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.',
+        + ' If you still have your original STORAGE_KEY, you can set it as the STORAGE_KEY_SECONDARY to recover them.'
+        + ' MFA enabled users may have reduced security until this is fixed!',
     })
   }
 
