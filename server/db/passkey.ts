@@ -44,6 +44,7 @@ export async function getPasskey(id: string) {
 
 export async function savePasskey(passkey: Passkey) {
   await db().table<Passkey>(TABLES.PASSKEY).insert(passkey)
+  return passkey
 }
 
 export async function updateUserPasskey(id: string, userId: string, updates: Partial<Pick<Passkey, 'displayName'>>) {

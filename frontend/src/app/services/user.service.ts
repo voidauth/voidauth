@@ -64,10 +64,6 @@ export class UserService {
     return firstValueFrom(this.http.get<PasskeyResponse[]>('/api/user/passkeys'))
   }
 
-  async updatePasskey(passkey_id: string, displayName: string) {
-    return firstValueFrom(this.http.patch<null>(`/api/user/passkey/${passkey_id}`, { displayName }))
-  }
-
   async removePasskey(passkey_id: string) {
     return firstValueFrom(this.http.delete<null[]>(`/api/user/passkey/${passkey_id}`))
   }

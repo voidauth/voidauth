@@ -128,7 +128,7 @@ export class MfaComponent implements OnInit {
     try {
       // Only require verified passkey if normal passkey would not improve user's mfa level
       const redirect = await this.passkeyService.register({ requireVerified: this.user?.amr.includes('webauthn') })
-      if (redirect) {
+      if (redirect.location) {
         location.assign(redirect.location)
       }
     } catch (error) {
