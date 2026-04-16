@@ -1,16 +1,15 @@
 # Getting Started
 
 ## Initial Setup
-VoidAuth currently only supports setup through docker. The container image expects a mounted volume for configuration, and either a postgres database connection or mounted volume for a SQLite database. There are additional required environment variables listed in the example below, a simple Docker Compose setup using a postgres database:
+
+### Step 1 - Create Compose File
+
+VoidAuth currently only supports setup through docker. Create a `compose.yaml` file in a directory of your choosing.
+
+The service expects a mounted volume for configuration, and either a postgres database connection or mounted volume for a SQLite database. There are additional required environment variables listed in the example below, a simple Docker Compose setup using a postgres database:
 
 ```yaml
 services:
-  # ---------------------------------
-  # Your reverse-proxy service here:
-  # caddy, traefik, nginx, etc.
-  # https:// setup is highly recommended
-  # ---------------------------------
-
   voidauth: 
     image: voidauth/voidauth:latest
     restart: unless-stopped
@@ -50,12 +49,6 @@ Below is an alternate Docker Compose setup using a SQLite database:
 
 ```yaml
 services:
-  # ---------------------------------
-  # Your reverse-proxy service here:
-  # caddy, traefik, nginx, etc.
-  # https:// setup is highly recommended
-  # ---------------------------------
-
   voidauth: 
     image: voidauth/voidauth:latest
     restart: unless-stopped
@@ -84,8 +77,16 @@ services:
 > [!WARNING]
 > The **APP_URL** environment variable **must** be set to the full external url of the VoidAuth service, ex. `APP_URL: https://auth.example.com` or `APP_URL: https://example.com/auth`
 
-> [!CAUTION]
-> During the first start of the app, a **password reset link for the initial admin user** will be shown in the logs. This will never be shown again. You need to copy it, follow the link to your new VoidAuth instance, and set a password. After doing this you can either change the default username, or create a user for yourself which you can add to the **auth_admins** group.
+
+### Step 2 - Run the Service
+
+Start the compose file services by running `docker compose up -d` in the same directory as the `compose.yaml` file.
+
+### Step 3 - Set the Admin Password
+
+During the first start of the app, a **password reset link for the initial admin user** will be shown in the service logs. You can view these logs to retrieve the password reset link with `docker compose logs voidauth`. Copy and paste the link into a browser window, go to your new VoidAuth instance, and set a password for the default admin user.
+
+After signing in as `auth_admin` you can either change the default username or create a user invite for yourself. You can then choose to add your new user to the **auth_admins** group.
 
 > [!IMPORTANT]
 > Any user in the **auth_admins** group will be an administrator in VoidAuth. You should make a different group for administrators of protected domains/apps.
