@@ -423,6 +423,57 @@ const configuration: Configuration = {
 
 export const provider = new Provider(`${appConfig.APP_URL}/oidc`, configuration)
 
+// Log provider errors
+provider.on('server_error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider server error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('authorization.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider authorization error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('backchannel.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider backchannel error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('jwks.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider jwks error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('discovery.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider discovery error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('end_session.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider end_session error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('grant.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider grant error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('introspection.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider introspection error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('pushed_authorization_request.error', (_ctx, error) => {
+  logger({
+    level: 'error',
+    message: 'oidc-provider pushed_authorization_request error',
+    errors: [{ name: error.name, message: error.message }],
+  })
+})
+provider.on('registration_create.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider registration_create error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('registration_read.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider registration_read error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('registration_delete.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider registration_delete error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('registration_update.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider registration_update error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('revocation.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider revocation error', errors: [{ name: error.name, message: error.message }] })
+})
+provider.on('userinfo.error', (_ctx, error) => {
+  logger({ level: 'error', message: 'oidc-provider userinfo error', errors: [{ name: error.name, message: error.message }] })
+})
+
 // Intercept Client Schema errors and prevent some that we want to ignore
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const clientSchemaInvalidate = provider.Client.Schema.prototype.invalidate
