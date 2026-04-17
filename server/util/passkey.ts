@@ -97,4 +97,5 @@ export async function createPasskey(userId: string,
   // Save the authenticator info so that we can
   // get it by user ID later
   await savePasskey(newPasskey)
+  return newPasskey
 }

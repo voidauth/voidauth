@@ -3,6 +3,7 @@ import { getSession, provider } from '../oidc/provider'
 import { checkPasswordHash, getUserById, getUserByInput } from '../db/user'
 import { addConsent, getConsentScopes, getExistingConsent } from '../db/consent'
 import type { Redirect } from '@shared/api-response/Redirect'
+import type { PasskeyRegisterResponse } from '@shared/api-response/PasskeyRegisterResponse'
 import { loginUserValidator } from '@shared/api-request/LoginUser'
 import appConfig from '../util/config'
 import { verifyUserEmailValidator } from '@shared/api-request/VerifyUserEmail'
@@ -31,6 +32,7 @@ import {
   getUserPasskeys,
   saveAuthenticationOptions,
   updatePasskeyCounter,
+  updateUserPasskey,
 } from '../db/passkey'
 import {
   passkeyRpId,
@@ -84,8 +86,8 @@ router.get('/', async (req, res) => {
       interaction: {
         prompt: prompt.name,
         reasons: prompt.reasons,
-        client_id: params.client_id,
-        redirect_uri: params.redirect_uri,
+        client_id: params.client_id as string,
+        redirect_uri: params.redirect_uri as string,
       },
     },
   })
@@ -623,7 +625,7 @@ router.post('/passkey/registration/end',
       return
     }
 
-    await createPasskey(user.id, registrationInfo, currentOptions)
+    const createdPasskey = await createPasskey(user.id, registrationInfo, currentOptions)
 
     const addAmr = ['webauthn']
     if (registrationInfo.userVerified) {
@@ -635,7 +637,31 @@ router.post('/passkey/registration/end',
       amr: addAmr,
     })
 
-    res.send(redir)
+    res.send(({ ...redir, passkeyId: createdPasskey.id } satisfies PasskeyRegisterResponse))
+  })
+
+router.patch('/passkey/:id',
+  checkPrivileged,
+  zodValidate({
+    params: {
+      id: zod.string(),
+    },
+    body: {
+      displayName: zod.string().trim().transform(v => v || null).nullable(),
+    },
+  }),
+  async (req, res) => {
+    const user = req.user
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+
+    const { displayName } = req.body
+
+    await updateUserPasskey(req.params.id, user.id, { displayName })
+
+    res.send()
   })
 
 /**
@@ -942,7 +968,7 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
     message: 'Adding login factor to user',
     details: {
       login: {
-        userId,
+        user_id: userId,
         amr,
       },
     },

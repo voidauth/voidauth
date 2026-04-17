@@ -7,7 +7,7 @@ export type LogShape = {
   level: 'debug' | 'info' | 'error'
   timestamp?: number
   message: string
-  details?: Record<string, unknown> & {
+  details?: {
     request?: {
       ip: string | undefined
       method: string
@@ -23,12 +23,32 @@ export type LogShape = {
       source: string
       amr: string[] // OIDC Authentication Methods Reference
     }
+    interaction?: {
+      prompt: string
+      reasons: string[]
+      client_id: string
+      redirect_uri: string
+    }
+    proxyauth?: {
+      action?: string
+      reason?: string
+      url?: string
+      urlDomain?: string
+      domain?: string
+      domainGroups?: string[]
+    }
     api_validation?: {
       error: Record<string, unknown>
     }
     login?: {
-      userId: string
+      user_id: string
       amr: string[]
+    }
+    declared_client?: {
+      client_id?: string
+      source?: string
+      variable?: string
+      value?: string
     }
   }
   errors?: {

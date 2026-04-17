@@ -81,6 +81,9 @@ export class RegistrationComponent implements OnInit {
         const info = await this.authService.interactionExists()
         if (info.successRedirect) {
           window.location.assign(info.successRedirect.location)
+        } else {
+          // interaction exists, but since it is not a success already we will discard it
+          await this.authService.createInteraction(true)
         }
       } catch (_e) {
         // interaction session is missing, could not log in without it
