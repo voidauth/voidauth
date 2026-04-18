@@ -8,7 +8,7 @@ import { createEmailVerification } from './interaction'
 import { updatePasswordValidator } from '@shared/api-request/UpdatePassword'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
-import { deleteUserPasskey, deleteUserPasskeys, getUserPasskeys, getUserPasskeysResponse, updateUserPasskey } from '../db/passkey'
+import { deleteUserPasskey, deleteUserPasskeys, getUserPasskeys, getUserPasskeysResponse } from '../db/passkey'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/constants'
 import type { TOTP } from '@shared/db/TOTP'
@@ -179,29 +179,6 @@ userRouter.get('/passkeys', async (req, res) => {
 
   res.send(passkeys satisfies PasskeyResponse[])
 })
-
-userRouter.patch('/passkey/:id',
-  zodValidate({
-    params: {
-      id: zod.string(),
-    },
-    body: {
-      displayName: zod.string().trim().transform(v => v || null).nullable(),
-    },
-  }),
-  async (req, res) => {
-    const user = req.user
-    if (!user) {
-      res.sendStatus(500)
-      return
-    }
-
-    const { displayName } = req.body
-
-    await updateUserPasskey(req.params.id, user.id, { displayName })
-
-    res.send()
-  })
 
 userRouter.delete('/passkey/:id',
   zodValidate({

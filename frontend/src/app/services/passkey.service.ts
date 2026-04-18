@@ -15,6 +15,8 @@ import { SpinnerService } from './spinner.service'
 import { MaterialModule } from '../material-module'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { TranslatePipe } from '@ngx-translate/core'
+import { PasskeyNameDialog } from '../dialogs/passkey-name/passkey-name.component'
+import type { PasskeyRegisterResponse } from '@shared/api-response/PasskeyRegisterResponse'
 
 @Injectable({
   providedIn: 'root',
@@ -51,6 +53,19 @@ export class PasskeyService {
     localStorage.removeItem('passkey_skipped')
   }
 
+  static getPlatform(osName: string): Pick<PasskeySupport, 'platformName' | 'platformIcon'> | null {
+    switch (osName) {
+      // case 'Windows':
+      //   return { platformName: 'Windows Hello', platformIcon: 'sentiment_satisfied' }
+      case 'iOS':
+        return { platformName: 'Face ID', platformIcon: 'face' }
+      case 'macOS':
+        return { platformName: 'Touch ID', platformIcon: 'fingerprint' }
+      default:
+        return null
+    }
+  }
+
   async getPasskeySupport(): Promise<PasskeySupport> {
     if (!browserSupportsWebAuthn()) {
       return {
@@ -62,17 +77,9 @@ export class PasskeyService {
     let icon: string | undefined
     if (await platformAuthenticatorIsAvailable()) {
       const { os } = UAParser(navigator.userAgent)
-      // if (os.name === 'Windows') {
-      //   name = 'Windows Hello'
-      //   icon = 'sentiment_satisfied'
-      // } else
-      if (os.name === 'iOS') {
-        name = 'Face ID'
-        icon = 'face'
-      } else if (os.name === 'macOS') {
-        name = 'Touch ID'
-        icon = 'fingerprint'
-      }
+      const platformInfo = PasskeyService.getPlatform(os.name ?? '')
+      name = platformInfo?.platformName
+      icon = platformInfo?.platformIcon
     }
 
     return {
@@ -84,6 +91,10 @@ export class PasskeyService {
 
   private async getAuthOptions(requireVerified?: boolean) {
     return firstValueFrom(this.http.post<PublicKeyCredentialRequestOptionsJSON>('/api/interaction/passkey/start', { requireVerified }))
+  }
+
+  async updatePasskey(passkey_id: string, displayName: string) {
+    return firstValueFrom(this.http.patch<null>(`/api/interaction/passkey/${passkey_id}`, { displayName }))
   }
 
   private async sendAuth(auth: AuthenticationResponseJSON, remember?: boolean) {
@@ -111,8 +122,11 @@ export class PasskeyService {
     ))
     const reg = await startRegistration({ optionsJSON: options })
     try {
-      const result = await firstValueFrom(this.http.post<Redirect | null>('/api/interaction/passkey/registration/end', reg))
+      const result = await firstValueFrom(this.http.post<PasskeyRegisterResponse>('/api/interaction/passkey/registration/end', reg))
       localStorage.setItem('passkey_seen', Date())
+
+      await this.openNamingDialog(result.passkeyId)
+
       return result
     } catch (error) {
       // Check if error because passkey already exists
@@ -121,6 +135,29 @@ export class PasskeyService {
       }
       throw error
     }
+  }
+
+  async openNamingDialog(passkeyId: string) {
+    return new Promise<void>((resolve, _reject) => {
+      this.spinnerService.hide()
+      const nameDialogRef = this.dialog.open(PasskeyNameDialog, { disableClose: true })
+      nameDialogRef.afterClosed().subscribe((displayName: string | null) => {
+        if (displayName) {
+          this.spinnerService.show()
+          this.updatePasskey(passkeyId, displayName).then(() => {
+            this.snackbarService.message('Passkey added.')
+          }).catch(() => {
+            this.snackbarService.error('Passkey created, but could not set name.')
+          }).finally(() => {
+            this.spinnerService.hide()
+            resolve()
+          })
+        } else {
+          this.snackbarService.message('Passkey added.')
+          resolve()
+        }
+      })
+    })
   }
 
   async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged' | 'hasPasskeys'>>) {

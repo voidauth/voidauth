@@ -88,7 +88,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   passkeyColumns: TableColumn<PasskeyResponse>[] = [
     {
       columnDef: 'displayName',
-      header: 'Name',
+      header: 'Name/ID',
       // User name if exists, otherwise use id convert from base64Url to base64, then convert to hex
       cell: element => element.displayName || atob(element.id.replace(/-/g, '+').replace(/_/g, '/'))
         .split('')
@@ -270,7 +270,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       try {
         this.spinnerService.show()
-        await this.userService.updatePasskey(
+        await this.passkeyService.updatePasskey(
           id,
           result,
         )

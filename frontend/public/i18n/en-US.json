@@ -518,5 +518,17 @@
     "actions": {
       "login": "Login"
     }
+  },
+  "passkey-name": {
+    "title": "Passkey Name",
+    "prompt": "Add a name to the new passkey?",
+    "actions": {
+      "skip": {
+        "label": "Skip"
+      },
+      "save": {
+        "label": "Save"
+      }
+    }
   }
 }
