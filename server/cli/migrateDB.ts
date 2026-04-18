@@ -51,6 +51,7 @@ export async function migrate() {
               case 'updatedAt':
               case 'expiresAt':
               case 'lastUsed':
+              case 'userExpiresAt':
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 row[column] = new Date(row[column])
                 break
@@ -58,6 +59,7 @@ export async function migrate() {
               case 'approved':
               case 'backedUp':
               case 'mfaRequired':
+              case 'autoAssign':
                 row[column] = !!row[column]
                 break
             }
