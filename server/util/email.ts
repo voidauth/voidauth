@@ -369,7 +369,7 @@ export async function sendAdminNotifications() {
   // Get an admin notification email sent within the timeframe in ADMIN_EMAILS
   const recentAdminEmail = await db().select().table<EmailLog>(TABLES.EMAIL_LOG)
     .where({ type: 'admin_notification' })
-    .orderBy('createdAt', 'desc').first()
+    .orderBy(db().ref('createdAt').withSchema(TABLES.EMAIL_LOG), 'desc').first()
 
   // If an admin notification has been recently sent, do not send more
   if (recentAdminEmail) {
