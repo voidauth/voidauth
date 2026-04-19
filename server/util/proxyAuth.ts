@@ -15,8 +15,8 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   const formattedUrl = formatProxyAuthDomain(url)
   const redirCode = method === 'auth-request' ? 401 : 302
 
-  const proxyAuthorizationHeader = req.headersDistinct['proxy-authorization']?.[0]
-  const authorizationHeader = req.headersDistinct['authorization']?.[0]
+  const proxyAuthorizationHeader = req.get('proxy-authorization')
+  const authorizationHeader = req.get('authorization')
   let user: UserDetails | undefined
   let amr: string[]
 
