@@ -47,7 +47,6 @@ async function runSchemaUpdates(connectionOptions: Knex.Config) {
         }],
       })
     }
-    console.log(violations)
   }
   await db.destroy()
   return migrations

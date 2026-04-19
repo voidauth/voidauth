@@ -51,9 +51,9 @@ router.use(async (req: Request, res: Response, next) => {
 
 // proxy cookie auth endpoints
 router.get('/authz/forward-auth', async (req: Request, res) => {
-  const proto = req.headersDistinct['x-forwarded-proto']?.[0]
-  const host = req.headersDistinct['x-forwarded-host']?.[0]
-  const path = req.headersDistinct['x-forwarded-uri']?.[0]
+  const proto = req.get('x-forwarded-proto')
+  const host = req.get('x-forwarded-host')
+  const path = req.get('x-forwarded-uri')
   const url = proto && host ? URL.parse(`${proto}://${host}${path ?? ''}`) : null
   if (!url) {
     logger({
@@ -70,7 +70,7 @@ router.get('/authz/forward-auth', async (req: Request, res) => {
 })
 
 router.get('/authz/auth-request', async (req: Request, res) => {
-  const headerUrl = req.headersDistinct['x-original-url']?.[0]
+  const headerUrl = req.get('x-original-url')
   const url = headerUrl ? URL.parse(headerUrl) : null
   if (!url) {
     logger({

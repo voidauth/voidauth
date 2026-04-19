@@ -55,7 +55,7 @@ export async function getProxyAuth(id: string) {
   const groups = await db().select('name')
     .table<Group>(TABLES.GROUP)
     .innerJoin<ProxyAuthGroup>(TABLES.PROXY_AUTH_GROUP, 'proxy_auth_group.groupId', 'group.id')
-    .where({ proxyAuthId: id }).orderBy('name', 'asc')
+    .where({ proxyAuthId: id }).orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc')
   const proxyAuthResponse: ProxyAuthResponse = { ...proxyAuth, groups: groups.map(g => g.name) }
   return proxyAuthResponse
 }

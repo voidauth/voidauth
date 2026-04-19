@@ -32,7 +32,7 @@ export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndica
       w.whereRaw('lower("username") like lower(?)', [`%${searchTerm}%`])
       w.orWhereRaw('lower("email") like lower(?)', [`%${searchTerm}%`])
     }
-  }).orderBy('createdAt', 'desc')).map((user) => {
+  }).orderBy(db().ref('createdAt').withSchema(TABLES.USER), 'desc')).map((user) => {
     const { passwordHash, isAdmin, ...u } = user
     return {
       ...u,
@@ -53,7 +53,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const groups = (await db().select('name', 'id', 'mfaRequired')
     .table<Group>(TABLES.GROUP)
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
-    .orderBy('name', 'asc'))
+    .orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc'))
 
   const hasMfaGroup = groups.some(g => g.mfaRequired)
 

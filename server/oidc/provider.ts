@@ -1,6 +1,6 @@
 import Provider, { type Configuration } from 'oidc-provider'
 import { findAccount, getUserById, userRequiresMfa } from '../db/user'
-import appConfig, { appUrl, basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
+import appConfig, { basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
 import { KnexAdapter } from './adapter'
 import { ADMIN_GROUP, REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
@@ -526,9 +526,9 @@ provider.Client.Schema.prototype.redirectUris = function newRedirectUris(uris: s
 const { redirectUriAllowed, postLogoutRedirectUriAllowed } = provider.Client.prototype
 provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
   if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
-    // auth_internal_client redirect_uri is allowed if hostname matches APP_URL
+    // auth_internal_client redirect_uri is allowed if hostname is reachable by session domain
     const redirectURL = URL.parse(redirectUri)
-    return !!redirectURL && redirectURL.hostname === appUrl().hostname
+    return !!redirectURL && sessionDomainReaches(redirectURL.hostname)
   }
 
   // proxyauth_internal_client redirect_uri is formatted like proxyauth callback and proxyauth_url redirect can be reached by session domain
@@ -537,7 +537,7 @@ provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(re
     const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
     const proxyAuthURL = proxyAuthURLParam ? new URL(proxyAuthURLParam) : null
     return !!redirectURL
-      && redirectURL.hostname === appUrl().hostname
+      && sessionDomainReaches(redirectURL.hostname)
       && redirectURL.pathname.endsWith('/api/proxyauth_cb')
       && !!proxyAuthURL
       && sessionDomainReaches(proxyAuthURL.hostname)

@@ -215,7 +215,7 @@ adminRouter.get('/proxyauth/:id',
       groups: (await db().select('name')
         .table<Group>(TABLES.GROUP)
         .innerJoin<ProxyAuthGroup>(TABLES.PROXY_AUTH_GROUP, 'proxy_auth_group.groupId', 'group.id')
-        .where({ proxyAuthId: proxyauth.id }).orderBy('name', 'asc')).map(v => v.name),
+        .where({ proxyAuthId: proxyauth.id }).orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc')).map(v => v.name),
     }
 
     res.send(response)
@@ -512,7 +512,7 @@ adminRouter.post('/users/delete',
   })
 
 adminRouter.get('/groups', async (_req, res) => {
-  const groups = await db().select().table<Group>(TABLES.GROUP).orderBy('createdAt', 'asc')
+  const groups = await db().select().table<Group>(TABLES.GROUP).orderBy(db().ref('createdAt').withSchema(TABLES.GROUP), 'asc')
   res.send(groups)
 })
 
@@ -535,7 +535,7 @@ adminRouter.get('/group/:id',
       users: await db().select('id', 'username')
         .table<User>(TABLES.USER)
         .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.userId', 'user.id')
-        .where({ groupId: group.id }).orderBy('name', 'asc'),
+        .where({ groupId: group.id }).orderBy(db().ref('name').withSchema(TABLES.USER), 'asc'),
     }
 
     res.send(groupWithUsers)
@@ -763,8 +763,8 @@ adminRouter.get('/passwordresets', async (_req, res) => {
     db().ref('createdAt').withSchema(TABLES.PASSWORD_RESET),
   ).table<PasswordReset>(TABLES.PASSWORD_RESET)
     .innerJoin<User>(TABLES.USER, 'user.id', 'password_reset.userId')
-    .where('expiresAt', '>=', new Date())
-    .orderBy('expiresAt', 'desc')
+    .where(db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET), '>=', new Date())
+    .orderBy(db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET), 'desc')
   res.send(passwordResets)
 })
 
