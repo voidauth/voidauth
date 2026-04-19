@@ -94,7 +94,7 @@ app.example.com {
 
 ### NGINX Snippets
 
-In order to use NGINX or NGINX Proxy Manager, you will need to make a `snippets/` directory available to their configuration. In all examples, this will mounted/available be at `/config/nginx/snippets/`.
+In order to use NGINX or NGINX Proxy Manager, you will need to make a `snippets/` directory available to their configuration. In all examples, this will be mounted/available at `/config/nginx/snippets/`.
 
 `proxy.conf`
 ``` conf

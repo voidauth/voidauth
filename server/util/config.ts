@@ -407,13 +407,22 @@ if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
   })
 }
 
-logger({
-  level: 'debug',
-  message: `Session Domain: '${String(getSessionDomain())}'`,
-})
+const calculatedSessionDomain = getSessionDomain()
+
+if (calculatedSessionDomain) {
+  logger({
+    level: 'debug',
+    message: `Session Domain: '${calculatedSessionDomain}'`,
+  })
+} else {
+  logger({
+    level: 'debug',
+    message: 'Session Domain is empty, session cookies will be set for the exact host only.',
+  })
+}
 
 // If SESSION_DOMAIN is set, make sure SESSION_DOMAIN cookies reach APP_URL
-if (appConfig.SESSION_DOMAIN) {
+if (calculatedSessionDomain) {
   if (!sessionDomainReaches(appUrl().hostname)) {
     logger({
       level: 'error',
@@ -477,23 +486,32 @@ export function basePath() {
   return appUrl().pathname.replace(/\/$/, '')
 }
 
-export function getSessionDomain() {
+export function getSessionDomain(): string | undefined {
+  // If empty string or 'null', return undefined so cookies will be set for the exact host only
+  if (appConfig.SESSION_DOMAIN === '' || appConfig.SESSION_DOMAIN === 'null') {
+    return undefined
+  }
   return appConfig.SESSION_DOMAIN || getBaseDomain(appUrl().hostname)
 }
 
-export function sessionDomainReaches(hostName: string) {
-  const targetDomain = getBaseDomain(hostName) || hostName
-  const sessionDomain = getSessionDomain() || appUrl().hostname
+export function sessionDomainReaches(hostName: string): boolean {
+  const targetDomain = getBaseDomain(hostName)
+  const sessionDomain = getSessionDomain()
   // Add dot to start of sessionDomain if it doesn't already have one, to prevent false positives
-  const dotSD = !sessionDomain.startsWith('.') ? '.' + sessionDomain : sessionDomain
-  return targetDomain === sessionDomain || hostName.endsWith(dotSD)
+  const dotSD = sessionDomain && !sessionDomain.startsWith('.') ? '.' + sessionDomain : sessionDomain
+  return targetDomain === sessionDomain || !!(dotSD && hostName.endsWith(dotSD))
 }
 
 //
 // Utility Functions
 //
 
-function getBaseDomain(hostname: string) {
+function getBaseDomain(hostname: string): string | undefined {
+  const isIp = zod.union([zod.ipv4(), zod.ipv6()])
+  if (isIp.safeParse(hostname).success) {
+    return undefined
+  }
+
   return psl.get(hostname) ?? undefined
 }
 

@@ -44,7 +44,7 @@ export async function getRegistrationInfo(uniqueId: string, response: Registrati
   // Get `options.challenge` that was saved above
   const regOptions = await getRegistrationOptions(uniqueId)
   if (!regOptions) {
-    throw Error('User not found')
+    throw Error('Passkey registration challenge expired or not found')
   }
 
   // Lock in the registration delete, even if we have errors later
