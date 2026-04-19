@@ -51,8 +51,8 @@ export async function migrate() {
               case 'updatedAt':
               case 'expiresAt':
               case 'lastUsed':
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                row[column] = new Date(row[column])
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                row[column] = typeof row[column] === 'number' ? new Date(row[column]) : row[column]
                 break
               case 'emailVerified':
               case 'approved':
