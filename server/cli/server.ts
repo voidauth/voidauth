@@ -17,6 +17,7 @@ import { clearAllExpiredEntries, updateEncryptedTables } from '../db/tableMainte
 import { createInitialAdmin } from '../db/user'
 import { logger, purgeAsyncLog } from '../util/logger'
 import { sensitiveRateLimit, standardRateLimit } from '../util/rateLimit'
+import { FORBIDDEN_PATHS, NOT_FOUND_PATHS } from '@shared/constants'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -64,7 +65,7 @@ export async function serve() {
   }
 
   app.use(`/healthcheck`, noCache, (_req, res) => {
-    res.sendStatus(200)
+    res.status(200).send()
     return
   })
 
@@ -206,10 +207,21 @@ export async function serve() {
   })
 
   // frontend
-  app.use(`${basePath()}/`, express.static(FE_ROOT, {
-    index: false,
-    fallthrough: true,
-  }))
+  app.use(`${basePath()}/`,
+    // if frontend matches specific paths, use different status codes
+    (req, res, next) => {
+      if (FORBIDDEN_PATHS.some(p => req.path === `/${p}`)) {
+        res.status(403)
+      } else if (NOT_FOUND_PATHS.some(p => req.path === `/${p}`)) {
+        res.status(404)
+      }
+      next()
+    },
+    express.static(FE_ROOT, {
+      index: false,
+      fallthrough: true,
+    }),
+  )
 
   // Do not fallthrough to index.html for missing i18n files
   app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {

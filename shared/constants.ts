@@ -18,7 +18,13 @@ export const REDIRECT_PATHS = {
   REGISTER: 'register',
   INVITE: 'invite', // registration page also
   MFA: 'mfa',
+  FORBIDDEN: 'forbidden',
+  NOT_FOUND: 'not-found',
 } as const
+
+export const FORBIDDEN_PATHS = [REDIRECT_PATHS.FORBIDDEN, REDIRECT_PATHS.APPROVAL_REQUIRED, REDIRECT_PATHS.USER_EXPIRED] as const
+
+export const NOT_FOUND_PATHS = [REDIRECT_PATHS.NOT_FOUND] as const
 
 // Key types for the key table
 export const KEY_TYPES = {

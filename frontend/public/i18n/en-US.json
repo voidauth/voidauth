@@ -85,6 +85,13 @@
       "login": "Login"
     }
   },
+  "forbidden": {
+    "title": "Access Forbidden",
+    "content": "You do not have permission to access this resource.",
+    "actions": {
+      "back": "Back"
+    }
+  },
   "consent": {
     "actions": {
       "sign-in": "Sign In"
