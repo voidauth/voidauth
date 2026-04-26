@@ -180,6 +180,13 @@ router.get('/', async (req, res) => {
 
     res.redirect(`${appConfig.APP_URL}/consent/${uid}`)
     return
+  } else if (prompt.name === 'select_account') {
+    // Handle select_account prompt
+    const redir = await provider.interactionResult(req, res, { select_account: true }, {
+      mergeWithLastSubmission: true,
+    })
+    res.redirect(redir)
+    return
   } else {
     res.sendStatus(400)
     return

@@ -1,5 +1,5 @@
 import appConfig, { basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
-import * as _ from '../../custom_typings/type_validator'
+import * as _types_valid from '../@types/type_validator'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import path from 'node:path'
 import fs from 'node:fs'

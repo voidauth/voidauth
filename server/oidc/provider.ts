@@ -184,7 +184,6 @@ consentPromptPolicy.checks.add(new Check('client_mfa_required',
     return Check.NO_NEED_TO_PROMPT
   },
 ))
-
 consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
   'proxyauth_url is invalid',
   'proxyauth_url_invalid', async (ctx) => {
@@ -226,6 +225,13 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
     return Check.NO_NEED_TO_PROMPT
   },
 ))
+
+// add policy for select_account
+const selectAccountPromptPolicy = new interactionPolicy.Prompt({
+  name: 'select_account',
+  requestable: true,
+}) // no checks, this is a dummy prompt that is not implemented but might be requested
+modifiedInteractionPolicy.add(selectAccountPromptPolicy)
 
 // Do not allow any oidc-provider errors to redirect back to redirect_uri of client
 let e: keyof typeof errors
@@ -482,19 +488,10 @@ provider.on('userinfo.error', (_ctx, error) => {
   logger({ level: 'error', message: 'oidc-provider userinfo error', errors: [{ name: error.name, message: error.message }] })
 })
 
-// Intercept Client Schema errors and prevent some that we want to ignore
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const clientSchemaInvalidate = provider.Client.Schema.prototype.invalidate
 // Make sure this exists and library did not change
 assert.ok(clientSchemaInvalidate, 'oidc-provider provider.Client.Schema.prototype.invalidate does not exist.')
-provider.Client.Schema.prototype.invalidate = function newInvalidate(message, code) {
-  if (typeof message === 'string'
-    && (message === 'redirect_uris for native clients using Custom URI scheme should use reverse domain name based scheme')) {
-    return // do not throw the error
-  }
-
-  clientSchemaInvalidate.call(this, message, code)
-}
 
 // Split the checks for valid redirectUris for creating Clients
 // into wildcard and non-wildcard
@@ -526,10 +523,6 @@ provider.Client.Schema.prototype.redirectUris = function newRedirectUris(uris: s
   clientSchemaRedirectUris.call(this, wildcardUris, label)
 }
 
-// allow any redirect_uri when using client auth_internal_client
-// this client is not used for actual oidc, only profile or admin management, or proxy auth
-// redirectUriAllowed on a client prototype checks whether a redirect_uri is allowed or not
-// allow for wildcard matches as well
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const { redirectUriAllowed, postLogoutRedirectUriAllowed } = provider.Client.prototype
 provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {

@@ -20,6 +20,20 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   let user: UserDetails | undefined
   let amr: string[]
 
+  // should not block access to itself
+  if (url.href.startsWith(appConfig.APP_URL)) {
+    logger({
+      level: 'debug',
+      message: `ProxyAuth access granted, request to self URL`,
+      details: {
+        proxyauth: {
+          action: 'access_granted',
+        },
+      },
+    })
+    res.status(200).send()
+  }
+
   if (!sessionDomainReaches(url.hostname)) {
     res.status(400).send({ message: `ProxyAuth Domain hostname '${url.hostname}' is not covered by session domain '${String(getSessionDomain())}'` })
     return

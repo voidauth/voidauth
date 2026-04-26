@@ -15,7 +15,7 @@
     "target": "ESNext",
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "typeRoots": ["./node_modules/@types", "./custom_typings"],
+    "typeRoots": ["./node_modules/@types", "./server/@types"],
     "paths": {
       "@shared/*": [
         "./shared/*"
@@ -26,7 +26,6 @@
     "server",
     "shared",
     "migrations",
-    "custom_typings",
     "./esbuild.config.ts"
   ]
 }
