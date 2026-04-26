@@ -400,9 +400,17 @@ const configuration: Configuration = {
     properties: ['skip_consent', 'require_mfa'],
   },
   renderError: (ctx, out, _error) => {
-    ctx.body = {
-      error: out.error,
-      error_description: out.error_description,
+    // If ctx status is 403, redirect to forbidden page instead
+    if (ctx.status === 403) {
+      ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}`)
+    } else if (ctx.status === 404) {
+      ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.NOT_FOUND}`)
+    } else {
+      // For other errors, show error message
+      ctx.body = {
+        error: out.error,
+        error_description: out.error_description,
+      }
     }
   },
   clientBasedCORS: (_ctx, origin, client) => {

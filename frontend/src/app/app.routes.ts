@@ -26,6 +26,8 @@ export const routes: Routes = [
 
   { path: REDIRECT_PATHS.APPROVAL_REQUIRED, loadComponent: () => import('./pages/approval-required/approval-required.component').then(m => m.ApprovalRequiredComponent) },
 
+  { path: REDIRECT_PATHS.FORBIDDEN, loadComponent: () => import('./pages/forbidden/forbidden.component').then(m => m.ForbiddenComponent) },
+
   { path: REDIRECT_PATHS.USER_EXPIRED, loadComponent: () => import('./pages/user-expired/user-expired.component').then(m => m.UserExpiredComponent) },
 
   { path: 'consent/:uid', loadComponent: () => import('./pages/consent/consent.component').then(m => m.ConsentComponent), canActivate: [PrivilegedGuard] },
@@ -55,6 +57,8 @@ export const routes: Routes = [
   { path: 'admin/passwordresets', loadComponent: () => import('./pages/admin/password-resets/password-resets.component').then(m => m.PasswordResetsComponent), canActivate: [isAdminGuard] },
 
   { path: 'admin/emails', loadComponent: () => import('./pages/admin/emails/emails.component').then(m => m.EmailsComponent), canActivate: [isAdminGuard] },
+
+  { path: REDIRECT_PATHS.NOT_FOUND, loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent) },
 
   { path: '**', pathMatch: 'full', loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent) },
 ]
