@@ -174,8 +174,6 @@ export class UpsertClientComponent implements OnInit {
             groups: client.groups,
           })
 
-          this.form.controls.client_id.disable()
-
           const initialResponseType: ItemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
           if (client.response_types?.some(t => t.includes('code'))) {
             initialResponseType.push('code')
@@ -193,6 +191,8 @@ export class UpsertClientComponent implements OnInit {
           } else {
             this.disable(false)
           }
+
+          this.form.controls.client_id.disable()
         }
       } catch (e) {
         console.error(e)

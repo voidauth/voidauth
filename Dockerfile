@@ -14,7 +14,6 @@ COPY ./frontend/package*.json ./frontend/
 RUN cd ./frontend && npm ci
 
 # Copy BE files
-COPY ./custom_typings ./custom_typings
 COPY ./server ./server
 COPY ./shared ./shared
 
