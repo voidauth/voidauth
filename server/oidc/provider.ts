@@ -174,7 +174,7 @@ consentPromptPolicy.checks.add(new Check('client_mfa_required',
     if (oidc.client?.clientId === 'proxyauth_internal_client') {
       const redirectURL = typeof oidc.params?.redirect_uri === 'string' ? URL.parse(oidc.params.redirect_uri) : null
       const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
-      const proxyAuthURL = proxyAuthURLParam ? new URL(proxyAuthURLParam) : null
+      const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
       const domain = proxyAuthURL && await getProxyAuthWithCache(proxyAuthURL)
       if (domain?.mfaRequired && loginFactors(amr) < 2) {
         return Check.REQUEST_PROMPT
@@ -194,7 +194,7 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
     if (oidc.client?.clientId === 'proxyauth_internal_client') {
       const redirectURL = typeof oidc.params?.redirect_uri === 'string' ? URL.parse(oidc.params.redirect_uri) : null
       const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
-      const proxyAuthURL = proxyAuthURLParam ? new URL(proxyAuthURLParam) : null
+      const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
       let errorMessage = ''
       if (!proxyAuthURL) {
         errorMessage = 'proxyauth_internal_client but no proxyauth redirect url.'
@@ -543,7 +543,7 @@ provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(re
   if (Provider.ctx?.oidc.params?.client_id === 'proxyauth_internal_client') {
     const redirectURL = URL.parse(redirectUri)
     const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
-    const proxyAuthURL = proxyAuthURLParam ? new URL(proxyAuthURLParam) : null
+    const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
     return !!redirectURL
       && sessionDomainReaches(redirectURL.hostname)
       && redirectURL.pathname.endsWith('/api/proxyauth_cb')

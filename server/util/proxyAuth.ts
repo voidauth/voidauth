@@ -36,7 +36,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     // Check that session is not too old
     const session = await getSession(req, res)
     if (match?.maxSessionLength && session?.past(match.maxSessionLength * 60)) {
-      res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(url.href, 'login')}`)
+      res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href, 'login')}`)
       return
     }
   } else if (proxyAuthorizationHeader) {
