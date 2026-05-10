@@ -41,7 +41,7 @@ If you are attempting to authenticate to a ProxyAuth Domain and are not redirect
 
 If the Request IP Address in logs is incorrect or invalid, it may be caused by a misconfiguration in your reverse proxy. Check documentation for your reverse proxy or proxy provider related to trusted IP addresses.
 
-### OIDC Endpoints List
+### OIDC Information List
 
 #### Incorrect Protocol
 

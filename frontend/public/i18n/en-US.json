@@ -479,7 +479,7 @@
       }
     },
     "oidc-info": {
-      "title": "OIDC Endpoints",
+      "title": "OIDC Information",
       "labels": {
         "issuer": "OIDC Issuer Endpoint",
         "well-known": "Well-Known Endpoint",
