@@ -136,4 +136,7 @@ This project would not be possible without the incredible work of others. For a 
 <a href="https://github.com/dl09r">
 <img src="https://github.com/dl09r.png?size=50" alt="dl09r">
 </a>
+<a href="https://github.com/katekyonni">
+<img src="https://github.com/katekyonni.png?size=50" alt="katekyonni">
+</a>
 </span>

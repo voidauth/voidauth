@@ -8,8 +8,6 @@ import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import Keygrip from 'keygrip'
 import { interactionPolicy } from 'oidc-provider'
 import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
-import { db } from '../db/db'
-import type { OIDCGroup, Group } from '@shared/db/Group'
 import { isMatch } from 'matcher'
 import assert from 'assert'
 import { wildcardRedirect } from '@shared/utils'
@@ -18,6 +16,14 @@ import { getProxyAuthWithCache } from '../db/proxyAuth'
 import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
 import { randomBytes } from 'crypto'
 import { logger } from '../util/logger'
+import { getClient } from '../db/client'
+import type { ClientResponse } from '@shared/api-response/ClientResponse'
+import type { OIDCGroup, Group } from '@shared/db/Group'
+import add from 'oidc-provider/lib/helpers/add_client.js'
+import { db } from '../db/db'
+import { mergeKeys } from '../db/util'
+import type { User } from '@shared/db/User'
+import { PayloadTypes } from '@shared/db/OIDCPayload'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -128,7 +134,7 @@ consentPromptPolicy.checks.add(new Check('user_group_missing',
   'user_group_missing', async (ctx) => {
     const { oidc } = ctx
     if (oidc.client?.clientId && oidc.account?.accountId) {
-      const client = await getProviderClient(oidc.client.clientId)
+      const client = await getClient(oidc.client.clientId)
       if (client?.groups.length) {
         const user = await getUserById(oidc.account.accountId)
         if (user && !user.groups.some(g => g.name === ADMIN_GROUP) && !user.groups.some(g => client.groups.includes(g.name))) {
@@ -566,19 +572,39 @@ provider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutR
   return postLogoutRedirectUriAllowed.call(this, postLogoutRedirectUri)
 }
 
-export async function getProviderClient(client_id: string) {
-  const declaredClient = appConfig.DECLARED_CLIENTS.get(client_id)
-  if (declaredClient != undefined) return declaredClient
-
-  const client = (await provider.Client.find(client_id))?.metadata()
-  if (!client) {
-    return
+export async function upsertClient(provider: Provider, clientMetadata: ClientResponse, user: Pick<User, 'id'>, ctx: unknown) {
+  const { groups, ...metadata } = clientMetadata
+  await provider.Client.validate(metadata)
+  const client = await add(provider, metadata, { ctx, store: true })
+  await provider.Client.validate(client.metadata())
+  const clientId = client.clientId
+  const clientGroups: OIDCGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups)).map((g) => {
+    return {
+      groupId: g.id,
+      oidcId: clientId,
+      oidcType: PayloadTypes.Client,
+      createdBy: user.id,
+      updatedBy: user.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  })
+  if (clientGroups[0]) {
+    await db().table<OIDCGroup>(TABLES.OIDC_GROUP).insert(clientGroups)
+      .onConflict(['groupId', 'oidcId', 'oidcType']).merge(mergeKeys(clientGroups[0]))
   }
-  const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)
-    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
-    .where({ oidcId: client_id }))
-    .map(g => g.name)
-  return { ...client, groups, declared: false as const }
+
+  await db().table<OIDCGroup>(TABLES.OIDC_GROUP).delete()
+    .where({ oidcId: clientId }).and
+    .whereNotIn('groupId', clientGroups.map(g => g.groupId))
+
+  return client
+}
+
+export async function removeClient(client_id: string) {
+  // @ts-expect-error client adapter actually does exist
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  await provider.Client.adapter.destroy(client_id)
 }
 
 export async function getSession(req: IncomingMessage, res: ServerResponse) {

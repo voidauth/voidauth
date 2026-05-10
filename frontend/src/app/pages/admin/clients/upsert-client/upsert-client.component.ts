@@ -154,46 +154,7 @@ export class UpsertClientComponent implements OnInit {
         this.groups = (await this.adminService.groups()).map(g => g.name)
         this.groupAutoFilter()
 
-        if (this.client_id) {
-          const client = await this.adminService.client(this.client_id)
-          this.form.reset({
-            client_id: client.client_id,
-            client_name: client.client_name ?? null,
-            client_secret: client.client_secret ?? null,
-            redirect_uris: client.redirect_uris ?? [],
-            token_endpoint_auth_method: client.token_endpoint_auth_method as ItemIn<typeof CLIENT_AUTH_METHODS> | undefined
-              ?? 'client_secret_basic',
-            response_types: client.response_types ?? ['code'],
-            grant_types: client.grant_types as (ClientUpsertRequest['grant_types'] | undefined)
-              ?? ['authorization_code', 'refresh_token'],
-            post_logout_redirect_uri: client.post_logout_redirect_uris?.[0] ?? null,
-            skip_consent: client.skip_consent ?? true,
-            require_mfa: client.require_mfa ?? false,
-            logo_uri: client.logo_uri ?? null,
-            client_uri: client.client_uri ?? null,
-            groups: client.groups,
-          })
-
-          const initialResponseType: ItemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
-          if (client.response_types?.some(t => t.includes('code'))) {
-            initialResponseType.push('code')
-          }
-          if (client.response_types?.some(t => t.includes('id_token'))) {
-            initialResponseType.push('id_token')
-          }
-          if (client.response_types?.some(t => t.includes('token'))) {
-            initialResponseType.push('token')
-          }
-          this.responseTypeControl.setValue(initialResponseType)
-
-          if (client.declared) {
-            this.disable()
-          } else {
-            this.disable(false)
-          }
-
-          this.form.controls.client_id.disable()
-        }
+        await this.getCurrentClientData()
       } catch (e) {
         console.error(e)
         this.snackbarService.error('Error loading OIDC App Details.')
@@ -222,6 +183,49 @@ export class UpsertClientComponent implements OnInit {
       }
       this.form.controls.client_secret.updateValueAndValidity()
     })
+  }
+
+  async getCurrentClientData() {
+    if (this.client_id) {
+      const client = await this.adminService.client(this.client_id)
+      this.form.reset({
+        client_id: client.client_id,
+        client_name: client.client_name ?? null,
+        client_secret: client.client_secret ?? null,
+        redirect_uris: client.redirect_uris ?? [],
+        token_endpoint_auth_method: client.token_endpoint_auth_method as ItemIn<typeof CLIENT_AUTH_METHODS> | undefined
+          ?? 'client_secret_basic',
+        response_types: client.response_types ?? ['code'],
+        grant_types: client.grant_types as (ClientUpsertRequest['grant_types'] | undefined)
+          ?? ['authorization_code', 'refresh_token'],
+        post_logout_redirect_uri: client.post_logout_redirect_uris?.[0] ?? null,
+        skip_consent: client.skip_consent ?? true,
+        require_mfa: client.require_mfa ?? false,
+        logo_uri: client.logo_uri ?? null,
+        client_uri: client.client_uri ?? null,
+        groups: client.groups,
+      })
+
+      const initialResponseType: ItemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
+      if (client.response_types?.some(t => t.includes('code'))) {
+        initialResponseType.push('code')
+      }
+      if (client.response_types?.some(t => t.includes('id_token'))) {
+        initialResponseType.push('id_token')
+      }
+      if (client.response_types?.some(t => t.includes('token'))) {
+        initialResponseType.push('token')
+      }
+      this.responseTypeControl.setValue(initialResponseType)
+
+      if (client.declared) {
+        this.disable()
+      } else {
+        this.disable(false)
+      }
+
+      this.form.controls.client_id.disable()
+    }
   }
 
   disable(toggle: boolean = true) {
@@ -259,10 +263,11 @@ export class UpsertClientComponent implements OnInit {
       }
 
       this.snackbarService.message(`Client ${this.client_id ? 'updated' : 'created'}.`)
-      this.client_id = this.form.getRawValue().client_id
+      this.client_id = submitValues.client_id
       if (!this.client_id) {
         throw new Error()
       }
+      await this.getCurrentClientData()
       await this.router.navigate(['/admin/client', this.client_id], {
         replaceUrl: true,
       })
