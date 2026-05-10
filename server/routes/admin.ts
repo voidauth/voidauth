@@ -1,10 +1,10 @@
-import { Router } from 'express'
-import { db } from '../db/db'
-import { isOIDCProviderError, provider } from '../oidc/provider'
+import { Router, type Response } from 'express'
+import { db, rollback } from '../db/db'
+import { isOIDCProviderError, provider, removeClient, upsertClient } from '../oidc/provider'
 import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomBytes, randomUUID } from 'crypto'
-import { getClient, getClients, removeClient, upsertClient } from '../db/client'
+import { getClient, getClients } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
 import { groupUpsertValidator } from '@shared/api-request/admin/GroupUpsert'
 import { ADMIN_GROUP, TABLES, TTLs } from '@shared/constants'
@@ -36,6 +36,7 @@ import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
+import type { IncomingMessage } from 'http'
 
 export const adminRouter = Router()
 
@@ -71,6 +72,55 @@ adminRouter.get('/client/:client_id',
  * POST must always create a new client and PATCH must update an existing client
  */
 
+async function upsertClientController(isCreate: boolean,
+  req: IncomingMessage, res: Response, clientMetadata: ClientResponse, reqUser: Pick<User, 'id'>) {
+  if (clientMetadata.client_id === 'proxyauth_internal_client' || clientMetadata.client_id === 'admin_internal_client') {
+    res.status(400).send({ message: 'client_id is reserved.' })
+    return
+  }
+
+  if (clientMetadata.client_secret == null && clientMetadata.token_endpoint_auth_method !== 'none') {
+    res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
+    return
+  }
+
+  try {
+    // check that existing client does not exist with client_id
+    const existingClient = await getClient(clientMetadata.client_id)
+    if (isCreate && existingClient) {
+      res.sendStatus(409)
+      return
+    } else if (!isCreate && !existingClient) {
+      res.sendStatus(404)
+      return
+    }
+
+    // determine proper Application Type
+    let hasHttpProtocol = false
+    let hasCustomProtocol = false
+    for (const uri of clientMetadata.redirect_uris ?? []) {
+      const protocol = urlFromWildcardHref(uri)?.protocol
+      hasHttpProtocol ||= protocol === 'http:'
+      hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
+    }
+    if (hasCustomProtocol && hasHttpProtocol) {
+      res.sendStatus(400)
+      return
+    }
+    clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
+
+    await upsertClient(provider, clientMetadata, reqUser, provider.createContext(req, res))
+    res.send()
+  } catch (e) {
+    if (isOIDCProviderError(e)) {
+      await rollback() // still rollback any db changes
+      res.status(400).send({ message: e.error_description })
+    } else {
+      throw e
+    }
+  }
+}
+
 adminRouter.post('/client',
   zodValidate(
     { body: clientUpsertValidator }),
@@ -86,42 +136,7 @@ adminRouter.post('/client',
       post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
     }
 
-    if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
-      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
-      return
-    }
-
-    try {
-      // check that existing client does not exist with client_id
-      const existingClient = await getClient(clientMetadata.client_id)
-      if (existingClient) {
-        res.sendStatus(409)
-        return
-      }
-
-      // determine proper Application Type
-      let hasHttpProtocol = false
-      let hasCustomProtocol = false
-      for (const uri of clientUpsert.redirect_uris) {
-        const protocol = urlFromWildcardHref(uri)?.protocol
-        hasHttpProtocol ||= protocol === 'http:'
-        hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
-      }
-      if (hasCustomProtocol && hasHttpProtocol) {
-        res.sendStatus(400)
-        return
-      }
-      clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
-
-      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
-      res.send()
-    } catch (e) {
-      if (isOIDCProviderError(e)) {
-        res.status(400).send({ message: e.error_description })
-      } else {
-        throw e
-      }
-    }
+    await upsertClientController(true, req, res, clientMetadata, req.user)
   })
 
 adminRouter.patch('/client',
@@ -139,42 +154,7 @@ adminRouter.patch('/client',
       post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
     }
 
-    if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
-      res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
-      return
-    }
-
-    try {
-      // check that existing client exists with client_id
-      const existingClient = await getClient(clientMetadata.client_id)
-      if (!existingClient) {
-        res.sendStatus(404)
-        return
-      }
-
-      // determine proper Application Type
-      let hasHttpProtocol = false
-      let hasCustomProtocol = false
-      for (const uri of clientUpsert.redirect_uris) {
-        const protocol = urlFromWildcardHref(uri)?.protocol
-        hasHttpProtocol ||= protocol === 'http:'
-        hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
-      }
-      if (hasCustomProtocol && hasHttpProtocol) {
-        res.sendStatus(400)
-        return
-      }
-      clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
-
-      await upsertClient(provider, clientMetadata, req.user, provider.createContext(req, res))
-      res.send()
-    } catch (e) {
-      if (isOIDCProviderError(e)) {
-        res.status(400).send({ message: e.error_description })
-      } else {
-        throw e
-      }
-    }
+    await upsertClientController(false, req, res, clientMetadata, req.user)
   })
 
 adminRouter.delete('/client/:client_id',

@@ -1,3 +1,5 @@
+import type { ValueOf } from '@shared/utils'
+
 export type OIDCPayload = {
   id: string
   type: PayloadType
@@ -10,17 +12,21 @@ export type OIDCPayload = {
   accountId?: string | null
 }
 
-export type PayloadType = 'Session'
-  | 'AccessToken'
-  | 'AuthorizationCode'
-  | 'RefreshToken'
-  | 'DeviceCode'
-  | 'ClientCredentials'
-  | 'Client'
-  | 'InitialAccessToken'
-  | 'RegistrationAccessToken'
-  | 'Interaction'
-  | 'ReplayDetection'
-  | 'PushedAuthorizationRequest'
-  | 'Grant'
-  | 'BackchannelAuthenticationRequest'
+export const PayloadTypes = {
+  Session: 'Session',
+  AccessToken: 'AccessToken',
+  AuthorizationCode: 'AuthorizationCode',
+  RefreshToken: 'RefreshToken',
+  DeviceCode: 'DeviceCode',
+  ClientCredentials: 'ClientCredentials',
+  Client: 'Client',
+  InitialAccessToken: 'InitialAccessToken',
+  RegistrationAccessToken: 'RegistrationAccessToken',
+  Interaction: 'Interaction',
+  ReplayDetection: 'ReplayDetection',
+  PushedAuthorizationRequest: 'PushedAuthorizationRequest',
+  Grant: 'Grant',
+  BackchannelAuthenticationRequest: 'BackchannelAuthenticationRequest',
+} as const
+
+export type PayloadType = ValueOf<typeof PayloadTypes>
