@@ -1,0 +1,272 @@
+{
+  "login": {
+    "password": {
+      "label": "密码"
+    },
+    "username": {
+      "label": "用户名或邮箱"
+    },
+    "forgot-password": "忘记密码",
+    "remember-me": "记住我",
+    "actions": {
+      "login": "登录",
+      "sign-up": "注册"
+    },
+    "title": "登录"
+  },
+  "contact-us": {
+    "actions": {
+      "label": "联系"
+    }
+  },
+  "app": {
+    "loading": "加载中...",
+    "navigation": {
+      "profile": "个人资料",
+      "admin": {
+        "title": "管理",
+        "oidc-apps": "OIDC 应用",
+        "proxyauth-domains": "代理认证域",
+        "users": "用户",
+        "groups": "用户组",
+        "invitations": "邀请",
+        "password-resets": "密码重置",
+        "sent-mail": "已发送邮件"
+      },
+      "logout": "退出登录"
+    }
+  },
+  "passkey-title": "通行密钥",
+  "passkey-dialog": {
+    "title": "启用 {{platformName}}？",
+    "actions": {
+      "passkey": "启用 {{platformName}}"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "使用 {{platformName}}",
+      "register-passkey": "注册通行密钥",
+      "back": "返回"
+    },
+    "title": "需要多因素认证"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "使用 {{platformName}} 注册",
+      "sign-up": "注册",
+      "login": "登录"
+    },
+    "title": {
+      "accept-invitation": "接受邀请",
+      "sign-up": "注册"
+    },
+    "username": {
+      "label": "用户名"
+    },
+    "email": {
+      "label": "邮箱"
+    },
+    "name": {
+      "label": "姓名"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "启用 {{platformName}}",
+      "reset-password": "重置密码"
+    },
+    "title": "重置密码"
+  },
+  "approval-required": {
+    "content": "您的账户需要审核后才能登录，请等待或联系管理员。",
+    "title": "需要审核",
+    "actions": {
+      "login": "登录"
+    }
+  },
+  "forbidden": {
+    "title": "禁止访问",
+    "content": "您没有权限访问此资源。",
+    "actions": {
+      "back": "返回"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "登录"
+    },
+    "info": {
+      "sign-into-question": "是否要登录到 <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "登录后将跳转至 <b>{{redirect}}</b>"
+    },
+    "title": "确认"
+  },
+  "forgot-password": {
+    "username": {
+      "label": "邮箱或用户名"
+    },
+    "actions": {
+      "send": "发送",
+      "send-again": "重新发送",
+      "create-again": "重新创建",
+      "create": "创建"
+    },
+    "title": "忘记密码"
+  },
+  "form-errors": {
+    "required": "必填项。",
+    "min": "必须大于等于 {{min}}。",
+    "max": "不能大于 {{max}}。",
+    "minLength": "长度至少为 {{requiredLength}} 个字符。",
+    "maxLength": "长度不能超过 {{requiredLength}} 个字符。",
+    "email": "邮箱格式不正确。",
+    "default": "无效值。",
+    "alpha-num-underscore-only": "仅允许 A-Z、0-9 和 _"
+  },
+  "logout": {
+    "title": "退出登录",
+    "info": {
+      "logout-question": "确定要退出登录吗？"
+    },
+    "actions": {
+      "yes": "是",
+      "back": "返回",
+      "no": "否"
+    }
+  },
+  "page-not-found": {
+    "title": "页面未找到",
+    "": {
+      "actions": {
+        "go-home": "返回首页"
+      }
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "正在验证邮箱...",
+        "email-could-not-be-verified": "邮箱验证失败",
+        "sending-new-verification": "正在发送新的验证邮件...",
+        "email-verification-could-not-be-sent": "无法发送验证邮件"
+      },
+      "actions": {
+        "send-again": "重新发送"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "验证邮件已发送",
+        "email-verification-required": "需要验证邮箱"
+      },
+      "actions": {
+        "logout": "退出登录",
+        "send-again": "重新发送",
+        "send-verification": "发送验证"
+      },
+      "email": {
+        "label": "邮箱"
+      }
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "sections": {
+      "profile": {
+        "title": "个人资料",
+        "username": {
+          "label": "用户名"
+        },
+        "name": {
+          "label": "姓名"
+        },
+        "actions": {
+          "submit": {
+            "label": "更新资料"
+          }
+        },
+        "email": {
+          "label": "邮箱",
+          "actions": {
+            "submit": {
+              "label": "更新邮箱"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "安全",
+        "password": {
+          "set": {
+            "label": "设置密码"
+          },
+          "change": {
+            "label": "修改密码"
+          }
+        },
+        "passkeys": {
+          "title": "通行密钥",
+          "noPasskeys": "您没有注册任何通行密钥。",
+          "register": {
+            "label": "注册通行密钥"
+          },
+          "manage": {
+            "title": "管理通行密钥"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "编辑"
+            },
+            "delete": {
+              "tooltip": "删除"
+            }
+          }
+        },
+        "mfa": {
+          "title": "多因素认证",
+          "status": {
+            "enabled": "已启用多因素认证。",
+            "disabled": "未启用多因素认证。"
+          },
+          "authenticators": {
+            "has": "您至少有一个已注册的验证器。",
+            "none": "您没有注册任何验证器。"
+          },
+          "add": {
+            "label": "添加验证器"
+          },
+          "enable": {
+            "label": "启用 MFA"
+          }
+        }
+      },
+      "account": {
+        "title": "账户",
+        "removePassword": {
+          "label": "删除密码",
+          "tooltip": {
+            "noPassword": "您没有密码可删除",
+            "noPasskeys": "您没有通行密钥"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "删除所有通行密钥",
+          "tooltip": {
+            "noPasskeys": "没有通行密钥可删除",
+            "noPassword": "您没有密码"
+          }
+        },
+        "disableMfa": {
+          "label": "禁用 MFA"
+        },
+        "removeAuthenticators": {
+          "label": "删除验证器"
+        },
+        "deleteAccount": {
+          "label": "删除账户"
+        }
+      }
+    }
+  }
+}
