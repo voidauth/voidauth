@@ -1,270 +1,270 @@
 {
   "login": {
     "password": {
-      "label": "Password"
+      "label": ""
     },
     "username": {
-      "label": "Username or Email"
+      "label": ""
     },
-    "forgot-password": "Forgot Password",
-    "remember-me": "Remember Me",
+    "forgot-password": "",
+    "remember-me": "",
     "actions": {
-      "login": "Login",
-      "sign-up": "Sign Up"
+      "login": "",
+      "sign-up": ""
     },
-    "title": "Login"
+    "title": ""
   },
   "contact-us": {
     "actions": {
-      "label": "Contact"
+      "label": ""
     }
   },
   "app": {
-    "loading": "Loading...",
+    "loading": "",
     "navigation": {
-      "profile": "Profile",
+      "profile": "",
       "admin": {
-        "title": "Admin",
-        "oidc-apps": "OIDC Apps",
-        "proxyauth-domains": "ProxyAuth Domains",
-        "users": "Users",
-        "groups": "Groups",
-        "invitations": "Invitations",
-        "password-resets": "Password Resets",
-        "sent-mail": "Sent Mail"
+        "title": "",
+        "oidc-apps": "",
+        "proxyauth-domains": "",
+        "users": "",
+        "groups": "",
+        "invitations": "",
+        "password-resets": "",
+        "sent-mail": ""
       },
-      "logout": "Logout"
+      "logout": ""
     }
   },
-  "passkey-title": "Passkey",
+  "passkey-title": "",
   "passkey-dialog": {
-    "title": "Enable {{platformName}}?",
+    "title": "",
     "actions": {
-      "passkey": "Enable {{platformName}}"
+      "passkey": ""
     }
   },
   "mfa": {
     "actions": {
-      "use-passkey": "Use {{platformName}}",
-      "register-passkey": "Register Passkey",
-      "back": "Back"
+      "use-passkey": "",
+      "register-passkey": "",
+      "back": ""
     },
-    "title": "Multi-Factor Authentication Required"
+    "title": ""
   },
   "registration": {
     "actions": {
-      "passkey-sign-up": "Sign Up With {{platformName}}",
-      "sign-up": "Sign Up",
-      "login": "Login"
+      "passkey-sign-up": "",
+      "sign-up": "",
+      "login": ""
     },
     "title": {
-      "accept-invitation": "Accept Invitation",
-      "sign-up": "Sign Up"
+      "accept-invitation": "",
+      "sign-up": ""
     },
     "username": {
-      "label": "Username"
+      "label": ""
     },
     "email": {
-      "label": "Email"
+      "label": ""
     },
     "name": {
-      "label": "Name"
+      "label": ""
     }
   },
   "reset-password": {
     "actions": {
-      "enable-passkey": "Enable {{platformName}}",
-      "reset-password": "Reset Password"
+      "enable-passkey": "",
+      "reset-password": ""
     },
-    "title": "Reset Password"
+    "title": ""
   },
   "approval-required": {
-    "content": "Your account needs approval before you can log in. Please wait or contact an administrator for help.",
-    "title": "Approval Required",
+    "content": "",
+    "title": "",
     "actions": {
-      "login": "Login"
+      "login": ""
     }
   },
   "forbidden": {
-    "title": "Access Forbidden",
-    "content": "You do not have permission to access this resource.",
+    "title": "",
+    "content": "",
     "actions": {
-      "back": "Back"
+      "back": ""
     }
   },
   "consent": {
     "actions": {
-      "sign-in": "Sign In"
+      "sign-in": ""
     },
     "info": {
-      "sign-into-question": "Do you want to sign in to <br /> <h2>{{destination}}</h2>",
-      "post-signin-redir-notice": "After you sign in, you will be sent to <b>{{redirect}}</b>"
+      "sign-into-question": "",
+      "post-signin-redir-notice": ""
     },
-    "title": "Confirm"
+    "title": ""
   },
   "forgot-password": {
     "username": {
-      "label": "Email or Username"
+      "label": ""
     },
     "actions": {
-      "send": "Send",
-      "send-again": "Send Again",
-      "create-again": "Create Again",
-      "create": "Create"
+      "send": "",
+      "send-again": "",
+      "create-again": "",
+      "create": ""
     },
-    "title": "Forgot Password"
+    "title": ""
   },
   "form-errors": {
-    "required": "Required.",
-    "min": "Must be at least {{min}}.",
-    "max": "Cannot be greater than {{max}}.",
-    "minLength": "Must be at least {{requiredLength}} characters long.",
-    "maxLength": "Must be less than {{requiredLength}} characters long.",
-    "email": "Not a valid email.",
-    "default": "Invalid value.",
-    "alpha-num-underscore-only": "Only A-Z,0-9,and _ allowed"
+    "required": "",
+    "min": "",
+    "max": "",
+    "minLength": "",
+    "maxLength": "",
+    "email": "",
+    "default": "",
+    "alpha-num-underscore-only": ""
   },
   "logout": {
-    "title": "Logout",
+    "title": "",
     "info": {
-      "logout-question": "Do you want to log out?"
+      "logout-question": ""
     },
     "actions": {
-      "yes": "Yes",
-      "back": "Back",
-      "no": "No"
+      "yes": "",
+      "back": "",
+      "no": ""
     }
   },
   "page-not-found": {
-    "title": "The Page Cannot Be Found",
+    "title": "",
     "": {
       "actions": {
-        "go-home": "Go Home"
+        "go-home": ""
       }
     }
   },
   "verify-email": {
     "verify": {
       "title": {
-        "verifying-email": "Verifying Email...",
-        "email-could-not-be-verified": "Email Could Not Be Verified",
-        "sending-new-verification": "Sending New Verification...",
-        "email-verification-could-not-be-sent": "Email Verification Could Not Be Sent"
+        "verifying-email": "",
+        "email-could-not-be-verified": "",
+        "sending-new-verification": "",
+        "email-verification-could-not-be-sent": ""
       },
       "actions": {
-        "send-again": "Send Again"
+        "send-again": ""
       }
     },
     "verify-sent": {
       "title": {
-        "verification-email-sent": "Verification Email Sent",
-        "email-verification-required": "Email Verification Required"
+        "verification-email-sent": "",
+        "email-verification-required": ""
       },
       "actions": {
-        "logout": "Logout",
-        "send-again": "Send Again",
-        "send-verification": "Send Verification"
+        "logout": "",
+        "send-again": "",
+        "send-verification": ""
       },
       "email": {
-        "label": "Email"
+        "label": ""
       }
     }
   },
   "settings": {
-    "title": "Settings",
+    "title": "",
     "sections": {
       "profile": {
-        "title": "Profile",
+        "title": "",
         "username": {
-          "label": "Username"
+          "label": ""
         },
         "name": {
-          "label": "Name"
+          "label": ""
         },
         "actions": {
           "submit": {
-            "label": "Update Profile"
+            "label": ""
           }
         },
         "email": {
-          "label": "Email",
+          "label": "",
           "actions": {
             "submit": {
-              "label": "Update Email"
+              "label": ""
             }
           }
         }
       },
       "security": {
-        "title": "Security",
+        "title": "",
         "password": {
           "set": {
-            "label": "Set Password"
+            "label": ""
           },
           "change": {
-            "label": "Change Password"
+            "label": ""
           }
         },
         "passkeys": {
-          "title": "Passkeys",
-          "noPasskeys": "You have no registered passkeys.",
+          "title": "",
+          "noPasskeys": "",
           "register": {
-            "label": "Register Passkey"
+            "label": ""
           },
           "manage": {
-            "title": "Manage Passkeys"
+            "title": ""
           },
           "actions": {
             "edit": {
-              "tooltip": "Edit"
+              "tooltip": ""
             },
             "delete": {
-              "tooltip": "Delete"
+              "tooltip": ""
             }
           }
         },
         "mfa": {
-          "title": "Multi-Factor Authentication",
+          "title": "",
           "status": {
-            "enabled": "Multi-Factor Authentication is enabled.",
-            "disabled": "Multi-Factor Authentication is not enabled."
+            "enabled": "",
+            "disabled": ""
           },
           "authenticators": {
-            "has": "You have at least one registered Authenticator.",
-            "none": "You have no registered Authenticators."
+            "has": "",
+            "none": ""
           },
           "add": {
-            "label": "Add Authenticator"
+            "label": ""
           },
           "enable": {
-            "label": "Enable MFA"
+            "label": ""
           }
         }
       },
       "account": {
-        "title": "Account",
+        "title": "",
         "removePassword": {
-          "label": "Remove Password",
+          "label": "",
           "tooltip": {
-            "noPassword": "You have no password to remove",
-            "noPasskeys": "You do not have any passkeys"
+            "noPassword": "",
+            "noPasskeys": ""
           }
         },
         "removeAllPasskeys": {
-          "label": "Remove All Passkeys",
+          "label": "",
           "tooltip": {
-            "noPasskeys": "You have no passkeys to remove",
-            "noPassword": "You do not have a password"
+            "noPasskeys": "",
+            "noPassword": ""
           }
         },
         "disableMfa": {
-          "label": "Disable MFA"
+          "label": ""
         },
         "removeAuthenticators": {
-          "label": "Remove Authenticators"
+          "label": ""
         },
         "deleteAccount": {
-          "label": "Delete Account"
+          "label": ""
         }
       }
     }
@@ -272,269 +272,269 @@
   "admin": {
     "common": {
       "actions": {
-        "edit": "Edit",
-        "delete": "Delete",
-        "update": "Update",
-        "create": "Create",
-        "view": "View",
-        "open": "Open",
-        "remove": "Remove"
+        "edit": "",
+        "delete": "",
+        "update": "",
+        "create": "",
+        "view": "",
+        "open": "",
+        "remove": ""
       },
       "labels": {
-        "mfa-required": "MFA Required",
-        "email-verified": "Email Verified",
-        "approved": "Approved"
+        "mfa-required": "",
+        "email-verified": "",
+        "approved": ""
       },
       "messages": {
-        "all-users-have-access": "No Groups, ALL users will have access."
+        "all-users-have-access": ""
       }
     },
     "users": {
-      "empty-state": "No users.",
+      "empty-state": "",
       "actions": {
-        "select": "Select",
-        "approve": "Approve"
+        "select": "",
+        "approve": ""
       },
       "labels": {
-        "search": "Search"
+        "search": ""
       }
     },
     "user": {
-      "title": "Update User",
+      "title": "",
       "labels": {
-        "username": "Username",
-        "name": "Name",
-        "email": "Email",
-        "add-group": "Add Group",
-        "security-groups": "Security Groups:",
-        "user-expiration-date": "Access Expiration Date",
-        "user-expiration-time": "Access Expiration Time"
+        "username": "",
+        "name": "",
+        "email": "",
+        "add-group": "",
+        "security-groups": "",
+        "user-expiration-date": "",
+        "user-expiration-time": ""
       },
       "actions": {
-        "sign-out": "Sign Out"
+        "sign-out": ""
       },
       "tooltips": {
-        "remove": "Remove",
-        "open": "Open"
+        "remove": "",
+        "open": ""
       }
     },
     "clients": {
-      "empty-state": "No OIDC Apps.",
+      "empty-state": "",
       "actions": {
-        "create": "Create OIDC App"
+        "create": ""
       }
     },
     "client": {
-      "title": "OIDC App",
+      "title": "",
       "labels": {
-        "name": "Name",
-        "home-page-url": "Home Page URL",
-        "logo-url": "Logo URL",
-        "add-group": "Add Group",
-        "client-id": "Client ID",
-        "auth-method": "Auth Method",
-        "client-secret": "Client Secret",
-        "redirect-url": "New Redirect URL",
-        "response-types": "Response Types",
-        "grant-types": "Grant Types",
-        "postlogout-url": "PostLogout URL",
-        "allowed-groups": "Allowed Groups:",
-        "redirect-urls": "Redirect URLs:"
+        "name": "",
+        "home-page-url": "",
+        "logo-url": "",
+        "add-group": "",
+        "client-id": "",
+        "auth-method": "",
+        "client-secret": "",
+        "redirect-url": "",
+        "response-types": "",
+        "grant-types": "",
+        "postlogout-url": "",
+        "allowed-groups": "",
+        "redirect-urls": ""
       },
       "hints": {
-        "pkce-required": "PKCE Required with this Auth Method.",
-        "not-required": "Not required for current Auth Method.",
-        "postlogout-redirect": "Allowed post-logout redirect url on client initiated logout."
+        "pkce-required": "",
+        "not-required": "",
+        "postlogout-redirect": ""
       },
       "checkboxes": {
-        "skip-consent": "Skip Consent",
-        "mfa-required": "MFA Required"
+        "skip-consent": "",
+        "mfa-required": ""
       },
       "tooltips": {
-        "skip-consent": "Skip user confirmation for this app.",
-        "mfa-required": "Users will have to use mfa to access this app.",
-        "copy-client-id": "Copy Client ID",
-        "copy-secret": "Copy Secret"
+        "skip-consent": "",
+        "mfa-required": "",
+        "copy-client-id": "",
+        "copy-secret": ""
       },
       "messages": {
-        "client-id-copied": "Client ID copied to clipboard.",
-        "secret-copied": "Secret copied to clipboard."
+        "client-id-copied": "",
+        "secret-copied": ""
       }
     },
     "domains": {
-      "empty-state": "No Domains.",
+      "empty-state": "",
       "actions": {
-        "create": "Create ProxyAuth Domain"
+        "create": ""
       }
     },
     "domain": {
-      "title": "ProxyAuth Domain",
+      "title": "",
       "labels": {
-        "domain": "Domain",
-        "max-session-length": "Max Session Age (Minutes)",
-        "add-group": "Add Group",
-        "allowed-groups": "Allowed Groups:"
+        "domain": "",
+        "max-session-length": "",
+        "add-group": "",
+        "allowed-groups": ""
       },
       "placeholders": {
-        "domain": "ex. *.your.domain.com/path/"
+        "domain": ""
       },
       "sections": {
-        "domain-help": "Domain Help"
+        "domain-help": ""
       },
       "hints": {
-        "no-re-auth": "Blank means no re-authentication required."
+        "no-re-auth": ""
       },
       "help-text": {
-        "0": "Domain should not include protocol, may include a path and port, and supports wildcards (*) at any position.",
-        "1": "<b>example.domain.com/api/alive</b> will only check access to a single endpoint.",
-        "2": "<b>example.domain.com/api/*</b> will check access for all endpoints under /api."
+        "0": "",
+        "1": "",
+        "2": ""
       }
     },
     "password-resets": {
       "labels": {
-        "create-link": "Create Password Reset Link"
+        "create-link": ""
       },
       "tooltips": {
-        "send-email": "Send Email To {{email}}",
-        "copy-link": "Copy Link",
-        "delete": "Delete"
+        "send-email": "",
+        "copy-link": "",
+        "delete": ""
       },
       "messages": {
-        "link-copied": "Reset link copied to clipboard."
+        "link-copied": ""
       }
     },
     "emails": {
-      "empty-state": "No Sent Mail.",
+      "empty-state": "",
       "actions": {
-        "send-test": "Send Test Email"
+        "send-test": ""
       },
       "tooltips": {
-        "preview": "Preview",
-        "view-user": "View User"
+        "preview": "",
+        "view-user": ""
       }
     },
     "groups": {
-      "empty-state": "No groups.",
+      "empty-state": "",
       "actions": {
-        "create": "Create Group"
+        "create": ""
       }
     },
     "group": {
-      "title": "Group",
+      "title": "",
       "labels": {
-        "name": "Name",
-        "add-user": "Add User",
-        "users": "Users:"
+        "name": "",
+        "add-user": "",
+        "users": ""
       },
       "checkboxes": {
-        "mfa-required": "MFA Required",
-        "auto-assign": "Auto Assign"
+        "mfa-required": "",
+        "auto-assign": ""
       }
     },
     "invitations": {
-      "empty-state": "No invitations.",
+      "empty-state": "",
       "actions": {
-        "create": "Create Invitation"
+        "create": ""
       }
     },
     "invitation": {
-      "title": "Invitation",
+      "title": "",
       "labels": {
-        "invite-link": "Invite Link",
-        "username": "Username",
-        "email": "Email",
-        "name": "Name",
-        "add-group": "Add Group",
-        "security-groups": "Security Groups:",
-        "user-expiration-date": "Access Expiration Date",
-        "user-expiration-time": "Access Expiration Time"
+        "invite-link": "",
+        "username": "",
+        "email": "",
+        "name": "",
+        "add-group": "",
+        "security-groups": "",
+        "user-expiration-date": "",
+        "user-expiration-time": ""
       },
       "tooltips": {
-        "copy-invite-link": "Copy Invite Link",
-        "unsaved-changes": "You have unsaved changes.",
-        "send-to": "Send invite to: {{email}}"
+        "copy-invite-link": "",
+        "unsaved-changes": "",
+        "send-to": ""
       },
       "messages": {
-        "link-copied": "Invite link copied to clipboard.",
-        "email-not-verified": "Cannot email invitation link, email connection not verified.",
-        "no-email": "Cannot email invitation link, invite does not include an email address."
+        "link-copied": "",
+        "email-not-verified": "",
+        "no-email": ""
       },
       "actions": {
-        "send": "Send Invite"
+        "send": ""
       },
       "checkboxes": {
-        "email-verified": "Email Verified"
+        "email-verified": ""
       }
     }
   },
   "components": {
     "header": {
       "actions": {
-        "login": "Login"
+        "login": ""
       }
     },
     "copy-field": {
       "messages": {
-        "copied": "{{label}} copied to clipboard."
+        "copied": ""
       }
     },
     "oidc-info": {
-      "title": "OIDC Information",
+      "title": "",
       "labels": {
-        "issuer": "OIDC Issuer Endpoint",
-        "well-known": "Well-Known Endpoint",
-        "authorization": "Authorization Endpoint",
-        "token": "Token Endpoint",
-        "userinfo": "UserInfo Endpoint",
-        "logout": "Logout Endpoint",
-        "jwks": "JWKs Endpoint"
+        "issuer": "",
+        "well-known": "",
+        "authorization": "",
+        "token": "",
+        "userinfo": "",
+        "logout": "",
+        "jwks": ""
       },
       "actions": {
-        "all-info": "All Info"
+        "all-info": ""
       }
     },
     "password-input": {
       "labels": {
-        "new-password": "New Password",
-        "old-password": "Old Password",
-        "confirm-password": "Confirm Password"
+        "new-password": "",
+        "old-password": "",
+        "confirm-password": ""
       }
     },
     "totp-input": {
-      "title": "This will enable Multi-Factor Authentication on your account.",
+      "title": "",
       "labels": {
-        "show-secret": "Show Secret"
+        "show-secret": ""
       },
       "text": {
-        "qrcode-instruction": "Scan the QRCode or Enter the Secret in your Authenticator",
-        "then": "then",
-        "enter-token": "Enter Token from Authenticator to Continue"
+        "qrcode-instruction": "",
+        "then": "",
+        "enter-token": ""
       }
     },
     "theme-toggle": {
       "options": {
-        "system": "System",
-        "light": "Light",
-        "dark": "Dark"
+        "system": "",
+        "light": "",
+        "dark": ""
       }
     }
   },
   "user-expired": {
-    "title": "Account Access Expired",
-    "content": "Your account access has expired, please contact an administrator to extend access.",
+    "title": "",
+    "content": "",
     "actions": {
-      "login": "Login"
+      "login": ""
     }
   },
   "passkey-name": {
-    "title": "Passkey Name",
-    "prompt": "Add a name to the new passkey?",
+    "title": "",
+    "prompt": "",
     "actions": {
       "skip": {
-        "label": "Skip"
+        "label": ""
       },
       "save": {
-        "label": "Save"
+        "label": ""
       }
     }
   }
