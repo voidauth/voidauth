@@ -1,1 +1,541 @@
-{"login":{"password":{"label":""},"username":{"label":""},"forgot-password":"","remember-me":"","actions":{"login":"","sign-up":""},"title":""},"contact-us":{"actions":{"label":""}},"app":{"loading":"","navigation":{"profile":"","admin":{"title":"","oidc-apps":"","proxyauth-domains":"","users":"","groups":"","invitations":"","password-resets":"","sent-mail":""},"logout":""}},"passkey-title":"","passkey-dialog":{"title":"","actions":{"passkey":""}},"mfa":{"actions":{"use-passkey":"","register-passkey":"","back":""},"title":""},"registration":{"actions":{"passkey-sign-up":"","sign-up":"","login":""},"title":{"accept-invitation":"","sign-up":""},"username":{"label":""},"email":{"label":""},"name":{"label":""}},"reset-password":{"actions":{"enable-passkey":"","reset-password":""},"title":""},"approval-required":{"content":"","title":"","actions":{"login":""}},"forbidden":{"title":"","content":"","actions":{"back":""}},"consent":{"actions":{"sign-in":""},"info":{"sign-into-question":"","post-signin-redir-notice":""},"title":""},"forgot-password":{"username":{"label":""},"actions":{"send":"","send-again":"","create-again":"","create":""},"title":""},"form-errors":{"required":"","min":"","max":"","minLength":"","maxLength":"","email":"","default":"","alpha-num-underscore-only":""},"logout":{"title":"","info":{"logout-question":""},"actions":{"yes":"","back":"","no":""}},"page-not-found":{"title":"","":{"actions":{"go-home":""}}},"verify-email":{"verify":{"title":{"verifying-email":"","email-could-not-be-verified":"","sending-new-verification":"","email-verification-could-not-be-sent":""},"actions":{"send-again":""}},"verify-sent":{"title":{"verification-email-sent":"","email-verification-required":""},"actions":{"logout":"","send-again":"","send-verification":""},"email":{"label":""}}},"settings":{"title":"","sections":{"profile":{"title":"","username":{"label":""},"name":{"label":""},"actions":{"submit":{"label":""}},"email":{"label":"","actions":{"submit":{"label":""}}}},"security":{"title":"","password":{"set":{"label":""},"change":{"label":""}},"passkeys":{"title":"","noPasskeys":"","register":{"label":""},"manage":{"title":""},"actions":{"edit":{"tooltip":""},"delete":{"tooltip":""}}},"mfa":{"title":"","status":{"enabled":"","disabled":""},"authenticators":{"has":"","none":""},"add":{"label":""},"enable":{"label":""}}},"account":{"title":"","removePassword":{"label":"","tooltip":{"noPassword":"","noPasskeys":""}},"removeAllPasskeys":{"label":"","tooltip":{"noPasskeys":"","noPassword":""}},"disableMfa":{"label":""},"removeAuthenticators":{"label":""},"deleteAccount":{"label":""}}}},"admin":{"common":{"actions":{"edit":"","delete":"","update":"","create":"","view":"","open":"","remove":""},"labels":{"mfa-required":"","email-verified":"","approved":""},"messages":{"all-users-have-access":""}},"users":{"empty-state":"","actions":{"select":"","approve":""},"labels":{"search":""}},"user":{"title":"","labels":{"username":"","name":"","email":"","add-group":"","security-groups":"","user-expiration-date":"","user-expiration-time":""},"actions":{"sign-out":""},"tooltips":{"remove":"","open":""}},"clients":{"empty-state":"","actions":{"create":""}},"client":{"title":"","labels":{"name":"","home-page-url":"","logo-url":"","add-group":"","client-id":"","auth-method":"","client-secret":"","redirect-url":"","response-types":"","grant-types":"","postlogout-url":"","allowed-groups":"","redirect-urls":""},"hints":{"pkce-required":"","not-required":"","postlogout-redirect":""},"checkboxes":{"skip-consent":"","mfa-required":""},"tooltips":{"skip-consent":"","mfa-required":"","copy-client-id":"","copy-secret":""},"messages":{"client-id-copied":"","secret-copied":""}},"domains":{"empty-state":"","actions":{"create":""}},"domain":{"title":"","labels":{"domain":"","max-session-length":"","add-group":"","allowed-groups":""},"placeholders":{"domain":""},"sections":{"domain-help":""},"hints":{"no-re-auth":""},"help-text":{"0":"","1":"","2":""}},"password-resets":{"labels":{"create-link":""},"tooltips":{"send-email":"","copy-link":"","delete":""},"messages":{"link-copied":""}},"emails":{"empty-state":"","actions":{"send-test":""},"tooltips":{"preview":"","view-user":""}},"groups":{"empty-state":"","actions":{"create":""}},"group":{"title":"","labels":{"name":"","add-user":"","users":""},"checkboxes":{"mfa-required":"","auto-assign":""}},"invitations":{"empty-state":"","actions":{"create":""}},"invitation":{"title":"","labels":{"invite-link":"","username":"","email":"","name":"","add-group":"","security-groups":"","user-expiration-date":"","user-expiration-time":""},"tooltips":{"copy-invite-link":"","unsaved-changes":"","send-to":""},"messages":{"link-copied":"","email-not-verified":"","no-email":""},"actions":{"send":""},"checkboxes":{"email-verified":""}}},"components":{"header":{"actions":{"login":""}},"copy-field":{"messages":{"copied":""}},"oidc-info":{"title":"","labels":{"issuer":"","well-known":"","authorization":"","token":"","userinfo":"","logout":"","jwks":""},"actions":{"all-info":""}},"password-input":{"labels":{"new-password":"","old-password":"","confirm-password":""}},"totp-input":{"title":"","labels":{"show-secret":""},"text":{"qrcode-instruction":"","then":"","enter-token":""}},"theme-toggle":{"options":{"system":"","light":"","dark":""}}},"user-expired":{"title":"","content":"","actions":{"login":""}},"passkey-name":{"title":"","prompt":"","actions":{"skip":{"label":""},"save":{"label":""}}}}
+{
+  "login": {
+    "password": {
+      "label": ""
+    },
+    "username": {
+      "label": ""
+    },
+    "forgot-password": "",
+    "remember-me": "",
+    "actions": {
+      "login": "",
+      "sign-up": ""
+    },
+    "title": ""
+  },
+  "contact-us": {
+    "actions": {
+      "label": ""
+    }
+  },
+  "app": {
+    "loading": "",
+    "navigation": {
+      "profile": "",
+      "admin": {
+        "title": "",
+        "oidc-apps": "",
+        "proxyauth-domains": "",
+        "users": "",
+        "groups": "",
+        "invitations": "",
+        "password-resets": "",
+        "sent-mail": ""
+      },
+      "logout": ""
+    }
+  },
+  "passkey-title": "",
+  "passkey-dialog": {
+    "title": "",
+    "actions": {
+      "passkey": ""
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "",
+      "register-passkey": "",
+      "back": ""
+    },
+    "title": ""
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "",
+      "sign-up": "",
+      "login": ""
+    },
+    "title": {
+      "accept-invitation": "",
+      "sign-up": ""
+    },
+    "username": {
+      "label": ""
+    },
+    "email": {
+      "label": ""
+    },
+    "name": {
+      "label": ""
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "",
+      "reset-password": ""
+    },
+    "title": ""
+  },
+  "approval-required": {
+    "content": "",
+    "title": "",
+    "actions": {
+      "login": ""
+    }
+  },
+  "forbidden": {
+    "title": "",
+    "content": "",
+    "actions": {
+      "back": ""
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": ""
+    },
+    "info": {
+      "sign-into-question": "",
+      "post-signin-redir-notice": ""
+    },
+    "title": ""
+  },
+  "forgot-password": {
+    "username": {
+      "label": ""
+    },
+    "actions": {
+      "send": "",
+      "send-again": "",
+      "create-again": "",
+      "create": ""
+    },
+    "title": ""
+  },
+  "form-errors": {
+    "required": "",
+    "min": "",
+    "max": "",
+    "minLength": "",
+    "maxLength": "",
+    "email": "",
+    "default": "",
+    "alpha-num-underscore-only": ""
+  },
+  "logout": {
+    "title": "",
+    "info": {
+      "logout-question": ""
+    },
+    "actions": {
+      "yes": "",
+      "back": "",
+      "no": ""
+    }
+  },
+  "page-not-found": {
+    "title": "",
+    "": {
+      "actions": {
+        "go-home": ""
+      }
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "",
+        "email-could-not-be-verified": "",
+        "sending-new-verification": "",
+        "email-verification-could-not-be-sent": ""
+      },
+      "actions": {
+        "send-again": ""
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "",
+        "email-verification-required": ""
+      },
+      "actions": {
+        "logout": "",
+        "send-again": "",
+        "send-verification": ""
+      },
+      "email": {
+        "label": ""
+      }
+    }
+  },
+  "settings": {
+    "title": "",
+    "sections": {
+      "profile": {
+        "title": "",
+        "username": {
+          "label": ""
+        },
+        "name": {
+          "label": ""
+        },
+        "actions": {
+          "submit": {
+            "label": ""
+          }
+        },
+        "email": {
+          "label": "",
+          "actions": {
+            "submit": {
+              "label": ""
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "",
+        "password": {
+          "set": {
+            "label": ""
+          },
+          "change": {
+            "label": ""
+          }
+        },
+        "passkeys": {
+          "title": "",
+          "noPasskeys": "",
+          "register": {
+            "label": ""
+          },
+          "manage": {
+            "title": ""
+          },
+          "actions": {
+            "edit": {
+              "tooltip": ""
+            },
+            "delete": {
+              "tooltip": ""
+            }
+          }
+        },
+        "mfa": {
+          "title": "",
+          "status": {
+            "enabled": "",
+            "disabled": ""
+          },
+          "authenticators": {
+            "has": "",
+            "none": ""
+          },
+          "add": {
+            "label": ""
+          },
+          "enable": {
+            "label": ""
+          }
+        }
+      },
+      "account": {
+        "title": "",
+        "removePassword": {
+          "label": "",
+          "tooltip": {
+            "noPassword": "",
+            "noPasskeys": ""
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "",
+          "tooltip": {
+            "noPasskeys": "",
+            "noPassword": ""
+          }
+        },
+        "disableMfa": {
+          "label": ""
+        },
+        "removeAuthenticators": {
+          "label": ""
+        },
+        "deleteAccount": {
+          "label": ""
+        }
+      }
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "",
+        "delete": "",
+        "update": "",
+        "create": "",
+        "view": "",
+        "open": "",
+        "remove": ""
+      },
+      "labels": {
+        "mfa-required": "",
+        "email-verified": "",
+        "approved": ""
+      },
+      "messages": {
+        "all-users-have-access": ""
+      }
+    },
+    "users": {
+      "empty-state": "",
+      "actions": {
+        "select": "",
+        "approve": ""
+      },
+      "labels": {
+        "search": ""
+      }
+    },
+    "user": {
+      "title": "",
+      "labels": {
+        "username": "",
+        "name": "",
+        "email": "",
+        "add-group": "",
+        "security-groups": "",
+        "user-expiration-date": "",
+        "user-expiration-time": ""
+      },
+      "actions": {
+        "sign-out": ""
+      },
+      "tooltips": {
+        "remove": "",
+        "open": ""
+      }
+    },
+    "clients": {
+      "empty-state": "",
+      "actions": {
+        "create": ""
+      }
+    },
+    "client": {
+      "title": "",
+      "labels": {
+        "name": "",
+        "home-page-url": "",
+        "logo-url": "",
+        "add-group": "",
+        "client-id": "",
+        "auth-method": "",
+        "client-secret": "",
+        "redirect-url": "",
+        "response-types": "",
+        "grant-types": "",
+        "postlogout-url": "",
+        "allowed-groups": "",
+        "redirect-urls": ""
+      },
+      "hints": {
+        "pkce-required": "",
+        "not-required": "",
+        "postlogout-redirect": ""
+      },
+      "checkboxes": {
+        "skip-consent": "",
+        "mfa-required": ""
+      },
+      "tooltips": {
+        "skip-consent": "",
+        "mfa-required": "",
+        "copy-client-id": "",
+        "copy-secret": ""
+      },
+      "messages": {
+        "client-id-copied": "",
+        "secret-copied": ""
+      }
+    },
+    "domains": {
+      "empty-state": "",
+      "actions": {
+        "create": ""
+      }
+    },
+    "domain": {
+      "title": "",
+      "labels": {
+        "domain": "",
+        "max-session-length": "",
+        "add-group": "",
+        "allowed-groups": ""
+      },
+      "placeholders": {
+        "domain": ""
+      },
+      "sections": {
+        "domain-help": ""
+      },
+      "hints": {
+        "no-re-auth": ""
+      },
+      "help-text": {
+        "0": "",
+        "1": "",
+        "2": ""
+      }
+    },
+    "password-resets": {
+      "labels": {
+        "create-link": ""
+      },
+      "tooltips": {
+        "send-email": "",
+        "copy-link": "",
+        "delete": ""
+      },
+      "messages": {
+        "link-copied": ""
+      }
+    },
+    "emails": {
+      "empty-state": "",
+      "actions": {
+        "send-test": ""
+      },
+      "tooltips": {
+        "preview": "",
+        "view-user": ""
+      }
+    },
+    "groups": {
+      "empty-state": "",
+      "actions": {
+        "create": ""
+      }
+    },
+    "group": {
+      "title": "",
+      "labels": {
+        "name": "",
+        "add-user": "",
+        "users": ""
+      },
+      "checkboxes": {
+        "mfa-required": "",
+        "auto-assign": ""
+      }
+    },
+    "invitations": {
+      "empty-state": "",
+      "actions": {
+        "create": ""
+      }
+    },
+    "invitation": {
+      "title": "",
+      "labels": {
+        "invite-link": "",
+        "username": "",
+        "email": "",
+        "name": "",
+        "add-group": "",
+        "security-groups": "",
+        "user-expiration-date": "",
+        "user-expiration-time": ""
+      },
+      "tooltips": {
+        "copy-invite-link": "",
+        "unsaved-changes": "",
+        "send-to": ""
+      },
+      "messages": {
+        "link-copied": "",
+        "email-not-verified": "",
+        "no-email": ""
+      },
+      "actions": {
+        "send": ""
+      },
+      "checkboxes": {
+        "email-verified": ""
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": ""
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": ""
+      }
+    },
+    "oidc-info": {
+      "title": "",
+      "labels": {
+        "issuer": "",
+        "well-known": "",
+        "authorization": "",
+        "token": "",
+        "userinfo": "",
+        "logout": "",
+        "jwks": ""
+      },
+      "actions": {
+        "all-info": ""
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "",
+        "old-password": "",
+        "confirm-password": ""
+      }
+    },
+    "totp-input": {
+      "title": "",
+      "labels": {
+        "show-secret": ""
+      },
+      "text": {
+        "qrcode-instruction": "",
+        "then": "",
+        "enter-token": ""
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "",
+        "light": "",
+        "dark": ""
+      }
+    }
+  },
+  "user-expired": {
+    "title": "",
+    "content": "",
+    "actions": {
+      "login": ""
+    }
+  },
+  "passkey-name": {
+    "title": "",
+    "prompt": "",
+    "actions": {
+      "skip": {
+        "label": ""
+      },
+      "save": {
+        "label": ""
+      }
+    }
+  }
+}
