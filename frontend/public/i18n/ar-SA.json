@@ -1,243 +1,243 @@
 {
   "login": {
     "password": {
-      "label": "密码"
+      "label": "Password"
     },
     "username": {
-      "label": "用户名或邮箱"
+      "label": "Username or Email"
     },
-    "forgot-password": "忘记密码",
-    "remember-me": "记住我",
+    "forgot-password": "Forgot Password",
+    "remember-me": "Remember Me",
     "actions": {
-      "login": "登录",
-      "sign-up": "注册"
+      "login": "Login",
+      "sign-up": "Sign Up"
     },
-    "title": "登录"
+    "title": "Login"
   },
   "contact-us": {
     "actions": {
-      "label": "联系"
+      "label": "Contact"
     }
   },
   "app": {
-    "loading": "加载中...",
+    "loading": "Loading...",
     "navigation": {
-      "profile": "个人资料",
+      "profile": "Profile",
       "admin": {
-        "title": "管理",
-        "oidc-apps": "OIDC 应用",
-        "proxyauth-domains": "代理认证域",
-        "users": "用户",
-        "groups": "用户组",
-        "invitations": "邀请",
-        "password-resets": "密码重置",
-        "sent-mail": "已发送邮件"
+        "title": "Admin",
+        "oidc-apps": "OIDC Apps",
+        "proxyauth-domains": "ProxyAuth Domains",
+        "users": "Users",
+        "groups": "Groups",
+        "invitations": "Invitations",
+        "password-resets": "Password Resets",
+        "sent-mail": "Sent Mail"
       },
-      "logout": "退出登录"
+      "logout": "Logout"
     }
   },
-  "passkey-title": "通行密钥",
+  "passkey-title": "Passkey",
   "passkey-dialog": {
-    "title": "启用 {{platformName}}？",
+    "title": "Enable {{platformName}}?",
     "actions": {
-      "passkey": "启用 {{platformName}}"
+      "passkey": "Enable {{platformName}}"
     }
   },
   "mfa": {
     "actions": {
-      "use-passkey": "使用 {{platformName}}",
-      "register-passkey": "注册通行密钥",
-      "back": "返回"
+      "use-passkey": "Use {{platformName}}",
+      "register-passkey": "Register Passkey",
+      "back": "Back"
     },
-    "title": "需要多因素认证"
+    "title": "Multi-Factor Authentication Required"
   },
   "registration": {
     "actions": {
-      "passkey-sign-up": "使用 {{platformName}} 注册",
-      "sign-up": "注册",
-      "login": "登录"
+      "passkey-sign-up": "Sign Up With {{platformName}}",
+      "sign-up": "Sign Up",
+      "login": "Login"
     },
     "title": {
-      "accept-invitation": "接受邀请",
-      "sign-up": "注册"
+      "accept-invitation": "Accept Invitation",
+      "sign-up": "Sign Up"
     },
     "username": {
-      "label": "用户名"
+      "label": "Username"
     },
     "email": {
-      "label": "邮箱"
+      "label": "Email"
     },
     "name": {
-      "label": "姓名"
+      "label": "Name"
     }
   },
   "reset-password": {
     "actions": {
-      "enable-passkey": "启用 {{platformName}}",
-      "reset-password": "重置密码"
+      "enable-passkey": "Enable {{platformName}}",
+      "reset-password": "Reset Password"
     },
-    "title": "重置密码"
+    "title": "Reset Password"
   },
   "approval-required": {
-    "content": "您的账户需要审核后才能登录，请等待或联系管理员。",
-    "title": "需要审核",
+    "content": "Your account needs approval before you can log in. Please wait or contact an administrator for help.",
+    "title": "Approval Required",
     "actions": {
-      "login": "登录"
+      "login": "Login"
     }
   },
   "forbidden": {
-    "title": "禁止访问",
-    "content": "您没有权限访问此资源。",
+    "title": "Access Forbidden",
+    "content": "You do not have permission to access this resource.",
     "actions": {
-      "back": "返回"
+      "back": "Back"
     }
   },
   "consent": {
     "actions": {
-      "sign-in": "登录"
+      "sign-in": "Sign In"
     },
     "info": {
-      "sign-into-question": "是否要登录到 <br /> <h2>{{destination}}</h2>",
-      "post-signin-redir-notice": "登录后将跳转至 <b>{{redirect}}</b>"
+      "sign-into-question": "Do you want to sign in to <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "After you sign in, you will be sent to <b>{{redirect}}</b>"
     },
-    "title": "确认"
+    "title": "Confirm"
   },
   "forgot-password": {
     "username": {
-      "label": "邮箱或用户名"
+      "label": "Email or Username"
     },
     "actions": {
-      "send": "发送",
-      "send-again": "重新发送",
-      "create-again": "重新创建",
-      "create": "创建"
+      "send": "Send",
+      "send-again": "Send Again",
+      "create-again": "Create Again",
+      "create": "Create"
     },
-    "title": "忘记密码"
+    "title": "Forgot Password"
   },
   "form-errors": {
-    "required": "必填项。",
-    "min": "必须大于等于 {{min}}。",
-    "max": "不能大于 {{max}}。",
-    "minLength": "长度至少为 {{requiredLength}} 个字符。",
-    "maxLength": "长度不能超过 {{requiredLength}} 个字符。",
-    "email": "邮箱格式不正确。",
-    "default": "无效值。",
-    "alpha-num-underscore-only": "仅允许 A-Z、0-9 和 _"
+    "required": "Required.",
+    "min": "Must be at least {{min}}.",
+    "max": "Cannot be greater than {{max}}.",
+    "minLength": "Must be at least {{requiredLength}} characters long.",
+    "maxLength": "Must be less than {{requiredLength}} characters long.",
+    "email": "Not a valid email.",
+    "default": "Invalid value.",
+    "alpha-num-underscore-only": "Only A-Z,0-9,and _ allowed"
   },
   "logout": {
-    "title": "退出登录",
+    "title": "Logout",
     "info": {
-      "logout-question": "确定要退出登录吗？"
+      "logout-question": "Do you want to log out?"
     },
     "actions": {
-      "yes": "是",
-      "back": "返回",
-      "no": "否"
+      "yes": "Yes",
+      "back": "Back",
+      "no": "No"
     }
   },
   "page-not-found": {
-    "title": "页面未找到",
+    "title": "The Page Cannot Be Found",
     "": {
       "actions": {
-        "go-home": "返回首页"
+        "go-home": "Go Home"
       }
     }
   },
   "verify-email": {
     "verify": {
       "title": {
-        "verifying-email": "正在验证邮箱...",
-        "email-could-not-be-verified": "邮箱验证失败",
-        "sending-new-verification": "正在发送新的验证邮件...",
-        "email-verification-could-not-be-sent": "无法发送验证邮件"
+        "verifying-email": "Verifying Email...",
+        "email-could-not-be-verified": "Email Could Not Be Verified",
+        "sending-new-verification": "Sending New Verification...",
+        "email-verification-could-not-be-sent": "Email Verification Could Not Be Sent"
       },
       "actions": {
-        "send-again": "重新发送"
+        "send-again": "Send Again"
       }
     },
     "verify-sent": {
       "title": {
-        "verification-email-sent": "验证邮件已发送",
-        "email-verification-required": "需要验证邮箱"
+        "verification-email-sent": "Verification Email Sent",
+        "email-verification-required": "Email Verification Required"
       },
       "actions": {
-        "logout": "退出登录",
-        "send-again": "重新发送",
-        "send-verification": "发送验证"
+        "logout": "Logout",
+        "send-again": "Send Again",
+        "send-verification": "Send Verification"
       },
       "email": {
-        "label": "邮箱"
+        "label": "Email"
       }
     }
   },
   "settings": {
-    "title": "设置",
+    "title": "Settings",
     "sections": {
       "profile": {
-        "title": "个人资料",
+        "title": "Profile",
         "username": {
-          "label": "用户名"
+          "label": "Username"
         },
         "name": {
-          "label": "姓名"
+          "label": "Name"
         },
         "actions": {
           "submit": {
-            "label": "更新资料"
+            "label": "Update Profile"
           }
         },
         "email": {
-          "label": "邮箱",
+          "label": "Email",
           "actions": {
             "submit": {
-              "label": "更新邮箱"
+              "label": "Update Email"
             }
           }
         }
       },
       "security": {
-        "title": "安全",
+        "title": "Security",
         "password": {
           "set": {
-            "label": "设置密码"
+            "label": "Set Password"
           },
           "change": {
-            "label": "修改密码"
+            "label": "Change Password"
           }
         },
         "passkeys": {
-          "title": "通行密钥",
-          "noPasskeys": "您没有注册任何通行密钥。",
+          "title": "Passkeys",
+          "noPasskeys": "You have no registered passkeys.",
           "register": {
-            "label": "注册通行密钥"
+            "label": "Register Passkey"
           },
           "manage": {
-            "title": "管理通行密钥"
+            "title": "Manage Passkeys"
           },
           "actions": {
             "edit": {
-              "tooltip": "编辑"
+              "tooltip": "Edit"
             },
             "delete": {
-              "tooltip": "删除"
+              "tooltip": "Delete"
             }
           }
         },
         "mfa": {
-          "title": "多因素认证",
+          "title": "Multi-Factor Authentication",
           "status": {
-            "enabled": "已启用多因素认证。",
-            "disabled": "未启用多因素认证。"
+            "enabled": "Multi-Factor Authentication is enabled.",
+            "disabled": "Multi-Factor Authentication is not enabled."
           },
           "authenticators": {
-            "has": "您至少有一个已注册的验证器。",
-            "none": "您没有注册任何验证器。"
+            "has": "You have at least one registered Authenticator.",
+            "none": "You have no registered Authenticators."
           },
           "add": {
-            "label": "添加验证器"
+            "label": "Add Authenticator"
           },
           "enable": {
-            "label": "启用 MFA"
+            "label": "Enable MFA"
           }
         }
       },
