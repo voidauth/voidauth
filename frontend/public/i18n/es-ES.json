@@ -1,270 +1,270 @@
 {
   "login": {
     "password": {
-      "label": "test"
+      "label": ""
     },
     "username": {
-      "label": "test"
+      "label": ""
     },
-    "forgot-password": "test",
-    "remember-me": "test",
+    "forgot-password": "",
+    "remember-me": "",
     "actions": {
-      "login": "test",
-      "sign-up": "test"
+      "login": "",
+      "sign-up": ""
     },
-    "title": "test"
+    "title": ""
   },
   "contact-us": {
     "actions": {
-      "label": "test"
+      "label": ""
     }
   },
   "app": {
-    "loading": "test",
+    "loading": "",
     "navigation": {
-      "profile": "test",
+      "profile": "",
       "admin": {
-        "title": "test",
-        "oidc-apps": "test",
-        "proxyauth-domains": "test",
-        "users": "test",
-        "groups": "test",
-        "invitations": "test",
-        "password-resets": "test",
-        "sent-mail": "test"
+        "title": "",
+        "oidc-apps": "",
+        "proxyauth-domains": "",
+        "users": "",
+        "groups": "",
+        "invitations": "",
+        "password-resets": "",
+        "sent-mail": ""
       },
-      "logout": "test"
+      "logout": ""
     }
   },
-  "passkey-title": "test",
+  "passkey-title": "",
   "passkey-dialog": {
-    "title": "test",
+    "title": "",
     "actions": {
-      "passkey": "test"
+      "passkey": ""
     }
   },
   "mfa": {
     "actions": {
-      "use-passkey": "test",
-      "register-passkey": "test",
-      "back": "test"
+      "use-passkey": "",
+      "register-passkey": "",
+      "back": ""
     },
-    "title": "test"
+    "title": ""
   },
   "registration": {
     "actions": {
-      "passkey-sign-up": "test",
-      "sign-up": "test",
-      "login": "test"
+      "passkey-sign-up": "",
+      "sign-up": "",
+      "login": ""
     },
     "title": {
-      "accept-invitation": "test",
-      "sign-up": "test"
+      "accept-invitation": "",
+      "sign-up": ""
     },
     "username": {
-      "label": "test"
+      "label": ""
     },
     "email": {
-      "label": "test"
+      "label": ""
     },
     "name": {
-      "label": "test"
+      "label": ""
     }
   },
   "reset-password": {
     "actions": {
-      "enable-passkey": "test",
-      "reset-password": "test"
+      "enable-passkey": "",
+      "reset-password": ""
     },
-    "title": "test"
+    "title": ""
   },
   "approval-required": {
-    "content": "test",
-    "title": "test",
+    "content": "",
+    "title": "",
     "actions": {
-      "login": "test"
+      "login": ""
     }
   },
   "forbidden": {
-    "title": "test",
-    "content": "test",
+    "title": "",
+    "content": "",
     "actions": {
-      "back": "test"
+      "back": ""
     }
   },
   "consent": {
     "actions": {
-      "sign-in": "test"
+      "sign-in": ""
     },
     "info": {
-      "sign-into-question": "test",
-      "post-signin-redir-notice": "test"
+      "sign-into-question": "",
+      "post-signin-redir-notice": ""
     },
-    "title": "test"
+    "title": ""
   },
   "forgot-password": {
     "username": {
-      "label": "test"
+      "label": ""
     },
     "actions": {
-      "send": "test",
-      "send-again": "test",
-      "create-again": "test",
-      "create": "test"
+      "send": "",
+      "send-again": "",
+      "create-again": "",
+      "create": ""
     },
-    "title": "test"
+    "title": ""
   },
   "form-errors": {
-    "required": "test",
-    "min": "test",
-    "max": "test",
-    "minLength": "test",
-    "maxLength": "test",
-    "email": "test",
-    "default": "test",
-    "alpha-num-underscore-only": "test"
+    "required": "",
+    "min": "",
+    "max": "",
+    "minLength": "",
+    "maxLength": "",
+    "email": "",
+    "default": "",
+    "alpha-num-underscore-only": ""
   },
   "logout": {
-    "title": "test",
+    "title": "",
     "info": {
-      "logout-question": "test"
+      "logout-question": ""
     },
     "actions": {
-      "yes": "test",
-      "back": "test",
-      "no": "test"
+      "yes": "",
+      "back": "",
+      "no": ""
     }
   },
   "page-not-found": {
-    "title": "test",
+    "title": "",
     "": {
       "actions": {
-        "go-home": "test"
+        "go-home": ""
       }
     }
   },
   "verify-email": {
     "verify": {
       "title": {
-        "verifying-email": "test",
-        "email-could-not-be-verified": "test",
-        "sending-new-verification": "test",
-        "email-verification-could-not-be-sent": "test"
+        "verifying-email": "",
+        "email-could-not-be-verified": "",
+        "sending-new-verification": "",
+        "email-verification-could-not-be-sent": ""
       },
       "actions": {
-        "send-again": "test"
+        "send-again": ""
       }
     },
     "verify-sent": {
       "title": {
-        "verification-email-sent": "test",
-        "email-verification-required": "test"
+        "verification-email-sent": "",
+        "email-verification-required": ""
       },
       "actions": {
-        "logout": "test",
-        "send-again": "test",
-        "send-verification": "test"
+        "logout": "",
+        "send-again": "",
+        "send-verification": ""
       },
       "email": {
-        "label": "test"
+        "label": ""
       }
     }
   },
   "settings": {
-    "title": "test",
+    "title": "",
     "sections": {
       "profile": {
-        "title": "test",
+        "title": "",
         "username": {
-          "label": "test"
+          "label": ""
         },
         "name": {
-          "label": "test"
+          "label": ""
         },
         "actions": {
           "submit": {
-            "label": "test"
+            "label": ""
           }
         },
         "email": {
-          "label": "test",
+          "label": "",
           "actions": {
             "submit": {
-              "label": "test"
+              "label": ""
             }
           }
         }
       },
       "security": {
-        "title": "test",
+        "title": "",
         "password": {
           "set": {
-            "label": "test"
+            "label": ""
           },
           "change": {
-            "label": "test"
+            "label": ""
           }
         },
         "passkeys": {
-          "title": "test",
-          "noPasskeys": "test",
+          "title": "",
+          "noPasskeys": "",
           "register": {
-            "label": "test"
+            "label": ""
           },
           "manage": {
-            "title": "test"
+            "title": ""
           },
           "actions": {
             "edit": {
-              "tooltip": "test"
+              "tooltip": ""
             },
             "delete": {
-              "tooltip": "test"
+              "tooltip": ""
             }
           }
         },
         "mfa": {
-          "title": "test",
+          "title": "",
           "status": {
-            "enabled": "test",
-            "disabled": "test"
+            "enabled": "",
+            "disabled": ""
           },
           "authenticators": {
-            "has": "test",
-            "none": "test"
+            "has": "",
+            "none": ""
           },
           "add": {
-            "label": "test"
+            "label": ""
           },
           "enable": {
-            "label": "test"
+            "label": ""
           }
         }
       },
       "account": {
-        "title": "test",
+        "title": "",
         "removePassword": {
-          "label": "test",
+          "label": "",
           "tooltip": {
-            "noPassword": "test",
-            "noPasskeys": "test"
+            "noPassword": "",
+            "noPasskeys": ""
           }
         },
         "removeAllPasskeys": {
-          "label": "test",
+          "label": "",
           "tooltip": {
-            "noPasskeys": "test",
-            "noPassword": "test"
+            "noPasskeys": "",
+            "noPassword": ""
           }
         },
         "disableMfa": {
-          "label": "test"
+          "label": ""
         },
         "removeAuthenticators": {
-          "label": "test"
+          "label": ""
         },
         "deleteAccount": {
-          "label": "test"
+          "label": ""
         }
       }
     }
@@ -272,269 +272,269 @@
   "admin": {
     "common": {
       "actions": {
-        "edit": "test",
-        "delete": "test",
-        "update": "test",
-        "create": "test",
-        "view": "test",
-        "open": "test",
-        "remove": "test"
+        "edit": "",
+        "delete": "",
+        "update": "",
+        "create": "",
+        "view": "",
+        "open": "",
+        "remove": ""
       },
       "labels": {
-        "mfa-required": "test",
-        "email-verified": "test",
-        "approved": "test"
+        "mfa-required": "",
+        "email-verified": "",
+        "approved": ""
       },
       "messages": {
-        "all-users-have-access": "test"
+        "all-users-have-access": ""
       }
     },
     "users": {
-      "empty-state": "test",
+      "empty-state": "",
       "actions": {
-        "select": "test",
-        "approve": "test"
+        "select": "",
+        "approve": ""
       },
       "labels": {
-        "search": "test"
+        "search": ""
       }
     },
     "user": {
-      "title": "test",
+      "title": "",
       "labels": {
-        "username": "test",
-        "name": "test",
-        "email": "test",
-        "add-group": "test",
-        "security-groups": "test",
-        "user-expiration-date": "test",
-        "user-expiration-time": "test"
+        "username": "",
+        "name": "",
+        "email": "",
+        "add-group": "",
+        "security-groups": "",
+        "user-expiration-date": "",
+        "user-expiration-time": ""
       },
       "actions": {
-        "sign-out": "test"
+        "sign-out": ""
       },
       "tooltips": {
-        "remove": "test",
-        "open": "test"
+        "remove": "",
+        "open": ""
       }
     },
     "clients": {
-      "empty-state": "test",
+      "empty-state": "",
       "actions": {
-        "create": "test"
+        "create": ""
       }
     },
     "client": {
-      "title": "test",
+      "title": "",
       "labels": {
-        "name": "test",
-        "home-page-url": "test",
-        "logo-url": "test",
-        "add-group": "test",
-        "client-id": "test",
-        "auth-method": "test",
-        "client-secret": "test",
-        "redirect-url": "test",
-        "response-types": "test",
-        "grant-types": "test",
-        "postlogout-url": "test",
-        "allowed-groups": "test",
-        "redirect-urls": "test"
+        "name": "",
+        "home-page-url": "",
+        "logo-url": "",
+        "add-group": "",
+        "client-id": "",
+        "auth-method": "",
+        "client-secret": "",
+        "redirect-url": "",
+        "response-types": "",
+        "grant-types": "",
+        "postlogout-url": "",
+        "allowed-groups": "",
+        "redirect-urls": ""
       },
       "hints": {
-        "pkce-required": "test",
-        "not-required": "test",
-        "postlogout-redirect": "test"
+        "pkce-required": "",
+        "not-required": "",
+        "postlogout-redirect": ""
       },
       "checkboxes": {
-        "skip-consent": "test",
-        "mfa-required": "test"
+        "skip-consent": "",
+        "mfa-required": ""
       },
       "tooltips": {
-        "skip-consent": "test",
-        "mfa-required": "test",
-        "copy-client-id": "test",
-        "copy-secret": "test"
+        "skip-consent": "",
+        "mfa-required": "",
+        "copy-client-id": "",
+        "copy-secret": ""
       },
       "messages": {
-        "client-id-copied": "test",
-        "secret-copied": "test"
+        "client-id-copied": "",
+        "secret-copied": ""
       }
     },
     "domains": {
-      "empty-state": "test",
+      "empty-state": "",
       "actions": {
-        "create": "test"
+        "create": ""
       }
     },
     "domain": {
-      "title": "test",
+      "title": "",
       "labels": {
-        "domain": "test",
-        "max-session-length": "test",
-        "add-group": "test",
-        "allowed-groups": "test"
+        "domain": "",
+        "max-session-length": "",
+        "add-group": "",
+        "allowed-groups": ""
       },
       "placeholders": {
-        "domain": "test"
+        "domain": ""
       },
       "sections": {
-        "domain-help": "test"
+        "domain-help": ""
       },
       "hints": {
-        "no-re-auth": "test"
+        "no-re-auth": ""
       },
       "help-text": {
-        "0": "test",
-        "1": "test",
-        "2": "test"
+        "0": "",
+        "1": "",
+        "2": ""
       }
     },
     "password-resets": {
       "labels": {
-        "create-link": "test"
+        "create-link": ""
       },
       "tooltips": {
-        "send-email": "test",
-        "copy-link": "test",
-        "delete": "test"
+        "send-email": "",
+        "copy-link": "",
+        "delete": ""
       },
       "messages": {
-        "link-copied": "test"
+        "link-copied": ""
       }
     },
     "emails": {
-      "empty-state": "test",
+      "empty-state": "",
       "actions": {
-        "send-test": "test"
+        "send-test": ""
       },
       "tooltips": {
-        "preview": "test",
-        "view-user": "test"
+        "preview": "",
+        "view-user": ""
       }
     },
     "groups": {
-      "empty-state": "test",
+      "empty-state": "",
       "actions": {
-        "create": "test"
+        "create": ""
       }
     },
     "group": {
-      "title": "test",
+      "title": "",
       "labels": {
-        "name": "test",
-        "add-user": "test",
-        "users": "test"
+        "name": "",
+        "add-user": "",
+        "users": ""
       },
       "checkboxes": {
-        "mfa-required": "test",
-        "auto-assign": "test"
+        "mfa-required": "",
+        "auto-assign": ""
       }
     },
     "invitations": {
-      "empty-state": "test",
+      "empty-state": "",
       "actions": {
-        "create": "test"
+        "create": ""
       }
     },
     "invitation": {
-      "title": "test",
+      "title": "",
       "labels": {
-        "invite-link": "test",
-        "username": "test",
-        "email": "test",
-        "name": "test",
-        "add-group": "test",
-        "security-groups": "test",
-        "user-expiration-date": "test",
-        "user-expiration-time": "test"
+        "invite-link": "",
+        "username": "",
+        "email": "",
+        "name": "",
+        "add-group": "",
+        "security-groups": "",
+        "user-expiration-date": "",
+        "user-expiration-time": ""
       },
       "tooltips": {
-        "copy-invite-link": "test",
-        "unsaved-changes": "test",
-        "send-to": "test"
+        "copy-invite-link": "",
+        "unsaved-changes": "",
+        "send-to": ""
       },
       "messages": {
-        "link-copied": "test",
-        "email-not-verified": "test",
-        "no-email": "test"
+        "link-copied": "",
+        "email-not-verified": "",
+        "no-email": ""
       },
       "actions": {
-        "send": "test"
+        "send": ""
       },
       "checkboxes": {
-        "email-verified": "test"
+        "email-verified": ""
       }
     }
   },
   "components": {
     "header": {
       "actions": {
-        "login": "test"
+        "login": ""
       }
     },
     "copy-field": {
       "messages": {
-        "copied": "test"
+        "copied": ""
       }
     },
     "oidc-info": {
-      "title": "test",
+      "title": "",
       "labels": {
-        "issuer": "test",
-        "well-known": "test",
-        "authorization": "test",
-        "token": "test",
-        "userinfo": "test",
-        "logout": "test",
-        "jwks": "test"
+        "issuer": "",
+        "well-known": "",
+        "authorization": "",
+        "token": "",
+        "userinfo": "",
+        "logout": "",
+        "jwks": ""
       },
       "actions": {
-        "all-info": "test"
+        "all-info": ""
       }
     },
     "password-input": {
       "labels": {
-        "new-password": "test",
-        "old-password": "test",
-        "confirm-password": "test"
+        "new-password": "",
+        "old-password": "",
+        "confirm-password": ""
       }
     },
     "totp-input": {
-      "title": "test",
+      "title": "",
       "labels": {
-        "show-secret": "test"
+        "show-secret": ""
       },
       "text": {
-        "qrcode-instruction": "test",
-        "then": "test",
-        "enter-token": "test"
+        "qrcode-instruction": "",
+        "then": "",
+        "enter-token": ""
       }
     },
     "theme-toggle": {
       "options": {
-        "system": "test",
-        "light": "test",
-        "dark": "test"
+        "system": "",
+        "light": "",
+        "dark": ""
       }
     }
   },
   "user-expired": {
-    "title": "test",
-    "content": "test",
+    "title": "",
+    "content": "",
     "actions": {
-      "login": "test"
+      "login": ""
     }
   },
   "passkey-name": {
-    "title": "test",
-    "prompt": "test",
+    "title": "",
+    "prompt": "",
     "actions": {
       "skip": {
-        "label": "test"
+        "label": ""
       },
       "save": {
-        "label": "test"
+        "label": ""
       }
     }
   }
