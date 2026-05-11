@@ -1,0 +1,3 @@
+files:
+  - source: /frontend/public/i18n/en-US.json
+    translation: /%original_path%/%locale%.json
