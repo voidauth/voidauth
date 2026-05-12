@@ -1,7 +1,8 @@
 import type { Consent } from '@shared/db/Consent'
 import { db } from './db'
 import { createExpiration, mergeKeys } from './util'
-import { TABLES, TTLs } from '@shared/constants'
+import { TTLs } from '@shared/constants'
+import { TABLES } from '@shared/db'
 
 export async function getExistingConsent(userId: string, redirectUri: string) {
   return await db().select().table<Consent>(TABLES.CONSENT).where({ userId, redirectUri }).first()

@@ -131,12 +131,12 @@ This project would not be possible without the incredible work of others. For a 
 
 <span>
 <a href="https://github.com/GitTimeraider">
-<img src="https://github.com/GitTimeraider.png?size=50" alt="GitTimeraider">
+<img src="https://github.com/GitTimeraider.png?size=60" alt="GitTimeraider">
 </a>
 <a href="https://github.com/dl09r">
-<img src="https://github.com/dl09r.png?size=50" alt="dl09r">
+<img src="https://github.com/dl09r.png?size=60" alt="dl09r">
 </a>
 <a href="https://github.com/katekyonni">
-<img src="https://github.com/katekyonni.png?size=50" alt="katekyonni">
+<img src="https://github.com/katekyonni.png?size=60" alt="katekyonni">
 </a>
 </span>

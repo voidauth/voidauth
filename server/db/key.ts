@@ -1,10 +1,11 @@
 import { type Key } from '@shared/db/Key'
 import appConfig from '../util/config'
 import { db } from './db'
-import { KEY_TYPES, TABLES, TTLs } from '@shared/constants'
+import { KEY_TYPES, TTLs } from '@shared/constants'
 import { createExpiration, decryptString, encryptString, pastHalfExpired } from './util'
 import crypto from 'node:crypto'
 import * as jose from 'jose'
+import { TABLES } from '@shared/db'
 
 /**
  * Get the Cookie Signing Keys from the DB

@@ -1,3 +1,4 @@
+import type { DBColumnTypesCheck } from '@shared/db'
 import type { Audit } from './Audit'
 
 export type User = Pick<Audit, 'createdAt' | 'updatedAt'> & {
@@ -11,3 +12,5 @@ export type User = Pick<Audit, 'createdAt' | 'updatedAt'> & {
   mfaRequired: boolean | number
   expiresAt?: number | Date | null
 }
+
+const _typeCheck: DBColumnTypesCheck<User> = true

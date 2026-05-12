@@ -1,4 +1,4 @@
-import type { RemoveKeys } from '@shared/utils.js'
+import type { RemoveKeys } from '@shared/utils'
 import type { Group } from '../db/Group.js'
 import type { User } from '../db/User.js'
 

@@ -12,14 +12,14 @@ import { CLIENT_AUTH_METHODS,
   UNIQUE_RESPONSE_TYPES,
   type ClientUpsertRequest } from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
-import type { ItemIn, Nullable } from '@shared/utils'
+import { type ItemIn, type Nullable, optionalizeNullable } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
-import { isValidWildcardRedirect, optionalizeNullable, validateWildcardRedirects } from '@shared/utils'
+import { isValidWildcardRedirect, validateWildcardRedirects } from '@shared/url'
 import { TranslatePipe } from '@ngx-translate/core'
 import { TranslateService } from '@ngx-translate/core'
 

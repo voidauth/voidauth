@@ -1,3 +1,4 @@
+import type { DBColumnTypesCheck } from '@shared/db'
 import type { Audit } from './Audit'
 import type { User } from './User'
 
@@ -7,3 +8,5 @@ export type Consent = Pick<Audit, 'createdAt'> & {
   scope: string
   expiresAt: Date | number
 }
+
+const _typeCheck: DBColumnTypesCheck<Consent> = true

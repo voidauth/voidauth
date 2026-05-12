@@ -2,7 +2,7 @@ import type { Invitation } from '@shared/db/Invitation'
 import { db } from './db'
 import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import type { Group, InvitationGroup } from '@shared/db/Group'
-import { TABLES } from '@shared/constants'
+import { TABLES } from '@shared/db'
 
 export async function getInvitations() {
   return await db().select().table<Invitation>(TABLES.INVITATION)

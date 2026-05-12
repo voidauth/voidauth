@@ -2,9 +2,9 @@ import { commit, db, rollback, transaction } from '../db/db'
 import { als } from '../util/als'
 import appConfig from '../util/config'
 import { exit } from 'process'
-import { TABLES_ORDER } from '@shared/constants'
 import { createDB } from '../db/connection'
 import { logger, purgeAsyncLog } from '../util/logger'
+import { BOOL_COLUMNS, DATE_COLUMNS, TABLES_ORDER } from '@shared/db'
 
 export async function migrate() {
   if (appConfig.DB_ADAPTER === appConfig.MIGRATE_TO_DB_ADAPTER) {
@@ -46,22 +46,11 @@ export async function migrate() {
         // Find column names that need to be modified (dates and booleans)
         for (const row of data) {
           for (const column of Object.keys(row as object)) {
-            switch (column) {
-              case 'createdAt':
-              case 'updatedAt':
-              case 'expiresAt':
-              case 'lastUsed':
-              case 'userExpiresAt':
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                row[column] = typeof row[column] === 'number' ? new Date(row[column]) : row[column]
-                break
-              case 'emailVerified':
-              case 'approved':
-              case 'backedUp':
-              case 'mfaRequired':
-              case 'autoAssign':
-                row[column] = !!row[column]
-                break
+            if ((DATE_COLUMNS as unknown as string[]).includes(column)) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              row[column] = typeof row[column] === 'number' ? new Date(row[column]) : row[column]
+            } else if ((BOOL_COLUMNS as unknown as string[]).includes(column)) {
+              row[column] = !!row[column]
             }
           }
         }

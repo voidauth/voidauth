@@ -1,3 +1,4 @@
+import type { DBColumnTypesCheck } from '@shared/db'
 import type { Audit } from './Audit'
 
 export type EmailLog = Pick<Audit, 'createdAt'> & {
@@ -12,3 +13,5 @@ export type EmailLog = Pick<Audit, 'createdAt'> & {
   subject: string
   body?: string | null
 }
+
+const _typeCheck: DBColumnTypesCheck<EmailLog> = true

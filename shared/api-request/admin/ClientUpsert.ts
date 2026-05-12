@@ -1,4 +1,5 @@
-import { isValidWildcardRedirect, type SchemaInfer, type SchemaInferInput } from '@shared/utils'
+import { type SchemaInfer, type SchemaInferInput } from '@shared/utils'
+import { isValidWildcardRedirect } from '@shared/url'
 import { emptyString } from '@shared/validators'
 import type { ClientAuthMethod, ResponseType } from 'oidc-provider'
 import zod from 'zod'

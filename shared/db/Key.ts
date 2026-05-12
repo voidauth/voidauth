@@ -1,6 +1,7 @@
 import type { ValueOf } from '../utils'
 import { KEY_TYPES } from '../constants'
 import type { JWK } from 'oidc-provider'
+import type { DBColumnTypesCheck } from '@shared/db'
 
 export type Key = {
   id: string
@@ -8,6 +9,8 @@ export type Key = {
   value: string // Should be stringified EncryptedData
   expiresAt: Date | number
 }
+
+const _typeCheck: DBColumnTypesCheck<Key> = true
 
 export type EncryptionMetadata = {
   alg: string

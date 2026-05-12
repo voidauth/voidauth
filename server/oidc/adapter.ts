@@ -2,7 +2,7 @@ import type { Adapter, AdapterPayload, ClientMetadata } from 'oidc-provider'
 import { db } from '../db/db'
 import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
 import appConfig from '../util/config'
-import { TABLES } from '@shared/constants'
+import { TABLES } from '@shared/db'
 import { decryptString, encryptString } from '../db/util'
 import { logger } from '../util/logger'
 

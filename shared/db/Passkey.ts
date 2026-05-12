@@ -1,3 +1,4 @@
+import type { DBColumnTypesCheck } from '@shared/db'
 import type { Audit } from './Audit'
 import type { User } from './User'
 
@@ -15,6 +16,8 @@ export type Passkey = Pick<Audit, 'createdAt'> & {
   lastUsed: Date | number
 }
 
+const _typeCheckPasskey: DBColumnTypesCheck<Passkey> = true
+
 export type PasskeyRegistration = {
   id: string
   uniqueId: string
@@ -22,9 +25,13 @@ export type PasskeyRegistration = {
   expiresAt: Date | number
 }
 
+const _typeCheckPasskeyRegistration: DBColumnTypesCheck<PasskeyRegistration> = true
+
 export type PasskeyAuthentication = {
   id: string
   interactionId: string
   value: string
   expiresAt: Date | number
 }
+
+const _typeCheckPasskeyAuthentication: DBColumnTypesCheck<PasskeyAuthentication> = true

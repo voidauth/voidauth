@@ -1,3 +1,4 @@
+import type { DBColumnTypesCheck } from '@shared/db'
 import type { Audit } from './Audit'
 
 export type ProxyAuth = Audit & {
@@ -6,3 +7,5 @@ export type ProxyAuth = Audit & {
   mfaRequired: boolean | number
   maxSessionLength: number | null // minutes
 }
+
+const _typeCheck: DBColumnTypesCheck<ProxyAuth> = true

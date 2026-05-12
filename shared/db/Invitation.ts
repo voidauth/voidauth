@@ -1,3 +1,4 @@
+import type { DBColumnTypesCheck } from '@shared/db'
 import type { Audit } from './Audit'
 
 export type Invitation = Audit & {
@@ -10,3 +11,5 @@ export type Invitation = Audit & {
   emailVerified: boolean | number
   expiresAt: Date | number
 }
+
+const _typeCheck: DBColumnTypesCheck<Invitation> = true
