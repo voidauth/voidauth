@@ -1,6 +1,6 @@
 import type { EmailVerification } from '@shared/db/EmailVerification'
 import { db } from './db'
-import { TABLES } from '@shared/constants'
+import { TABLES } from '@shared/db'
 
 export async function getEmailVerification(userId: string, challenge?: string) {
   const emailVerification = await db().select()

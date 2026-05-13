@@ -3,7 +3,8 @@ import type { AuthenticatorTransportFuture } from '@simplewebauthn/server'
 import { db } from './db'
 import { randomUUID } from 'crypto'
 import { createExpiration } from './util'
-import { TABLES, TTLs } from '@shared/constants'
+import { TTLs } from '@shared/constants'
+import { TABLES } from '@shared/db'
 
 export async function getUserPasskeys(userId: string) {
   return (await db().select().table<Passkey>(TABLES.PASSKEY).where({ userId })

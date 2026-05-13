@@ -3,6 +3,7 @@ import type { Invitation } from './Invitation'
 import type { User } from './User'
 import type { ProxyAuth } from './ProxyAuth'
 import type { OIDCPayload } from './OIDCPayload'
+import type { DBColumnTypesCheck } from '@shared/db'
 
 export type Group = Audit & {
   id: string
@@ -10,6 +11,8 @@ export type Group = Audit & {
   mfaRequired: boolean | number
   autoAssign: boolean | number
 }
+
+const _typeCheck: DBColumnTypesCheck<Group> = true
 
 export type UserGroup = Audit & {
   userId: User['id']

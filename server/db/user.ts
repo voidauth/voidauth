@@ -3,7 +3,7 @@ import { db } from './db'
 import type { UserGroup, Group } from '@shared/db/Group'
 import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import type { User } from '@shared/db/User'
-import { ADMIN_USER, ADMIN_GROUP, TABLES, TTLs } from '@shared/constants'
+import { ADMIN_USER, ADMIN_GROUP, TTLs } from '@shared/constants'
 import { randomBytes, randomUUID } from 'crypto'
 import type { Flag } from '@shared/db/Flag'
 import appConfig from '../util/config'
@@ -14,6 +14,7 @@ import { argon2 } from '../util/argon2id'
 import zod from 'zod'
 import { createPasswordReset, getPasswordResetURL } from './passwordReset'
 import { humanDuration } from '@shared/utils'
+import { TABLES } from '@shared/db'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`

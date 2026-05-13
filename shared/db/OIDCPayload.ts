@@ -1,3 +1,4 @@
+import type { DBColumnTypesCheck } from '@shared/db'
 import type { ValueOf } from '@shared/utils'
 
 export type OIDCPayload = {
@@ -11,6 +12,8 @@ export type OIDCPayload = {
   consumedAt?: Date | number | null
   accountId?: string | null
 }
+
+const _typeCheck: DBColumnTypesCheck<OIDCPayload> = true
 
 export const PayloadTypes = {
   Session: 'Session',

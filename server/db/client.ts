@@ -5,7 +5,7 @@ import appConfig from '../util/config'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { Group, OIDCGroup } from '@shared/db/Group'
 import { decryptString } from './util'
-import { TABLES } from '@shared/constants'
+import { TABLES } from '@shared/db'
 
 // When getting list of clients, do not error on un-decryptable client_secret, just don't include it
 export async function getClients(): Promise<ClientResponse[]> {

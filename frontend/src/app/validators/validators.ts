@@ -1,5 +1,5 @@
 import type { AbstractControl } from '@angular/forms'
-import { wildcardRedirect } from '@shared/utils'
+import { wildcardRedirect } from '@shared/url'
 import zod from 'zod'
 
 export function isValidWebURLControl(control: AbstractControl) {

@@ -13,7 +13,7 @@ import type { User } from '@shared/db/User'
 import { db } from '../db/db'
 import { registerUserValidator } from '@shared/api-request/RegisterUser'
 import { randomBytes, randomUUID } from 'crypto'
-import { REDIRECT_PATHS, TABLES, TTLs } from '@shared/constants'
+import { REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { type Interaction } from 'oidc-provider'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { createExpiration } from '../db/util'
@@ -56,6 +56,7 @@ import zod from 'zod'
 import { passkeyRegistrationValidator } from '../../shared/validators'
 import { passwordStrength } from '../util/zxcvbn'
 import { checkPrivileged, checkPrivilegedForTotpCreate, checkPrivilegedForTotpValidate } from '../util/authMiddleware'
+import { TABLES } from '@shared/db'
 
 export const router = Router()
 

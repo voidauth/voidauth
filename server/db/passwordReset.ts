@@ -1,9 +1,10 @@
-import { TTLs, TABLES, REDIRECT_PATHS } from '@shared/constants'
+import { TTLs, REDIRECT_PATHS } from '@shared/constants'
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import { randomBytes, randomUUID } from 'crypto'
 import { db } from './db'
 import { createExpiration } from './util'
 import appConfig from '../util/config'
+import { TABLES } from '@shared/db'
 
 export async function createPasswordReset(userId: string, customTTL: number = 0) {
   if (customTTL < 0) {

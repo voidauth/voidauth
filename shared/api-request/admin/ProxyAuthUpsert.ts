@@ -1,4 +1,5 @@
-import { formatWildcardDomain, isValidWildcardDomain, type SchemaInfer } from '@shared/utils'
+import { type SchemaInfer } from '@shared/utils'
+import { formatWildcardDomain, isValidWildcardDomain } from '@shared/url'
 import zod from 'zod'
 
 export const proxyAuthUpsertValidator = {

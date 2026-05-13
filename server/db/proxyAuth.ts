@@ -1,10 +1,10 @@
 import { db } from './db'
 import type { Group, ProxyAuthGroup } from '@shared/db/Group'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
-import { urlFromWildcardDomain, sortWildcardDomains } from '@shared/utils'
+import { urlFromWildcardDomain, sortWildcardDomains } from '@shared/url'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
-import { TABLES } from '@shared/constants'
 import { isMatch } from 'matcher'
+import { TABLES } from '@shared/db'
 
 // proxy auth cache
 let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups' | 'maxSessionLength'>[] = []

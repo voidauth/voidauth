@@ -32,6 +32,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       },
     })
     res.status(200).send()
+    return
   }
 
   if (!sessionDomainReaches(url.hostname)) {
@@ -227,12 +228,29 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   if (user.groups.length) {
     const groupsList: string[] = []
     for (const group of user.groups) {
+      // Write groups one by one to catch any that cause issues
       try {
         res.setHeader('Remote-Groups', groupsList.concat([group.name]).join(','))
         groupsList.push(group.name)
       } catch (_e) {
-        res.setHeader('Remote-Groups', groupsList.concat([encodeURIComponent(group.name)]).join(','))
-        groupsList.push(encodeURIComponent(group.name))
+        try {
+          res.setHeader('Remote-Groups', groupsList.concat([encodeURIComponent(group.name)]).join(','))
+          groupsList.push(encodeURIComponent(group.name))
+        } catch (_e) {
+          // If even encoding fails, skip the group but log it
+          logger({
+            level: 'debug',
+            message: `Failed to set Remote-Groups header for group, skipping group`,
+            details: {
+              proxyauth: {
+                action: 'set_header_failed',
+                reason: group.name,
+                url: url.href,
+                domain: match?.domain,
+              },
+            },
+          })
+        }
       }
     }
   }
