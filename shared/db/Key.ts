@@ -19,7 +19,7 @@ export type EncryptionMetadata = {
 
 export type EncryptedData = { value: string, metadata: EncryptionMetadata }
 
-export function parseEncrypedData(data: string): EncryptedData | null {
+export function parseEncryptedData(data: string): EncryptedData | null {
   const parsed: unknown = JSON.parse(data)
   if (isEncryptedData(parsed)) {
     return parsed

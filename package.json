@@ -23,8 +23,8 @@
     ]
   },
   "dependencies": {
-    "@angular-devkit/schematics": "^21.2.8",
-    "@angular/material": "^21.2.8",
+    "@angular-devkit/schematics": "^21.2.10",
+    "@angular/material": "^21.2.10",
     "@simplewebauthn/server": "^13.3.0",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
@@ -33,15 +33,15 @@
     "dockerode": "^5.0.0",
     "ejs": "^5.0.2",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.4.1",
+    "express-rate-limit": "^8.5.1",
     "helmet": "^8.1.0",
     "husky": "^9.1.7",
-    "jose": "^6.2.2",
+    "jose": "^6.2.3",
     "keygrip": "^1.1.0",
-    "knex": "^3.2.9",
+    "knex": "^3.2.10",
     "matcher": "^6.0.0",
-    "nodemailer": "^8.0.6",
-    "oidc-provider": "^9.8.2",
+    "nodemailer": "^8.0.7",
+    "oidc-provider": "^9.8.3",
     "otpauth": "^9.5.1",
     "pg": "^8.20.0",
     "psl": "^1.15.0",
@@ -49,7 +49,7 @@
     "sass": "^1.99.0",
     "tsx": "^4.21.0",
     "yargs": "^18.0.0",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -66,11 +66,11 @@
     "@types/yargs": "^17.0.35",
     "concurrently": "^9.2.1",
     "esbuild": "^0.28.0",
-    "eslint": "^10.2.1",
+    "eslint": "^10.3.0",
     "lint-staged": "^16.4.0",
     "madge": "^8.0.0",
     "nodemon": "^3.1.14",
     "prettier": "^3.8.3",
-    "typescript-eslint": "^8.59.0"
+    "typescript-eslint": "^8.59.2"
   }
 }

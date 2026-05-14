@@ -1,4 +1,4 @@
-import { parseEncrypedData } from '@shared/db/Key'
+import { parseEncryptedData } from '@shared/db/Key'
 import appConfig from '../util/config'
 import crypto from 'node:crypto'
 import { logger } from '../util/logger'
@@ -32,7 +32,7 @@ export function encryptString(v: string) {
  */
 export function decryptString(input: string, storageKeys: (string | undefined)[]): string | null {
   let value: string | null = null
-  const encrypted = parseEncrypedData(input)
+  const encrypted = parseEncryptedData(input)
   if (!encrypted) {
     return null
   }
