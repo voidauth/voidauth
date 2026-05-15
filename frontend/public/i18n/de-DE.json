@@ -6,6 +6,11 @@
     "title": "Login"
   },
   "settings": {
-    "title": "Einstellungen"
+    "title": "Einstellungen",
+    "sections": {
+      "profile": {
+        "title": "Profil"
+      }
+    }
   }
 }
