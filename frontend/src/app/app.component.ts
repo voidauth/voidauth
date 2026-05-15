@@ -8,6 +8,7 @@ import { UserService } from './services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { SpinnerService } from './services/spinner.service'
 import { getCurrentHost } from './services/config.service'
+import { TranslationService } from './services/translation.service'
 
 @Component({
   selector: 'app-root',
@@ -28,11 +29,13 @@ export class AppComponent implements OnInit {
   private userService = inject(UserService)
   private spinnerService = inject(SpinnerService)
   private translate = inject(TranslateService)
+  private translationService = inject(TranslationService)
 
   constructor() {
     this.translate.setTranslation('en-US', translationsEN)
     this.translate.setFallbackLang('en-US')
     this.translate.use('en-US')
+    void this.translationService.setInitialLang()
   }
 
   async ngOnInit() {

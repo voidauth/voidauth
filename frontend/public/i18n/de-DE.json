@@ -1,1 +1,11 @@
-{}
+{
+  "login": {
+    "title": "Login",
+    "password": {
+      "label": "Passwort"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen"
+  }
+}

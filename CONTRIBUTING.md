@@ -8,7 +8,9 @@ Issues, Suggestions, and Feature Requests should be added as [Issues](https://gi
 
 ## Documentation Updates
 
-Documentation updates should made in the docs/ directory and a PR opened for approval of the changes.
+Documentation, especially app setup guides, are largely community driven and so contribution is highly encouraged. If you have VoidAuth OIDC setup with an app that is not already listed in the [OIDC App Guides](https://voidauth.app/#/OIDC-Guides) then please consider contributing a guide. When writing documentation follow the existing style of the page and when finished open a Pull Request for review.
+
+Documentation updates should made in the `docs/` directory and a Pull Request opened for approval of the changes.
 
 ## Development Environment
 
@@ -17,6 +19,7 @@ VoidAuth consists of a Frontend `./frontend` and Backend `./server`. The fronten
 ### Prerequisites
 
 - An IDE supporting Javascript/Typescript development, such as VSCode
+- If using VSCode, the `i18n Ally` extension is recommended but not required
 - Node.js >= 22.17.0 installed on your development machine
 - Docker Compose, or different way to run your own local Postgres DB
 
@@ -33,6 +36,8 @@ All paths and actions are in the project root directory unless otherwise specifi
 
 ## Contribution Standards
 
-All code contributions are expected to be thoroughly tested and defect-free. Changes must also pass Typescript checking and linting, which are checked automatically for every PR. You can manually run Typescript and linting locally by running `npx tsc && npx eslint ./`, they should run automatically when committing code.
+All code contributions are expected to be thoroughly tested and defect-free. Changes must also pass Typescript checking and linting, which are checked automatically for every Pull Request. You can manually run Typescript and linting locally by running `npx tsc && npx eslint ./`, they should run automatically when committing code.
 
-Pull Requests (PRs) should follow the template that appears when they are opened. Make sure to list every feature and fix contained in the PR, screenshots should be attached if any changes to the frontend UI were made.
+Frontend changes should not include user-facing hardcoded strings. These should be localized and placed in the `./frontend/public/i18n/en-US.json` file, use the VSCode `i18n Ally` extension or the translation tooling of your choice to make this easier. Translations to other languages than `en-US` are not initially required.
+
+Pull Requests should follow the template that appears when they are opened. Make sure to list every feature and fix contained in the Pull Request, screenshots should be attached if any changes to the frontend UI were made.
