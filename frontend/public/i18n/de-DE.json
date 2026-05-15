@@ -1,9 +1,9 @@
 {
   "login": {
-    "title": "Login",
     "password": {
       "label": "Passwort"
-    }
+    },
+    "title": "Login"
   },
   "settings": {
     "title": "Einstellungen"
