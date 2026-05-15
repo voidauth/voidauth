@@ -11,20 +11,26 @@ export class SpinnerService {
 
   show() {
     this.count++
-    this.checkStatus()
+    setTimeout(() => {
+      this.checkStatusShow()
+    }, 500) // Do not show the spinner if the operation is very fast
   }
 
   hide() {
+    this.count--
     setTimeout(() => {
-      this.count--
-      this.checkStatus()
-    }, 500)
+      this.checkStatusHide()
+    }, 2000) // Keep the spinner visible for a bit to avoid flickering
   }
 
-  private checkStatus() {
+  private checkStatusShow() {
     if (this.count > 0) {
       void this.ngxSpinnerService.show()
-    } else {
+    }
+  }
+
+  private checkStatusHide() {
+    if (this.count <= 0) {
       void this.ngxSpinnerService.hide()
     }
   }
