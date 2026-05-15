@@ -1,3 +1,4 @@
 [
-  { "code": "en-US", "display": "English" }
+  { "code": "en-US", "display": "English" },
+  { "code": "de-DE", "display": "Deutsch" }
 ]

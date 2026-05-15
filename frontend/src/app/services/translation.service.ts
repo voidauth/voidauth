@@ -26,40 +26,76 @@ export class TranslationService {
     return this.availableLangs.find(a => a.code === this._current()) || null
   })
 
-  constructor() {
-    this.setLang(this.getInitialLang(), true)
+  private initialLangSet?: Promise<void>
+
+  public async setInitialLang() {
+    if (!this.initialLangSet) {
+      this.initialLangSet = this._setInitialLang()
+    }
+    await this.initialLangSet
   }
 
-  setLang(lang: string, autoSet = false) {
+  public async setLang(lang: string) {
+    // Make sure the initial language is set before changing it
+    if (!this.initialLangSet) {
+      this.initialLangSet = this._setInitialLang()
+    }
+    await this.initialLangSet
+    return this._setLang(lang)
+  }
+
+  private async _setLang(lang: string, autoSet = false) {
     // Set lang on localStorage and use that lang
     this.spinnerService.show()
-    firstValueFrom(this.translate.use(lang)).then(() => {
-      this.setLocalStorageLang(lang)
-      this._current.set(lang)
-    }).catch((e: unknown) => {
-      console.error(e)
-      if (!autoSet) {
-        this.snackbarService.error('Cannot set language.')
-      }
-    }).finally(() => {
-      this.spinnerService.hide()
+    return new Promise<boolean>((resolve) => {
+      firstValueFrom(this.translate.use(lang)).then(() => {
+        if (!autoSet) {
+          this.setLocalStorageLang(lang)
+        }
+        this._current.set(lang)
+        resolve(true)
+      }).catch((e: unknown) => {
+        console.error(e)
+        if (!autoSet) {
+          this.snackbarService.error('Cannot set language.')
+        }
+        resolve(false)
+      }).finally(() => {
+        this.spinnerService.hide()
+      })
     })
   }
 
-  private getInitialLang() {
-    // Use localStorage lang if exists, otherwise get from current or fallback
-    return this.getLocalStorageLang()
-      || this.translate.getBrowserCultureLang()
-      || this.translate.getCurrentLang()
-      || this.translate.getFallbackLang()
-      || 'en-US'
+  private async _setInitialLang() {
+    const previousLang = this.getLocalStorageLang()
+    if (previousLang) {
+      if (await this._setLang(previousLang, true)) {
+        return
+      }
+    }
+
+    const browserLang = this.translate.getBrowserCultureLang()
+    if (browserLang) {
+      if (await this._setLang(browserLang, true)) {
+        return
+      }
+    }
+
+    const fallbackLang = this.translate.getFallbackLang()
+    if (fallbackLang) {
+      if (await this._setLang(fallbackLang, true)) {
+        return
+      }
+    }
+
+    await this._setLang('en-US', true)
   }
 
   private getLocalStorageLang() {
-    return localStorage.getItem('voidauth-lang')
+    return localStorage.getItem('voidauth-selected-lang')
   }
 
   private setLocalStorageLang(lang: string) {
-    localStorage.setItem('voidauth-lang', lang)
+    localStorage.setItem('voidauth-selected-lang', lang)
   }
 }

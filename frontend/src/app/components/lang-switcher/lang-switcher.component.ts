@@ -12,7 +12,7 @@ export class LangSwitcherComponent {
   translationService = inject(TranslationService)
 
   selectLang(lang: string) {
-    this.translationService.setLang(lang)
+    void this.translationService.setLang(lang)
   }
 
   // Convert a country code ("US") to its flag emoji. Will split strings that contain a dash ("en-US") and just use "US"

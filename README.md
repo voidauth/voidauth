@@ -113,11 +113,11 @@ Issues, Suggestions, and Feature Requests should be added as [Issues](https://gi
 
 ### Documentation
 
-Documentation, especially app setup guides, are largely community driven and so contribution is highly encouraged. If you have VoidAuth OIDC setup with an app that is not already listed in the [OIDC App Guides](https://voidauth.app/#/OIDC-Guides) then please consider contributing a guide. When writing documentation follow the existing style of the page and when finished open a PR for review.
+Documentation, especially app setup guides, are largely community driven and so contribution is highly encouraged. If you have VoidAuth OIDC setup with an app that is not already listed in the [OIDC App Guides](https://voidauth.app/#/OIDC-Guides) then please consider contributing a guide. When writing documentation follow the existing style of the page and when finished open a Pull Request for review.
 
 ### Features and Fixes
 
-Please read the CONTRIBUTING.md to see setup guide. Collaboration in an issue or discussion before opening a PR will improve changes of merging, but is not required.
+Please read the CONTRIBUTING.md to see setup guide. Collaboration in an issue or discussion before opening a Pull Request will improve chances of merging, but is not required.
 
 ## Disclaimer
 
