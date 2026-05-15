@@ -852,7 +852,7 @@ adminRouter.get('/emails',
 adminRouter.post('/send_test_email',
   zodValidate({
     body: {
-      email: zod.email(),
+      email: zod.email({ pattern: zod.regexes.rfc5322Email }),
     },
   }), async (req, res) => {
     const { email } = req.body

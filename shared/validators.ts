@@ -2,7 +2,10 @@ import zod from 'zod'
 
 export const emptyString = zod.string().max(0)
 
-export const coerceEmailOrNull = zod.union([emptyString, zod.email()]).transform(val => val || null).nullable()
+export const coerceEmailOrNull = zod.union([
+  emptyString,
+  zod.email({ pattern: zod.regexes.rfc5322Email }),
+]).transform(val => val || null).nullable()
 
 export const nameValidation = zod.string().trim().max(64).transform(v => v || null).nullish()
 
