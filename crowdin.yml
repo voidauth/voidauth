@@ -1,3 +1,7 @@
+pull_request_title: 'Crowdin Translations Update'
+"pull_request_labels": [
+  "translation",
+]
 files:
   - source: /frontend/public/i18n/en-US.json
     translation: /%original_path%/%locale%.json
