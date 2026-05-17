@@ -41,6 +41,27 @@ Redirect URLs: https://actual.example.com/openid/callback
 
 <br>
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/affine.svg" width="28" /> AFFiNE
+
+Click on your **user icon** > **Admin Panel** > **Settings** > **OAuth** in AFFiNE.
+
+**AFFiNE OAuth Configuration:**
+
+```
+OIDC OAuth provider config: {"args":{},"issuer":"https://voidauth.example.com/oidc","clientId":"your-client-id","clientSecret":"your-client-secret"}
+```
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://affine.example.com/oauth/callback
+```
+
+<br>
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/arcane.svg" width="28" /> Arcane
 
 Arcane can be set up to use VoidAuth as an OIDC Provider in two ways: through the Web GUI or through Environment Variables. See the [Arcane SSO Documentation](https://arcane.ofkm.dev/docs/configuration/sso) for full details.
@@ -238,6 +259,33 @@ Redirect URLs: https://dockhand.example.com/api/auth/oidc/callback
 
 > [!NOTE]
 > For role-based access control and group mapping features, an Enterprise license is required.
+
+<br>
+
+## <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/dockmon.png" width="28" /> Dockmon
+
+Navigate to **Settings** > **OIDC** in Dockmon.
+
+**Dockmon OIDC Configuration:**
+
+```
+Enable OIDC: (enable)
+Provider URL: https://voidauth.example.com/oidc
+Client ID: your-client-id
+Client Secret: your-client-secret
+
+# Optional
+# SSO as default login: (enable)
+```
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://dockmon.example.com/api/v2/auth/oidc/callback
+```
 
 <br>
 
@@ -805,3 +853,35 @@ Redirect URLs: https://wikijs.example.com/login/{token-from-wikijs-strategy}/cal
 
 > [!NOTE]
 > Make sure you enabled the authentication strategy. The redirect URL contains a unique token that is displayed in the WikiJS authentication strategy view.
+
+<br>
+
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/zerobyte-light.svg" width="28" /> ZeroByte
+
+Navigate to **Settings** > **Organization** > **Single Sign-On** in ZeroByte and click **Register New**.
+
+**ZeroByte Single Sign-On Configuration:**
+
+```
+Provider ID: voidauth
+Organization Domain: https://voidauth.example.com
+Issuer URL: Copy from VoidAuth OIDC Info (OIDC Issuer Endpoint)
+Discovery Endpoint: Copy from VoidAuth OIDC Info (Well-Known Endpoint)
+Client ID: your-client-id
+Client Secret: your-client-secret
+
+# Optional
+# Link matching emails to existing accounts: (enable)
+```
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://zerobyte.example.com/api/auth/sso/callback/voidauth
+```
+
+> [!NOTE]
+> The final path segment in the redirect URL must match the Provider ID configured in ZeroByte.
