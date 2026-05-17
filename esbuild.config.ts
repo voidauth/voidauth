@@ -65,6 +65,7 @@ await esbuild.build({
     'tedious',
     'oracledb',
     'cpu-features',
+    '*.node',
   ]),
 }).catch(() => process.exit(1))
 
