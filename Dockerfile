@@ -73,6 +73,7 @@ USER 0:0
 VOLUME ["/app/config"]
 VOLUME ["/app/db"]
 EXPOSE 3000
+EXPOSE 3890
 ENTRYPOINT [ "node", "./dist/index.mjs" ]
 
 HEALTHCHECK CMD ["node", "-e", "\"fetch('http://localhost:'+(process.env.APP_PORT||3000)+'/healthcheck').then(r=>process.exit(r.status===200?0:1)).catch(e=>process.exit(1))\""]
