@@ -37,6 +37,7 @@ VoidAuth is an open-source SSO authentication and user management provider that 
 Features:
 
 - 🌐 OpenID Connect (OIDC) Provider
+- 📖 LDAP Directory Server
 - 🔄 Proxy ForwardAuth
 - 👤 User and Groups Management
 - 📨 User Self-Registration and Invitations
