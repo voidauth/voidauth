@@ -517,6 +517,52 @@
         "light": "Light",
         "dark": "Dark"
       }
+    },
+    "email-input": {
+      "message": {
+        "default": "Please enter an email address below."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Cancel"
+        },
+        "confirm": {
+          "label": "Confirm"
+        }
+      }
+    },
+    "totp-register": {
+      "title": "Add Authenticator",
+      "actions": {
+        "cancel": {
+          "label": "Cancel"
+        }
+      }
+    },
+    "passkey-edit": {
+      "title": "Edit Passkey Name",
+      "message": {
+        "default": "Enter a name for this passkey."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Cancel"
+        },
+        "save": {
+          "label": "Save"
+        }
+      }
+    },
+    "confirm": {
+      "instructions": "To confirm, type <b>{{requiredText}}</b> in the box below.",
+      "actions": {
+        "cancel": {
+          "label": "Cancel"
+        },
+        "confirm": {
+          "label": "Confirm"
+        }
+      }
     }
   },
   "user-expired": {

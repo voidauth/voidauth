@@ -5,6 +5,7 @@ import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { isValidEmail } from '../../validators/validators'
 import { AsyncPipe } from '@angular/common'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-email-input',
@@ -13,6 +14,7 @@ import { AsyncPipe } from '@angular/common'
     ReactiveFormsModule,
     ValidationErrorPipe,
     AsyncPipe,
+    TranslatePipe,
   ],
   templateUrl: './email-input.component.html',
   styleUrl: './email-input.component.scss',
