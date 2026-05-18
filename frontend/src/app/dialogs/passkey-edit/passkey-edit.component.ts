@@ -3,6 +3,7 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-passkey-edit',
@@ -10,6 +11,7 @@ import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
     MaterialModule,
     ReactiveFormsModule,
     ValidationErrorPipe,
+    TranslatePipe,
   ],
   templateUrl: './passkey-edit.component.html',
   styleUrl: './passkey-edit.component.scss',

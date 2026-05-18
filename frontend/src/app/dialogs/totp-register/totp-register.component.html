@@ -1,4 +1,4 @@
-<h1 matDialogTitle>Add Authenticator</h1>
+<h1 matDialogTitle>{{ "components.totp-register.title" | translate }}</h1>
 <app-totp-input
   [enableMfa]="data?.enableMfa"
   [uri]="uri()"
@@ -6,4 +6,6 @@
   [disabled]="disabled()"
   (codeFinished)="verifyToken($event)"
 ></app-totp-input>
-<button style="margin-top: 24px; margin-bottom: 24px" mat-button mat-dialog-close>Cancel</button>
+<button style="margin-top: 24px; margin-bottom: 24px" mat-button mat-dialog-close>
+  {{ "components.totp-register.actions.cancel.label" | translate }}
+</button>

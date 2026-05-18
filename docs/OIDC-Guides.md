@@ -176,7 +176,7 @@ Redirect URLs: https://bytestash.example.com/api/auth/callback
 
 <br>
 
-## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/cloudflare.svg" width="28" /> Cloudflare ZeroTrust
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/cloudflare-zero-trust.svg" width="28" /> Cloudflare ZeroTrust
 
 Navigate to the **[Cloudflare ZeroTrust Dashboard](https://dash.teams.cloudflare.com)** > **Settings** > **Authentication**. In the `Login methods` tab, select `Add new` and choose `OpenID Connect`.
 

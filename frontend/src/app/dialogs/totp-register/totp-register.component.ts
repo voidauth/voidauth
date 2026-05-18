@@ -6,10 +6,11 @@ import { AuthService } from '../../services/auth.service'
 import { SpinnerService } from '../../services/spinner.service'
 import { SnackbarService } from '../../services/snackbar.service'
 import { HttpErrorResponse } from '@angular/common/http'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-totp-register',
-  imports: [MaterialModule, TotpInputComponent],
+  imports: [MaterialModule, TotpInputComponent, TranslatePipe],
   templateUrl: './totp-register.component.html',
   styleUrl: './totp-register.component.scss',
 })
