@@ -64,6 +64,7 @@ class Config {
   SMTP_SECURE = false
   SMTP_USER?: string
   SMTP_PASS?: string
+  SMTP_NOAUTH: boolean = false
   SMTP_IGNORE_CERT: boolean = false
   SMTP_TLS_CIPHERS?: string
   SMTP_TLS_MIN_VERSION?: SecureVersion
@@ -97,6 +98,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
 
     // booleans
     case 'SMTP_SECURE':
+    case 'SMTP_NOAUTH':
     case 'SMTP_IGNORE_CERT':
     case 'SIGNUP':
     case 'SIGNUP_REQUIRES_APPROVAL':
