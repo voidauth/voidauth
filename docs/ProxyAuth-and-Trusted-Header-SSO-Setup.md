@@ -61,7 +61,7 @@ VoidAuth exposes two proxy auth endpoints, which one you use will depend on your
 These endpoints are mostly the same, but limitations in NGINX make a separate endpoint necessary.
 
 > [!WARNING]
-> You must set up your reverse-proxy **AND** VoidAuth correctly to protect a domain! This will usually involve modifying your reverse-proxy config to put the domain 'behind' VoidAuth, and then adding that domain to the VoidAuth ProxyAuth Domain list with an access group(s).
+> You must set up your reverse-proxy **AND** VoidAuth correctly to protect a domain! This will usually involve modifying your reverse-proxy config to put the domain 'behind' VoidAuth, and then adding that domain to the VoidAuth ProxyAuth Domain list with an access group(s). Instructions below assume that the *internal* address of your VoidAuth instance, reachable by the reverse proxy, is `http://voidauth:3000`.
 
 ### Caddy
 
@@ -124,7 +124,7 @@ location /api/authz/auth-request {
   proxy_set_header Connection "";
   proxy_pass_request_body off;
 
-  # url to send auth_request. Should be ${APP_URL}/api/authz/auth-request
+  # url to send auth_request
   proxy_pass http://voidauth:3000/api/authz/auth-request;
 }
 ```
