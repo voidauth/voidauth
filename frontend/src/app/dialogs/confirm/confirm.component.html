@@ -5,9 +5,7 @@
   {{ data.message }}
   @if (data.requiredText) {
     <div></div>
-    <p>
-      To confirm, type <b>{{ data.requiredText }}</b> in the box below.
-    </p>
+    <p [innerHTML]="'components.confirm.instructions' | translate: { requiredText: data.requiredText }"></p>
     <mat-form-field style="width: 100%">
       <input matInput type="text" [formControl]="requiredTextControl" />
     </mat-form-field>
@@ -15,13 +13,13 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button mat-dialog-close>{{ "components.confirm.actions.cancel.label" | translate }}</button>
   <button
     mat-flat-button
     [mat-dialog-close]="true"
     cdkFocusInitial
     [disabled]="data.requiredText && data.requiredText !== requiredTextControl.value"
   >
-    Confirm
+    {{ "components.confirm.actions.confirm.label" | translate }}
   </button>
 </mat-dialog-actions>

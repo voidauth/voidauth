@@ -4,7 +4,7 @@
 <form>
   <mat-dialog-content>
     <p>
-      {{ data.message ?? "Please enter an email address below." }}
+      {{ data.message ?? ("components.email-input.message.default" | translate) }}
     </p>
     <mat-form-field style="width: 100%">
       <input matInput type="text" [formControl]="emailControl" />
@@ -15,7 +15,7 @@
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
-    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-button type="button" mat-dialog-close>{{ "components.email-input.actions.cancel.label" | translate }}</button>
     <button
       mat-flat-button
       type="submit"
@@ -23,7 +23,7 @@
       cdkFocusInitial
       [disabled]="!emailControl.value || emailControl.errors"
     >
-      Confirm
+      {{ "components.email-input.actions.confirm.label" | translate }}
     </button>
   </mat-dialog-actions>
 </form>
