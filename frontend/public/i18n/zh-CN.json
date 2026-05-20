@@ -1,1 +1,587 @@
-{}
+{
+  "login": {
+    "password": {
+      "label": "密码"
+    },
+    "username": {
+      "label": "用户名或电子邮箱"
+    },
+    "forgot-password": "忘记密码",
+    "remember-me": "记住我",
+    "actions": {
+      "login": "登录",
+      "sign-up": "注册"
+    },
+    "title": "登录"
+  },
+  "contact-us": {
+    "actions": {
+      "label": "联系"
+    }
+  },
+  "app": {
+    "loading": "加载中...",
+    "navigation": {
+      "profile": "个人资料",
+      "admin": {
+        "title": "管理",
+        "oidc-apps": "OIDC 应用",
+        "proxyauth-domains": "代理认证域",
+        "users": "用户",
+        "groups": "组",
+        "invitations": "邀请",
+        "password-resets": "密码重置",
+        "sent-mail": "已发送邮件"
+      },
+      "logout": "登出"
+    }
+  },
+  "passkey-title": "通行密钥",
+  "passkey-dialog": {
+    "title": "启用 {{platformName}}？",
+    "actions": {
+      "passkey": "启用 {{platformName}}"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "使用 {{platformName}}",
+      "register-passkey": "注册通行密钥",
+      "back": "返回"
+    },
+    "title": "需要多因素认证"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "使用 {{platformName}} 注册",
+      "sign-up": "注册",
+      "login": "登录"
+    },
+    "title": {
+      "accept-invitation": "接受邀请",
+      "sign-up": "注册"
+    },
+    "username": {
+      "label": "用户名"
+    },
+    "email": {
+      "label": "电子邮件"
+    },
+    "name": {
+      "label": "姓名"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "启用 {{platformName}}",
+      "reset-password": "重置密码"
+    },
+    "title": "重置密码"
+  },
+  "approval-required": {
+    "content": "您的账户需要经过审批才能登录。请等待或联系管理员获取帮助。",
+    "title": "需要审批",
+    "actions": {
+      "login": "登录"
+    }
+  },
+  "forbidden": {
+    "title": "禁止访问",
+    "content": "您无权访问该资源。",
+    "actions": {
+      "back": "返回"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "登录"
+    },
+    "info": {
+      "sign-into-question": "您想登录 <br /> <h2>{{destination}}</h2> 吗？",
+      "post-signin-redir-notice": "登录后，您将被重定向到 <b>{{redirect}}</b>"
+    },
+    "title": "确认"
+  },
+  "forgot-password": {
+    "username": {
+      "label": "电子邮件或用户名"
+    },
+    "actions": {
+      "send": "发送",
+      "send-again": "重新发送",
+      "create-again": "重新创建",
+      "create": "创建"
+    },
+    "title": "忘记密码"
+  },
+  "form-errors": {
+    "required": "必填。",
+    "min": "必须至少为 {{min}}。",
+    "max": "不得超过 {{max}}。",
+    "minLength": "长度至少需要 {{requiredLength}} 个字符。",
+    "maxLength": "长度必须小于 {{requiredLength}} 个字符。",
+    "email": "不是有效的电子邮件地址。",
+    "default": "无效的值。",
+    "alpha-num-underscore-only": "仅允许 A-Z、0-9 和下划线"
+  },
+  "logout": {
+    "title": "登出",
+    "info": {
+      "logout-question": "您确定要登出吗？"
+    },
+    "actions": {
+      "yes": "是",
+      "back": "返回",
+      "no": "否"
+    }
+  },
+  "page-not-found": {
+    "title": "找不到该页面",
+    "": {
+      "actions": {
+        "go-home": "回首页"
+      }
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "正在验证邮箱...",
+        "email-could-not-be-verified": "邮箱无法验证",
+        "sending-new-verification": "正在发送新的验证邮件...",
+        "email-verification-could-not-be-sent": "验证邮件无法发送"
+      },
+      "actions": {
+        "send-again": "重新发送"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "验证邮件已发送",
+        "email-verification-required": "需要验证邮箱"
+      },
+      "actions": {
+        "logout": "登出",
+        "send-again": "重新发送",
+        "send-verification": "发送验证"
+      },
+      "email": {
+        "label": "电子邮件"
+      }
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "sections": {
+      "profile": {
+        "title": "个人资料",
+        "username": {
+          "label": "用户名"
+        },
+        "name": {
+          "label": "姓名"
+        },
+        "actions": {
+          "submit": {
+            "label": "更新个人资料"
+          }
+        },
+        "email": {
+          "label": "电子邮件",
+          "actions": {
+            "submit": {
+              "label": "更新邮箱"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "安全",
+        "password": {
+          "set": {
+            "label": "设置密码"
+          },
+          "change": {
+            "label": "修改密码"
+          }
+        },
+        "passkeys": {
+          "title": "通行密钥",
+          "noPasskeys": "您没有已注册的通行密钥。",
+          "register": {
+            "label": "注册通行密钥"
+          },
+          "manage": {
+            "title": "管理通行密钥"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "编辑"
+            },
+            "delete": {
+              "tooltip": "删除"
+            }
+          }
+        },
+        "mfa": {
+          "title": "多因素认证",
+          "status": {
+            "enabled": "多因素认证已启用。",
+            "disabled": "多因素认证未启用。"
+          },
+          "authenticators": {
+            "has": "您至少有一个已注册的身份验证器。",
+            "none": "您没有已注册的身份验证器。"
+          },
+          "add": {
+            "label": "添加身份验证器"
+          },
+          "enable": {
+            "label": "启用多因素认证"
+          }
+        }
+      },
+      "account": {
+        "title": "账户",
+        "removePassword": {
+          "label": "移除密码",
+          "tooltip": {
+            "noPassword": "没有可移除的密码",
+            "noPasskeys": "您没有任何通行密钥"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "移除所有通行密钥",
+          "tooltip": {
+            "noPasskeys": "没有可移除的通行密钥",
+            "noPassword": "您没有密码"
+          }
+        },
+        "disableMfa": {
+          "label": "禁用多因素认证"
+        },
+        "removeAuthenticators": {
+          "label": "移除身份验证器"
+        },
+        "deleteAccount": {
+          "label": "删除账户"
+        }
+      }
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "编辑",
+        "delete": "删除",
+        "update": "更新",
+        "create": "创建",
+        "view": "查看",
+        "open": "打开",
+        "remove": "移除"
+      },
+      "labels": {
+        "mfa-required": "要求多因素认证",
+        "email-verified": "邮箱已验证",
+        "approved": "已审批"
+      },
+      "messages": {
+        "all-users-have-access": "没有组，所有用户都将拥有访问权限。"
+      }
+    },
+    "users": {
+      "empty-state": "没有用户。",
+      "actions": {
+        "select": "选择",
+        "approve": "审批"
+      },
+      "labels": {
+        "search": "搜索"
+      }
+    },
+    "user": {
+      "title": "更新用户",
+      "labels": {
+        "username": "用户名",
+        "name": "姓名",
+        "email": "电子邮件",
+        "add-group": "添加组",
+        "security-groups": "安全组：",
+        "user-expiration-date": "访问过期日期",
+        "user-expiration-time": "访问过期时间"
+      },
+      "actions": {
+        "sign-out": "退出登录"
+      },
+      "tooltips": {
+        "remove": "移除",
+        "open": "打开"
+      }
+    },
+    "clients": {
+      "empty-state": "没有 OIDC 应用。",
+      "actions": {
+        "create": "创建 OIDC 应用"
+      }
+    },
+    "client": {
+      "title": "OIDC 应用",
+      "labels": {
+        "name": "名称",
+        "home-page-url": "主页 URL",
+        "logo-url": "Logo URL",
+        "add-group": "添加组",
+        "client-id": "客户端 ID",
+        "auth-method": "认证方法",
+        "client-secret": "客户端密钥",
+        "redirect-url": "新的重定向 URL",
+        "response-types": "响应类型",
+        "grant-types": "授权类型",
+        "postlogout-url": "登出后 URL",
+        "allowed-groups": "允许的组：",
+        "redirect-urls": "重定向 URL："
+      },
+      "hints": {
+        "pkce-required": "此认证方法要求使用 PKCE。",
+        "not-required": "当前认证方法不需要。",
+        "postlogout-redirect": "客户端发起登出时允许的登出后重定向 URL。"
+      },
+      "checkboxes": {
+        "skip-consent": "跳过确认",
+        "mfa-required": "要求多因素认证"
+      },
+      "tooltips": {
+        "skip-consent": "对此应用跳过用户确认。",
+        "mfa-required": "用户必须使用多因素认证才能访问此应用。",
+        "copy-client-id": "复制客户端 ID",
+        "copy-secret": "复制密钥"
+      },
+      "messages": {
+        "client-id-copied": "客户端 ID 已复制到剪贴板。",
+        "secret-copied": "密钥已复制到剪贴板。"
+      }
+    },
+    "domains": {
+      "empty-state": "没有域名。",
+      "actions": {
+        "create": "创建代理认证域"
+      }
+    },
+    "domain": {
+      "title": "代理认证域",
+      "labels": {
+        "domain": "域名",
+        "max-session-length": "最大会话时长（分钟）",
+        "add-group": "添加组",
+        "allowed-groups": "允许的组："
+      },
+      "placeholders": {
+        "domain": "例如：*.your.domain.com/path/"
+      },
+      "sections": {
+        "domain-help": "域名帮助"
+      },
+      "hints": {
+        "no-re-auth": "留空表示不需要重新认证。"
+      },
+      "help-text": {
+        "0": "域名不应包含协议，可以包含路径和端口，并在任意位置支持通配符（*）。",
+        "1": "<b>example.domain.com/api/alive</b> 仅检查单个端点的访问。",
+        "2": "<b>example.domain.com/api/*</b> 将检查 /api 下所有端点的访问。"
+      }
+    },
+    "password-resets": {
+      "labels": {
+        "create-link": "创建密码重置链接"
+      },
+      "tooltips": {
+        "send-email": "发送邮件至 {{email}}",
+        "copy-link": "复制链接",
+        "delete": "删除"
+      },
+      "messages": {
+        "link-copied": "重置链接已复制到剪贴板。"
+      }
+    },
+    "emails": {
+      "empty-state": "没有已发送邮件。",
+      "actions": {
+        "send-test": "发送测试邮件"
+      },
+      "tooltips": {
+        "preview": "预览",
+        "view-user": "查看用户"
+      }
+    },
+    "groups": {
+      "empty-state": "没有组。",
+      "actions": {
+        "create": "创建组"
+      }
+    },
+    "group": {
+      "title": "组",
+      "labels": {
+        "name": "名称",
+        "add-user": "添加用户",
+        "users": "用户："
+      },
+      "checkboxes": {
+        "mfa-required": "要求多因素认证",
+        "auto-assign": "自动分配"
+      }
+    },
+    "invitations": {
+      "empty-state": "没有邀请。",
+      "actions": {
+        "create": "创建邀请"
+      }
+    },
+    "invitation": {
+      "title": "邀请",
+      "labels": {
+        "invite-link": "邀请链接",
+        "username": "用户名",
+        "email": "电子邮件",
+        "name": "姓名",
+        "add-group": "添加组",
+        "security-groups": "安全组：",
+        "user-expiration-date": "访问过期日期",
+        "user-expiration-time": "访问过期时间"
+      },
+      "tooltips": {
+        "copy-invite-link": "复制邀请链接",
+        "unsaved-changes": "您有未保存的更改。",
+        "send-to": "发送邀请至：{{email}}"
+      },
+      "messages": {
+        "link-copied": "邀请链接已复制到剪贴板。",
+        "email-not-verified": "无法通过电子邮件发送邀请链接，邮件连接未验证。",
+        "no-email": "无法发送邀请链接，邀请中不包含电子邮件地址。"
+      },
+      "actions": {
+        "send": "发送邀请"
+      },
+      "checkboxes": {
+        "email-verified": "邮箱已验证"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "登录"
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": "{{label}} 已复制到剪贴板。"
+      }
+    },
+    "oidc-info": {
+      "title": "OIDC 信息",
+      "labels": {
+        "issuer": "OIDC 颁发者端点",
+        "well-known": "知名端点",
+        "authorization": "授权端点",
+        "token": "令牌端点",
+        "userinfo": "用户信息端点",
+        "logout": "登出端点",
+        "jwks": "JWKs 端点"
+      },
+      "actions": {
+        "all-info": "全部信息"
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "新密码",
+        "old-password": "旧密码",
+        "confirm-password": "确认密码"
+      }
+    },
+    "totp-input": {
+      "title": "这将为您的账户启用多因素认证。",
+      "labels": {
+        "show-secret": "显示密钥"
+      },
+      "text": {
+        "qrcode-instruction": "扫描二维码或在您的身份验证器中输入密钥",
+        "then": "然后",
+        "enter-token": "输入身份验证器中的令牌以继续"
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "系统",
+        "light": "浅色",
+        "dark": "深色"
+      }
+    },
+    "email-input": {
+      "message": {
+        "default": "请在下方输入一个电子邮件地址。"
+      },
+      "actions": {
+        "cancel": {
+          "label": "取消"
+        },
+        "confirm": {
+          "label": "确认"
+        }
+      }
+    },
+    "totp-register": {
+      "title": "添加身份验证器",
+      "actions": {
+        "cancel": {
+          "label": "取消"
+        }
+      }
+    },
+    "passkey-edit": {
+      "title": "编辑通行密钥名称",
+      "message": {
+        "default": "输入此通行密钥的名称。"
+      },
+      "actions": {
+        "cancel": {
+          "label": "取消"
+        },
+        "save": {
+          "label": "保存"
+        }
+      }
+    },
+    "confirm": {
+      "instructions": "要确认，请在下方输入 <b>{{requiredText}}</b>。",
+      "actions": {
+        "cancel": {
+          "label": "取消"
+        },
+        "confirm": {
+          "label": "确认"
+        }
+      }
+    }
+  },
+  "user-expired": {
+    "title": "账户访问已过期",
+    "content": "您的账户访问权限已过期，请联系管理员延长访问权限。",
+    "actions": {
+      "login": "登录"
+    }
+  },
+  "passkey-name": {
+    "title": "通行密钥名称",
+    "prompt": "为新的通行密钥添加名称？",
+    "actions": {
+      "skip": {
+        "label": "跳过"
+      },
+      "save": {
+        "label": "保存"
+      }
+    }
+  }
+}
