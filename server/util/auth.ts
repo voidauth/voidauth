@@ -3,7 +3,7 @@ import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors } from '@share
 import { userRequiresMfa } from '../db/user'
 import appConfig from './config'
 
-function userMfaComplete(user: UserDetails, amr: string[]) {
+function userMfaComplete(user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup'>, amr: string[]) {
   const factors = loginFactors(amr)
 
   if (factors === 0) {
@@ -25,7 +25,10 @@ function usingMfaIfExists(user: UserDetails, amr: string[]) {
  * Determines if a user can login.
  * Checks that session has required factors, user is approved, and email is verified (if required)
  */
-export function userCanLogin(user: UserDetails | undefined, amr: string[]): user is UserDetails {
+export function userCanLogin(
+  user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup' | 'hasTotp' | 'hasEmail' | 'emailVerified' | 'approved' | 'isAdmin'> | undefined,
+  amr: string[],
+): user is UserDetails {
   if (!user) {
     return false
   }

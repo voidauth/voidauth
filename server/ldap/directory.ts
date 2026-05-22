@@ -1,13 +1,17 @@
-import { createHash } from 'node:crypto'
 import { db } from '../db/db'
 import type { User } from '@shared/db/User'
 import type { Group, UserGroup } from '@shared/db/Group'
 import { TABLES } from '@shared/db'
 import appConfig from '../util/config'
-import { ADMIN_GROUP } from '@shared/constants'
-import { isExpired, isUnapproved, isUnverifiedEmail } from '@shared/user'
+import type { Nullable } from '@shared/utils'
+import { getLDAPVisibleUsers } from '../db/user'
+import { parseDN } from './util'
 
-export type LDAPAttributes = Record<string, string | string[]>
+export const MAX_SEARCH_RESULTS = 1000
+
+export type LDAPAttributes = {
+  [x: string]: string | string[]
+}
 
 export type LDAPEntry = {
   dn: string
@@ -16,14 +20,14 @@ export type LDAPEntry = {
 
 export type LDAPSearchScope = 'base' | 'one' | 'sub' | 0 | 1 | 2
 
-type UserGroupMembership = Pick<UserGroup, 'userId' | 'groupId'>
+type UserLDAPAttributes = Pick<User, 'id' | 'username' | 'name' | 'email'>
 
 export function usersBaseDN() {
-  return `${rdn('ou', appConfig.LDAP_USERS_OU)},${appConfig.LDAP_BASE_DN}`
+  return `${rdn('ou', 'people')},${appConfig.LDAP_BASE_DN}`
 }
 
 export function groupsBaseDN() {
-  return `${rdn('ou', appConfig.LDAP_GROUPS_OU)},${appConfig.LDAP_BASE_DN}`
+  return `${rdn('ou', 'groups')},${appConfig.LDAP_BASE_DN}`
 }
 
 export function ldapUserDN(user: Pick<User, 'username'>) {
@@ -38,13 +42,20 @@ export function dnEqual(a: string, b: string) {
   return normalizeDN(a) === normalizeDN(b)
 }
 
-export async function getLDAPEntries(): Promise<LDAPEntry[]> {
-  const [users, groups, memberships] = await Promise.all([
-    db().table<User>(TABLES.USER).select(),
-    db().table<Group>(TABLES.GROUP).select(),
-    db().table<UserGroup>(TABLES.USER_GROUP).select('userId', 'groupId') as Promise<UserGroupMembership[]>,
+export async function getLDAPEntries() {
+  const [users, groups] = await Promise.all([
+    getLDAPVisibleUsers(MAX_SEARCH_RESULTS),
+    db().table<Group>(TABLES.GROUP).select('id', 'name').limit(MAX_SEARCH_RESULTS),
   ])
 
+  // There won't be any memberships if there are no users or groups
+  const memberships = users.length && groups.length
+    ? await db().table<UserGroup>(TABLES.USER_GROUP)
+        .select('userId', 'groupId')
+        .where('userId', 'in', users.map(u => u.id))
+        .andWhere('groupId', 'in', groups.map(g => g.id))
+        .limit(MAX_SEARCH_RESULTS)
+    : []
   const groupsById = new Map(groups.map(group => [group.id, group]))
   const groupNamesByUserId = new Map<string, string[]>()
   const userIdsByGroupId = new Map<string, string[]>()
@@ -57,24 +68,23 @@ export async function getLDAPEntries(): Promise<LDAPEntry[]> {
     }
   }
 
-  const activeUsers = users.filter(user => userVisibleInLDAP(user, groupNamesByUserId.get(user.id) ?? []))
-  const activeUsersById = new Map(activeUsers.map(user => [user.id, user]))
+  const usersById = new Map(users.map(user => [user.id, user]))
 
   const entries: LDAPEntry[] = [
     rootDSEEntry(),
     baseEntry(),
-    organizationalUnitEntry(appConfig.LDAP_USERS_OU, usersBaseDN()),
-    organizationalUnitEntry(appConfig.LDAP_GROUPS_OU, groupsBaseDN()),
+    organizationalUnitEntry('people', usersBaseDN()),
+    organizationalUnitEntry('groups', groupsBaseDN()),
   ]
 
-  for (const user of activeUsers) {
+  for (const user of users) {
     entries.push(userEntry(user, groupNamesByUserId.get(user.id) ?? []))
   }
 
   for (const group of groups) {
     const groupUsers = (userIdsByGroupId.get(group.id) ?? [])
-      .map(userId => activeUsersById.get(userId))
-      .filter((user): user is User => !!user)
+      .map(userId => usersById.get(userId))
+      .filter((user): user is UserLDAPAttributes => !!user)
 
     entries.push(groupEntry(group, groupUsers))
   }
@@ -82,13 +92,32 @@ export async function getLDAPEntries(): Promise<LDAPEntry[]> {
   return entries
 }
 
-export async function getLDAPEntryByDN(dn: string): Promise<LDAPEntry | undefined> {
+export async function getLDAPEntryByDN(dn: string) {
   return (await getLDAPEntries()).find(entry => dnEqual(entry.dn, dn))
 }
 
-export async function getLDAPUserByDN(dn: string): Promise<User | undefined> {
-  const users = await db().table<User>(TABLES.USER).select()
-  return users.find(user => dnEqual(ldapUserDN(user), dn))
+export async function getLDAPUserByDN(dn: string) {
+  // remove the user base DN suffix and parse the uid from the remaining DN
+  const userBaseDN = usersBaseDN()
+  if (dn.toLowerCase().endsWith(userBaseDN.toLowerCase())) {
+    dn = dn.slice(0, -userBaseDN.length - 1)
+  } else {
+    return undefined
+  }
+  // parse out the uid from the input dn
+  const parsed = parseDN(dn)
+  if (!parsed || parsed.length !== 1 || parsed[0]?.length !== 1 || parsed[0][0]?.[0] !== 'uid') {
+    return undefined
+  }
+  const uid = parsed[0][0][1]
+  if (!uid) {
+    return undefined
+  }
+  const users = await db().table<User>(TABLES.USER).select().where({ username: uid })
+  if (!users.length || users.length > 1) {
+    return undefined
+  }
+  return users[0]
 }
 
 export function entryInScope(baseDN: string, entryDN: string, scope: LDAPSearchScope) {
@@ -123,24 +152,23 @@ export function searchScope(scope: LDAPSearchScope): 'base' | 'one' | 'sub' {
   }
 }
 
-function rootDSEEntry(): LDAPEntry {
+function rootDSEEntry() {
   return {
     dn: '',
-    attributes: attrs({
+    attributes: truthyAttributes({
       objectClass: ['top'],
       namingContexts: [appConfig.LDAP_BASE_DN],
       supportedLDAPVersion: ['3'],
       supportedFeatures: ['1.3.6.1.4.1.4203.1.5.1'],
-      vendorName: 'VoidAuth',
-      vendorVersion: 'VoidAuth',
+      vendorName: appConfig.APP_TITLE,
     }),
   }
 }
 
-function baseEntry(): LDAPEntry {
+function baseEntry() {
   return {
     dn: appConfig.LDAP_BASE_DN,
-    attributes: attrs({
+    attributes: truthyAttributes({
       objectClass: ['top', 'dcObject', 'organization'],
       dc: firstDcValue(appConfig.LDAP_BASE_DN),
       o: appConfig.APP_TITLE,
@@ -148,54 +176,46 @@ function baseEntry(): LDAPEntry {
   }
 }
 
-function organizationalUnitEntry(ou: string, dn: string): LDAPEntry {
+function organizationalUnitEntry(ou: string, dn: string) {
   return {
     dn,
-    attributes: attrs({
+    attributes: truthyAttributes({
       objectClass: ['top', 'organizationalUnit'],
       ou,
     }),
   }
 }
 
-function userEntry(user: User, groupNames: string[]): LDAPEntry {
+function userEntry(
+  user: UserLDAPAttributes,
+  groupNames: string[]) {
   const cn = user.name || user.username
   const groupDNs = groupNames.map(name => ldapGroupDN({ name })).sort((a, b) => a.localeCompare(b))
 
   return {
     dn: ldapUserDN(user),
-    attributes: attrs({
-      objectClass: ['top', 'person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+    attributes: truthyAttributes({
+      objectClass: ['top', 'person', 'organizationalPerson', 'inetOrgPerson'],
       entryUUID: user.id,
       uid: user.username,
       cn,
-      sn: surname(cn),
       displayName: cn,
-      givenName: givenName(cn),
       mail: user.email,
-      uidNumber: numericId(user.id),
-      gidNumber: numericId(appConfig.LDAP_BASE_DN),
-      homeDirectory: `/home/${user.username}`,
-      loginShell: '/bin/false',
       memberOf: groupDNs,
       isMemberOf: groupDNs,
-      voidAuthApproved: String(!!user.approved),
-      voidAuthEmailVerified: String(!!user.emailVerified),
     }),
   }
 }
 
-function groupEntry(group: Group, users: User[]): LDAPEntry {
+function groupEntry(group: Pick<Group, 'id' | 'name'>, users: UserLDAPAttributes[]) {
   const members = users.map(user => ldapUserDN(user)).sort((a, b) => a.localeCompare(b))
 
   return {
     dn: ldapGroupDN(group),
-    attributes: attrs({
-      objectClass: ['top', 'groupOfNames', 'groupOfUniqueNames', 'posixGroup'],
+    attributes: truthyAttributes({
+      objectClass: ['top', 'groupOfNames', 'groupOfUniqueNames'],
       entryUUID: group.id,
       cn: group.name,
-      description: group.name,
-      gidNumber: numericId(group.id),
       member: members,
       uniqueMember: members,
       memberUid: users.map(user => user.username).sort((a, b) => a.localeCompare(b)),
@@ -203,28 +223,12 @@ function groupEntry(group: Group, users: User[]): LDAPEntry {
   }
 }
 
-function userVisibleInLDAP(user: User, groupNames: string[]) {
-  const state = {
-    approved: !!user.approved,
-    emailVerified: !!user.emailVerified,
-    expiresAt: user.expiresAt ?? null,
-    hasEmail: !!user.email,
-    isAdmin: groupNames.some(name => name === ADMIN_GROUP),
-  }
-
-  return !isUnapproved(state, appConfig.SIGNUP_REQUIRES_APPROVAL)
-    && !isExpired(state)
-    && !isUnverifiedEmail(state, !!appConfig.EMAIL_VERIFICATION)
-}
-
-function attrs(input: Record<string, string | string[] | undefined | null>): LDAPAttributes {
+function truthyAttributes(input: Partial<Nullable<LDAPAttributes>>) {
   const output: LDAPAttributes = {}
 
   for (const [key, value] of Object.entries(input)) {
-    if (Array.isArray(value)) {
-      if (value.length) {
-        output[key] = value
-      }
+    if (Array.isArray(value) && value.length) {
+      output[key] = value
     } else if (value != null && value !== '') {
       output[key] = value
     }
@@ -241,51 +245,14 @@ function firstDcValue(baseDN: string) {
   return /^dc=([^,]+)/i.exec(baseDN)?.[1] ?? appConfig.APP_TITLE
 }
 
-function surname(name: string) {
-  return name.trim().split(/\s+/).at(-1) || name
-}
-
-function givenName(name: string) {
-  return name.trim().split(/\s+/).at(0) || name
-}
-
-function numericId(input: string) {
-  const hash = createHash('sha256').update(input).digest()
-  return String(10000 + (hash.readUInt32BE(0) % 2000000000))
-}
-
 function normalizeDN(dn: string) {
   const parsed = parseDN(dn)
   return parsed
-    ? parsed.map(rdn => rdn.map(([name, value]) => `${name}=${value}`).join('+')).join(',')
+    ? parsed.map(rdn => rdn.map((v) => {
+        const [name, value] = v
+        return `${name}=${value}`
+      }).join('+')).join(',')
     : dn.trim().toLowerCase()
-}
-
-function parseDN(dn: string) {
-  const input = dn.trim()
-
-  if (!input) {
-    return []
-  }
-
-  const rdns = splitUnescaped(input, ',').map(part => splitUnescaped(part, '+').map((attributeValue) => {
-    const equalsIndex = findUnescaped(attributeValue, '=')
-
-    if (equalsIndex < 1) {
-      return undefined
-    }
-
-    return [
-      attributeValue.slice(0, equalsIndex).trim().toLowerCase(),
-      unescapeDNValue(attributeValue.slice(equalsIndex + 1).trim()).toLowerCase(),
-    ] as [string, string]
-  }))
-
-  if (rdns.some(rdn => rdn.some(value => !value))) {
-    return undefined
-  }
-
-  return rdns as [string, string][][]
 }
 
 function rdnsEqual(a: [string, string][][], b: [string, string][][]) {
@@ -313,58 +280,6 @@ function rdnEqual(a: [string, string][], b: [string, string][]) {
   return a.every(([name, value]) => expected.has(`${name}=${value}`))
 }
 
-function splitUnescaped(input: string, separator: string) {
-  const parts: string[] = []
-  let current = ''
-  let escaped = false
-
-  for (const char of input) {
-    if (escaped) {
-      current += char
-      escaped = false
-    } else if (char === '\\') {
-      current += char
-      escaped = true
-    } else if (char === separator) {
-      parts.push(current)
-      current = ''
-    } else {
-      current += char
-    }
-  }
-
-  parts.push(current)
-  return parts
-}
-
-function findUnescaped(input: string, target: string) {
-  let escaped = false
-
-  for (let index = 0; index < input.length; index += 1) {
-    const char = input[index]
-
-    if (escaped) {
-      escaped = false
-    } else if (char === '\\') {
-      escaped = true
-    } else if (char === target) {
-      return index
-    }
-  }
-
-  return -1
-}
-
 function escapeDNValue(value: string) {
   return value.replace(/[\\,+"<>;=#]/g, char => `\\${char}`).replace(/^ /, '\\ ').replace(/ $/, '\\ ')
-}
-
-function unescapeDNValue(value: string) {
-  return value.replace(/\\([0-9a-fA-F]{2}|.)/g, (_match, escaped: string) => {
-    if (/^[0-9a-fA-F]{2}$/.test(escaped)) {
-      return String.fromCharCode(Number.parseInt(escaped, 16))
-    }
-
-    return escaped
-  })
 }
