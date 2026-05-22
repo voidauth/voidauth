@@ -25,7 +25,7 @@ LDAP is disabled by default. To enable it, add the LDAP environment variables to
 
 ## Directory Layout
 
-If `{LDAP_BASE_DN}` is `dc=voidauth` and user and group DN are left as default, a user named `alice` is exposed as:
+If `{LDAP_BASE_DN}` is `dc=voidauth` a user named `alice` is exposed as:
 
 ```text
 uid=alice,ou=people,dc=voidauth
@@ -66,7 +66,7 @@ Common group attributes:
 | uniqueMember | Same values as `member` |
 | memberUid | Usernames for users in the group |
 
-Users that are unapproved, expired, or missing required email verification are not returned in LDAP search results (unless they are admins). Users can bind only if they have a VoidAuth password and can log in with a password alone. If a user or one of their groups requires MFA, LDAP simple bind is denied because LDAP simple bind cannot complete a second factor.
+Users that are unapproved, expired, or missing required email verification are not returned in LDAP search results (unless they are in the `auth_admins` group). Users can bind only if they have a VoidAuth password and can log in with a password alone. If a user or one of their groups requires MFA, LDAP simple bind is denied because LDAP simple bind cannot complete a second factor.
 
 ## Client Setup
 
@@ -82,7 +82,7 @@ Most clients should use these values, properties that should be filled in with t
 
 | Client Setting | Value |
 | :------ | :-- |
-| URL | `ldap://voidauth:3890` |
+| URL | `ldap://voidauth:3890` or `ldaps://voidauth:3890` |
 | Base DN | `{LDAP_BASE_DN}` |
 | Bind DN | `{LDAP_BIND_DN}` |
 | Bind Password | `{LDAP_BIND_PASSWORD}` |
