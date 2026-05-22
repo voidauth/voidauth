@@ -14,8 +14,11 @@ import {
   type LDAPAttributes,
   type LDAPEntry,
   type LDAPSearchScope,
+  MAX_SEARCH_RESULTS,
   searchScope,
 } from './directory'
+import { timingSafeEqual } from 'node:crypto'
+import zod from 'zod'
 
 const RESULT_SUCCESS = 0
 const RESULT_OPERATIONS_ERROR = 1
@@ -25,7 +28,12 @@ const RESULT_PROTOCOL_ERROR = 2
 const RESULT_INVALID_CREDENTIALS = 49
 const RESULT_INSUFFICIENT_ACCESS = 50
 
-type LDAPServer = net.Server | tls.Server
+// Security limits
+const MAX_FRAME_SIZE = 64 * 1024 // 64 KiB per LDAP frame
+const MAX_BUFFER_SIZE = 256 * 1024 // 256 KiB per connection buffer
+const MAX_BER_SEQUENCE_ELEMENTS = 200
+const MAX_SEARCH_ATTRIBUTES = 100
+const MAX_INTEGER_BYTES = 4 // limit BER integer byte length
 
 type LDAPConnection = {
   bindDN: string
@@ -52,21 +60,50 @@ type LDAPFilter
     | { type: 'greaterOrEqual' | 'lessOrEqual' | 'approx', attribute: string, value: string }
     | { type: 'present', attribute: string }
 
-type SearchRequest = {
-  baseDN: string
-  scope: LDAPSearchScope
-  sizeLimit: number
-  filter: LDAPFilter
-  attributes: string[]
-}
+const LDAPFilterSchema: zod.ZodType<LDAPFilter> = zod.union([
+  zod.object({ type: zod.literal('and'), filters: zod.array(zod.lazy((): typeof LDAPFilterSchema => LDAPFilterSchema)) }),
+  zod.object({ type: zod.literal('or'), filters: zod.array(zod.lazy((): typeof LDAPFilterSchema => LDAPFilterSchema)) }),
+  zod.object({ type: zod.literal('not'), filter: zod.lazy((): typeof LDAPFilterSchema => LDAPFilterSchema) }),
+  zod.object({ type: zod.literal('equality'), attribute: zod.string(), value: zod.string() }),
+  zod.object({
+    type: zod.literal('substrings'),
+    attribute: zod.string(),
+    initial: zod.string().optional(),
+    any: zod.array(zod.string()),
+    final: zod.string().optional(),
+  }),
+  zod.object({ type: zod.literal('greaterOrEqual'), attribute: zod.string(), value: zod.string() }),
+  zod.object({ type: zod.literal('lessOrEqual'), attribute: zod.string(), value: zod.string() }),
+  zod.object({ type: zod.literal('approx'), attribute: zod.string(), value: zod.string() }),
+  zod.object({ type: zod.literal('present'), attribute: zod.string() }),
+])
 
-type CompareRequest = {
-  dn: string
-  attribute: string
-  value: string
-}
+const SearchRequestSchema = zod.object({
+  baseDN: zod.string(),
+  scope: zod.union([
+    zod.literal('base'),
+    zod.literal('one'),
+    zod.literal('sub'),
+    zod.literal(0),
+    zod.literal(1),
+    zod.literal(2),
+  ]),
+  sizeLimit: zod.number().int().nonnegative(),
+  filter: LDAPFilterSchema,
+  attributes: zod.array(zod.string()),
+})
 
-export function startLDAPServer(): LDAPServer | undefined {
+type SearchRequest = zod.infer<typeof SearchRequestSchema>
+
+const CompareRequestSchema = zod.object({
+  dn: zod.string(),
+  attribute: zod.string(),
+  value: zod.string(),
+})
+
+type CompareRequest = zod.infer<typeof CompareRequestSchema>
+
+export function startLDAPServer() {
   if (!appConfig.LDAP_ENABLED) {
     return
   }
@@ -82,7 +119,7 @@ export function startLDAPServer(): LDAPServer | undefined {
         handleConnection(socket)
       })
 
-  server.on('error', (error: Error) => {
+  server.on('error', (error) => {
     logger({
       level: 'error',
       message: 'LDAP Server error',
@@ -90,11 +127,10 @@ export function startLDAPServer(): LDAPServer | undefined {
     })
   })
 
-  server.listen(appConfig.LDAP_PORT, appConfig.LDAP_HOST, () => {
-    const scheme = appConfig.LDAP_TLS_CERT_FILE ? 'ldaps' : 'ldap'
+  server.listen(appConfig.LDAP_PORT, () => {
     logger({
       level: 'info',
-      message: `LDAP Server listening at ${scheme}://${appConfig.LDAP_HOST}:${String(appConfig.LDAP_PORT)}`,
+      message: `LDAP Server listening on ${typeof appConfig.LDAP_PORT === 'number' ? 'port' : 'socket'}: ${String(appConfig.LDAP_PORT)}`,
     })
   })
 
@@ -109,13 +145,20 @@ function handleConnection(socket: Socket) {
   }
 
   socket.on('data', (chunk) => {
+    if (connection.buffer.length + chunk.length > MAX_BUFFER_SIZE) {
+      logger({ level: 'debug', message: 'LDAP client sent too much data; closing connection' })
+      connection.socket.write(ldapResult(0, 0x61, RESULT_OPERATIONS_ERROR, '', 'Frame too large'))
+      connection.socket.destroy()
+      return
+    }
+
     connection.buffer = Buffer.concat([connection.buffer, chunk])
     void processBuffer(connection)
   })
 
   socket.on('error', (error) => {
     logger({
-      level: 'error',
+      level: 'debug',
       message: 'LDAP client connection error',
       errors: [error],
     })
@@ -124,9 +167,28 @@ function handleConnection(socket: Socket) {
 
 async function processBuffer(connection: LDAPConnection) {
   while (connection.buffer.length) {
-    const frame = readLDAPFrame(connection.buffer)
+    let frame
+    try {
+      frame = readLDAPFrame(connection.buffer)
+    } catch (error) {
+      logger({
+        level: 'debug',
+        message: 'LDAP frame parse error',
+        errors: error instanceof Error ? [error] : [{ message: String(error) }],
+      })
+      connection.socket.write(ldapResult(0, 0x61, RESULT_PROTOCOL_ERROR))
+      connection.socket.destroy()
+      return
+    }
 
     if (!frame) {
+      return
+    }
+
+    if (frame.length > MAX_FRAME_SIZE || frame.value.length > MAX_FRAME_SIZE) {
+      logger({ level: 'debug', message: 'LDAP frame exceeds maximum allowed size' })
+      connection.socket.write(ldapResult(0, 0x61, RESULT_PROTOCOL_ERROR))
+      connection.socket.destroy()
       return
     }
 
@@ -137,7 +199,7 @@ async function processBuffer(connection: LDAPConnection) {
       await handleMessage(connection, message)
     } catch (error) {
       logger({
-        level: 'error',
+        level: 'debug',
         message: 'LDAP protocol error',
         errors: error instanceof Error ? [error] : [{ message: String(error) }],
       })
@@ -156,6 +218,9 @@ async function handleMessage(connection: LDAPConnection, message: LDAPMessage) {
       return
     case 0x6e:
       await handleCompare(connection, message.id, message.op)
+      return
+    case 0x77:
+      handleExtendedRequest(connection, message.id, message.op)
       return
     case 0x42:
       connection.socket.end()
@@ -185,7 +250,9 @@ async function handleBind(connection: LDAPConnection, messageId: number, op: BER
     }
 
     if (dnEqual(dn, appConfig.LDAP_BIND_DN)) {
-      if (appConfig.LDAP_BIND_PASSWORD && password === appConfig.LDAP_BIND_PASSWORD) {
+      if (appConfig.LDAP_BIND_PASSWORD
+        && appConfig.LDAP_BIND_PASSWORD.length === password.length
+        && timingSafeEqual(Buffer.from(password), Buffer.from(appConfig.LDAP_BIND_PASSWORD))) {
         connection.bindDN = appConfig.LDAP_BIND_DN
         connection.socket.write(ldapResult(messageId, 0x61, RESULT_SUCCESS))
         return
@@ -195,6 +262,7 @@ async function handleBind(connection: LDAPConnection, messageId: number, op: BER
       return
     }
 
+    // not using defined bind dn, check if it is a user
     const user = await getLDAPUserByDN(dn)
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_INVALID_CREDENTIALS))
@@ -211,7 +279,7 @@ async function handleBind(connection: LDAPConnection, messageId: number, op: BER
     connection.socket.write(ldapResult(messageId, 0x61, RESULT_SUCCESS))
   } catch (error) {
     logger({
-      level: 'error',
+      level: 'debug',
       message: 'LDAP bind failed',
       errors: error instanceof Error ? [error] : [{ message: String(error) }],
     })
@@ -222,17 +290,23 @@ async function handleBind(connection: LDAPConnection, messageId: number, op: BER
 async function handleSearch(connection: LDAPConnection, messageId: number, op: BERElement) {
   try {
     const req = readSearchRequest(op.value)
-
     if (!canSearch(connection) && !(dnEqual(req.baseDN, '') && searchScope(req.scope) === 'base')) {
       connection.socket.write(ldapResult(messageId, 0x65, RESULT_INSUFFICIENT_ACCESS))
       return
     }
 
+    // Enforce upper bounds on sizeLimit coming from client
+    let sizeLimit = req.sizeLimit || MAX_SEARCH_RESULTS
+    if (sizeLimit <= 0) {
+      sizeLimit = MAX_SEARCH_RESULTS
+    }
+    sizeLimit = Math.min(sizeLimit, MAX_SEARCH_RESULTS)
+
     const entries = await getLDAPEntries()
     let sent = 0
 
     for (const entry of entries) {
-      if (req.sizeLimit && sent >= req.sizeLimit) {
+      if (sent >= sizeLimit) {
         break
       }
 
@@ -245,7 +319,7 @@ async function handleSearch(connection: LDAPConnection, messageId: number, op: B
     connection.socket.write(ldapResult(messageId, 0x65, RESULT_SUCCESS))
   } catch (error) {
     logger({
-      level: 'error',
+      level: 'debug',
       message: 'LDAP search failed',
       errors: error instanceof Error ? [error] : [{ message: String(error) }],
     })
@@ -268,7 +342,7 @@ async function handleCompare(connection: LDAPConnection, messageId: number, op: 
     connection.socket.write(ldapResult(messageId, 0x6f, result))
   } catch (error) {
     logger({
-      level: 'error',
+      level: 'debug',
       message: 'LDAP compare failed',
       errors: error instanceof Error ? [error] : [{ message: String(error) }],
     })
@@ -276,24 +350,107 @@ async function handleCompare(connection: LDAPConnection, messageId: number, op: 
   }
 }
 
+function handleExtendedRequest(connection: LDAPConnection, messageId: number, op: BERElement) {
+  try {
+    const reader = new BERReader(op.value)
+    const ext = reader.readElement()
+
+    if (ext.tag !== 0x80) {
+      connection.socket.write(ldapResult(messageId, 0x61, RESULT_PROTOCOL_ERROR))
+      return
+    }
+
+    const requestName = ext.value.toString('utf8')
+    // Validate that it looks right
+    if (!/^\d+(\.\d+)+$/.test(requestName)) {
+      connection.socket.write(ldapExtendedResponse(messageId, RESULT_OPERATIONS_ERROR, '', 'Invalid extended request OID'))
+      return
+    }
+
+    switch (requestName) {
+      case '1.3.6.1.4.1.4203.1.11.3': {
+        const authzId = connection.bindDN ? `dn:${connection.bindDN}` : ''
+        connection.socket.write(ldapExtendedResponse(messageId, RESULT_SUCCESS, '', '', undefined, authzId))
+        return
+      }
+      case '1.3.6.1.4.1.1466.20037': {
+        connection.socket.write(ldapExtendedResponse(messageId, RESULT_OPERATIONS_ERROR, '', 'StartTLS not supported'))
+        return
+      }
+      default: {
+        connection.socket.write(ldapExtendedResponse(messageId, RESULT_OPERATIONS_ERROR, '', `Unsupported extended request: ${requestName}`))
+        return
+      }
+    }
+  } catch (error) {
+    logger({
+      level: 'debug',
+      message: 'LDAP extended request failed',
+      errors: error instanceof Error ? [error] : [{ message: String(error) }],
+    })
+    connection.socket.write(ldapExtendedResponse(messageId, RESULT_PROTOCOL_ERROR))
+  }
+}
+
+function ldapExtendedResponse(
+  messageId: number,
+  resultCode: number,
+  matchedDN = '',
+  diagnosticMessage = '',
+  responseName?: string,
+  responseValue?: Buffer | string) {
+  const children: Buffer[] = [
+    berEnumerated(resultCode),
+    berOctetString(matchedDN),
+    berOctetString(diagnosticMessage),
+  ]
+
+  if (responseName) {
+    children.push(berTLV(0x8a, Buffer.from(responseName, 'utf8')))
+  }
+
+  if (responseValue !== undefined) {
+    const valueBuffer = typeof responseValue === 'string' ? Buffer.from(responseValue, 'utf8') : responseValue
+    children.push(berTLV(0x8b, valueBuffer))
+  }
+
+  return ldapMessage(messageId, 0x78, children)
+}
+
 function canSearch(connection: LDAPConnection) {
-  return appConfig.LDAP_ALLOW_ANONYMOUS_SEARCH
-    || dnEqual(connection.bindDN, appConfig.LDAP_BIND_DN)
-    || (!!connection.bindDN && !dnEqual(connection.bindDN, appConfig.LDAP_BIND_DN))
+  return dnEqual(connection.bindDN, appConfig.LDAP_BIND_DN)
+}
+
+function isLDAPSearchScope(scope: string | number): scope is LDAPSearchScope {
+  return ['base', 'one', 'sub', 0, 1, 2].includes(scope)
 }
 
 function readSearchRequest(value: Buffer): SearchRequest {
   const reader = new BERReader(value)
   const baseDN = reader.readString()
-  const scope = reader.readInteger() as LDAPSearchScope
+  const scope = reader.readInteger()
+  // ensure scope is valid before reading more of the request
+  if (!isLDAPSearchScope(scope)) {
+    throw new Error('Invalid search scope')
+  }
   reader.readInteger()
   const sizeLimit = reader.readInteger()
   reader.readInteger()
   reader.readBoolean()
   const filter = readFilter(reader.readElement())
-  const attributes = reader.readSequence(0x30).map(element => element.value.toString('utf8'))
+  const attrs = reader.readSequence(0x30)
+  if (attrs.length > MAX_SEARCH_ATTRIBUTES) {
+    throw new Error('Too many requested attributes')
+  }
+  const attributes = attrs.map(element => element.value.toString('utf8'))
 
-  return { baseDN, scope, sizeLimit, filter, attributes }
+  const searchRequest = SearchRequestSchema.safeParse({ baseDN, scope, sizeLimit, filter, attributes })
+
+  if (!searchRequest.success) {
+    throw new Error('Invalid search request')
+  }
+
+  return searchRequest.data
 }
 
 function readCompareRequest(value: Buffer): CompareRequest {
@@ -309,17 +466,26 @@ function readCompareRequest(value: Buffer): CompareRequest {
   const attribute = ava.readString()
   const requestValue = ava.readString()
 
-  return { dn, attribute, value: requestValue }
+  const compareRequest = CompareRequestSchema.safeParse({ dn, attribute, value: requestValue })
+  if (!compareRequest.success) {
+    throw new Error('Invalid compare request')
+  }
+
+  return compareRequest.data
 }
 
-function readFilter(element: BERElement): LDAPFilter {
+function readFilter(element: BERElement, depth: number = 0): LDAPFilter {
+  const MAX_FILTER_DEPTH = 10
+  if (depth > MAX_FILTER_DEPTH) {
+    throw new Error('LDAP filter nesting too deep')
+  }
   switch (element.tag) {
     case 0xa0:
-      return { type: 'and', filters: new BERReader(element.value).readAll().map(readFilter) }
+      return { type: 'and', filters: new BERReader(element.value).readAll().map(el => readFilter(el, depth + 1)) }
     case 0xa1:
-      return { type: 'or', filters: new BERReader(element.value).readAll().map(readFilter) }
+      return { type: 'or', filters: new BERReader(element.value).readAll().map(el => readFilter(el, depth + 1)) }
     case 0xa2:
-      return { type: 'not', filter: readFilter(new BERReader(element.value).readElement()) }
+      return { type: 'not', filter: readFilter(new BERReader(element.value).readElement(), depth + 1) }
     case 0xa3: {
       const reader = new BERReader(element.value)
       return { type: 'equality', attribute: reader.readString(), value: reader.readString() }
@@ -357,12 +523,16 @@ function readSubstringFilter(value: Buffer): LDAPFilter {
   const substrings = new BERReader(substringsElement.value).readAll()
   const filter: LDAPFilter = { type: 'substrings', attribute, any: [] }
 
+  const MAX_SUBSTRING_PARTS = 100
   for (const substring of substrings) {
     const value = substring.value.toString('utf8')
 
     if (substring.tag === 0x80) {
       filter.initial = value
     } else if (substring.tag === 0x81) {
+      if (filter.any.length >= MAX_SUBSTRING_PARTS) {
+        throw new Error('Too many substring parts')
+      }
       filter.any.push(value)
     } else if (substring.tag === 0x82) {
       filter.final = value
@@ -488,6 +658,10 @@ function readLDAPFrame(buffer: Buffer) {
     return
   }
 
+  if (length.value > MAX_FRAME_SIZE) {
+    throw new Error('LDAP message too large')
+  }
+
   return {
     length: 1 + length.bytes + length.value,
     value: buffer.subarray(1 + length.bytes, 1 + length.bytes + length.value),
@@ -502,6 +676,7 @@ function readLDAPMessage(value: Buffer): LDAPMessage {
   return { id, op }
 }
 
+// BER stands for Basic Encoding Rules
 class BERReader {
   private offset = 0
 
@@ -511,6 +686,9 @@ class BERReader {
     const elements: BERElement[] = []
 
     while (this.offset < this.buffer.length) {
+      if (elements.length >= MAX_BER_SEQUENCE_ELEMENTS) {
+        throw new Error('BER sequence contains too many elements')
+      }
       elements.push(this.readElement())
     }
 
@@ -534,8 +712,12 @@ class BERReader {
       throw new Error(`Expected integer, got 0x${element.tag.toString(16)}`)
     }
 
-    let value = 0
+    if (element.value.length > MAX_INTEGER_BYTES) {
+      throw new Error('Integer too large')
+    }
 
+    // convert 4 bytes to a number
+    let value = 0
     for (const byte of element.value) {
       value = (value << 8) | byte
     }
@@ -579,6 +761,10 @@ class BERReader {
       throw new Error('Invalid BER length')
     }
 
+    if (length.value > MAX_FRAME_SIZE) {
+      throw new Error('Invalid BER length')
+    }
+
     const valueStart = this.offset + 1 + length.bytes
     const valueEnd = valueStart + length.value
     this.offset = valueEnd
@@ -619,6 +805,11 @@ function readLength(buffer: Buffer, offset: number) {
     value = (value << 8) | byte
   }
 
+  // Prevent too large length values from being processed
+  if (value > MAX_FRAME_SIZE) {
+    return
+  }
+
   return { bytes: 1 + byteCount, value }
 }
 
@@ -634,11 +825,13 @@ function berInteger(value: number) {
   const bytes: number[] = []
   let remaining = value
 
+  // add bytes to array until we have no more remaining value
   do {
     bytes.unshift(remaining & 0xff)
-    remaining >>= 8
+    remaining >>= 8 // shift right by 8 bits to get the next byte
   } while (remaining)
 
+  // if the highest bit of the first byte is set, prepend a 0 byte to indicate a positive number
   if ((bytes[0] ?? 0) & 0x80) {
     bytes.unshift(0)
   }
@@ -646,6 +839,7 @@ function berInteger(value: number) {
   return berTLV(0x02, Buffer.from(bytes))
 }
 
+// same as berInteger but with tag 0x0a for enumerated type
 function berEnumerated(value: number) {
   const bytes: number[] = []
   let remaining = value
@@ -666,11 +860,13 @@ function berOctetString(value: string) {
   return berTLV(0x04, Buffer.from(value, 'utf8'))
 }
 
+// TLV stands for tag+length+value
 function berTLV(tag: number, value: Buffer) {
   return Buffer.concat([Buffer.from([tag]), berLength(value.length), value])
 }
 
 function berLength(length: number) {
+  // For lengths less than 128, the length is encoded in a single byte
   if (length < 0x80) {
     return Buffer.from([length])
   }
@@ -683,5 +879,9 @@ function berLength(length: number) {
     remaining >>= 8
   }
 
+  // For lengths 128 or greater
+  // the length is as a leading byte with the high bit set
+  // and the low 7 bits indicating the number of subsequent bytes that encode the length,
+  // followed by the length bytes
   return Buffer.from([0x80 | bytes.length, ...bytes])
 }

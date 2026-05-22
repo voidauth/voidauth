@@ -26,7 +26,9 @@ const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
 export async function serve() {
   // Do not wait for theme to generate before starting
   void generateTheme()
-  startLDAPServer()
+  if (appConfig.LDAP_ENABLED) {
+    startLDAPServer()
+  }
 
   const app = express()
 
@@ -269,7 +271,10 @@ export async function serve() {
   })
 
   app.listen(appConfig.APP_PORT, () => {
-    logger({ level: 'info', message: `Listening on ${typeof appConfig.APP_PORT === 'number' ? 'port' : 'socket'}: ${String(appConfig.APP_PORT)}` })
+    logger({
+      level: 'info',
+      message: `API and GUI listening on ${typeof appConfig.APP_PORT === 'number' ? 'port' : 'socket'}: ${String(appConfig.APP_PORT)}`,
+    })
   })
 
   function modifyIndex() {

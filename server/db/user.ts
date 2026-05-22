@@ -44,6 +44,51 @@ export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndica
   })
 }
 
+export async function getLDAPVisibleUsers(limit = 1000): Promise<Pick<User, 'id' | 'username' | 'name' | 'email'>[]> {
+  return (await db().table<User>(TABLES.USER).select(
+    db().ref('id').withSchema(TABLES.USER),
+    db().ref('username').withSchema(TABLES.USER),
+    db().ref('name').withSchema(TABLES.USER),
+    db().ref('email').withSchema(TABLES.USER),
+    db().raw(`
+      CASE 
+        WHEN EXISTS (
+          SELECT 1 
+          FROM "user_group" ug 
+          JOIN "group" g ON ug."groupId" = g."id"
+          WHERE ug."userId" = "user"."id" AND g.name = ?
+        ) 
+        THEN 1 
+        ELSE 0 
+      END as "isAdmin"
+    `, [ADMIN_GROUP]),
+  ).where((w) => {
+    // Users that are admin are always returned
+    w.where('isAdmin', 1)
+  }).orWhere((w) => {
+    // Non-admin users are only returned if they are:
+    // non-expired
+    w.where('expiresAt', '>', new Date())
+
+    // approved (if approval is required)
+    if (appConfig.SIGNUP_REQUIRES_APPROVAL) {
+      w.andWhere('approved', true)
+    }
+
+    // email verified (if email verification is required)
+    if (appConfig.EMAIL_VERIFICATION) {
+      w.andWhere('emailVerified', true)
+    }
+  }).limit(limit)).map((u) => {
+    return {
+      id: u.id,
+      username: u.username,
+      name: u.name,
+      email: u.email,
+    }
+  })
+}
+
 export async function getUserById(id: string): Promise<UserDetails | undefined> {
   const user = await db().table<User>(TABLES.USER).select().where({ id }).first()
 
@@ -69,6 +114,17 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
   const userId = (await db().table<User>(TABLES.USER).select('id')
     .whereRaw('lower("username") = lower(?) or lower("email") = lower(?)', [input, input]).first())?.id
+
+  if (!userId) {
+    return undefined
+  }
+
+  return await getUserById(userId)
+}
+
+export async function getUserByUsername(username: string): Promise<UserDetails | undefined> {
+  const userId = (await db().table<User>(TABLES.USER).select('id')
+    .whereRaw('lower("username") = lower(?)', [username]).first())?.id
 
   if (!userId) {
     return undefined

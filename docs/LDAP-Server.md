@@ -1,13 +1,16 @@
 # LDAP Server
 
+> [!WARNING]
+> LDAP Server functionality is experimental.
+
 VoidAuth can expose a read-only LDAP directory for services that need LDAP for authentication, user lookup, or group lookup.
 
 The LDAP directory is backed by VoidAuth users and security groups:
 
 * Users are exposed under `ou=people,{LDAP_BASE_DN}`
 * Groups are exposed under `ou=groups,{LDAP_BASE_DN}`
-* User entries use `inetOrgPerson` and `posixAccount`
-* Group entries use `groupOfNames`, `groupOfUniqueNames`, and `posixGroup`
+* User entries use `inetOrgPerson`
+* Group entries use `groupOfNames`, `groupOfUniqueNames`
 * LDAP bind authentication uses the user's VoidAuth password
 
 > [!IMPORTANT]
@@ -15,59 +18,29 @@ The LDAP directory is backed by VoidAuth users and security groups:
 
 ## Configuration
 
-LDAP is disabled by default. To enable it, add the LDAP environment variables to the VoidAuth service:
-
-```yaml
-services:
-  voidauth:
-    image: voidauth/voidauth:latest
-    ports:
-      - "3000:3000"
-      - "3890:3890"
-    environment:
-      APP_URL: https://auth.example.com
-      STORAGE_KEY: ${STORAGE_KEY}
-      DB_HOST: voidauth-db
-      DB_PASSWORD: ${DB_PASSWORD}
-
-      LDAP_ENABLED: "true"
-      LDAP_PORT: 3890
-      LDAP_BASE_DN: dc=example,dc=com
-      LDAP_BIND_DN: cn=ldap_bind,dc=example,dc=com
-      LDAP_BIND_PASSWORD: ${LDAP_BIND_PASSWORD}
-```
-
-### Environment Variables
-
-| Name | Default | Description |
-| :------ | :-- | :-------- |
-| LDAP_ENABLED | `false` | Enables the LDAP server. |
-| LDAP_HOST | `0.0.0.0` | Address the LDAP server listens on. |
-| LDAP_PORT | `3890` | Port the LDAP server listens on. |
-| LDAP_BASE_DN | `dc=voidauth` | Base distinguished name for the directory. |
-| LDAP_USERS_OU | `people` | Organizational unit used for user entries. |
-| LDAP_GROUPS_OU | `groups` | Organizational unit used for group entries. |
-| LDAP_BIND_DN | `cn=ldap_bind,dc=voidauth` | Service account DN that LDAP clients can bind with before searching. |
-| LDAP_BIND_PASSWORD | | Password for `LDAP_BIND_DN`. Recommended for most clients. |
-| LDAP_ALLOW_ANONYMOUS_SEARCH | `false` | Allows anonymous LDAP clients to search the directory. |
-| LDAP_TLS_CERT_FILE | | Path to a PEM certificate file. If set, `LDAP_TLS_KEY_FILE` must also be set and VoidAuth listens with LDAPS. |
-| LDAP_TLS_KEY_FILE | | Path to the PEM private key file for `LDAP_TLS_CERT_FILE`. |
+LDAP is disabled by default. To enable it, add the LDAP environment variables to the VoidAuth service. See the available configuration environment variables on the [Getting Started](Getting-Started.md#ldap-settings) page.
 
 > [!WARNING]
 > Plain LDAP sends bind passwords over the network without encryption. Use this only on a trusted private network, or enable LDAPS with `LDAP_TLS_CERT_FILE` and `LDAP_TLS_KEY_FILE`.
 
 ## Directory Layout
 
-If `LDAP_BASE_DN` is `dc=example,dc=com`, a user named `alice` is exposed as:
+If `{LDAP_BASE_DN}` is `dc=voidauth` and user and group DN are left as default, a user named `alice` is exposed as:
 
 ```text
-uid=alice,ou=people,dc=example,dc=com
+uid=alice,ou=people,dc=voidauth
 ```
 
 A group named `admins` is exposed as:
 
 ```text
-cn=admins,ou=groups,dc=example,dc=com
+cn=admins,ou=groups,dc=voidauth
+```
+
+A filter for users in the `admins` groups:
+
+```text
+(memberOf=cn=admins,ou=groups,dc=voidauth)
 ```
 
 Common user attributes:
@@ -76,10 +49,12 @@ Common user attributes:
 | :------ | :-- |
 | uid | VoidAuth username |
 | cn | VoidAuth display name, or username |
+| entryUUID | VoidAuth user id |
 | displayName | VoidAuth display name, or username |
 | mail | VoidAuth email address |
 | entryUUID | VoidAuth user id |
 | memberOf | Group DNs for the user's VoidAuth security groups |
+| isMemberOf | Same values as `memberOf` |
 
 Common group attributes:
 
@@ -91,18 +66,26 @@ Common group attributes:
 | uniqueMember | Same values as `member` |
 | memberUid | Usernames for users in the group |
 
-Users that are unapproved, expired, or missing required email verification are not returned in LDAP search results. Users can bind only if they have a VoidAuth password and can log in with a password alone. If a user or one of their groups requires MFA, LDAP simple bind is denied because LDAP simple bind cannot complete a second factor.
+Users that are unapproved, expired, or missing required email verification are not returned in LDAP search results (unless they are admins). Users can bind only if they have a VoidAuth password and can log in with a password alone. If a user or one of their groups requires MFA, LDAP simple bind is denied because LDAP simple bind cannot complete a second factor.
 
 ## Client Setup
 
-Most clients should use these values:
+### LDAP DN Environment Variable Defaults
+
+| Name | Default |
+| :------ | :-- |
+| LDAP_BASE_DN | `dc=voidauth` |
+| LDAP_BIND_DN | `cn=ldap_bind,dc=voidauth` |
+| LDAP_BIND_PASSWORD | |
+
+Most clients should use these values, properties that should be filled in with the default or set values are wrapped in curly braces ex. `{LDAP_BIND_DN}`:
 
 | Client Setting | Value |
 | :------ | :-- |
-| URL | `ldap://voidauth:3890` or `ldaps://voidauth:3890` |
-| Base DN | `LDAP_BASE_DN` |
-| Bind DN | `LDAP_BIND_DN` |
-| Bind Password | `LDAP_BIND_PASSWORD` |
+| URL | `ldap://voidauth:3890` |
+| Base DN | `{LDAP_BASE_DN}` |
+| Bind DN | `{LDAP_BIND_DN}` |
+| Bind Password | `{LDAP_BIND_PASSWORD}` |
 | User Base DN | `ou=people,{LDAP_BASE_DN}` |
 | Group Base DN | `ou=groups,{LDAP_BASE_DN}` |
 | Login Filter | `(&(objectClass=inetOrgPerson)(mail=?))` or `(&(objectClass=inetOrgPerson)(uid=?))` |
@@ -111,4 +94,4 @@ Most clients should use these values:
 | Username Attribute | `uid` |
 | Group Attribute | `memberOf` |
 
-For services such as Stalwart that support LDAP bind authentication, enable bind authentication and do not configure password-hash comparison. VoidAuth does not expose `userPassword` hashes over LDAP.
+For services that support LDAP bind authentication, enable bind authentication and do not configure password-hash comparison. VoidAuth does not expose `userPassword` hashes over LDAP, and will not be compatible with clients that require it.
