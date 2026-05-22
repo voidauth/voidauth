@@ -4,6 +4,7 @@
 - Admin Guides
   * [OIDC App Setup](OIDC-Setup.md)
   * [OIDC App Guides](OIDC-Guides.md)
+  * [LDAP Server](LDAP-Server.md)
   * [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md)
   * [User Management](User-Management.md)
   * [Security Groups](Security-Groups.md)

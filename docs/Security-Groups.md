@@ -21,6 +21,11 @@ Security Group settings also includes additional options:
 
 Security Groups are used in both OIDC Apps and ProxyAuth Domains.
 
+### LDAP
+Security Groups are also exposed through the optional [LDAP Server](LDAP-Server.md):
+* User entries include group DNs in the `memberOf` attribute
+* Group entries include user DNs in the `member` and `uniqueMember` attributes
+
 ### ProxyAuth
 Security Groups are used in ProxyAuth Domains for:
 * ProxyAuth Domain authorization

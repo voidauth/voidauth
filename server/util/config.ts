@@ -68,6 +68,19 @@ class Config {
   SMTP_TLS_CIPHERS?: string
   SMTP_TLS_MIN_VERSION?: SecureVersion
 
+  // LDAP
+  LDAP_ENABLED: boolean = false
+  LDAP_HOST = '0.0.0.0'
+  LDAP_PORT: number = 3890
+  LDAP_BASE_DN = 'dc=voidauth'
+  LDAP_USERS_OU = 'people'
+  LDAP_GROUPS_OU = 'groups'
+  LDAP_BIND_DN = 'cn=ldap_bind,dc=voidauth'
+  LDAP_BIND_PASSWORD?: string
+  LDAP_ALLOW_ANONYMOUS_SEARCH: boolean = false
+  LDAP_TLS_CERT_FILE?: string
+  LDAP_TLS_KEY_FILE?: string
+
   DECLARED_CLIENTS = new Map<string, ClientResponse>()
 }
 
@@ -79,6 +92,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SMTP_PORT':
     case 'PASSWORD_STRENGTH':
     case 'API_RATELIMIT':
+    case 'LDAP_PORT':
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
 
@@ -105,6 +119,8 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'DB_SSL_VERIFICATION':
     case 'MIGRATE_TO_DB_SSL':
     case 'MIGRATE_TO_DB_SSL_VERIFICATION':
+    case 'LDAP_ENABLED':
+    case 'LDAP_ALLOW_ANONYMOUS_SEARCH':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 
@@ -130,6 +146,9 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SMTP_USER':
     case 'SMTP_PASS':
     case 'SMTP_TLS_CIPHERS':
+    case 'LDAP_BIND_PASSWORD':
+    case 'LDAP_TLS_CERT_FILE':
+    case 'LDAP_TLS_KEY_FILE':
       appConfig[key] = stringOnly(value) ?? appConfig[key]
       break
 
@@ -472,6 +491,29 @@ if (appConfig.APP_FONT) {
     appConfig.APP_FONT += ','
   }
   appConfig.APP_FONT += ' '
+}
+
+if (appConfig.LDAP_ENABLED) {
+  appConfig.LDAP_BASE_DN = appConfig.LDAP_BASE_DN.trim()
+  appConfig.LDAP_USERS_OU = appConfig.LDAP_USERS_OU.trim()
+  appConfig.LDAP_GROUPS_OU = appConfig.LDAP_GROUPS_OU.trim()
+  appConfig.LDAP_BIND_DN = appConfig.LDAP_BIND_DN.trim()
+
+  if (!appConfig.LDAP_BASE_DN || !appConfig.LDAP_USERS_OU || !appConfig.LDAP_GROUPS_OU) {
+    logger({
+      level: 'error',
+      message: 'LDAP_BASE_DN, LDAP_USERS_OU, and LDAP_GROUPS_OU must be non-empty when LDAP_ENABLED is true.',
+    })
+    exit(1)
+  }
+
+  if (!!appConfig.LDAP_TLS_CERT_FILE !== !!appConfig.LDAP_TLS_KEY_FILE) {
+    logger({
+      level: 'error',
+      message: 'LDAP_TLS_CERT_FILE and LDAP_TLS_KEY_FILE must be set together.',
+    })
+    exit(1)
+  }
 }
 
 //

@@ -19,6 +19,7 @@ services:
       # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
+      # - "3890:3890" # only needed if LDAP Server is enabled
     environment:
       # Required environment variables, set in .env file or replace ${...} with value
       # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
@@ -59,6 +60,7 @@ services:
       # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
+      # - "3890:3890" # only needed if LDAP Server is enabled
     environment:
       # Required environment variables, set in .env file or replace ${...} with value
       # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
@@ -169,6 +171,23 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | SMTP_TLS_CIPHERS | | TLS cipher to use, only set if required by your SMTP provider |
 | SMTP_TLS_MIN_VERSION | | Minimum TLS version, only set if required by your SMTP provider. Possible values are `TLSv1.3`, `TLSv1.2`, `TLSv1.1`, `TLSv1` |
 
+#### LDAP Settings
+LDAP is disabled by default. See the [LDAP Server](LDAP-Server.md) guide for setup details and client examples.
+
+| Name | Default | Description | Required | Recommended |
+| :------ | :-- | :-------- | :--- | :--- |
+| LDAP_ENABLED | `false` | Enables the read-only LDAP server. | | |
+| LDAP_HOST | `0.0.0.0` | Address the LDAP server listens on. | | |
+| LDAP_PORT | `3890` | Port the LDAP server listens on. | | |
+| LDAP_BASE_DN | `dc=voidauth` | Base distinguished name for LDAP directory entries. | | ✅ if LDAP is enabled |
+| LDAP_USERS_OU | `people` | Organizational unit used for user entries. | | |
+| LDAP_GROUPS_OU | `groups` | Organizational unit used for group entries. | | |
+| LDAP_BIND_DN | `cn=ldap_bind,dc=voidauth` | Service account DN LDAP clients can bind as before searching. | | ✅ if LDAP is enabled |
+| LDAP_BIND_PASSWORD | | Password for the LDAP service account bind DN. | | ✅ if LDAP is enabled |
+| LDAP_ALLOW_ANONYMOUS_SEARCH | `false` | Allows anonymous LDAP clients to search the directory. | | |
+| LDAP_TLS_CERT_FILE | | Path to a PEM certificate file. If set, `LDAP_TLS_KEY_FILE` must also be set and VoidAuth listens with LDAPS. | | |
+| LDAP_TLS_KEY_FILE | | Path to the PEM private key file for `LDAP_TLS_CERT_FILE`. | | |
+
 #### Misc.
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
@@ -198,4 +217,3 @@ For information on how to change the email templates used for invitations, passw
 
 ### Multi-Domain Protection
 You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC Apps, ProxyAuth Domains, etc.
-
