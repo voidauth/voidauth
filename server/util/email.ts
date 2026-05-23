@@ -25,10 +25,12 @@ const transportOptions: SMTPTransport.Options = {
   host: appConfig.SMTP_HOST,
   port: appConfig.SMTP_PORT,
   secure: appConfig.SMTP_SECURE,
-  auth: {
-    user: appConfig.SMTP_USER,
-    pass: appConfig.SMTP_PASS,
-  },
+  auth: appConfig.SMTP_NOAUTH
+    ? undefined
+    : {
+        user: appConfig.SMTP_USER,
+        pass: appConfig.SMTP_PASS,
+      },
   tls: {
     rejectUnauthorized: !appConfig.SMTP_IGNORE_CERT,
     ciphers: appConfig.SMTP_TLS_CIPHERS,
