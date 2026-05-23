@@ -79,25 +79,26 @@ export class TranslationService {
     }
 
     const browserLang = this.translate.getBrowserCultureLang()
-    // browser language rules ("en" and "en-US" are valid, "en-GB-oxford" is not)
     if (browserLang) {
-      // Try to parse the browser language to get a valid language code
-      const browserLangParts = browserLang.split('-').map((p, i) => i === 0 ? p.toLowerCase() : p.toUpperCase())
-      const parsedBrowserLang = browserLangParts.slice(0, 2).filter(p => !!p).join('-') // en-GB
-      const simplifiedBrowserLang = browserLangParts[0] // en
-      if (this.availableLangs.some(lang => lang.code === parsedBrowserLang)) {
-        if (await this._setLang(parsedBrowserLang, true)) {
-          return
+      // Check in a loop until a matching available language is found ('en-GB-oxendict' -> 'en-GB' -> 'en')
+      // Find exact match first, then try to find a match that starts with the browser language parts ('en' ~ 'en-US' ~ 'en-GB')
+      const browserLangParts = browserLang.split('-')
+      for (let i = browserLangParts.length; i >= 1; i--) {
+        const subBrowserLang = browserLangParts.slice(0, i).filter(p => !!p).join('-')
+        const foundLang = this.availableLangs.find(lang => lang.code.toLowerCase() === subBrowserLang.toLowerCase())
+        const foundStartsWithLang = this.availableLangs.find(lang => lang.code.toLowerCase().startsWith(subBrowserLang.toLowerCase()))
+        if (foundLang) {
+          if (await this._setLang(foundLang.code, true)) {
+            return
+          }
+        } else if (foundStartsWithLang) {
+          if (await this._setLang(foundStartsWithLang.code, true)) {
+            return
+          }
         }
-      } else if (simplifiedBrowserLang && simplifiedBrowserLang !== parsedBrowserLang) {
-        // Try to find an available language that matches (starts with) the simplified browser language
-        const foundAvailableLang = this.availableLangs.find(lang => lang.code.startsWith(simplifiedBrowserLang))
-        if (foundAvailableLang && await this._setLang(foundAvailableLang.code, true)) {
-          return
-        }
-      } else {
-        console.error(`Browser language ${browserLang} is not available.`)
       }
+
+      console.log(`No available language found for browser language ${browserLang}.`)
     }
 
     const fallbackLang = this.translate.getFallbackLang()
