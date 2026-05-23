@@ -69,25 +69,49 @@ export class TranslationService {
   private async _setInitialLang() {
     const previousLang = this.getLocalStorageLang()
     if (previousLang) {
-      if (await this._setLang(previousLang, true)) {
-        return
+      if (this.availableLangs.some(lang => lang.code === previousLang)) {
+        if (await this._setLang(previousLang, true)) {
+          return
+        }
+      } else {
+        console.error(`Previous language ${previousLang} is not available.`)
       }
     }
 
     const browserLang = this.translate.getBrowserCultureLang()
+    // browser language rules ("en" and "en-US" are valid, "en-GB-oxford" is not)
     if (browserLang) {
-      if (await this._setLang(browserLang, true)) {
-        return
+      // Try to parse the browser language to get a valid language code
+      const browserLangParts = browserLang.split('-').map((p, i) => i === 0 ? p.toLowerCase() : p.toUpperCase())
+      const parsedBrowserLang = browserLangParts.slice(0, 2).filter(p => !!p).join('-') // en-GB
+      const simplifiedBrowserLang = browserLangParts[0] // en
+      if (this.availableLangs.some(lang => lang.code === parsedBrowserLang)) {
+        if (await this._setLang(parsedBrowserLang, true)) {
+          return
+        }
+      } else if (simplifiedBrowserLang && simplifiedBrowserLang !== parsedBrowserLang) {
+        // Try to find an available language that matches (starts with) the simplified browser language
+        const foundAvailableLang = this.availableLangs.find(lang => lang.code.startsWith(simplifiedBrowserLang))
+        if (foundAvailableLang && await this._setLang(foundAvailableLang.code, true)) {
+          return
+        }
+      } else {
+        console.error(`Browser language ${browserLang} is not available.`)
       }
     }
 
     const fallbackLang = this.translate.getFallbackLang()
     if (fallbackLang) {
-      if (await this._setLang(fallbackLang, true)) {
-        return
+      if (this.availableLangs.some(lang => lang.code === fallbackLang)) {
+        if (await this._setLang(fallbackLang, true)) {
+          return
+        }
+      } else {
+        console.error(`Fallback language ${fallbackLang} is not available.`)
       }
     }
 
+    console.error('No available initial language found. Falling back to en-US.')
     await this._setLang('en-US', true)
   }
 

@@ -18,6 +18,7 @@ import { createInitialAdmin } from '../db/user'
 import { logger, purgeAsyncLog } from '../util/logger'
 import { sensitiveRateLimit, standardRateLimit } from '../util/rateLimit'
 import { FORBIDDEN_PATHS, NOT_FOUND_PATHS } from '@shared/constants'
+import { startLDAPServer } from '../ldap/server'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -25,6 +26,9 @@ const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
 export async function serve() {
   // Do not wait for theme to generate before starting
   void generateTheme()
+  if (appConfig.LDAP_ENABLED) {
+    startLDAPServer()
+  }
 
   const app = express()
 
@@ -206,6 +210,16 @@ export async function serve() {
     res.send(index)
   })
 
+  // Do not fallthrough to index.html for missing i18n files
+  app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
+    index: false,
+    fallthrough: true,
+  }), (_req, res, _next) => {
+    res.status(404).send({
+      message: 'Internationalization file not found.',
+    })
+  })
+
   // frontend
   app.use(`${basePath()}/`,
     // if frontend matches specific paths, use different status codes
@@ -222,12 +236,6 @@ export async function serve() {
       fallthrough: true,
     }),
   )
-
-  // Do not fallthrough to index.html for missing i18n files
-  app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
-    index: false,
-    fallthrough: false,
-  }))
 
   // Unresolved GET requests should return index if they start with basePath
   app.use((req, res, next) => {
@@ -267,7 +275,10 @@ export async function serve() {
   })
 
   app.listen(appConfig.APP_PORT, () => {
-    logger({ level: 'info', message: `Listening on ${typeof appConfig.APP_PORT === 'number' ? 'port' : 'socket'}: ${String(appConfig.APP_PORT)}` })
+    logger({
+      level: 'info',
+      message: `API and GUI listening on ${typeof appConfig.APP_PORT === 'number' ? 'port' : 'socket'}: ${String(appConfig.APP_PORT)}`,
+    })
   })
 
   function modifyIndex() {
