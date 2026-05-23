@@ -21,7 +21,7 @@ import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
 import { getClient } from '../db/client'
-import type { InvitationGroup, UserGroup } from '@shared/db/Group'
+import type { Group, InvitationGroup, UserGroup } from '@shared/db/Group'
 import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
@@ -384,24 +384,32 @@ router.post('/register',
     // insert user into table
     await db().table<User>(TABLES.USER).insert(user)
 
+    const assignedGroupIds: Pick<Group, 'id' | 'createdBy' | 'updatedBy'>[] = []
+
     if (invitationValid) {
-      const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP)
-        .where({ invitationId: invitation.id })
+      const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP).where({ invitationId: invitation.id })
+      assignedGroupIds.push(...inviteGroups.map(g => ({ id: g.groupId, createdBy: g.createdBy, updatedBy: g.updatedBy })))
+    } else {
+      // If no invitation, get the default groups for new users
+      const defaultGroups = await db().select().table<Group>(TABLES.GROUP).where({ autoAssign: true })
+      assignedGroupIds.push(...defaultGroups.map(g => ({ id: g.id, createdBy: g.createdBy, updatedBy: g.updatedBy })))
+    }
 
-      if (inviteGroups.length) {
-        const userGroups: UserGroup[] = inviteGroups.map((g) => {
-          return {
-            groupId: g.groupId,
-            userId: user.id,
-            createdBy: g.createdBy,
-            updatedBy: g.updatedBy,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }
-        })
-        await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
-      }
+    if (assignedGroupIds.length) {
+      const userGroups: UserGroup[] = assignedGroupIds.map((g) => {
+        return {
+          groupId: g.id,
+          userId: user.id,
+          createdBy: g.createdBy,
+          updatedBy: g.updatedBy,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
+      await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
+    }
 
+    if (invitationValid) {
       await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
     }
 
@@ -528,24 +536,32 @@ router.post('/register/passkey/end',
     // insert user into table
     await db().table<User>(TABLES.USER).insert(user)
 
+    const assignedGroupIds: Pick<Group, 'id' | 'createdBy' | 'updatedBy'>[] = []
+
     if (invitationValid) {
-      const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP)
-        .where({ invitationId: invitation.id })
+      const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP).where({ invitationId: invitation.id })
+      assignedGroupIds.push(...inviteGroups.map(g => ({ id: g.groupId, createdBy: g.createdBy, updatedBy: g.updatedBy })))
+    } else {
+      // If no invitation, get the default groups for new users
+      const defaultGroups = await db().select().table<Group>(TABLES.GROUP).where({ autoAssign: true })
+      assignedGroupIds.push(...defaultGroups.map(g => ({ id: g.id, createdBy: g.createdBy, updatedBy: g.updatedBy })))
+    }
 
-      if (inviteGroups.length) {
-        const userGroups: UserGroup[] = inviteGroups.map((g) => {
-          return {
-            groupId: g.groupId,
-            userId: user.id,
-            createdBy: g.createdBy,
-            updatedBy: g.updatedBy,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }
-        })
-        await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
-      }
+    if (assignedGroupIds.length) {
+      const userGroups: UserGroup[] = assignedGroupIds.map((g) => {
+        return {
+          groupId: g.id,
+          userId: user.id,
+          createdBy: g.createdBy,
+          updatedBy: g.updatedBy,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
+      await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
+    }
 
+    if (invitationValid) {
       await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
     }
 
