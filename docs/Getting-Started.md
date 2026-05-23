@@ -19,6 +19,7 @@ services:
       # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
+      # - "3890:3890" # only needed if LDAP Server is enabled
     environment:
       # Required environment variables, set in .env file or replace ${...} with value
       # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
@@ -59,6 +60,7 @@ services:
       # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
+      # - "3890:3890" # only needed if LDAP Server is enabled
     environment:
       # Required environment variables, set in .env file or replace ${...} with value
       # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
@@ -100,9 +102,11 @@ User, OIDC App, and ProxyAuth Domain management is performed in the web interfac
 To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. If the application does not support OIDC or you just want to secure a specific path, you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) guide.
 
 ### Environment Variables
+
 VoidAuth is configurable primarily by environment variable. The available environment variables and their defaults are listed in the table below:
 
 #### App Settings
+
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | APP_URL | | URL of the web interface. ex. `https://auth.example.com` or `https://example.com/auth` | 🔴 | |
@@ -118,6 +122,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | ENABLE_DEBUG  | `false` | Enables debug logging. WARNING! This will cause the activity of users to be printed in the logs.  | | |
 
 #### App Customization
+
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | APP_TITLE | `VoidAuth` | Title that will show on the web interface, use your own brand/app/title. | | ✅ |
@@ -127,6 +132,7 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | CONTACT_EMAIL | | The email address used for 'Contact' links, which are shown on most end-user pages if this is set. | | |
 
 #### Database Settings
+
 When using the `sqlite` database adapter type, no additional database connection variables are required. You will need a mounted volume to hold the generated `db.sqlite` file, as shown in the SQLite docker compose example above.
 
 | Name | Default | Description | Required | Recommended |
@@ -141,6 +147,7 @@ When using the `sqlite` database adapter type, no additional database connection
 | DB_SSL_VERIFICATION | `true` | If DB_SSL is enabled, whether to verify the SSL certificate. | | |
 
 #### Database Migration Settings
+
 Use the following environment variables to configure a database migration. These variables *exactly* mirror the `DB_*` environment variables and describe the connection to be made to the new database. See details on how to migrate an existing database to a new one on the [Database Migration](DB-Migration.md) page.
 
 | Name | Default | Description | Required | Recommended |
@@ -155,6 +162,7 @@ Use the following environment variables to configure a database migration. These
 | MIGRATE_TO_DB_SSL_VERIFICATION | `true` | If MIGRATE_TO_DB_SSL is enabled, whether to verify the SSL certificate. | | |
 
 #### SMTP Settings
+
 All of these settings are ✅ recommended to be set to the correct values for your email provider.
 
 | Name | Default | Description |
@@ -170,7 +178,25 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | SMTP_TLS_CIPHERS | | TLS cipher to use, only set if required by your SMTP provider |
 | SMTP_TLS_MIN_VERSION | | Minimum TLS version, only set if required by your SMTP provider. Possible values are `TLSv1.3`, `TLSv1.2`, `TLSv1.1`, `TLSv1` |
 
+#### LDAP Settings
+
+LDAP is disabled by default. See the [LDAP Server](LDAP-Server.md) guide for setup details and client examples.
+
+> [!WARNING]
+> LDAP Server functionality is experimental.
+
+| Name | Default | Description | Required | Recommended |
+| :------ | :-- | :-------- | :--- | :--- |
+| LDAP_ENABLED | `false` | Enables the read-only LDAP server. | | |
+| LDAP_PORT | `3890` | Port the LDAP server listens on. | | |
+| LDAP_BASE_DN | `dc=voidauth` | Base distinguished name for LDAP directory entries. | | |
+| LDAP_BIND_DN | `cn=ldap_bind,dc=voidauth` | Service account DN LDAP clients can bind as before searching. | | |
+| LDAP_BIND_PASSWORD | | Password for the LDAP service account bind DN. | 🔴 if LDAP is enabled | |
+| LDAP_TLS_CERT_FILE | | Path to a PEM certificate file. If set, `LDAP_TLS_KEY_FILE` must also be set and VoidAuth listens with LDAPS. | | |
+| LDAP_TLS_KEY_FILE | | Path to the PEM private key file for `LDAP_TLS_CERT_FILE`. | | |
+
 #### Misc.
+
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | PASSWORD_STRENGTH | `3` | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | |
@@ -178,9 +204,10 @@ All of these settings are ✅ recommended to be set to the correct values for yo
 | DEFAULT_USER_EXPIRES_IN | | The default duration before a new users access will expire as shown on the Invitation page. Can be set to values like: '4 hours', '30 minutes', '1 week', '2 days', etc. or a number in seconds. | | | 
 
 > [!IMPORTANT]
-> Some configuration options only make sense when used together. **EMAIL_VERIFICATION** should only be set if the **SMTP_** options are also set. Likewise, **SIGNUP_REQUIRES_APPROVAL** does nothing unless **SIGNUP** is set.
+> Some configuration options only work when used together. **EMAIL_VERIFICATION** should only be set if the **SMTP_** options are also set. Likewise, **SIGNUP_REQUIRES_APPROVAL** does nothing unless **SIGNUP** is set.
 
 ### Config Directory
+
 Your own branding can be applied to the app by mounting the **/app/config** directory and adding files or modifying the existing files.
 
 The logo and favicon of the web interface can be customized by placing your own **logo.svg**/**logo.png** and **favicon.svg**/**favicon.png** in the mounted **/app/config/branding** directory. You can also add an **apple-touch-icon.png** file to **/app/config/branding**.
@@ -188,15 +215,17 @@ The logo and favicon of the web interface can be customized by placing your own 
 For information on how to change the email templates used for invitations, password resets, email verification, etc. see the documentation page for [Email Templates](Email-Templates.md).
 
 ### Customization
+
 > [!IMPORTANT]
 > There are enough branding options between environment variables like **APP_TITLE**, **APP_COLOR**, and config directory customization to remove any end-user reference to VoidAuth branding. You can make it your own! Below is an example of some theming changes and light mode enabled:
 >
 > <img width="260" src="/public/screenshots/66152d9b-b041-4374-91ec-4363ab1cb064.png" />
 
 ## Experimental
+
 > [!WARNING]
 > The following configurations are not well supported or tested, but may cover additional use-cases.
 
 ### Multi-Domain Protection
-You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC Apps, ProxyAuth Domains, etc.
 
+You can secure multiple domains you own by running multiple instances of VoidAuth using the same database. They should have the same **STORAGE_KEY** and **DB_\*** variables, but may otherwise have completely different configurations. The **APP_URL** variables of each would cover a different domain. If the domains you were trying to secure were `example.com` and `your-domain.net` you might set the **APP_URL** variables like `https://auth.example.com` and `https://id.your-domain.net`. These two instances would share everything in the shared DB, including users, OIDC Apps, ProxyAuth Domains, etc.

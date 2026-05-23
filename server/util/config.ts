@@ -8,6 +8,7 @@ import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
 import zod from 'zod'
 import type { SecureVersion } from 'node:tls'
 import { randomBytes } from 'node:crypto'
+import { parseDN } from '../ldap/util'
 
 // basic config for app
 class Config {
@@ -69,6 +70,15 @@ class Config {
   SMTP_TLS_CIPHERS?: string
   SMTP_TLS_MIN_VERSION?: SecureVersion
 
+  // LDAP
+  LDAP_ENABLED: boolean = false
+  LDAP_PORT: number = 3890
+  LDAP_BASE_DN = 'dc=voidauth'
+  LDAP_BIND_DN = 'cn=ldap_bind,dc=voidauth'
+  LDAP_BIND_PASSWORD?: string
+  LDAP_TLS_CERT_FILE?: string
+  LDAP_TLS_KEY_FILE?: string
+
   DECLARED_CLIENTS = new Map<string, ClientResponse>()
 }
 
@@ -80,6 +90,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SMTP_PORT':
     case 'PASSWORD_STRENGTH':
     case 'API_RATELIMIT':
+    case 'LDAP_PORT':
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
 
@@ -107,6 +118,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'DB_SSL_VERIFICATION':
     case 'MIGRATE_TO_DB_SSL':
     case 'MIGRATE_TO_DB_SSL_VERIFICATION':
+    case 'LDAP_ENABLED':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 
@@ -132,6 +144,9 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SMTP_USER':
     case 'SMTP_PASS':
     case 'SMTP_TLS_CIPHERS':
+    case 'LDAP_BIND_PASSWORD':
+    case 'LDAP_TLS_CERT_FILE':
+    case 'LDAP_TLS_KEY_FILE':
       appConfig[key] = stringOnly(value) ?? appConfig[key]
       break
 
@@ -290,7 +305,10 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
         break
     }
   } catch (e) {
-    // Log error then continue
+    // Log error then continue. Mask secrets to avoid leaking client secrets in logs.
+    const shouldMask = typeof variable === 'string' && ['SECRET', 'KEY'].some(k => variable.toUpperCase().includes(k))
+    const loggedValue = shouldMask ? maskString(value) : value
+
     logger({
       level: 'error',
       message: 'Error processing declared client variable',
@@ -299,12 +317,19 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
           client_id,
           source,
           variable,
-          value,
+          value: loggedValue,
         },
       },
       errors: e instanceof Error ? [e] : [{ message: String(e) }],
     })
   }
+}
+
+function maskString(input: string | undefined) {
+  if (!input) {
+    return ''
+  }
+  return '***'
 }
 
 // functions to help format config
@@ -474,6 +499,55 @@ if (appConfig.APP_FONT) {
     appConfig.APP_FONT += ','
   }
   appConfig.APP_FONT += ' '
+}
+
+if (appConfig.LDAP_ENABLED) {
+  appConfig.LDAP_BASE_DN = appConfig.LDAP_BASE_DN.trim()
+
+  if (!appConfig.LDAP_BASE_DN) {
+    logger({
+      level: 'error',
+      message: 'LDAP_BASE_DN must be set and non-empty when LDAP_ENABLED is true.',
+    })
+    exit(1)
+  }
+
+  // Ensure correct format of LDAP_BASE_DN by trying to parse DN
+  const invalidDnConfigs = [
+    { key: 'LDAP_BASE_DN', value: appConfig.LDAP_BASE_DN },
+  ].filter((config) => {
+    try {
+      return !parseDN(config.value)
+    } catch {
+      return true
+    }
+  })
+
+  if (invalidDnConfigs[0]) {
+    const firstInvalidConfig = invalidDnConfigs[0]
+    logger({
+      level: 'error',
+      message: `Invalid LDAP DN format: ${firstInvalidConfig.key}='${firstInvalidConfig.value}'`,
+    })
+    exit(1)
+  }
+
+  // Check that a password is set
+  if (!appConfig.LDAP_BIND_PASSWORD) {
+    logger({
+      level: 'error',
+      message: 'LDAP_BIND_PASSWORD must be set when LDAP_ENABLED is true.',
+    })
+    exit(1)
+  }
+
+  if (!!appConfig.LDAP_TLS_CERT_FILE !== !!appConfig.LDAP_TLS_KEY_FILE) {
+    logger({
+      level: 'error',
+      message: 'LDAP_TLS_CERT_FILE and LDAP_TLS_KEY_FILE must be set together.',
+    })
+    exit(1)
+  }
 }
 
 //
