@@ -1,6 +1,6 @@
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/voidauth/voidauth/release.yml)
 ![GitHub Release](https://img.shields.io/github/v/release/voidauth/voidauth?logo=github)
-![GitHub License](https://img.shields.io/github/license/voidauth/voidauth)
+![GitHub License](https://img.shields.io/badge/licence-AGPL--3.0-orange)
 ![GitHub Repo stars](https://img.shields.io/github/stars/voidauth/voidauth?style=flat&logo=github)
 
 
