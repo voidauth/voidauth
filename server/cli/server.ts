@@ -210,6 +210,16 @@ export async function serve() {
     res.send(index)
   })
 
+  // Do not fallthrough to index.html for missing i18n files
+  app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
+    index: false,
+    fallthrough: true,
+  }), (_req, res, _next) => {
+    res.status(404).send({
+      message: 'Internationalization file not found.',
+    })
+  })
+
   // frontend
   app.use(`${basePath()}/`,
     // if frontend matches specific paths, use different status codes
@@ -226,12 +236,6 @@ export async function serve() {
       fallthrough: true,
     }),
   )
-
-  // Do not fallthrough to index.html for missing i18n files
-  app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
-    index: false,
-    fallthrough: false,
-  }))
 
   // Unresolved GET requests should return index if they start with basePath
   app.use((req, res, next) => {
