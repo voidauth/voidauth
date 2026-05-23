@@ -15,7 +15,6 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
-import { UserService } from '../../services/user.service'
 import { isValidEmail } from '../../validators/validators'
 import { TranslatePipe } from '@ngx-translate/core'
 import { AsyncPipe } from '@angular/common'
@@ -51,12 +50,9 @@ export class RegistrationComponent implements OnInit {
       value: null,
       disabled: false,
     }, [Validators.minLength(1)]),
-
-    password: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, []),
   })
+
+  passwordControl = new FormControl<string>('')
 
   public invitation?: InvitationDetails
 
@@ -66,7 +62,6 @@ export class RegistrationComponent implements OnInit {
 
   private snackbarService = inject(SnackbarService)
   private authService = inject(AuthService)
-  private userService = inject(UserService)
   private configService = inject(ConfigService)
   private passkeyService = inject(PasskeyService)
   private route = inject(ActivatedRoute)
@@ -97,8 +92,8 @@ export class RegistrationComponent implements OnInit {
         this.config = await this.configService.getConfig()
         this.passkeySupport = await this.passkeyService.getPasskeySupport()
         if (!this.passkeySupport.enabled) {
-          this.form.controls.password.addValidators(Validators.required)
-          this.form.controls.password.updateValueAndValidity()
+          this.passwordControl.addValidators(Validators.required)
+          this.passwordControl.updateValueAndValidity()
         }
       } finally {
         this.spinnerService.hide()
@@ -147,14 +142,15 @@ export class RegistrationComponent implements OnInit {
   async register() {
     try {
       const values = this.form.getRawValue()
+      const password = this.passwordControl.getRawValue()
 
       if (!values.username) {
         throw new Error('Username missing.')
-      } else if (!values.password) {
+      } else if (!password) {
         throw new Error('Password missing')
       }
 
-      const { username, password } = values
+      const { username } = values
 
       this.spinnerService.show()
       const redirect = await this.authService.register({

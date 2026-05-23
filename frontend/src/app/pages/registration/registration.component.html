@@ -34,9 +34,9 @@
 
       <mat-divider></mat-divider>
 
-      <app-new-password-input style="width: 100%" [password]="form.controls.password" [(pwdShow)]="pwdShow"></app-new-password-input>
+      <app-new-password-input style="width: 100%" [password]="passwordControl" [(pwdShow)]="pwdShow"></app-new-password-input>
 
-      <button mat-flat-button [disabled]="form.invalid || !form.value.password" type="submit">
+      <button mat-flat-button [disabled]="form.invalid || passwordControl.invalid || !passwordControl.value" type="submit">
         {{ "registration.actions.sign-up" | translate }}
       </button>
 
