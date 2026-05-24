@@ -30,6 +30,10 @@ export class AuthService {
     return firstValueFrom(this.http.get<InteractionInfo>('/api/interaction/exists'))
   }
 
+  async interactionTryAgain() {
+    return firstValueFrom(this.http.post<Redirect>('/api/interaction/try-again', {}))
+  }
+
   async createInteraction(defaultRedir: boolean = false) {
     try {
       await firstValueFrom(this.http.get<null>(oidcLoginPath(getCurrentHost(), defaultRedir, 'login'), {

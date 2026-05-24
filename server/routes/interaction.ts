@@ -77,7 +77,6 @@ router.get('/', async (req, res) => {
   }
   const { uid, prompt, params } = interaction
 
-  const session = await getSession(req, res)
   const user = req.user
 
   logger({
@@ -96,20 +95,9 @@ router.get('/', async (req, res) => {
   if (prompt.name === 'login') {
     // Check for prompt reasons that cause special redirects
     if (prompt.reasons.includes('user_not_approved')) {
-      // User is not approved, destroy their session/interaction so they can re-attempt login
-      await interaction.destroy()
-      if (session) {
-        await session.destroy()
-      }
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.APPROVAL_REQUIRED}`)
       return
     } else if (prompt.reasons.includes('user_expired')) {
-      // User is expired, destroy their session/interaction so they can re-attempt login
-      // User is not approved, destroy their session/interaction so they can re-attempt login
-      await interaction.destroy()
-      if (session) {
-        await session.destroy()
-      }
       res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.USER_EXPIRED}`)
       return
     } else if (prompt.reasons.includes('user_mfa_required')) {
@@ -222,6 +210,22 @@ router.get('/exists', async (req, res) => {
   }
 
   res.send(info)
+})
+
+router.post('/try-again', async (req, res) => {
+  const interaction = await getInteractionDetails(req, res)
+  if (!interaction?.lastSubmission) {
+    res.sendStatus(404)
+    return
+  }
+
+  const redir: Redirect = {
+    location: await provider.interactionResult(req, res, interaction.lastSubmission, {
+      mergeWithLastSubmission: true,
+    }),
+  }
+
+  res.send(redir)
 })
 
 router.delete('/current', async (req, res) => {

@@ -82,7 +82,8 @@
     "content": "Your account needs approval before you can log in. Please wait or contact an administrator for help.",
     "title": "Approval Required",
     "actions": {
-      "login": "Login"
+      "login": "Login",
+      "try-again": "Try Again"
     }
   },
   "forbidden": {
@@ -569,7 +570,8 @@
     "title": "Account Access Expired",
     "content": "Your account access has expired, please contact an administrator to extend access.",
     "actions": {
-      "login": "Login"
+      "login": "Login",
+      "try-again": "Try Again"
     }
   },
   "passkey-name": {
