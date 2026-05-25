@@ -5,6 +5,7 @@ import { MaterialModule } from '../../material-module'
 import { Router, RouterLink } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
 import { AuthService } from '../../services/auth.service'
+import { SpinnerService } from '../../services/spinner.service'
 
 @Component({
   selector: 'app-user-expired',
@@ -15,33 +16,74 @@ import { AuthService } from '../../services/auth.service'
 
 export class UserExpiredComponent implements OnInit {
   config?: ConfigResponse
+  canRetry = true
 
-  configService = inject(ConfigService)
-  authService = inject(AuthService)
-  router = inject(Router)
+  private configService = inject(ConfigService)
+  private authService = inject(AuthService)
+  private router = inject(Router)
+  private spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
-    this.config = await this.configService.getConfig()
+    this.spinnerService.show()
+    try {
+      this.config = await this.configService.getConfig()
+      // Check if interaction exists
+      try {
+        const info = await this.authService.interactionExists()
+        // If the user is privileged now, we can attempt to retry the interaction without user trigger
+        if (info.user?.isPrivileged) {
+          try {
+            const result = await this.authService.interactionTryAgain()
+            window.location.href = result.location
+          } catch (_error) {
+            // If there's an error during the retry attempt, we cannot retry again (likely due to no lastSubmission)
+            this.canRetry = false
+            await this.router.navigate(['/'])
+          }
+        }
+      } catch (_e) {
+        // If the interaction does not exist, we cannot retry
+        this.canRetry = false
+      }
+    } catch (_e) {
+      // do nothing
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   async tryAgain() {
+    this.spinnerService.show()
     try {
-      try {
-        const info = await this.authService.interactionExists()
-        if (info.user?.isPrivileged) {
-          await this.router.navigate(['/'])
-          return
-        }
-      } catch (_e) {
+      // Only attempt to retry if we haven't determined that retrying is not possible
+      if (!this.canRetry) {
         await this.router.navigate(['/'])
         return
       }
-      const result = await this.authService.interactionTryAgain()
-      if (result.location) {
-        window.location.href = result.location
+      // Check if interaction exists
+      try {
+        await this.authService.interactionExists()
+      } catch (_e) {
+        // If the interaction does not exist, we cannot retry
+        this.canRetry = false
+        await this.router.navigate(['/'])
+        return
       }
-    } catch (error) {
-      console.error('Failed to try again:', error)
+
+      // If we get here, the interaction exists, so we can try to retry
+      try {
+        const result = await this.authService.interactionTryAgain()
+        window.location.href = result.location
+      } catch (_error) {
+        // If there's an error during the retry attempt, we cannot retry again (likely due to no lastSubmission)
+        this.canRetry = false
+        await this.router.navigate(['/'])
+        return
+      }
+    } catch (_e) {
+      // do nothing
+    } finally {
+      this.spinnerService.hide()
     }
   }
 }
