@@ -5,6 +5,7 @@ import { getBaseHrefPath } from '../../services/config.service'
 import { UserService } from '../../services/user.service'
 import type { CurrentUserDetails, CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import { TranslatePipe } from '@ngx-translate/core'
+import { SpinnerService } from '../../services/spinner.service'
 
 @Component({
   selector: 'app-logout',
@@ -23,6 +24,7 @@ export class LogoutComponent implements OnInit {
   private route = inject(ActivatedRoute)
   private userService = inject(UserService)
   private router = inject(Router)
+  private spinnerService = inject(SpinnerService)
 
   public baseHref = getBaseHrefPath()
 
@@ -32,12 +34,13 @@ export class LogoutComponent implements OnInit {
     const params = this.route.snapshot.paramMap
 
     try {
+      this.spinnerService.show()
       this.user = await this.userService.getMyUser()
       if (this.user.isPrivileged) {
         try {
           this.privUser = await this.userService.getMyPrivateUser()
         } catch (_e) {
-        // do nothing
+          // do nothing
         }
       }
     } catch (_e) {
@@ -46,12 +49,15 @@ export class LogoutComponent implements OnInit {
         replaceUrl: true,
       })
       return
+    } finally {
+      this.spinnerService.hide()
     }
 
     const challenge = params.get('challenge')
     if (challenge) {
       this.challenge = challenge
     } else {
+      this.spinnerService.show(true)
       window.location.assign(`${this.baseHref}/oidc/session/end`)
     }
   }

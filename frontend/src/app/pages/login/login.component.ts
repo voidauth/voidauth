@@ -84,6 +84,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       try {
         const info = await this.authService.interactionExists()
         if (info.successRedirect) {
+          this.spinnerService.show(true)
           window.location.assign(info.successRedirect.location)
         }
       } catch (_e) {
@@ -141,7 +142,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       if (redirect) {
-        location.assign(redirect.location)
+        this.spinnerService.show(true)
+        window.location.assign(redirect.location)
       } else {
         await this.router.navigate(['/'])
         return
@@ -175,7 +177,8 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       const redirect = await this.passkeyService.login({ remember: this.form.getRawValue().rememberMe })
       if (redirect) {
-        location.assign(redirect.location)
+        this.spinnerService.show(true)
+        window.location.assign(redirect.location)
       }
     } catch (error) {
       if (!auto) {

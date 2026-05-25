@@ -85,7 +85,8 @@ export class VerifyComponent implements OnInit {
       }
 
       if (redirect) {
-        location.assign(redirect.location)
+        this.spinnerService.show(true)
+        window.location.assign(redirect.location)
       }
     } catch (e) {
       console.error(e)

@@ -9,11 +9,11 @@ export class SpinnerService {
 
   private count = 0
 
-  show() {
+  show(immediate: boolean = false) {
     this.count++
     setTimeout(() => {
       this.checkStatusShow()
-    }, 500) // Do not show the spinner if the operation is very fast
+    }, immediate ? 0 : 500) // Do not show the spinner if the operation is very fast
   }
 
   hide() {
