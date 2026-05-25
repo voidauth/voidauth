@@ -16,7 +16,6 @@ import { SpinnerService } from '../../services/spinner.service'
 
 export class UserExpiredComponent implements OnInit {
   config?: ConfigResponse
-  canRetry = true
 
   private configService = inject(ConfigService)
   private authService = inject(AuthService)
@@ -38,13 +37,12 @@ export class UserExpiredComponent implements OnInit {
             window.location.href = result.location
           } catch (_error) {
             // If there's an error during the retry attempt, we cannot retry again (likely due to no lastSubmission)
-            this.canRetry = false
             await this.router.navigate(['/'])
+            return
           }
         }
       } catch (_e) {
-        // If the interaction does not exist, we cannot retry
-        this.canRetry = false
+        // If the interaction does not exist, we cannot retry, do nothing
       }
     } catch (_e) {
       // do nothing
@@ -56,17 +54,11 @@ export class UserExpiredComponent implements OnInit {
   async tryAgain() {
     this.spinnerService.show()
     try {
-      // Only attempt to retry if we haven't determined that retrying is not possible
-      if (!this.canRetry) {
-        await this.router.navigate(['/'])
-        return
-      }
       // Check if interaction exists
       try {
         await this.authService.interactionExists()
       } catch (_e) {
         // If the interaction does not exist, we cannot retry
-        this.canRetry = false
         await this.router.navigate(['/'])
         return
       }
@@ -77,7 +69,6 @@ export class UserExpiredComponent implements OnInit {
         window.location.href = result.location
       } catch (_error) {
         // If there's an error during the retry attempt, we cannot retry again (likely due to no lastSubmission)
-        this.canRetry = false
         await this.router.navigate(['/'])
         return
       }
