@@ -3,5 +3,5 @@ import type { CurrentUserDetails } from './UserDetails'
 
 export type InteractionInfo = {
   successRedirect: Redirect | null
-  user?: Partial<Pick<CurrentUserDetails, 'isPrivileged'>>
+  user?: Pick<CurrentUserDetails, 'isPrivileged' | 'expiresAt' | 'approved'>
 }

@@ -1,5 +1,5 @@
 export type Redirect = {
-  success: boolean
+  success?: boolean
   location: string
   message?: string
 }

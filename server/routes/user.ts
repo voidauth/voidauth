@@ -39,6 +39,8 @@ userRouter.get('/me',
       emailVerified: user.emailVerified,
       hasTotp: user.hasTotp,
       hasPasskeys: user.hasPasskeys,
+      expiresAt: user.expiresAt,
+      approved: user.approved,
 
       amr: user.amr,
       canLogin: user.canLogin,

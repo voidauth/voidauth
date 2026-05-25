@@ -2,8 +2,10 @@ import { Component, inject, type OnInit } from '@angular/core'
 import { ConfigService } from '../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { MaterialModule } from '../../material-module'
-import { RouterLink } from '@angular/router'
+import { Router, RouterLink } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
+import { AuthService } from '../../services/auth.service'
+import { SpinnerService } from '../../services/spinner.service'
 
 @Component({
   selector: 'app-approval-required',
@@ -15,9 +17,64 @@ import { TranslatePipe } from '@ngx-translate/core'
 export class ApprovalRequiredComponent implements OnInit {
   config?: ConfigResponse
 
-  configService = inject(ConfigService)
+  private configService = inject(ConfigService)
+  private authService = inject(AuthService)
+  private router = inject(Router)
+  private spinnerService = inject(SpinnerService)
 
   async ngOnInit() {
-    this.config = await this.configService.getConfig()
+    this.spinnerService.show()
+    try {
+      this.config = await this.configService.getConfig()
+      // Check if interaction exists
+      try {
+        const info = await this.authService.interactionExists()
+        // If the user is approved now, we can attempt to retry the interaction without user trigger
+        if (info.user?.approved) {
+          try {
+            const result = await this.authService.interactionTryAgain()
+            window.location.href = result.location
+          } catch (_error) {
+            // If there's an error during the retry attempt, we cannot retry again (likely due to no lastSubmission)
+            await this.router.navigate(['/'])
+            return
+          }
+        }
+      } catch (_e) {
+        // If the interaction does not exist, we cannot retry, do nothing
+      }
+    } catch (_e) {
+      // do nothing
+    } finally {
+      this.spinnerService.hide()
+    }
+  }
+
+  async tryAgain() {
+    this.spinnerService.show()
+    try {
+      // Check if interaction exists
+      try {
+        await this.authService.interactionExists()
+      } catch (_e) {
+        // If the interaction does not exist, we cannot retry
+        await this.router.navigate(['/'])
+        return
+      }
+
+      // If we get here, the interaction exists, so we can try to retry
+      try {
+        const result = await this.authService.interactionTryAgain()
+        window.location.href = result.location
+      } catch (_error) {
+        // If there's an error during the retry attempt, we cannot retry again (likely due to no lastSubmission)
+        await this.router.navigate(['/'])
+        return
+      }
+    } catch (_e) {
+      // do nothing
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 }

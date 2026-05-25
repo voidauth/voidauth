@@ -4,7 +4,7 @@ import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component'
 import { MaterialModule } from '../../material-module'
 import { UserService } from '../../services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
-import { ConfigService } from '../../services/config.service'
+import { ConfigService, getBaseHrefPath } from '../../services/config.service'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { LogoComponent } from './logo.component'
@@ -28,6 +28,7 @@ export class HeaderComponent implements OnInit {
   public user?: CurrentUserDetails
   public config?: ConfigResponse
   public location = window.location
+  basePath = getBaseHrefPath()
 
   public toggleSidenav = output()
 

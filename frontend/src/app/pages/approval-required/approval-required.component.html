@@ -3,7 +3,8 @@
   <mat-card-content>
     <p style="text-align: center">{{ "approval-required.content" | translate }}</p>
     <mat-card-actions>
-      <a mat-flat-button routerLink="/">{{ "approval-required.actions.login" | translate }}</a>
+      <a mat-button routerLink="/login">{{ "approval-required.actions.login" | translate }}</a>
+      <button mat-flat-button (click)="tryAgain()">{{ "approval-required.actions.try-again" | translate }}</button>
     </mat-card-actions>
   </mat-card-content>
 </mat-card>

@@ -3,7 +3,8 @@
   <mat-card-content>
     <p style="text-align: center">{{ "user-expired.content" | translate }}</p>
     <mat-card-actions>
-      <a mat-flat-button routerLink="/">{{ "user-expired.actions.login" | translate }}</a>
+      <a mat-button routerLink="/login">{{ "user-expired.actions.login" | translate }}</a>
+      <button mat-flat-button (click)="tryAgain()">{{ "user-expired.actions.try-again" | translate }}</button>
     </mat-card-actions>
   </mat-card-content>
 </mat-card>

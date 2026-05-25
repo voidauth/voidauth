@@ -1,5 +1,5 @@
 <mat-toolbar>
-  @if (location.pathname === "/" && config?.defaultRedirect; as logoLink) {
+  @if (location.pathname === basePath + "/" && config?.defaultRedirect; as logoLink) {
     <a class="header-logo" [href]="logoLink">
       <app-logo></app-logo>
     </a>
