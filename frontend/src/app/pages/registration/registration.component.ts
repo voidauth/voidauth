@@ -75,6 +75,7 @@ export class RegistrationComponent implements OnInit {
         this.spinnerService.show()
         const info = await this.authService.interactionExists()
         if (info.successRedirect) {
+          this.spinnerService.show(true)
           window.location.assign(info.successRedirect.location)
         } else {
           // interaction exists, but since it is not a success already we will discard it
@@ -173,7 +174,8 @@ export class RegistrationComponent implements OnInit {
       }
 
       if (redirect) {
-        location.assign(redirect.location)
+        this.spinnerService.show(true)
+        window.location.assign(redirect.location)
       }
     } catch (e) {
       console.error(e)
@@ -216,7 +218,8 @@ export class RegistrationComponent implements OnInit {
         ...registration,
       })
       if (redirect) {
-        location.assign(redirect.location)
+        this.spinnerService.show(true)
+        window.location.assign(redirect.location)
       }
     } catch (e) {
       console.error(e)

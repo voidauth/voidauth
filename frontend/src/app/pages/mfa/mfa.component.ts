@@ -92,7 +92,8 @@ export class MfaComponent implements OnInit {
       }
 
       if (redirect) {
-        location.assign(redirect.location)
+        this.spinnerService.show(true)
+        window.location.assign(redirect.location)
       }
     } catch (e) {
       console.error(e)
@@ -113,7 +114,8 @@ export class MfaComponent implements OnInit {
       // Only require verified passkey if normal passkey would not improve user's mfa level
       const redirect = await this.passkeyService.login({ requireVerified: this.user?.amr.includes('webauthn') })
       if (redirect) {
-        location.assign(redirect.location)
+        this.spinnerService.show(true)
+        window.location.assign(redirect.location)
       }
     } catch (error) {
       this.snackbarService.error('Could not authenticate with passkey.')
@@ -129,7 +131,8 @@ export class MfaComponent implements OnInit {
       // Only require verified passkey if normal passkey would not improve user's mfa level
       const redirect = await this.passkeyService.register({ requireVerified: this.user?.amr.includes('webauthn') })
       if (redirect.location) {
-        location.assign(redirect.location)
+        this.spinnerService.show(true)
+        window.location.assign(redirect.location)
       }
     } catch (error) {
       if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {

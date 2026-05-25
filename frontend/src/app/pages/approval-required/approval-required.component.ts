@@ -33,7 +33,8 @@ export class ApprovalRequiredComponent implements OnInit {
         if (info.user?.approved) {
           try {
             const result = await this.authService.interactionTryAgain()
-            window.location.href = result.location
+            this.spinnerService.show(true)
+            window.location.assign(result.location)
           } catch (_error) {
             // If there's an error during the retry attempt, we cannot retry again (likely due to no lastSubmission)
             await this.router.navigate(['/'])
@@ -65,7 +66,8 @@ export class ApprovalRequiredComponent implements OnInit {
       // If we get here, the interaction exists, so we can try to retry
       try {
         const result = await this.authService.interactionTryAgain()
-        window.location.href = result.location
+        this.spinnerService.show(true)
+        window.location.assign(result.location)
       } catch (_error) {
         // If there's an error during the retry attempt, we cannot retry again (likely due to no lastSubmission)
         await this.router.navigate(['/'])
