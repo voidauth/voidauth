@@ -30,8 +30,9 @@ export class UserExpiredComponent implements OnInit {
       // Check if interaction exists
       try {
         const info = await this.authService.interactionExists()
-        // If the user is privileged now, we can attempt to retry the interaction without user trigger
-        if (info.user?.isPrivileged) {
+        // If the user is no longer expired, we can attempt to retry the interaction without user trigger
+        const isNotExpired = !info.user?.expiresAt || new Date(info.user.expiresAt).getTime() >= Date.now()
+        if (isNotExpired) {
           try {
             const result = await this.authService.interactionTryAgain()
             window.location.href = result.location

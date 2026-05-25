@@ -33,7 +33,7 @@ export type CurrentUserPrivateDetails = UserDetails & UserSessionInfo
 // so should not contain anything that could be used to elevate privileges or identify the user
 export type CurrentUserDetails = Pick<
   UserDetails,
-  'id' | 'isAdmin' | 'hasTotp' | 'hasPasskeys' | 'hasEmail' | 'emailVerified'>
+  'id' | 'isAdmin' | 'hasTotp' | 'hasPasskeys' | 'hasEmail' | 'emailVerified' | 'expiresAt' | 'approved'>
   & UserSessionInfo & {
     // Guard, these fields should not be sent to an unprivileged frontend
     username?: undefined

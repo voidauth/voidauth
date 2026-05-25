@@ -30,8 +30,8 @@ export class ApprovalRequiredComponent implements OnInit {
       // Check if interaction exists
       try {
         const info = await this.authService.interactionExists()
-        // If the user is privileged now, we can attempt to retry the interaction without user trigger
-        if (info.user?.isPrivileged) {
+        // If the user is approved now, we can attempt to retry the interaction without user trigger
+        if (info.user?.approved) {
           try {
             const result = await this.authService.interactionTryAgain()
             window.location.href = result.location

@@ -204,9 +204,13 @@ router.get('/exists', async (req, res) => {
 
   const info: InteractionInfo = {
     successRedirect: redir,
-    user: {
-      isPrivileged: req.user?.isPrivileged,
-    },
+    user: req.user
+      ? {
+          isPrivileged: req.user.isPrivileged,
+          expiresAt: req.user.expiresAt,
+          approved: req.user.approved,
+        }
+      : undefined,
   }
 
   res.send(info)
