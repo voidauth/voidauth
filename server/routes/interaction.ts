@@ -483,7 +483,7 @@ router.post('/register/passkey/end',
     body: {
       ...passkeyRegistrationValidator,
       ...registerUserValidator,
-      ecosystem: zod.string().optional(),
+      ecosystem: zod.string().regex(/^[a-z0-9-]+$/).max(64).optional(),
     },
   }), async (req, res) => {
     const registration = req.body
@@ -641,7 +641,7 @@ router.post('/passkey/registration/start',
  */
 router.post('/passkey/registration/end',
   checkPrivileged,
-  zodValidate({ body: { ...passkeyRegistrationValidator, ecosystem: zod.string().optional() } }),
+  zodValidate({ body: { ...passkeyRegistrationValidator, ecosystem: zod.string().regex(/^[a-z0-9-]+$/).max(64).optional() } }),
   async (req, res) => {
     const body = req.body
 

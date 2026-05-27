@@ -117,7 +117,7 @@ userRouter.patch('/email',
   })
 
 userRouter.post('/passkey/skip',
-  zodValidate({ body: { ecosystem: zod.string().min(1).max(64) } }),
+  zodValidate({ body: { ecosystem: zod.string().regex(/^[a-z0-9-]+$/).max(64) } }),
   async (req, res) => {
     const user = req.user
     if (!user) {
