@@ -216,6 +216,7 @@ export class RegistrationComponent implements OnInit {
         inviteId: this.invitation?.id,
         challenge: this.invitation?.challenge,
         ...registration,
+        ecosystem: this.passkeySupport?.ecosystem,
       })
       if (redirect) {
         this.spinnerService.show(true)

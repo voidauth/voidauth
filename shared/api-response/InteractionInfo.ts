@@ -3,5 +3,5 @@ import type { CurrentUserDetails } from './UserDetails'
 
 export type InteractionInfo = {
   successRedirect: Redirect | null
-  user?: Pick<CurrentUserDetails, 'isPrivileged' | 'expiresAt' | 'approved'>
+  user?: Pick<CurrentUserDetails, 'isPrivileged' | 'expiresAt' | 'approved' | 'hasPasskeys' | 'passkeyEcosystems' | 'passkeySkippedEcosystems'>
 }

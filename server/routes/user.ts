@@ -7,7 +7,7 @@ import appConfig from '../util/config'
 import { createEmailVerification } from './interaction'
 import { updatePasswordValidator } from '@shared/api-request/UpdatePassword'
 import type { User } from '@shared/db/User'
-import { checkPasswordHash } from '../db/user'
+import { checkPasswordHash, recordPasskeySkip } from '../db/user'
 import { deleteUserPasskey, deleteUserPasskeys, getUserPasskeys, getUserPasskeysResponse } from '../db/passkey'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
@@ -39,6 +39,8 @@ userRouter.get('/me',
       emailVerified: user.emailVerified,
       hasTotp: user.hasTotp,
       hasPasskeys: user.hasPasskeys,
+      passkeyEcosystems: user.passkeyEcosystems,
+      passkeySkippedEcosystems: user.passkeySkippedEcosystems,
       expiresAt: user.expiresAt,
       approved: user.approved,
 
@@ -112,6 +114,19 @@ userRouter.patch('/email',
     }
 
     res.send({ sentVerification })
+  })
+
+userRouter.post('/passkey/skip',
+  zodValidate({ body: { ecosystem: zod.string().min(1).max(64) } }),
+  async (req, res) => {
+    const user = req.user
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+
+    await recordPasskeySkip(user.id, req.body.ecosystem)
+    res.send()
   })
 
 userRouter.use(checkPrivileged)

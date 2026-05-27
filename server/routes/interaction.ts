@@ -209,6 +209,9 @@ router.get('/exists', async (req, res) => {
           isPrivileged: req.user.isPrivileged,
           expiresAt: req.user.expiresAt,
           approved: req.user.approved,
+          hasPasskeys: req.user.hasPasskeys,
+          passkeyEcosystems: req.user.passkeyEcosystems,
+          passkeySkippedEcosystems: req.user.passkeySkippedEcosystems,
         }
       : undefined,
   }
@@ -480,6 +483,7 @@ router.post('/register/passkey/end',
     body: {
       ...passkeyRegistrationValidator,
       ...registerUserValidator,
+      ecosystem: zod.string().optional(),
     },
   }), async (req, res) => {
     const registration = req.body
@@ -578,7 +582,7 @@ router.post('/register/passkey/end',
       throw Error('User was not created during registration when it already should have been.')
     }
 
-    await createPasskey(createdUser.id, registrationInfo, currentOptions)
+    await createPasskey(createdUser.id, registrationInfo, currentOptions, registration.ecosystem)
 
     const addAmr = ['webauthn']
     if (registrationInfo.userVerified) {
@@ -637,7 +641,7 @@ router.post('/passkey/registration/start',
  */
 router.post('/passkey/registration/end',
   checkPrivileged,
-  zodValidate({ body: passkeyRegistrationValidator }),
+  zodValidate({ body: { ...passkeyRegistrationValidator, ecosystem: zod.string().optional() } }),
   async (req, res) => {
     const body = req.body
 
@@ -657,7 +661,7 @@ router.post('/passkey/registration/end',
       return
     }
 
-    const createdPasskey = await createPasskey(user.id, registrationInfo, currentOptions)
+    const createdPasskey = await createPasskey(user.id, registrationInfo, currentOptions, body.ecosystem)
 
     const addAmr = ['webauthn']
     if (registrationInfo.userVerified) {

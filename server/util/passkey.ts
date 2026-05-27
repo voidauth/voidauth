@@ -69,7 +69,8 @@ export async function getRegistrationInfo(uniqueId: string, response: Registrati
 
 export async function createPasskey(userId: string,
   registrationInfo: Required<VerifiedRegistrationResponse>['registrationInfo'],
-  currentOptions: PublicKeyCredentialCreationOptionsJSON) {
+  currentOptions: PublicKeyCredentialCreationOptionsJSON,
+  ecosystem?: string | null) {
   const newPasskey: Passkey = {
     // id from 'user' table
     userId: userId,
@@ -92,6 +93,7 @@ export async function createPasskey(userId: string,
     // Audit
     createdAt: new Date(),
     lastUsed: new Date(),
+    ecosystem: ecosystem ?? null,
   }
 
   // Save the authenticator info so that we can
