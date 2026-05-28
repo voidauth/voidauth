@@ -9,7 +9,7 @@ In the guides below, there may be omitted options when those options are set to 
 > Client IDs **must** be unique between OIDC Apps. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC App page can be randomly generated and copied to the clipboard for use within the OIDC App. Client Secrets are encrypted on disk.
 
 > [!NOTE]
-> The guides below are maintained by the community and may not always be accurate or current. If you notice any inaccuracies or have suggestions for improvements, please feel free to submit a pull request on the GitHub repository [here](https://github.com/voidauth/voidauth).
+> The guides below are maintained by the community and may not always be accurate or current. If you notice any inaccuracies or have suggestions for improvements, please contribute those changes by submitting a pull request on the GitHub repository [here](https://github.com/voidauth/voidauth).
 
 <br>
 
@@ -340,6 +340,9 @@ Redirect URLs:
 <br>
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/jellyfin.svg" width="28" /> Jellyfin
+
+> [!WARNING]
+> The [Jellyfin SSO Plugin](https://github.com/9p4/jellyfin-plugin-sso) repository has been archived. It still works, but it seems that there will be no further development or maintenance.
 
 Install the [Jellyfin SSO Plugin](https://github.com/9p4/jellyfin-plugin-sso). Navigate to **Dashboard** > **Plugins** > **Catalog** > **Repositories** and add:
 
