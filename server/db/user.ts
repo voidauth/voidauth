@@ -68,7 +68,10 @@ export async function getLDAPVisibleUsers(limit = 1000): Promise<Pick<User, 'id'
   }).orWhere((w) => {
     // Non-admin users are only returned if they are:
     // non-expired
-    w.where('expiresAt', '>', new Date())
+    w.where((e) => {
+      e.where('expiresAt', '>', new Date())
+      e.orWhere({ expiresAt: null })
+    })
 
     // approved (if approval is required)
     if (appConfig.SIGNUP_REQUIRES_APPROVAL) {

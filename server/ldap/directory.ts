@@ -189,7 +189,6 @@ function organizationalUnitEntry(ou: string, dn: string) {
 function userEntry(
   user: UserLDAPAttributes,
   groupNames: string[]) {
-  const cn = user.name || user.username
   const groupDNs = groupNames.map(name => ldapGroupDN({ name })).sort((a, b) => a.localeCompare(b))
 
   return {
@@ -198,8 +197,8 @@ function userEntry(
       objectClass: ['top', 'person', 'organizationalPerson', 'inetOrgPerson'],
       entryUUID: user.id,
       uid: user.username,
-      cn,
-      displayName: cn,
+      cn: user.username,
+      displayName: user.name || user.username,
       mail: user.email,
       memberOf: groupDNs,
       isMemberOf: groupDNs,

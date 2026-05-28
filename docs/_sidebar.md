@@ -6,6 +6,7 @@
   * [OIDC App Guides](OIDC-Guides.md)
   * [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md)
   * [LDAP Server](LDAP-Server.md)
+  * [LDAP Client Guides](LDAP-Guides.md)
   * [User Management](User-Management.md)
   * [Security Groups](Security-Groups.md)
   * [Password Resets](Password-Resets.md)
