@@ -50,21 +50,13 @@ export async function getLDAPVisibleUsers(limit = 1000): Promise<Pick<User, 'id'
     db().ref('username').withSchema(TABLES.USER),
     db().ref('name').withSchema(TABLES.USER),
     db().ref('email').withSchema(TABLES.USER),
-    db().raw(`
-      CASE 
-        WHEN EXISTS (
-          SELECT 1 
-          FROM "user_group" ug 
-          JOIN "group" g ON ug."groupId" = g."id"
-          WHERE ug."userId" = "user"."id" AND g.name = ?
-        ) 
-        THEN 1 
-        ELSE 0 
-      END as "isAdmin"
-    `, [ADMIN_GROUP]),
-  ).where((w) => {
+  ).whereExists((w) => {
     // Users that are admin are always returned
-    w.where('isAdmin', 1)
+    w.select('*')
+      .table<UserGroup>(TABLES.USER_GROUP)
+      .join<Group>(TABLES.GROUP, `${TABLES.USER_GROUP}.groupId`, `${TABLES.GROUP}.id`)
+      .where(`${TABLES.GROUP}.name`, ADMIN_GROUP)
+      .andWhereRaw('?? = ??', [`${TABLES.USER_GROUP}.userId`, `${TABLES.USER}.id`])
   }).orWhere((w) => {
     // Non-admin users are only returned if they are:
     // non-expired
