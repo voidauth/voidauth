@@ -28,6 +28,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       details: {
         proxyauth: {
           action: 'access_granted',
+          reason: 'request_to_self_url',
         },
       },
     })
@@ -261,6 +262,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       proxyauth: {
         action: 'access_granted',
         domain: match?.domain,
+        reason: 'checks_passed',
       },
     },
   })
