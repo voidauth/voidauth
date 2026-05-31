@@ -1,1 +1,11 @@
 /* Put custom CSS here */
+
+/* Example: change the web UI background color */
+/* In this example, setting the background color to white in light mode and black in dark mode */
+/* Add other --mat-* variables as needed */
+/* 
+html {
+  --mat-sys-surface: light-dark(white, black);
+  --mat-sys-background: var(--mat-sys-surface);
+}
+*/
