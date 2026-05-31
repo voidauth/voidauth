@@ -574,7 +574,6 @@
   },
   "passkey-name": {
     "title": "通行密钥名称",
-    "prompt": "为新的通行密钥添加名称？",
     "actions": {
       "skip": {
         "label": "跳过"
