@@ -275,6 +275,24 @@ const configuration: Configuration = {
     revocation: {
       enabled: true,
     },
+    encryption: {
+      enabled: true,
+    },
+    jwtResponseModes: {
+      enabled: true,
+    },
+    introspection: {
+      enabled: true,
+    },
+    jwtIntrospection: {
+      enabled: true,
+    },
+    jwtUserinfo: {
+      enabled: true,
+    },
+    claimsParameter: {
+      enabled: true,
+    },
     rpInitiatedLogout: {
       // custom logout question page
       logoutSource: (ctx, _form) => {
@@ -411,6 +429,12 @@ const configuration: Configuration = {
   conformIdTokenClaims: false,
   extraClientMetadata: {
     properties: ['skip_consent', 'require_mfa'],
+  },
+  issueRefreshToken: (_ctx, client, code) => {
+    if (!client.grantTypeAllowed('refresh_token')) {
+      return false
+    }
+    return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.clientAuthMethod === 'none')
   },
   renderError: (ctx, out, _error) => {
     // If ctx status is 403, redirect to forbidden page instead

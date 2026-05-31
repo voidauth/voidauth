@@ -8,14 +8,15 @@ services:
       # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
+      # - "3890:3890" # only needed if LDAP Server is enabled
     environment:
-      # Required environment variables, set in .env file or replace ${...} with value
+      # Required environment variables
       # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
-      APP_URL: ${APP_URL} # required
+      APP_URL: # required
       DB_ADAPTER: postgres # this is the default value
       DB_HOST: voidauth-db # required
-      DB_PASSWORD: ${DB_PASSWORD} # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service
-      STORAGE_KEY: ${STORAGE_KEY} # required
+      DB_PASSWORD: # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service
+      STORAGE_KEY: # required
     depends_on:
       voidauth-db:
         condition: service_healthy
@@ -24,9 +25,7 @@ services:
     image: postgres:18
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD} # required, and must be the same as DB_PASSWORD in voidauth service
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: # required, and must be the same as DB_PASSWORD in voidauth service
     volumes:
       - ./voidauth/db:/var/lib/postgresql/18/docker
     healthcheck:

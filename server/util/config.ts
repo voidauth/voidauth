@@ -487,9 +487,18 @@ if (appConfig.PASSWORD_STRENGTH < 0 || appConfig.PASSWORD_STRENGTH > 4) {
   exit(1)
 }
 
-// If EMAIL_VALIDATION is unset, give it a default value
+// If EMAIL_VERIFICATION is unset, give it a default value
 if (appConfig.EMAIL_VERIFICATION == null) {
   appConfig.EMAIL_VERIFICATION = !!appConfig.SMTP_HOST
+}
+
+// If SMTP_NOAUTH is true, check that SMTP_USER and SMTP_PASS are not set
+if (appConfig.SMTP_NOAUTH && (appConfig.SMTP_USER || appConfig.SMTP_PASS)) {
+  logger({
+    level: 'error',
+    message: 'SMTP_USER and SMTP_PASS must not be set when SMTP_NOAUTH is true.',
+  })
+  exit(1)
 }
 
 // Make sure APP_FONT, if set, is in the proper format

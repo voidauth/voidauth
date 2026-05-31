@@ -166,32 +166,28 @@ export async function serve() {
   fs.cpSync(path.join('./theme', 'custom.css'), path.join('./config', 'branding', 'custom.css'), {
     force: false,
   })
-  // override favicon and logo requests
-  app.get(/\/(logo|favicon|apple-touch-icon)\.(svg|png)/, (req, res, next) => {
-    const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
-    const filename = req.path.slice(1)
-    if (brandingFiles.includes(filename)) {
-      res.sendFile(path.join('./config', 'branding', filename), {
-        root: './',
-      })
-      return
-    }
-
-    const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
-    const isBrandingFavicon = brandingFiles.includes('favicon.svg') || brandingFiles.includes('favicon.png')
-    const isBrandingTouch = brandingFiles.includes('apple-touch-icon.png')
-    // custom branding exists, do not allow defaults to be used
-    if (isBrandingFavicon || isBrandingLogo || isBrandingTouch) {
-      res.sendStatus(404)
-      return
-    }
-
+  // certain static assets should have Cross-Origin-Resource-Policy = cross-origin header
+  const brandImgRegex = new RegExp(`(logo|favicon|apple-touch-icon)\\.(svg|png|jpg|jpeg)`)
+  const brandImgPathRegex = new RegExp(`^${basePath()}/${brandImgRegex.source}$`)
+  app.use(brandImgPathRegex, (_req, res, next) => {
+    // Allow branding assets to be used cross-origin
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
     next()
   })
   app.use(`${basePath()}/`, express.static(path.join('./config', 'branding'), {
     index: false,
-    fallthrough: true,
   }))
+  // override favicon and logo requests
+  // do not return VoidAuth branding if custom branding exists
+  app.get(brandImgPathRegex, (_req, res, next) => {
+    const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
+    // if custom branding exists, do not allow defaults to be used
+    if (brandingFiles.some(f => brandImgRegex.test(f))) {
+      res.sendStatus(404)
+      return
+    }
+    next()
+  })
 
   // theme folder static assets
   if (!fs.existsSync('./theme')) {
@@ -201,8 +197,16 @@ export async function serve() {
   }
   app.use(`${basePath()}/`, express.static('./theme', {
     index: false,
-    fallthrough: true,
   }))
+
+  // Do not fallthrough to index.html for missing i18n files
+  app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
+    index: false,
+  }), (_req, res, _next) => {
+    res.status(404).send({
+      message: 'Translation file not found.',
+    })
+  })
 
   // override index.html return, inject app title
   app.get(`${basePath()}/index.html`, (_req, res) => {
@@ -210,17 +214,7 @@ export async function serve() {
     res.send(index)
   })
 
-  // Do not fallthrough to index.html for missing i18n files
-  app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
-    index: false,
-    fallthrough: true,
-  }), (_req, res, _next) => {
-    res.status(404).send({
-      message: 'Internationalization file not found.',
-    })
-  })
-
-  // frontend
+  // generic frontend
   app.use(`${basePath()}/`,
     // if frontend matches specific paths, use different status codes
     (req, res, next) => {
@@ -233,7 +227,6 @@ export async function serve() {
     },
     express.static(FE_ROOT, {
       index: false,
-      fallthrough: true,
     }),
   )
 
@@ -242,7 +235,8 @@ export async function serve() {
     if (req.method !== 'GET') {
       next()
       return
-    } else if (req.originalUrl.startsWith(basePath())) {
+    } else if (req.originalUrl.startsWith(basePath() + '/') || req.originalUrl === basePath()) {
+      // req.originalUrl starts with basePath + / or is exactly basePath
       const index = modifyIndex()
       res.send(index)
     } else {
@@ -295,21 +289,24 @@ export async function serve() {
     const isBrandingTouch = brandingFiles.includes('apple-touch-icon.png')
     const isBranding = isBrandingLogo || isBrandingFavicon || isBrandingTouch
 
-    const faviconRgx = /<link[^>]*rel="icon"[^>]*>/g
-    if (!brandingFiles.includes('favicon.svg')) {
-      if (brandingFiles.includes('favicon.png')) {
-        index = index.replaceAll(faviconRgx, '<link rel="icon" href="favicon.png" type="image/png"/>')
+    // find a file to use as the favicon
+    const faviconRegex = /<link[^>]*rel="icon"[^>]*>/g
+    if (isBranding) {
+      if (brandingFiles.includes('favicon.svg')) {
+        index = index.replaceAll(faviconRegex, '<link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml"/>')
+      } else if (brandingFiles.includes('favicon.png')) {
+        index = index.replaceAll(faviconRegex, '<link rel="icon" href="favicon.png" type="image/png"/>')
       } else if (brandingFiles.includes('logo.svg')) {
-        index = index.replaceAll(faviconRgx, '<link rel="icon" href="logo.svg" sizes="any" type="image/svg+xml"/>')
+        index = index.replaceAll(faviconRegex, '<link rel="icon" href="logo.svg" sizes="any" type="image/svg+xml"/>')
       } else if (brandingFiles.includes('logo.png')) {
-        index = index.replaceAll(faviconRgx, '<link rel="icon" href="logo.png" type="image/png"/>')
+        index = index.replaceAll(faviconRegex, '<link rel="icon" href="logo.png" type="image/png"/>')
       } else if (brandingFiles.includes('apple-touch-icon.png')) {
-        index = index.replaceAll(faviconRgx, '<link rel="icon" href="apple-touch-icon.png" type="image/png"/>')
+        index = index.replaceAll(faviconRegex, '<link rel="icon" href="apple-touch-icon.png" type="image/png"/>')
       }
     }
 
     if (isBranding && !isBrandingTouch) {
-    // If there is branding, but no branding touch icon, remove apple-touch-icon line
+      // If there is branding, but no branding touch icon, remove apple-touch-icon line
       index = index.replaceAll(/<link[^>]*rel="apple-touch-icon"[^>]*>/g, '')
     }
 
