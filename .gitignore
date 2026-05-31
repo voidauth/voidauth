@@ -135,3 +135,4 @@ dist
 /config
 /db
 *.sqlite
+/dev
