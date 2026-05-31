@@ -101,4 +101,8 @@ export const argv = yargs(hideBin(process.argv))
       }
     },
   )
+  .command('generate random', 'Generate a random value.', {}, async () => {
+    const { randomBytes } = await import('crypto')
+    console.log(randomBytes(24).toString('hex'))
+  })
   .parse()

@@ -16,6 +16,12 @@ Migrates all data from the current database to the database specified by the `MI
 
 ## Generate
 
+### Generate Random Value
+
+`voidauth generate random`
+
+Generates a random hexadecimal value with 192-bits of entropy. Can be used to generate random values for [environment variables](Getting-Started.md#environment-variables).
+
 ### Generate Password Reset
 
 `voidauth generate password-reset [username]`
