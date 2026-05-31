@@ -21,13 +21,13 @@ services:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
       # - "3890:3890" # only needed if LDAP Server is enabled
     environment:
-      # Required environment variables, set in .env file or replace ${...} with value
+      # Required environment variables
       # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
-      APP_URL: ${APP_URL} # required
+      APP_URL: # required
       DB_ADAPTER: postgres # this is the default value
       DB_HOST: voidauth-db # required
-      DB_PASSWORD: ${DB_PASSWORD} # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service
-      STORAGE_KEY: ${STORAGE_KEY} # required
+      DB_PASSWORD: # required, and must be the same as POSTGRES_PASSWORD in voidauth-db service
+      STORAGE_KEY: # required
     depends_on:
       voidauth-db:
         condition: service_healthy
@@ -36,9 +36,7 @@ services:
     image: postgres:18
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD} # required, and must be the same as DB_PASSWORD in voidauth service
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: # required, and must be the same as DB_PASSWORD in voidauth service
     volumes:
       - ./voidauth/db:/var/lib/postgresql/18/docker
     healthcheck:
@@ -62,7 +60,7 @@ services:
       - "3000:3000" # may not be needed, depending on reverse-proxy setup
       # - "3890:3890" # only needed if LDAP Server is enabled
     environment:
-      # Required environment variables, set in .env file or replace ${...} with value
+      # Required environment variables
       # See https://voidauth.app/#/Getting-Started?id=environment-variables for a list of possible environment variables
       APP_URL: # required, ex. https://auth.example.com
       STORAGE_KEY: # required
@@ -99,7 +97,7 @@ After signing in as `auth_admin` you can either change the default username or c
 
 User, OIDC App, and ProxyAuth Domain management is performed in the web interface. You can view the documentation on user management on the [User Management](User-Management.md) page.
 
-To start setting up protected applications, there are two options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. If the application does not support OIDC or you just want to secure a specific path, you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) guide.
+To start setting up protected applications, there are multiple authentication options available. If the application supports OIDC integration you can follow the instructions in the [OIDC Setup](OIDC-Setup.md) guide. For alternate authentication methods, you should follow the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) or [LDAP Server](LDAP-Server.md) guides.
 
 ### Environment Variables
 
@@ -115,11 +113,11 @@ VoidAuth is configurable primarily by environment variable. The available enviro
 | SESSION_DOMAIN | `${APP_URL}` Base Domain | Domain of the VoidAuth Session Cookie. This is automatically set to the Base Domain of `${APP_URL}` but may be overridden here. Must be equal to or a higher level domain than `${APP_URL}` | | |
 | DEFAULT_REDIRECT | `${APP_URL}` | The home/landing/app url for your domain. This is where users will be redirected upon accepting an invitation, logout, or clicking the header logo when already on the auth home page. | | ✅ |
 | SIGNUP | `false` | Whether the app allows new users to self-register themselves without invitation. | | |
-| SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! | | |
+| SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to **false** while **SIGNUP** is **true** enables open self-registration; use with caution! ⚠️ | | |
 | EMAIL_VERIFICATION | `true` if SMTP_HOST is set, otherwise `false` | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should probably be `true`. | | |
 | MFA_REQUIRED | `false` | If true, users must use a second security factor while logging in such as an Authenticator Token or Passkey | | |
 | API_RATELIMIT  | `60` | Rate Limit for mutating (state-changing) requests per minute per IP address. Default is `60`, one per second. | | |
-| ENABLE_DEBUG  | `false` | Enables debug logging. WARNING! This will cause the activity of users to be printed in the logs.  | | |
+| ENABLE_DEBUG  | `false` | Enables debug logging. ⚠️WARNING!⚠️ This will cause the activity of users to be printed in the logs.  | | |
 
 #### App Customization
 
@@ -153,7 +151,7 @@ Use the following environment variables to configure a database migration. These
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
 | MIGRATE_TO_DB_ADAPTER | `postgres` | Allowed values are `postgres` and `sqlite`. | | |
-| MIGRATE_TO_DB_HOST | | Host address of the database. | 🔴 (unless migrating to SQLite database) | |
+| MIGRATE_TO_DB_HOST | | Host address of the database. | | |
 | MIGRATE_TO_DB_PASSWORD | | Password of the database. Not used if migrating to SQLite database. | | ✅ |
 | MIGRATE_TO_DB_PORT | `5432` | Port of the database. Not used if migrating to SQLite database. | | |
 | MIGRATE_TO_DB_USER | `postgres` | Username used to sign into the database by the app. Not used if migrating to SQLite database. | | |
@@ -191,7 +189,7 @@ LDAP is disabled by default. See the [LDAP Server](LDAP-Server.md) guide for set
 | LDAP_PORT | `3890` | Port the LDAP server listens on. | | |
 | LDAP_BASE_DN | `dc=voidauth` | Base distinguished name for LDAP directory entries. | | |
 | LDAP_BIND_DN | `cn=ldap_bind,dc=voidauth` | Service account DN LDAP clients can bind as before searching. | | |
-| LDAP_BIND_PASSWORD | | Password for the LDAP service account bind DN. | 🔴 if LDAP is enabled | |
+| LDAP_BIND_PASSWORD | | Password for the LDAP service account bind DN. | 🔴 if LDAP_ENABLED is set. | |
 | LDAP_TLS_CERT_FILE | | Path to a PEM certificate file. If set, `LDAP_TLS_KEY_FILE` must also be set and VoidAuth listens with LDAPS. | | |
 | LDAP_TLS_KEY_FILE | | Path to the PEM private key file for `LDAP_TLS_CERT_FILE`. | | |
 
@@ -199,7 +197,7 @@ LDAP is disabled by default. See the [LDAP Server](LDAP-Server.md) guide for set
 
 | Name | Default | Description | Required | Recommended |
 | :------ | :-- | :-------- | :--- | :--- |
-| PASSWORD_STRENGTH | `3` | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4. | | |
+| PASSWORD_STRENGTH | `3` | The minimum strength of users passwords, at least 3 is recommended. Must be between 0 - 4 inclusive. | | |
 | ADMIN_EMAILS | `hourly` | The minimum duration between admin notification emails. Can be set to values like: '4 hours', '30 minutes', 'weekly', 'daily', etc. or a number in seconds. If set to 'false', admin notification emails are disabled. | | | 
 | DEFAULT_USER_EXPIRES_IN | | The default duration before a new users access will expire as shown on the Invitation page. Can be set to values like: '4 hours', '30 minutes', '1 week', '2 days', etc. or a number in seconds. | | | 
 
@@ -210,9 +208,17 @@ LDAP is disabled by default. See the [LDAP Server](LDAP-Server.md) guide for set
 
 Your own branding can be applied to the app by mounting the **/app/config** directory and adding files or modifying the existing files.
 
-The logo and favicon of the web interface can be customized by placing your own **logo.svg**/**logo.png** and **favicon.svg**/**favicon.png** in the mounted **/app/config/branding** directory. You can also add an **apple-touch-icon.png** file to **/app/config/branding**.
+The logo images of the web interface can be customized by placing your own images in the mounted **/app/config/branding** directory. The available files for overwrite include:
+
+| Name | Valid Extensions |
+| :--- | :--------------- |
+| logo | `svg`, `png` |
+| favicon | `svg`, `png` |
+| apple-touch-icon | `png` |
 
 For information on how to change the email templates used for invitations, password resets, email verification, etc. see the documentation page for [Email Templates](Email-Templates.md).
+
+You may also add/modify the `custom.css` file located in the **/app/config/branding** directory to add your own styling to the web interface.
 
 ### Customization
 

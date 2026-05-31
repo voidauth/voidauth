@@ -289,9 +289,12 @@ export async function serve() {
     const isBrandingTouch = brandingFiles.includes('apple-touch-icon.png')
     const isBranding = isBrandingLogo || isBrandingFavicon || isBrandingTouch
 
+    // find a file to use as the favicon
     const faviconRegex = /<link[^>]*rel="icon"[^>]*>/g
-    if (!brandingFiles.includes('favicon.svg')) {
-      if (brandingFiles.includes('favicon.png')) {
+    if (isBranding) {
+      if (brandingFiles.includes('favicon.svg')) {
+        index = index.replaceAll(faviconRegex, '<link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml"/>')
+      } else if (brandingFiles.includes('favicon.png')) {
         index = index.replaceAll(faviconRegex, '<link rel="icon" href="favicon.png" type="image/png"/>')
       } else if (brandingFiles.includes('logo.svg')) {
         index = index.replaceAll(faviconRegex, '<link rel="icon" href="logo.svg" sizes="any" type="image/svg+xml"/>')
