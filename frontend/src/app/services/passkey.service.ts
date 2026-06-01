@@ -190,7 +190,9 @@ export class PasskeyService {
     })
   }
 
-  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'hasPasskeys' | 'passkeyEcosystems' | 'passkeySkippedEcosystems'>>) {
+  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged' | 'hasPasskeys' | 'passkeyEcosystems' | 'passkeySkippedEcosystems'>>) {
+    if (!user.isPrivileged) return false
+
     const support = await this.getPasskeySupport()
     if (!support.enabled) return false
 
