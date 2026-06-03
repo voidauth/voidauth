@@ -86,15 +86,13 @@ export class TranslationService {
       for (let i = browserLangParts.length; i >= 1; i--) {
         const subBrowserLang = browserLangParts.slice(0, i).filter(p => !!p).join('-')
         const foundLang = this.availableLangs.find(lang => lang.code.toLowerCase() === subBrowserLang.toLowerCase())
+        if (foundLang && await this._setLang(foundLang.code, true)) {
+          return
+        }
+        // if exact lang (sub)match not found, try to find a lang that starts with subBrowserLang
         const foundStartsWithLang = this.availableLangs.find(lang => lang.code.toLowerCase().startsWith(subBrowserLang.toLowerCase()))
-        if (foundLang) {
-          if (await this._setLang(foundLang.code, true)) {
-            return
-          }
-        } else if (foundStartsWithLang) {
-          if (await this._setLang(foundStartsWithLang.code, true)) {
-            return
-          }
+        if (foundStartsWithLang && await this._setLang(foundStartsWithLang.code, true)) {
+          return
         }
       }
 

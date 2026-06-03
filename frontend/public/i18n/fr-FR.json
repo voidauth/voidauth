@@ -1,1 +1,588 @@
-{}
+{
+  "login": {
+    "password": {
+      "label": "Mot de passe"
+    },
+    "username": {
+      "label": "Nom d'utilisateur ou e-mail"
+    },
+    "forgot-password": "Mot de passe oublié",
+    "remember-me": "Se souvenir de moi",
+    "actions": {
+      "login": "Connexion",
+      "sign-up": "Inscription"
+    },
+    "title": "Connexion"
+  },
+  "contact-us": {
+    "actions": {
+      "label": "Contact"
+    }
+  },
+  "app": {
+    "loading": "Chargement...",
+    "navigation": {
+      "profile": "Profil",
+      "admin": {
+        "title": "Administration",
+        "oidc-apps": "Applications OIDC",
+        "proxyauth-domains": "Domaines ProxyAuth",
+        "users": "Utilisateurs",
+        "groups": "Groupes",
+        "invitations": "Invitations",
+        "password-resets": "Réinitialisations de mot de passe",
+        "sent-mail": "E-mails envoyés"
+      },
+      "logout": "Déconnexion"
+    }
+  },
+  "passkey-title": "Clé d'authentification",
+  "passkey-dialog": {
+    "title": "Activer {{platformName}} ?",
+    "actions": {
+      "passkey": "Activer {{platformName}}"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "Utiliser {{platformName}}",
+      "register-passkey": "Enregistrer une clé d'authentification",
+      "back": "Retour"
+    },
+    "title": "Authentification multifactorielle requise"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "S'inscrire avec {{platformName}}",
+      "sign-up": "Inscription",
+      "login": "Connexion"
+    },
+    "title": {
+      "accept-invitation": "Accepter l'invitation",
+      "sign-up": "Inscription"
+    },
+    "username": {
+      "label": "Nom d'utilisateur"
+    },
+    "email": {
+      "label": "E-mail"
+    },
+    "name": {
+      "label": "Nom"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "Activer {{platformName}}",
+      "reset-password": "Réinitialiser le mot de passe"
+    },
+    "title": "Réinitialiser le mot de passe"
+  },
+  "approval-required": {
+    "content": "Votre compte nécessite une approbation avant de pouvoir vous connecter. Veuillez patienter ou contacter un administrateur.",
+    "title": "Approbation requise",
+    "actions": {
+      "login": "Connexion",
+      "try-again": "Réessayer"
+    }
+  },
+  "forbidden": {
+    "title": "Accès interdit",
+    "content": "Vous n'avez pas la permission d'accéder à cette ressource.",
+    "actions": {
+      "back": "Retour"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "Se connecter"
+    },
+    "info": {
+      "sign-into-question": "Voulez-vous vous connecter à <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "Après vous être connecté, vous serez redirigé vers <b>{{redirect}}</b>"
+    },
+    "title": "Confirmer"
+  },
+  "forgot-password": {
+    "username": {
+      "label": "E-mail ou nom d'utilisateur"
+    },
+    "actions": {
+      "send": "Envoyer",
+      "send-again": "Renvoyer",
+      "create-again": "Créer à nouveau",
+      "create": "Créer"
+    },
+    "title": "Mot de passe oublié"
+  },
+  "form-errors": {
+    "required": "Champ obligatoire.",
+    "min": "Doit être au moins {{min}}.",
+    "max": "Ne peut pas être supérieur à {{max}}.",
+    "minLength": "Doit contenir au moins {{requiredLength}} caractères.",
+    "maxLength": "Doit contenir moins de {{requiredLength}} caractères.",
+    "email": "Adresse e-mail invalide.",
+    "default": "Valeur invalide.",
+    "alpha-num-underscore-only": "Seuls les caractères A-Z, 0-9 et _ sont autorisés"
+  },
+  "logout": {
+    "title": "Déconnexion",
+    "info": {
+      "logout-question": "Voulez-vous vous déconnecter ?"
+    },
+    "actions": {
+      "yes": "Oui",
+      "back": "Retour",
+      "no": "Non"
+    }
+  },
+  "page-not-found": {
+    "title": "La page est introuvable",
+    "": {
+      "actions": {
+        "go-home": "Accueil"
+      }
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "Vérification de l'e-mail...",
+        "email-could-not-be-verified": "L'e-mail n'a pas pu être vérifié",
+        "sending-new-verification": "Envoi d'une nouvelle vérification...",
+        "email-verification-could-not-be-sent": "La vérification de l'e-mail n'a pas pu être envoyée"
+      },
+      "actions": {
+        "send-again": "Renvoyer"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "E-mail de vérification envoyé",
+        "email-verification-required": "Vérification de l'e-mail requise"
+      },
+      "actions": {
+        "logout": "Déconnexion",
+        "send-again": "Renvoyer",
+        "send-verification": "Envoyer la vérification"
+      },
+      "email": {
+        "label": "E-mail"
+      }
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "sections": {
+      "profile": {
+        "title": "Profil",
+        "username": {
+          "label": "Nom d'utilisateur"
+        },
+        "name": {
+          "label": "Nom"
+        },
+        "actions": {
+          "submit": {
+            "label": "Mettre à jour le profil"
+          }
+        },
+        "email": {
+          "label": "E-mail",
+          "actions": {
+            "submit": {
+              "label": "Mettre à jour l'e-mail"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "Sécurité",
+        "password": {
+          "set": {
+            "label": "Définir le mot de passe"
+          },
+          "change": {
+            "label": "Changer le mot de passe"
+          }
+        },
+        "passkeys": {
+          "title": "Clés d'authentification",
+          "noPasskeys": "Vous n'avez aucune clé d'authentification enregistrée.",
+          "register": {
+            "label": "Enregistrer une clé d'authentification"
+          },
+          "manage": {
+            "title": "Gérer les clés d'authentification"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "Modifier"
+            },
+            "delete": {
+              "tooltip": "Supprimer"
+            }
+          }
+        },
+        "mfa": {
+          "title": "Authentification multifactorielle",
+          "status": {
+            "enabled": "L'authentification multifactorielle est activée.",
+            "disabled": "L'authentification multifactorielle n'est pas activée."
+          },
+          "authenticators": {
+            "has": "Vous avez au moins un authentificateur enregistré.",
+            "none": "Vous n'avez aucun authentificateur enregistré."
+          },
+          "add": {
+            "label": "Ajouter un authentificateur"
+          },
+          "enable": {
+            "label": "Activer l'AMF"
+          }
+        }
+      },
+      "account": {
+        "title": "Compte",
+        "removePassword": {
+          "label": "Supprimer le mot de passe",
+          "tooltip": {
+            "noPassword": "Vous n'avez pas de mot de passe à supprimer",
+            "noPasskeys": "Vous n'avez aucune clé d'authentification"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "Supprimer toutes les clés d'authentification",
+          "tooltip": {
+            "noPasskeys": "Vous n'avez aucune clé d'authentification à supprimer",
+            "noPassword": "Vous n'avez pas de mot de passe"
+          }
+        },
+        "disableMfa": {
+          "label": "Désactiver l'AMF"
+        },
+        "removeAuthenticators": {
+          "label": "Supprimer les authentificateurs"
+        },
+        "deleteAccount": {
+          "label": "Supprimer le compte"
+        }
+      }
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "update": "Mettre à jour",
+        "create": "Créer",
+        "view": "Voir",
+        "open": "Ouvrir",
+        "remove": "Retirer"
+      },
+      "labels": {
+        "mfa-required": "AMF requise",
+        "email-verified": "E-mail vérifié",
+        "approved": "Approuvé"
+      },
+      "messages": {
+        "all-users-have-access": "Aucun groupe, TOUS les utilisateurs auront accès."
+      }
+    },
+    "users": {
+      "empty-state": "Aucun utilisateur.",
+      "actions": {
+        "select": "Sélectionner",
+        "approve": "Approuver"
+      },
+      "labels": {
+        "search": "Rechercher"
+      }
+    },
+    "user": {
+      "title": "Modifier l'utilisateur",
+      "labels": {
+        "username": "Nom d'utilisateur",
+        "name": "Nom",
+        "email": "E-mail",
+        "add-group": "Ajouter un groupe",
+        "security-groups": "Groupes de sécurité :",
+        "user-expiration-date": "Date d'expiration de l'accès",
+        "user-expiration-time": "Heure d'expiration de l'accès"
+      },
+      "actions": {
+        "sign-out": "Déconnecter"
+      },
+      "tooltips": {
+        "remove": "Retirer",
+        "open": "Ouvrir"
+      }
+    },
+    "clients": {
+      "empty-state": "Aucune application OIDC.",
+      "actions": {
+        "create": "Créer une application OIDC"
+      }
+    },
+    "client": {
+      "title": "Application OIDC",
+      "labels": {
+        "name": "Nom",
+        "home-page-url": "URL de la page d'accueil",
+        "logo-url": "URL du logo",
+        "add-group": "Ajouter un groupe",
+        "client-id": "ID client",
+        "auth-method": "Méthode d'authentification",
+        "client-secret": "Secret client",
+        "redirect-url": "Nouvelle URL de redirection",
+        "response-types": "Types de réponse",
+        "grant-types": "Types d'autorisation",
+        "postlogout-url": "URL post-déconnexion",
+        "allowed-groups": "Groupes autorisés :",
+        "redirect-urls": "URLs de redirection :"
+      },
+      "hints": {
+        "pkce-required": "PKCE requis avec cette méthode d'authentification.",
+        "not-required": "Non requis pour la méthode d'authentification actuelle.",
+        "postlogout-redirect": "URL de redirection post-déconnexion autorisée lors d'une déconnexion initiée par le client."
+      },
+      "checkboxes": {
+        "skip-consent": "Passer le consentement",
+        "mfa-required": "AMF requise"
+      },
+      "tooltips": {
+        "skip-consent": "Passer la confirmation de l'utilisateur pour cette application.",
+        "mfa-required": "Les utilisateurs devront utiliser l'AMF pour accéder à cette application.",
+        "copy-client-id": "Copier l'ID client",
+        "copy-secret": "Copier le secret"
+      },
+      "messages": {
+        "client-id-copied": "ID client copié dans le presse-papiers.",
+        "secret-copied": "Secret copié dans le presse-papiers."
+      }
+    },
+    "domains": {
+      "empty-state": "Aucun domaine.",
+      "actions": {
+        "create": "Créer un domaine ProxyAuth"
+      }
+    },
+    "domain": {
+      "title": "Domaine ProxyAuth",
+      "labels": {
+        "domain": "Domaine",
+        "max-session-length": "Durée max de session (minutes)",
+        "add-group": "Ajouter un groupe",
+        "allowed-groups": "Groupes autorisés :"
+      },
+      "placeholders": {
+        "domain": "ex. *.votre.domaine.com/chemin/"
+      },
+      "sections": {
+        "domain-help": "Aide sur les domaines"
+      },
+      "hints": {
+        "no-re-auth": "Vide signifie aucune ré-authentification requise."
+      },
+      "help-text": {
+        "0": "Le domaine ne doit pas inclure le protocole, peut inclure un chemin et un port, et prend en charge les caractères génériques (*) à n'importe quelle position.",
+        "1": "<b>exemple.domaine.com/api/alive</b> vérifiera uniquement l'accès à un seul point de terminaison.",
+        "2": "<b>exemple.domaine.com/api/*</b> vérifiera l'accès pour tous les points de terminaison sous /api."
+      }
+    },
+    "password-resets": {
+      "labels": {
+        "create-link": "Créer un lien de réinitialisation"
+      },
+      "tooltips": {
+        "send-email": "Envoyer un e-mail à {{email}}",
+        "copy-link": "Copier le lien",
+        "delete": "Supprimer"
+      },
+      "messages": {
+        "link-copied": "Lien de réinitialisation copié dans le presse-papiers."
+      }
+    },
+    "emails": {
+      "empty-state": "Aucun e-mail envoyé.",
+      "actions": {
+        "send-test": "Envoyer un e-mail de test"
+      },
+      "tooltips": {
+        "preview": "Aperçu",
+        "view-user": "Voir l'utilisateur"
+      }
+    },
+    "groups": {
+      "empty-state": "Aucun groupe.",
+      "actions": {
+        "create": "Créer un groupe"
+      }
+    },
+    "group": {
+      "title": "Groupe",
+      "labels": {
+        "name": "Nom",
+        "add-user": "Ajouter un utilisateur",
+        "users": "Utilisateurs :"
+      },
+      "checkboxes": {
+        "mfa-required": "AMF requise",
+        "auto-assign": "Attribution automatique"
+      }
+    },
+    "invitations": {
+      "empty-state": "Aucune invitation.",
+      "actions": {
+        "create": "Créer une invitation"
+      }
+    },
+    "invitation": {
+      "title": "Invitation",
+      "labels": {
+        "invite-link": "Lien d'invitation",
+        "username": "Nom d'utilisateur",
+        "email": "E-mail",
+        "name": "Nom",
+        "add-group": "Ajouter un groupe",
+        "security-groups": "Groupes de sécurité :",
+        "user-expiration-date": "Date d'expiration de l'accès",
+        "user-expiration-time": "Heure d'expiration de l'accès"
+      },
+      "tooltips": {
+        "copy-invite-link": "Copier le lien d'invitation",
+        "unsaved-changes": "Vous avez des modifications non enregistrées.",
+        "send-to": "Envoyer l'invitation à : {{email}}"
+      },
+      "messages": {
+        "link-copied": "Lien d'invitation copié dans le presse-papiers.",
+        "email-not-verified": "Impossible d'envoyer le lien d'invitation par e-mail, la connexion e-mail n'est pas vérifiée.",
+        "no-email": "Impossible d'envoyer le lien d'invitation par e-mail, l'invitation ne contient pas d'adresse e-mail."
+      },
+      "actions": {
+        "send": "Envoyer l'invitation"
+      },
+      "checkboxes": {
+        "email-verified": "E-mail vérifié"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "Connexion"
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": "{{label}} copié dans le presse-papiers."
+      }
+    },
+    "oidc-info": {
+      "title": "Informations OIDC",
+      "labels": {
+        "issuer": "Point de terminaison OIDC Issuer",
+        "well-known": "Point de terminaison Well-Known",
+        "authorization": "Point de terminaison d'autorisation",
+        "token": "Point de terminaison Token",
+        "userinfo": "Point de terminaison UserInfo",
+        "logout": "Point de terminaison de déconnexion",
+        "jwks": "Point de terminaison JWKs"
+      },
+      "actions": {
+        "all-info": "Toutes les infos"
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "Nouveau mot de passe",
+        "old-password": "Ancien mot de passe",
+        "confirm-password": "Confirmer le mot de passe"
+      }
+    },
+    "totp-input": {
+      "title": "Cela activera l'authentification multifactorielle sur votre compte.",
+      "labels": {
+        "show-secret": "Afficher le secret"
+      },
+      "text": {
+        "qrcode-instruction": "Scannez le QR code ou saisissez le secret dans votre authentificateur",
+        "then": "puis",
+        "enter-token": "Saisissez le jeton de l'authentificateur pour continuer"
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "Système",
+        "light": "Clair",
+        "dark": "Sombre"
+      }
+    },
+    "email-input": {
+      "message": {
+        "default": "Veuillez saisir une adresse e-mail ci-dessous."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Annuler"
+        },
+        "confirm": {
+          "label": "Confirmer"
+        }
+      }
+    },
+    "totp-register": {
+      "title": "Ajouter un authentificateur",
+      "actions": {
+        "cancel": {
+          "label": "Annuler"
+        }
+      }
+    },
+    "passkey-edit": {
+      "title": "Modifier le nom de la clé d'authentification",
+      "message": {
+        "default": "Saisissez un nom pour cette clé d'authentification."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Annuler"
+        },
+        "save": {
+          "label": "Enregistrer"
+        }
+      }
+    },
+    "confirm": {
+      "instructions": "Pour confirmer, saisissez <b>{{requiredText}}</b> dans le champ ci-dessous.",
+      "actions": {
+        "cancel": {
+          "label": "Annuler"
+        },
+        "confirm": {
+          "label": "Confirmer"
+        }
+      }
+    }
+  },
+  "user-expired": {
+    "title": "Accès au compte expiré",
+    "content": "L'accès à votre compte a expiré, veuillez contacter un administrateur pour prolonger l'accès.",
+    "actions": {
+      "login": "Connexion",
+      "try-again": "Réessayer"
+    }
+  },
+  "passkey-name": {
+    "title": "Nom de la clé d'authentification",
+    "actions": {
+      "skip": {
+        "label": "Passer"
+      },
+      "save": {
+        "label": "Enregistrer"
+      }
+    }
+  }
+}

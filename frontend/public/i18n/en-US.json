@@ -576,7 +576,7 @@
   },
   "passkey-name": {
     "title": "Passkey Name",
-    "prompt": "Add a name to the new passkey?",
+    "prompt": "Set a name for the new passkey?",
     "actions": {
       "skip": {
         "label": "Skip"

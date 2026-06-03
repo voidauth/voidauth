@@ -14,3 +14,5 @@
   * [CLI Commands](CLI-Commands.md)
   * [Database Migration](DB-Migration.md)
   * [Troubleshooting](Troubleshooting.md)
+- Contributing
+  * [Translations](Contributing-Translations.md)
