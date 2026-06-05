@@ -576,6 +576,7 @@
   },
   "passkey-name": {
     "title": "Nom de la clé d'authentification",
+    "prompt": "Ajouter un nom à la nouvelle clé d'authentification ?",
     "actions": {
       "skip": {
         "label": "Passer"
