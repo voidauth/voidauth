@@ -1,24 +1,16 @@
-import { Component } from '@angular/core'
+import { Component, signal } from '@angular/core'
 
 @Component({
   selector: 'app-logo',
   imports: [],
   template: `
-  <img
+  @if (logoFile()) {
+    <img
       #logo
-      src="logo.svg"
-      (error)="
-        logo.src.includes('logo.svg')
-          ? (logo.src = 'logo.png')
-          : logo.src.includes('logo.png')
-            ? (logo.src = 'favicon.svg')
-            : logo.src.includes('favicon.svg')
-              ? (logo.src = 'favicon.png')
-              : logo.src.includes('favicon.png')
-                ? (logo.src = 'apple-touch-icon.png')
-                : null
-      "
+      [src]="logoFile()"
+      alt="Logo"
     />
+  }
   `,
   styles: `
   img {
@@ -29,5 +21,12 @@ import { Component } from '@angular/core'
   }
   `,
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class LogoComponent { }
+export class LogoComponent {
+  public logoFile = signal<string | undefined>(undefined)
+  constructor() {
+    const logoUri = document.querySelector('meta[name="logoUri"]')?.getAttribute('content')
+    if (logoUri) {
+      this.logoFile.set(logoUri)
+    }
+  }
+}

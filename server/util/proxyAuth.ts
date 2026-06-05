@@ -4,7 +4,7 @@ import { formatProxyAuthDomain, getProxyAuthWithCache } from '../db/proxyAuth'
 import { checkPasswordHash, getUserByInput } from '../db/user'
 import appConfig, { getSessionDomain, sessionDomainReaches } from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
-import { ADMIN_GROUP } from '@shared/constants'
+import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
 import { loginFactors } from '@shared/user'
 import { userCanLogin } from './auth'
 import { getSession } from '../oidc/provider'
@@ -45,13 +45,30 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // using a short cache
   const match = await getProxyAuthWithCache(url)
 
+  if (!match) {
+    logger({
+      level: 'debug',
+      message: `ProxyAuth forbidden due to no domain match`,
+      details: {
+        proxyauth: {
+          action: 'forbidden',
+          reason: 'no_domain_match',
+          url: url.href,
+          urlDomain: formattedUrl,
+        },
+      },
+    })
+    res.redirect(redirCode, `${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=no_domain_match`)
+    return
+  }
+
   if (req.user) {
     user = req.user
     amr = req.user.amr
 
     // Check that session is not too old
     const session = await getSession(req, res)
-    if (match?.maxSessionLength && session?.past(match.maxSessionLength * 60)) {
+    if (match.maxSessionLength && session?.past(match.maxSessionLength * 60)) {
       res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href, 'login')}`)
       return
     }
@@ -117,7 +134,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
           action: 'redirect_to_login',
           reason: 'session_not_found',
           url: url.href,
-          domain: match?.domain,
+          domain: match.domain,
         },
       },
     })
@@ -136,7 +153,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
           action: 'redirect_to_login',
           reason: 'login_not_finished',
           url: url.href,
-          domain: match?.domain,
+          domain: match.domain,
         },
       },
     })
@@ -145,7 +162,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   }
 
   // Check that proxyAuth domain does not require MFA or user is logged in with MFA already
-  if (!!match?.mfaRequired && loginFactors(amr) < 2) {
+  if (!!match.mfaRequired && loginFactors(amr) < 2) {
     // If not, redirect to login flow, which will send to correct redirect
     logger({
       level: 'debug',
@@ -165,25 +182,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
 
   // Check user groups for access if not an admin
   if (!user.groups.some(g => g.name === ADMIN_GROUP)) {
-    if (!match) {
-      logger({
-        level: 'debug',
-        message: `ProxyAuth forbidden due to no domain match`,
-        details: {
-          proxyauth: {
-            action: 'forbidden',
-            reason: 'no_domain_match',
-            url: url.href,
-            urlDomain: formattedUrl,
-          },
-        },
-      })
-      res.status(403).send({
-        status: 'Forbidden',
-        reason: 'no_domain_match',
-      })
-      return
-    } else if (match.groups.length && !user.groups.some(g => match.groups.includes(g.name))) {
+    if (match.groups.length && !user.groups.some(g => match.groups.includes(g.name))) {
       logger({
         level: 'debug',
         message: `ProxyAuth forbidden due to user groups missing any group for domain`,
@@ -198,10 +197,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
           },
         },
       })
-      res.status(403).send({
-        status: 'Forbidden',
-        reason: 'user_group_missing',
-      })
+      res.redirect(redirCode, `${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=user_group_missing`)
       return
     }
   }
@@ -247,7 +243,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
                 action: 'set_header_failed',
                 reason: group.name,
                 url: url.href,
-                domain: match?.domain,
+                domain: match.domain,
               },
             },
           })
@@ -261,7 +257,7 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     details: {
       proxyauth: {
         action: 'access_granted',
-        domain: match?.domain,
+        domain: match.domain,
         reason: 'checks_passed',
       },
     },

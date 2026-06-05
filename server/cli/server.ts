@@ -287,25 +287,30 @@ export async function serve() {
     const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
     const isBrandingFavicon = brandingFiles.includes('favicon.svg') || brandingFiles.includes('favicon.png')
     const isBrandingTouch = brandingFiles.includes('apple-touch-icon.png')
-    const isBranding = isBrandingLogo || isBrandingFavicon || isBrandingTouch
+    const isBrandingImgs = isBrandingLogo || isBrandingFavicon || isBrandingTouch
 
     // find a file to use as the favicon
     const faviconRegex = /<link[^>]*rel="icon"[^>]*>/g
-    if (isBranding) {
-      if (brandingFiles.includes('favicon.svg')) {
-        index = index.replaceAll(faviconRegex, '<link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml"/>')
-      } else if (brandingFiles.includes('favicon.png')) {
-        index = index.replaceAll(faviconRegex, '<link rel="icon" href="favicon.png" type="image/png"/>')
-      } else if (brandingFiles.includes('logo.svg')) {
-        index = index.replaceAll(faviconRegex, '<link rel="icon" href="logo.svg" sizes="any" type="image/svg+xml"/>')
-      } else if (brandingFiles.includes('logo.png')) {
-        index = index.replaceAll(faviconRegex, '<link rel="icon" href="logo.png" type="image/png"/>')
-      } else if (brandingFiles.includes('apple-touch-icon.png')) {
-        index = index.replaceAll(faviconRegex, '<link rel="icon" href="apple-touch-icon.png" type="image/png"/>')
+    if (isBrandingImgs) {
+      const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
+      const faviconPreferenceOrder = ['favicon.svg', 'favicon.png', 'logo.svg', 'logo.png', 'apple-touch-icon.png']
+      const firstFaviconFile = faviconPreferenceOrder.find(file => brandingFiles.includes(file))
+
+      if (firstFaviconFile) {
+        const extraAttrs = firstFaviconFile.endsWith('.svg') ? 'sizes="any" type="image/svg+xml"' : 'type="image/png"'
+        index = index.replaceAll(faviconRegex, `<link rel="icon" href="${firstFaviconFile}" ${extraAttrs}/>`)
+      }
+
+      // Get which file to use for logo
+      const logoPreferenceOrder = ['logo.svg', 'logo.png', 'favicon.svg', 'favicon.png', 'apple-touch-icon.png']
+      const firstLogoFile = logoPreferenceOrder.find(file => brandingFiles.includes(file))
+      // if there is a logo file, replace the default logo meta with it
+      if (firstLogoFile) {
+        index = index.replace(/<meta[^>]*name="logoUri"[^>]*>/g, `<meta name="logoUri" content="${firstLogoFile}"/>`)
       }
     }
 
-    if (isBranding && !isBrandingTouch) {
+    if (isBrandingImgs && !isBrandingTouch) {
       // If there is branding, but no branding touch icon, remove apple-touch-icon line
       index = index.replaceAll(/<link[^>]*rel="apple-touch-icon"[^>]*>/g, '')
     }

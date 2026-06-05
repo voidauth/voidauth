@@ -27,6 +27,7 @@ import type { PasswordResetResponse } from '@shared/api-response/PasswordResetRe
 export const publicRouter = Router()
 
 publicRouter.get('/config', (_req, res) => {
+  // No sensitive info, the config values the frontend needs to know
   const configResponse: ConfigResponse = {
     domain: appConfig.APP_URL,
     appName: appConfig.APP_TITLE,

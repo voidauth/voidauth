@@ -36,10 +36,10 @@ When creating ProxyAuth Domains, the trailing `/` and separators like `.` **ARE 
 
 When a user is identified and confirmed to have access to the requested resource, a `200` Success response is sent.
 
-In all denied requests, a `Location` Header containing the location of the VoidAuth login page is added to the response. 
+In all denied requests, a `Location` Header containing the location of the VoidAuth login or forbidden page is added to the response.
 
 * When a user is not identified, either a `401`, `407`, or `302` response code will be sent depending on the authorization endpoint and identification method used.
-* When a user is found but **denied** access, a `403` Forbidden response code will be sent
+* When a user is found but **denied** access, a redirect to the forbidden page which returns a `403` Forbidden response code will be sent.
 
 ## Trusted Header SSO
 
@@ -268,7 +268,7 @@ volumes:
 services:
   traefik:
     container_name: traefik
-    image: traefik:v3.5
+    image: traefik:v3.7
     command:
       # EntryPoints
       - "--entrypoints.web.address=:80"
@@ -310,22 +310,25 @@ services:
     depends_on:
       - voidauth
 
-  voidauth: 
+  voidauth:
     image: voidauth/voidauth:latest
     volumes:
       - ./voidauth/config:/app/config
     environment:
       # Required environment variables
-      APP_URL: # required, ex. https://auth.example.com
+      APP_URL: # required
       STORAGE_KEY: # required
       DB_PASSWORD: # required
       DB_HOST: voidauth-db
     labels:
       traefik.enable: 'true'
-      traefik.http.routers.voidauth.rule: 'Host(`auth.example.com`)'
+      traefik.http.services.voidauth.loadbalancer.server.port: 3000 # Must match the APP_PORT environment variable if set
+      traefik.http.routers.voidauth.rule: 'Host(`auth.example.com`)' # Should match the domain part of APP_URL
       traefik.http.routers.voidauth.entryPoints: 'websecure'
       traefik.http.routers.voidauth.tls: 'true'
-      traefik.http.middlewares.voidauth.forwardAuth.address: 'http://voidauth:3000/api/authz/forward-auth'
+      # Must be the INTERNAL address Traefik can reach VoidAuth directly, should NOT be the APP_URL
+      # Will include the path part of APP_URL if it exists
+      traefik.http.middlewares.voidauth.forwardAuth.address: 'http://voidauth:3000/api/authz/forward-auth' 
       traefik.http.middlewares.voidauth.forwardAuth.trustForwardHeader: 'true'
       traefik.http.middlewares.voidauth.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Name,Remote-Email,Remote-Groups'
     depends_on:
@@ -337,14 +340,19 @@ services:
       POSTGRES_PASSWORD: # required
     volumes:
       - db:/var/lib/postgresql/18/docker
-    
+
   whoami:
     container_name: whoami
     image: traefik/whoami
     labels:
       traefik.enable: 'true'
+      traefik.http.services.whoami-service.loadbalancer.server.port: 80
       traefik.http.routers.whoami.rule: 'Host(`whoami.example.com`)'
       traefik.http.routers.whoami.entryPoints: 'websecure'
       traefik.http.routers.whoami.tls: 'true'
       traefik.http.routers.whoami.middlewares: 'voidauth@docker'
 ```
+
+> [!NOTE]
+> The `traefik.http.middlewares.voidauth.forwardAuth.address` must point to the VoidAuth forward-auth endpoint reachable by Traefik. When VoidAuth is hosted under a base path (for example `APP_URL` includes `/auth`), include that path in the address: `/auth/api/authz/forward-auth`.
+
