@@ -75,7 +75,7 @@ adminRouter.get('/client/:client_id',
 
 async function upsertClientController(isCreate: boolean,
   req: IncomingMessage, res: Response, clientMetadata: ClientResponse, reqUser: Pick<User, 'id'>) {
-  if (clientMetadata.client_id === 'proxyauth_internal_client' || clientMetadata.client_id === 'admin_internal_client') {
+  if (clientMetadata.client_id === 'proxyauth_internal_client' || clientMetadata.client_id === 'auth_internal_client') {
     res.status(400).send({ message: 'client_id is reserved.' })
     return
   }

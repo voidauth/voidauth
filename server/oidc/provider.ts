@@ -202,25 +202,27 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
       const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
       const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
       let errorMessage = ''
+      let status = 400
       if (!proxyAuthURL) {
-        errorMessage = 'proxyauth_internal_client but no proxyauth redirect url.'
+        errorMessage = 'No redirect url provided'
       } else if (!sessionDomainReaches(proxyAuthURL.hostname)) {
-        errorMessage = 'proxyauth_internal_client but session domain does not reach proxyauth redirect url.'
+        errorMessage = 'Session domain does not reach redirect url'
       } else if (!(await getProxyAuthWithCache(proxyAuthURL))) {
-        errorMessage = 'proxyauth_internal_client but no proxyauth domain matches proxyauth redirect url.'
+        errorMessage = 'Forbidden: no ProxyAuth domain matches redirect url'
+        status = 403
       }
       if (errorMessage) {
         logger({ level: 'debug', message: 'proxyauth_internal_client validation failed.', errors: [{
           name: 'ProxyAuthURLInvalid',
-          message: errorMessage + ` redirect_url = ${String(oidc.params?.redirect_uri)}`,
+          message: errorMessage + `. redirect_url = ${String(oidc.params?.redirect_uri)}`,
         }] })
         // Throw oidc error
         const error: errors.OIDCProviderError = {
-          statusCode: 400,
+          statusCode: status,
           error: 'proxyauth_url_invalid',
-          error_description: errorMessage + ` redirect_url = ${String(oidc.params?.redirect_uri)}`,
+          error_description: errorMessage,
           allow_redirect: false,
-          status: 400,
+          status: status,
           expose: true,
           name: 'proxyauth_url_invalid',
           message: 'proxyauth_url_invalid',
@@ -439,7 +441,7 @@ const configuration: Configuration = {
   renderError: (ctx, out, _error) => {
     // If ctx status is 403, redirect to forbidden page instead
     if (ctx.status === 403) {
-      ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}`)
+      ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=${out.error}`)
     } else if (ctx.status === 404) {
       ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.NOT_FOUND}`)
     } else {

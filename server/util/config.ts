@@ -432,6 +432,11 @@ if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
     level: 'debug',
     message: `APP_URL: '${appConfig.APP_URL}' appears to be a private DNS zone.`,
   })
+} else {
+  logger({
+    level: 'debug',
+    message: `APP_URL: '${appConfig.APP_URL}'`,
+  })
 }
 
 const calculatedSessionDomain = getSessionDomain()

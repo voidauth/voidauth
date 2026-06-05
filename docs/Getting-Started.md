@@ -208,13 +208,16 @@ LDAP is disabled by default. See the [LDAP Server](LDAP-Server.md) guide for set
 
 Your own branding can be applied to the app by mounting the **/app/config** directory and adding files or modifying the existing files.
 
-The logo images of the web interface can be customized by placing your own images in the mounted **/app/config/branding** directory. The available files for overwrite include:
+The logo images of the web interface can be customized by placing your own images in the mounted **/app/config/branding** directory. The files you can add are listed below:
 
-| Name | Valid Extensions |
-| :--- | :--------------- |
+| Name | Extension |
+| :--- | :-------- |
 | logo | `svg`, `png` |
 | favicon | `svg`, `png` |
 | apple-touch-icon | `png` |
+
+> [!WARNING]
+> If any custom branding images are found in the mounted **/app/config/branding** directory, the default VoidAuth images will not be available. You may want to make sure that custom `logo`, `favicon`, and `apple-touch-icon` are all added together.
 
 For information on how to change the email templates used for invitations, password resets, email verification, etc. see the documentation page for [Email Templates](Email-Templates.md).
 
