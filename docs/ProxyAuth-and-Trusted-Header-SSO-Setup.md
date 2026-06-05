@@ -322,7 +322,7 @@ services:
       DB_HOST: voidauth-db
     labels:
       traefik.enable: 'true'
-      traefik.http.services.voidauth.loadbalancer.server.port: 3001 # Must match the APP_PORT environment variable if set
+      traefik.http.services.voidauth.loadbalancer.server.port: 3000 # Must match the APP_PORT environment variable if set
       traefik.http.routers.voidauth.rule: 'Host(`auth.example.com`)' # Should match the domain part of APP_URL
       traefik.http.routers.voidauth.entryPoints: 'websecure'
       traefik.http.routers.voidauth.tls: 'true'
