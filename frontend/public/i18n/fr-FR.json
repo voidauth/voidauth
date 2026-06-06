@@ -138,10 +138,8 @@
   },
   "page-not-found": {
     "title": "La page est introuvable",
-    "": {
-      "actions": {
-        "go-home": "Accueil"
-      }
+    "actions": {
+      "go-home": "Accueil"
     }
   },
   "verify-email": {

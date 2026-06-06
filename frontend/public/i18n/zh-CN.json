@@ -137,10 +137,8 @@
   },
   "page-not-found": {
     "title": "找不到该页面",
-    "": {
-      "actions": {
-        "go-home": "回首页"
-      }
+    "actions": {
+      "go-home": "回首页"
     }
   },
   "verify-email": {

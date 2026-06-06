@@ -138,10 +138,8 @@
   },
   "page-not-found": {
     "title": "The Page Cannot Be Found",
-    "": {
-      "actions": {
-        "go-home": "Go Home"
-      }
+    "actions": {
+      "go-home": "Go Home"
     }
   },
   "verify-email": {

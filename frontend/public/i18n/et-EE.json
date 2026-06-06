@@ -138,10 +138,8 @@
   },
   "page-not-found": {
     "title": "Lehte ei leitud",
-    "": {
-      "actions": {
-        "go-home": "Avalehele"
-      }
+    "actions": {
+      "go-home": "Avalehele"
     }
   },
   "verify-email": {

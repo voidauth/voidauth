@@ -52,13 +52,13 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       details: {
         proxyauth: {
           action: 'forbidden',
-          reason: 'no_domain_match',
+          reason: 'proxyauth_domain_no_match',
           url: url.href,
           urlDomain: formattedUrl,
         },
       },
     })
-    res.redirect(redirCode, `${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=no_domain_match`)
+    res.redirect(redirCode, `${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=proxyauth_domain_no_match`)
     return
   }
 

@@ -354,5 +354,5 @@ services:
 ```
 
 > [!NOTE]
-> The `traefik.http.middlewares.voidauth.forwardAuth.address` must point to the VoidAuth forward-auth endpoint reachable by Traefik. When VoidAuth is hosted under a base path (for example `APP_URL` includes `/auth`), include that path in the address: `/auth/api/authz/forward-auth`.
+> The `traefik.http.middlewares.voidauth.forwardAuth.address` label on the VoidAuth service must use the *internal* forward-auth endpoint reachable by Traefik. When VoidAuth is hosted under a base path (for example `APP_URL=https://example.com/auth`), include that path in the address: `http://voidauth:3000/auth/api/authz/forward-auth`.
 

@@ -1,9 +1,10 @@
 # Translations
 
-Your help is needed to translate VoidAuth. Follow the instructions listed below to add translations to the project:
+Your help is needed to translate VoidAuth! Follow the instructions listed below to add translations to the project:
 
 ## Translation Files
 
+0. You must be fluent in both English and the language you are translating. It is not acceptable to use AI assistance for translation.
 1. You must fork the VoidAuth code repository and set up a development environment (VSCode is recommended)
 2. Use a translation program or extension (the i18nAlly VSCode extension is recommended) to modify or create a locale file in the `/frontend/public/i18n/` directory
 3. If you are adding a new translation file or adding translations to an empty file, add the translation code and display label to the `/frontend/public/locales.json` file

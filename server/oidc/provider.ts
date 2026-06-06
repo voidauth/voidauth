@@ -201,6 +201,7 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
       const redirectURL = typeof oidc.params?.redirect_uri === 'string' ? URL.parse(oidc.params.redirect_uri) : null
       const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
       const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
+      let errorName = 'proxyauth_url_invalid'
       let errorMessage = ''
       let status = 400
       if (!proxyAuthURL) {
@@ -208,6 +209,7 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
       } else if (!sessionDomainReaches(proxyAuthURL.hostname)) {
         errorMessage = 'Session domain does not reach redirect url'
       } else if (!(await getProxyAuthWithCache(proxyAuthURL))) {
+        errorName = 'proxyauth_domain_no_match'
         errorMessage = 'Forbidden: no ProxyAuth domain matches redirect url'
         status = 403
       }
@@ -219,7 +221,7 @@ consentPromptPolicy.checks.add(new Check('proxyauth_url_invalid',
         // Throw oidc error
         const error: errors.OIDCProviderError = {
           statusCode: status,
-          error: 'proxyauth_url_invalid',
+          error: errorName,
           error_description: errorMessage,
           allow_redirect: false,
           status: status,
