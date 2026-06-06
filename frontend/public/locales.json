@@ -1,5 +1,6 @@
 [
   { "code": "en-US", "display": "English" },
   { "code": "zh-CN", "display": "中文" },
-  { "code": "fr-FR", "display": "Français" }
+  { "code": "fr-FR", "display": "Français" },
+  { "code": "et-EE", "display": "Eesti" }
 ]
