@@ -14,23 +14,22 @@
   <span class="right-actions">
     <app-lang-switcher></app-lang-switcher>
     <app-theme-toggle></app-theme-toggle>
-    <span>
-      <!-- These pages include a specific 'login' button as an action -->
-      @if (
-        !location.pathname.endsWith("/login") &&
-        !location.pathname.endsWith("/register") &&
-        !location.pathname.endsWith("/approval_required") &&
-        !location.pathname.endsWith("/user_expired")
-      ) {
-        <span>
-          <a mat-flat-button routerLink="/login">{{ "components.header.actions.login" | translate }}</a>
-        </span>
-      }
-      @if (user) {
-        <button mat-icon-button (click)="toggleSidenav.emit()">
-          <mat-icon fontSet="material-icons-round">menu</mat-icon>
-        </button>
-      }
-    </span>
+    <!-- These pages include a specific 'login' button as an action -->
+    @if (
+      !user &&
+      !location.pathname.endsWith("/login") &&
+      !location.pathname.endsWith("/register") &&
+      !location.pathname.endsWith("/approval_required") &&
+      !location.pathname.endsWith("/user_expired")
+    ) {
+      <span>
+        <a mat-flat-button routerLink="/login">{{ "components.header.actions.login" | translate }}</a>
+      </span>
+    }
+    @if (user) {
+      <button mat-icon-button (click)="toggleSidenav.emit()">
+        <mat-icon fontSet="material-icons-round">menu</mat-icon>
+      </button>
+    }
   </span>
 </mat-toolbar>
