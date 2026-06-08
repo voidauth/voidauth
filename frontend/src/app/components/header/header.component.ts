@@ -1,4 +1,4 @@
-import { Component, inject, output, type OnInit } from '@angular/core'
+import { Component, inject, output, signal, type OnInit } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component'
 import { MaterialModule } from '../../material-module'
@@ -29,6 +29,7 @@ export class HeaderComponent implements OnInit {
   public config?: ConfigResponse
   public location = window.location
   basePath = getBaseHrefPath()
+  userNotFound = signal(false)
 
   public toggleSidenav = output()
 
@@ -43,6 +44,7 @@ export class HeaderComponent implements OnInit {
       this.config = await this.configService.getConfig()
     } catch (_e) {
       // user just isn't logged in
+      this.userNotFound.set(true)
     } finally {
       this.spinnerService.hide()
     }

@@ -16,7 +16,7 @@
     <app-theme-toggle></app-theme-toggle>
     <!-- These pages include a specific 'login' button as an action -->
     @if (
-      !user &&
+      userNotFound() &&
       !location.pathname.endsWith("/login") &&
       !location.pathname.endsWith("/register") &&
       !location.pathname.endsWith("/approval_required") &&
