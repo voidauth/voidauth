@@ -15,6 +15,8 @@ import zod from 'zod'
 import { createPasswordReset, getPasswordResetURL } from './passwordReset'
 import { humanDuration } from '@shared/utils'
 import { TABLES } from '@shared/db'
+import { verifyLDAPPassword } from '../ldap/sync'
+import { logger } from '../util/logger'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -128,9 +130,45 @@ export async function getUserByUsername(username: string): Promise<UserDetails |
   return await getUserById(userId)
 }
 
+/**
+ * Verify a user's password.  For LDAP-synced users (ldapSource +
+ * ldapExternalId set) this delegates to an LDAP simple bind against
+ * the remote directory.  Non-LDAP users fall through to the existing
+ * argon2 hash check.  An LDAP user whose bind fails will still fall
+ * through to argon2 (which also fails since they have no local hash),
+ * so the net result for a bad credential is always false.
+ */
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
+  if (!password) {
+    return false
+  }
+
   const user = await db().select().table<User>(TABLES.USER).where({ id: userId }).first()
-  return !!user && !!password && !!user.passwordHash && argon2.verify(user.passwordHash, password)
+  if (!user) {
+    return false
+  }
+
+  if (user.ldapSource && user.ldapExternalId) {
+    logger({
+      level: 'debug',
+      message: `Attempting LDAP bind auth for user: ${user.username}, DN: ${user.ldapExternalId}`,
+    })
+
+    if (await verifyLDAPPassword(user.ldapExternalId, password)) {
+      logger({
+        level: 'debug',
+        message: `LDAP bind auth succeeded for user: ${user.username}`,
+      })
+      return true
+    }
+
+    logger({
+      level: 'debug',
+      message: `LDAP bind auth failed for user: ${user.username}, falling back to local password`,
+    })
+  }
+
+  return !!user.passwordHash && argon2.verify(user.passwordHash, password)
 }
 
 export function userRequiresMfa(user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup'>) {
