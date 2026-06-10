@@ -10,6 +10,10 @@ export type Group = Audit & {
   name: string
   mfaRequired: boolean | number
   autoAssign: boolean | number
+  /** Set to 'ldap' when the group is managed by LDAP sync. */
+  ldapSource?: string | null
+  /** The group's unique identifier from the LDAP directory. */
+  ldapExternalId?: string | null
 }
 
 const _typeCheck: DBColumnTypesCheck<Group> = true
