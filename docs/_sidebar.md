@@ -7,6 +7,7 @@
   * [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md)
   * [LDAP Server](LDAP-Server.md)
   * [LDAP Client Guides](LDAP-Guides.md)
+  * [LDAP Sync](LDAP-Sync.md)
   * [User Management](User-Management.md)
   * [Security Groups](Security-Groups.md)
   * [Password Resets](Password-Resets.md)
