@@ -3,13 +3,351 @@
     "password": {
       "label": "Passwort"
     },
-    "title": "Login"
+    "username": {
+      "label": "Benutzername oder E-Mail"
+    },
+    "forgot-password": "Passwort vergessen",
+    "remember-me": "Angemeldet bleiben",
+    "actions": {
+      "login": "Anmelden",
+      "sign-up": "Registrieren"
+    },
+    "title": "Anmeldung"
+  },
+  "contact-us": {
+    "actions": {
+      "label": "Kontakt"
+    }
+  },
+  "app": {
+    "loading": "Wird geladen...",
+    "navigation": {
+      "profile": "Profil",
+      "admin": {
+        "title": "Administration",
+        "oidc-apps": "OIDC-Anwendungen",
+        "proxyauth-domains": "ProxyAuth-Domänen",
+        "users": "Benutzer",
+        "groups": "Gruppen",
+        "invitations": "Einladungen",
+        "password-resets": "Passwort-Zurücksetzungen",
+        "sent-mail": "Gesendete E-Mails"
+      },
+      "logout": "Abmelden"
+    }
+  },
+  "passkey-title": "Passkey",
+  "passkey-dialog": {
+    "title": "{{platformName}} aktivieren?",
+    "actions": {
+      "passkey": "{{platformName}} aktivieren"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "{{platformName}} verwenden",
+      "register-passkey": "Passkey registrieren",
+      "back": "Zurück"
+    },
+    "title": "Mehrfaktor-Authentifizierung erforderlich"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "Mit {{platformName}} registrieren",
+      "sign-up": "Registrieren",
+      "login": "Anmelden"
+    },
+    "title": {
+      "accept-invitation": "Einladung annehmen",
+      "sign-up": "Registrieren"
+    },
+    "username": {
+      "label": "Benutzername"
+    },
+    "email": {
+      "label": "E-Mail"
+    },
+    "name": {
+      "label": "Name"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "{{platformName}} aktivieren",
+      "reset-password": "Passwort zurücksetzen"
+    },
+    "title": "Passwort zurücksetzen"
+  },
+  "approval-required": {
+    "content": "Ihr Konto muss genehmigt werden, bevor Sie sich anmelden können. Bitte warten Sie oder wenden Sie sich an einen Administrator.",
+    "title": "Genehmigung erforderlich",
+    "actions": {
+      "login": "Anmelden",
+      "try-again": "Erneut versuchen"
+    }
+  },
+  "forbidden": {
+    "title": "Zugriff verweigert",
+    "content": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen.",
+    "actions": {
+      "back": "Zurück"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "Anmelden"
+    },
+    "info": {
+      "sign-into-question": "Möchten Sie sich bei <br /><h2>{{destination}}</h2> anmelden?",
+      "post-signin-redir-notice": "Nach der Anmeldung werden Sie zu <b>{{redirect}}</b> weitergeleitet."
+    },
+    "title": "Bestätigung"
+  },
+  "forgot-password": {
+    "username": {
+      "label": "E-Mail oder Benutzername"
+    },
+    "actions": {
+      "send": "Senden",
+      "send-again": "Erneut senden",
+      "create-again": "Erneut erstellen",
+      "create": "Erstellen"
+    },
+    "title": "Passwort vergessen"
+  },
+  "form-errors": {
+    "required": "Pflichtfeld.",
+    "min": "Muss mindestens {{min}} sein.",
+    "max": "Darf nicht größer als {{max}} sein.",
+    "minLength": "Muss mindestens {{requiredLength}} Zeichen lang sein.",
+    "maxLength": "Darf höchstens {{requiredLength}} Zeichen lang sein.",
+    "email": "Keine gültige E-Mail-Adresse.",
+    "default": "Ungültiger Wert.",
+    "alpha-num-underscore-only": "Nur A-Z, 0-9 und _ sind erlaubt."
+  },
+  "logout": {
+    "title": "Abmelden",
+    "info": {
+      "logout-question": "Möchten Sie sich abmelden?"
+    },
+    "actions": {
+      "yes": "Ja",
+      "back": "Zurück",
+      "no": "Nein"
+    }
+  },
+  "page-not-found": {
+    "title": "Seite nicht gefunden",
+    "actions": {
+      "go-home": "Zur Startseite"
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "E-Mail wird überprüft...",
+        "email-could-not-be-verified": "E-Mail konnte nicht bestätigt werden",
+        "sending-new-verification": "Neue Bestätigung wird gesendet...",
+        "email-verification-could-not-be-sent": "Bestätigungs-E-Mail konnte nicht gesendet werden"
+      },
+      "actions": {
+        "send-again": "Erneut senden"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "Bestätigungs-E-Mail gesendet",
+        "email-verification-required": "E-Mail-Bestätigung erforderlich"
+      },
+      "actions": {
+        "logout": "Abmelden",
+        "send-again": "Erneut senden",
+        "send-verification": "Bestätigungs-E-Mail senden"
+      },
+      "email": {
+        "label": "E-Mail"
+      }
+    }
   },
   "settings": {
     "title": "Einstellungen",
     "sections": {
       "profile": {
-        "title": "Profil"
+        "title": "Profil",
+        "username": {
+          "label": "Benutzername"
+        },
+        "name": {
+          "label": "Name"
+        },
+        "actions": {
+          "submit": {
+            "label": "Profil aktualisieren"
+          }
+        },
+        "email": {
+          "label": "E-Mail",
+          "actions": {
+            "submit": {
+              "label": "E-Mail aktualisieren"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "Sicherheit",
+        "password": {
+          "set": {
+            "label": "Passwort festlegen"
+          },
+          "change": {
+            "label": "Passwort ändern"
+          }
+        },
+        "passkeys": {
+          "title": "Passkeys",
+          "noPasskeys": "Sie haben keine registrierten Passkeys.",
+          "register": {
+            "label": "Passkey registrieren"
+          },
+          "manage": {
+            "title": "Passkeys verwalten"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "Bearbeiten"
+            },
+            "delete": {
+              "tooltip": "Löschen"
+            }
+          }
+        },
+        "mfa": {
+          "title": "Mehrfaktor-Authentifizierung",
+          "status": {
+            "enabled": "Die Mehrfaktor-Authentifizierung ist aktiviert.",
+            "disabled": "Die Mehrfaktor-Authentifizierung ist nicht aktiviert."
+          },
+          "authenticators": {
+            "has": "Sie haben mindestens einen Authenticator registriert.",
+            "none": "Sie haben keine Authenticatoren registriert."
+          },
+          "add": {
+            "label": "Authenticator hinzufügen"
+          },
+          "enable": {
+            "label": "MFA aktivieren"
+          }
+        }
+      },
+      "account": {
+        "title": "Konto",
+        "removePassword": {
+          "label": "Passwort entfernen"
+        },
+        "removeAllPasskeys": {
+          "label": "Alle Passkeys entfernen"
+        },
+        "disableMfa": {
+          "label": "MFA deaktivieren"
+        },
+        "removeAuthenticators": {
+          "label": "Authenticatoren entfernen"
+        },
+        "deleteAccount": {
+          "label": "Konto löschen"
+        }
+      }
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "update": "Aktualisieren",
+        "create": "Erstellen",
+        "view": "Anzeigen",
+        "open": "Öffnen",
+        "remove": "Entfernen"
+      },
+      "labels": {
+        "mfa-required": "MFA erforderlich",
+        "email-verified": "E-Mail bestätigt",
+        "approved": "Genehmigt"
+      }
+    },
+    "users": {
+      "empty-state": "Keine Benutzer vorhanden.",
+      "actions": {
+        "select": "Auswählen",
+        "approve": "Genehmigen"
+      },
+      "labels": {
+        "search": "Suchen"
+      }
+    },
+    "clients": {
+      "empty-state": "Keine OIDC-Anwendungen.",
+      "actions": {
+        "create": "OIDC-Anwendung erstellen"
+      }
+    },
+    "groups": {
+      "empty-state": "Keine Gruppen vorhanden.",
+      "actions": {
+        "create": "Gruppe erstellen"
+      }
+    },
+    "invitations": {
+      "empty-state": "Keine Einladungen vorhanden.",
+      "actions": {
+        "create": "Einladung erstellen"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "Anmelden"
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "System",
+        "light": "Hell",
+        "dark": "Dunkel"
+      }
+    },
+    "confirm": {
+      "instructions": "Geben Sie zur Bestätigung <b>{{requiredText}}</b> in das Feld ein.",
+      "actions": {
+        "cancel": {
+          "label": "Abbrechen"
+        },
+        "confirm": {
+          "label": "Bestätigen"
+        }
+      }
+    }
+  },
+  "user-expired": {
+    "title": "Kontozugriff abgelaufen",
+    "content": "Ihr Kontozugriff ist abgelaufen. Bitte wenden Sie sich an einen Administrator, um den Zugriff zu verlängern.",
+    "actions": {
+      "login": "Anmelden",
+      "try-again": "Erneut versuchen"
+    }
+  },
+  "passkey-name": {
+    "title": "Passkey-Name",
+    "prompt": "Einen Namen für den neuen Passkey vergeben?",
+    "actions": {
+      "skip": {
+        "label": "Überspringen"
+      },
+      "save": {
+        "label": "Speichern"
       }
     }
   }
