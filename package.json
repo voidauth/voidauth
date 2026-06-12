@@ -39,6 +39,7 @@
     "jose": "^6.2.3",
     "keygrip": "^1.1.0",
     "knex": "^3.2.10",
+    "ldapts": "^8.1.8",
     "matcher": "^6.0.0",
     "nodemailer": "^8.0.9",
     "oidc-provider": "^9.8.3",
