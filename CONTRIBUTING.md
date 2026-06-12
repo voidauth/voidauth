@@ -18,6 +18,7 @@ Your help is needed to translate VoidAuth. Follow the instructions listed below 
 
 ### Translation Files
 
+0. You must be fluent in both English and the language you are translating. It is not acceptable to use AI assistance or digital translators for translation.
 1. You must fork the VoidAuth code repository and set up a development environment (VSCode is recommended)
 2. Use a translation program or extension (the i18nAlly VSCode extension is recommended) to modify or create a locale file in the `/frontend/public/i18n/` directory
 3. If you are adding a new translation file or adding translations to an empty file, add the translation code and display label to the `/frontend/public/locales.json` file
@@ -52,3 +53,13 @@ All code contributions are expected to be thoroughly tested and defect-free. Cha
 Frontend changes should not include user-facing hardcoded strings. These should be localized and placed in the `./frontend/public/i18n/en-US.json` file, use the VSCode `i18n Ally` extension or the translation tooling of your choice to make this easier. Translations to other languages than `en-US` are not initially required.
 
 Pull Requests should follow the template that appears when they are opened. Make sure to list every feature and fix contained in the Pull Request, screenshots should be attached if any changes to the frontend UI were made.
+
+## AI Policy
+
+There are limitations on AI usage when contributing or participating in issues or discussions:
+
+* All contributions that include AI generated code must be disclosed. This includes any tool that generates code that is then copied over, or writes the code directly into an editor. You must include the tool and in what way it was used. Editor autocomplete functionality is exempted as long as the editor is not primarily an AI tool.
+* AI output should not be the majority of any contribution.
+* You must fully understand all code you wish to contribute. This includes every line, any imported packages, and all syntax. You should be able to explain the entire scope of any proposed changes.
+* AI output should not be included in any issues or discussions. All conversation should be 100% human created.
+* As mentioned in the Translation Contribution instructions, no translations should be performed by any AI tool (or any digital translation tool).
