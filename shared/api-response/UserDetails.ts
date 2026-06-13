@@ -16,6 +16,8 @@ export type UserDetails = UserWithAdminIndicator & {
   hasTotp: boolean
   hasPasskeys: boolean
   hasMfaGroup: boolean
+  passkeyEcosystems: string[]
+  passkeySkippedEcosystems: string[]
 }
 
 type UserSessionInfo = {
@@ -33,7 +35,8 @@ export type CurrentUserPrivateDetails = UserDetails & UserSessionInfo
 // so should not contain anything that could be used to elevate privileges or identify the user
 export type CurrentUserDetails = Pick<
   UserDetails,
-  'id' | 'isAdmin' | 'hasTotp' | 'hasPasskeys' | 'hasEmail' | 'emailVerified' | 'expiresAt' | 'approved'>
+  'id' | 'isAdmin' | 'hasTotp' | 'hasPasskeys' | 'hasEmail' | 'emailVerified' | 'expiresAt' | 'approved'
+  | 'passkeyEcosystems' | 'passkeySkippedEcosystems'>
   & UserSessionInfo & {
     // Guard, these fields should not be sent to an unprivileged frontend
     username?: undefined

@@ -131,7 +131,7 @@ export class ResetPasswordComponent {
       }
       const optionsJSON = await this.authService.resetPasswordPasskeyStart({ userId, challenge })
       const registration = await startRegistration({ optionsJSON })
-      const { username } = await this.authService.resetPasswordPasskeyEnd({ ...registration, userId, challenge })
+      const { username } = await this.authService.resetPasswordPasskeyEnd({ ...registration, userId, challenge, ecosystem: this.passkeySupport?.ecosystem })
       this.snackbarService.message('Passkey created.')
       await this.router.navigate([REDIRECT_PATHS.LOGIN], {
         queryParams: {

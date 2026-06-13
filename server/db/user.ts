@@ -99,11 +99,14 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const hasMfaGroup = groups.some(g => g.mfaRequired)
 
   const hasTotp = await hasTOTP(id)
-  const hasPasskeys = !!(await getUserPasskeys(user.id)).length
+  const passkeys = await getUserPasskeys(user.id)
+  const hasPasskeys = !!passkeys.length
+  const passkeyEcosystems = [...new Set(passkeys.map(p => p.ecosystem).filter((e): e is string => e != null))]
+  const passkeySkippedEcosystems = user.passkeySkippedEcosystems?.split(',').filter(Boolean) ?? []
   const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
+  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, passkeyEcosystems, passkeySkippedEcosystems, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
@@ -135,6 +138,15 @@ export async function checkPasswordHash(userId: string, password: string): Promi
 
 export function userRequiresMfa(user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup'>) {
   return appConfig.MFA_REQUIRED || !!user.mfaRequired || user.hasMfaGroup
+}
+
+export async function recordPasskeySkip(userId: string, ecosystem: string) {
+  const user = await db().table<User>(TABLES.USER).select('passkeySkippedEcosystems').where({ id: userId }).first()
+  const skipped = user?.passkeySkippedEcosystems?.split(',').filter(Boolean) ?? []
+  if (!skipped.includes(ecosystem)) {
+    skipped.push(ecosystem)
+    await db().table<User>(TABLES.USER).update({ passkeySkippedEcosystems: skipped.join(',') }).where({ id: userId })
+  }
 }
 
 export async function endSessions(userId: string) {
