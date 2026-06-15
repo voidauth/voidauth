@@ -6,7 +6,7 @@
     "node": ">=24.11.x"
   },
   "scripts": {
-    "start": "concurrently \"npm run server:watch\" \"npm run frontend:watch\"",
+    "start": "concurrently -n api,web -c green,blue \"npm run server:watch\" \"npm run frontend:watch\"",
     "server:watch": "nodemon --ext \"ts,js,json\" --watch server/ --watch shared/ --exec \"tsc && npm run server:build && tsx --env-file-if-exists=.env ./server/index.ts\"",
     "server:build": "tsx ./esbuild.config.ts",
     "frontend:watch": "cd frontend && npm run watch",
@@ -23,8 +23,8 @@
     ]
   },
   "dependencies": {
-    "@angular-devkit/schematics": "^21.2.13",
-    "@angular/material": "^21.2.13",
+    "@angular-devkit/schematics": "^21.2.14",
+    "@angular/material": "^21.2.14",
     "@simplewebauthn/server": "^13.3.1",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
@@ -37,17 +37,16 @@
     "helmet": "^8.2.0",
     "husky": "^9.1.7",
     "jose": "^6.2.3",
-    "keygrip": "^1.1.0",
     "knex": "^3.2.10",
     "matcher": "^6.0.0",
-    "nodemailer": "^8.0.9",
-    "oidc-provider": "^9.8.3",
+    "nodemailer": "^8.0.10",
+    "oidc-provider": "^9.8.4",
     "otpauth": "^9.5.1",
     "pg": "^8.21.0",
     "psl": "^1.15.0",
     "pug": "^3.0.4",
     "sass": "^1.100.0",
-    "tsx": "^4.22.3",
+    "tsx": "^4.22.4",
     "yargs": "^18.0.0",
     "zod": "^4.4.3"
   },
@@ -58,19 +57,19 @@
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.6",
     "@types/madge": "^5.0.3",
-    "@types/node": "^24.12.4",
+    "@types/node": "^24.13.1",
     "@types/nodemailer": "^8.0.0",
     "@types/oidc-provider": "^9.5.0",
     "@types/psl": "^1.1.3",
     "@types/pug": "^2.0.10",
     "@types/yargs": "^17.0.35",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "esbuild": "^0.28.0",
-    "eslint": "^10.4.0",
+    "eslint": "^10.4.1",
     "lint-staged": "^16.4.0",
     "madge": "^8.0.0",
     "nodemon": "^3.1.14",
     "prettier": "^3.8.3",
-    "typescript-eslint": "^8.60.0"
+    "typescript-eslint": "^8.60.1"
   }
 }

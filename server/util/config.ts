@@ -297,9 +297,11 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
       case 'CLIENT_GRANT_TYPES':
         client.grant_types = validateClientVar(value.split(',').map(v => v.trim()), clientUpsertValidator.grant_types)
         break
-      case 'CLIENT_POST_LOGOUT_URLS':
-        client.post_logout_redirect_uris = [validateClientVar(value, clientUpsertValidator.post_logout_redirect_uri.unwrap().unwrap())]
+      case 'CLIENT_POST_LOGOUT_URLS': {
+        const urls = validateClientVar(value, clientUpsertValidator.post_logout_redirect_uri)
+        client.post_logout_redirect_uris = urls ? [urls] : undefined
         break
+      }
       case 'CLIENT_SKIP_CONSENT':
         client.skip_consent = validateClientVar(value, zod.stringbool())
         break
