@@ -99,7 +99,7 @@
     },
     "info": {
       "sign-into-question": "Do you want to sign in to <br /> <h2>{{destination}}</h2>",
-      "post-signin-redir-notice": "After you sign in, you will be sent to <b>{{redirect}}</b>"
+      "post-signin-redir-notice": "After you sign in, you will be redirected to <b>{{redirect}}</b>"
     },
     "title": "Confirm"
   },
