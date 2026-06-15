@@ -33,7 +33,7 @@ export function urlFromWildcardHref(input: string) {
   // TODO: base url parameter to match URL.parse
   return {
     protocol: url.protocol,
-    hostname: url.hostname,
+    hostname: url.hostname ?? '',
     pathname: url.pathname ?? '/',
     port: url.port ?? '',
     href: input,
