@@ -98,7 +98,8 @@
       "sign-in": "Anmelden"
     },
     "info": {
-      "sign-into-question": "Möchten Sie sich bei <br /><h2>{{destination}}</h2> anmelden?"
+      "sign-into-question": "Möchten Sie sich bei <br /><h2>{{destination}}</h2> anmelden?",
+      "post-signin-redir-notice": "Nach der Anmeldung werden Sie zu <b>{{redirect}}</b> weitergeleitet."
     },
     "title": "Bestätigung"
   },
