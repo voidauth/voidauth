@@ -97,7 +97,8 @@
       "sign-in": "登录"
     },
     "info": {
-      "sign-into-question": "您想登录 <br /> <h2>{{destination}}</h2> 吗？"
+      "sign-into-question": "您想登录 <br /> <h2>{{destination}}</h2> 吗？",
+      "post-signin-redir-notice": "登录后，您将被重定向到 <b>{{redirect}}</b>"
     },
     "title": "确认"
   },
