@@ -98,7 +98,8 @@
       "sign-in": "Se connecter"
     },
     "info": {
-      "sign-into-question": "Voulez-vous vous connecter à <br /> <h2>{{destination}}</h2>"
+      "sign-into-question": "Voulez-vous vous connecter à <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "Après vous être connecté, vous serez redirigé vers <b>{{redirect}}</b>"
     },
     "title": "Confirmer"
   },
