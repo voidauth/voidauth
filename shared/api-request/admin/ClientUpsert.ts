@@ -24,8 +24,8 @@ export const clientUpsertValidator = {
     return typeof input === 'string' && isValidWildcardRedirect(input)
   })),
   post_logout_redirect_uri: zod.string().trim().refine((input) => {
-    return typeof input === 'string' && isValidWildcardRedirect(input)
-  }).nullable().optional(),
+    return !input || (typeof input === 'string' && isValidWildcardRedirect(input))
+  }).nullable().transform(v => v || undefined).optional(),
   client_secret: zod.string().trim().nullable().transform(v => v || undefined).optional(),
   token_endpoint_auth_method: zod.enum(CLIENT_AUTH_METHODS),
   response_types: zod.array(zod.enum(RESPONSE_TYPES)),

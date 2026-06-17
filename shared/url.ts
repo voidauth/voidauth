@@ -25,15 +25,15 @@ export function urlFromWildcardHref(input: string) {
 
   const url: URLPatternGroups | undefined = pattern.exec(input)?.groups
 
-  // protocol and hostname are required
-  // TODO: base url parameter to match URL.parse
-  if (!url || !url.protocol || !url.hostname) {
+  // protocol is required
+  if (!url || !url.protocol) {
     return null
   }
 
+  // TODO: base url parameter to match URL.parse
   return {
     protocol: url.protocol,
-    hostname: url.hostname,
+    hostname: url.hostname ?? '',
     pathname: url.pathname ?? '/',
     port: url.port ?? '',
     href: input,
@@ -52,7 +52,7 @@ export function urlFromWildcardDomain(input: string) {
 
   const url = urlFromWildcardHref(input)
 
-  if (!url) {
+  if (!url || !url.hostname) {
     return null
   }
 
@@ -60,7 +60,7 @@ export function urlFromWildcardDomain(input: string) {
     url.pathname += '*'
   }
 
-  return { ...url, hostname: url.hostname, pathname: url.pathname }
+  return { ...url, hostname: url.hostname }
 }
 
 /**
