@@ -20,10 +20,13 @@ export class TranslationService {
 
   private _current = signal<string>('en-US')
 
-  public availableLangs = locales.sort((a, b) => a.display.localeCompare(b.display))
+  public availableLangs = computed(() => {
+    const currentLang = this._current()
+    return locales.sort((a, b) => a.display.localeCompare(b.display, currentLang))
+  })
 
   public currentLang = computed<LangInfo | null>(() => {
-    return this.availableLangs.find(a => a.code === this._current()) || null
+    return this.availableLangs().find(a => a.code === this._current()) || null
   })
 
   private initialLangSet?: Promise<void>
@@ -69,7 +72,7 @@ export class TranslationService {
   private async _setInitialLang() {
     const previousLang = this.getLocalStorageLang()
     if (previousLang) {
-      if (this.availableLangs.some(lang => lang.code === previousLang)) {
+      if (this.availableLangs().some(lang => lang.code === previousLang)) {
         if (await this._setLang(previousLang, true)) {
           return
         }
@@ -85,12 +88,12 @@ export class TranslationService {
       const browserLangParts = browserLang.split('-')
       for (let i = browserLangParts.length; i >= 1; i--) {
         const subBrowserLang = browserLangParts.slice(0, i).filter(p => !!p).join('-')
-        const foundLang = this.availableLangs.find(lang => lang.code.toLowerCase() === subBrowserLang.toLowerCase())
+        const foundLang = this.availableLangs().find(lang => lang.code.toLowerCase() === subBrowserLang.toLowerCase())
         if (foundLang && await this._setLang(foundLang.code, true)) {
           return
         }
         // if exact lang (sub)match not found, try to find a lang that starts with subBrowserLang
-        const foundStartsWithLang = this.availableLangs.find(lang => lang.code.toLowerCase().startsWith(subBrowserLang.toLowerCase()))
+        const foundStartsWithLang = this.availableLangs().find(lang => lang.code.toLowerCase().startsWith(subBrowserLang.toLowerCase()))
         if (foundStartsWithLang && await this._setLang(foundStartsWithLang.code, true)) {
           return
         }
@@ -101,7 +104,7 @@ export class TranslationService {
 
     const fallbackLang = this.translate.getFallbackLang()
     if (fallbackLang) {
-      if (this.availableLangs.some(lang => lang.code === fallbackLang)) {
+      if (this.availableLangs().some(lang => lang.code === fallbackLang)) {
         if (await this._setLang(fallbackLang, true)) {
           return
         }

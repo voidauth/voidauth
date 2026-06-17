@@ -548,7 +548,7 @@ provider.Client.Schema.prototype.redirectUris = function newRedirectUris(uris: s
   const wildcardUris = uris.filter(u => u.includes('*')).map((u) => {
     try {
       const url = wildcardRedirect(u)
-      return `${url.protocol}//${url.hostname}${url.port ? `:80` : ''}${url.pathname}${url.search}${url.hash}`
+      return `${url.protocol}//${url.hostname}${url.port ? `:${url.port.replaceAll('*', '9')}` : ''}${url.pathname}${url.search}${url.hash}`
     } catch (e) {
       const message = `${label} ${e instanceof Error ? e.message : 'must be valid URL.'}`
       clientSchemaInvalidate.call(this, message)
