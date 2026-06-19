@@ -5,7 +5,6 @@ import { KnexAdapter } from './adapter'
 import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
-import Keygrip from 'keygrip'
 import { interactionPolicy } from 'oidc-provider'
 import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
 import { isMatch } from 'matcher'
@@ -25,6 +24,7 @@ import { mergeKeys } from '../db/util'
 import type { User } from '@shared/db/User'
 import { PayloadTypes } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
+import { getAllClaims } from '../db/claims'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -256,356 +256,368 @@ export function isOIDCProviderError(e: unknown): e is errors.OIDCProviderError {
     && 'error_description' in e
 }
 
-await makeKeysValid()
-export const initialJwks = { keys: (await getJWKs()).map(k => k.jwk) }
-export const providerCookieKeys = (await getCookieKeys()).map(k => k.value)
+async function getNextConfig() {
+  await makeKeysValid() // always do this, we must not use expired keys
+  const jwks = { keys: (await getJWKs()).map(k => k.jwk) }
+  const cookieKeys = (await getCookieKeys()).map(k => k.value)
 
-if (!initialJwks.keys.length) {
-  throw new Error('No OIDC JWKs found.')
-}
+  if (!jwks.keys.length) {
+    throw new Error('No OIDC JWKs found.')
+  }
 
-if (!providerCookieKeys.length) {
-  throw new Error('No Cookie Signing Keys found.')
-}
+  if (!cookieKeys.length) {
+    throw new Error('No Cookie Signing Keys found.')
+  }
 
-const configuration: Configuration = {
-  features: {
-    devInteractions: {
-      enabled: false,
-    },
-    backchannelLogout: {
-      enabled: true,
-    },
-    revocation: {
-      enabled: true,
-    },
-    encryption: {
-      enabled: true,
-    },
-    jwtResponseModes: {
-      enabled: true,
-    },
-    introspection: {
-      enabled: true,
-    },
-    jwtIntrospection: {
-      enabled: true,
-    },
-    jwtUserinfo: {
-      enabled: true,
-    },
-    claimsParameter: {
-      enabled: true,
-    },
-    rpInitiatedLogout: {
+  const configuration: Configuration = {
+    features: {
+      devInteractions: {
+        enabled: false,
+      },
+      backchannelLogout: {
+        enabled: true,
+      },
+      revocation: {
+        enabled: true,
+      },
+      encryption: {
+        enabled: true,
+      },
+      jwtResponseModes: {
+        enabled: true,
+      },
+      introspection: {
+        enabled: true,
+      },
+      jwtIntrospection: {
+        enabled: true,
+      },
+      jwtUserinfo: {
+        enabled: true,
+      },
+      claimsParameter: {
+        enabled: true,
+      },
+      rpInitiatedLogout: {
       // custom logout question page
-      logoutSource: (ctx, _form) => {
+        logoutSource: (ctx, _form) => {
         // parse out secret value so static frontend can use
-        const secret = ctx.oidc.session?.state?.secret
-        ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGOUT}${typeof secret === 'string' ? `/${secret}` : ''}`)
-      },
-      postLogoutSuccessSource: (ctx) => {
+          const secret = ctx.oidc.session?.state?.secret
+          ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.LOGOUT}${typeof secret === 'string' ? `/${secret}` : ''}`)
+        },
+        postLogoutSuccessSource: (ctx) => {
         // TODO: custom logout success page
-        ctx.redirect(appConfig.DEFAULT_REDIRECT || appConfig.APP_URL)
+          ctx.redirect(appConfig.DEFAULT_REDIRECT || appConfig.APP_URL)
+        },
       },
     },
-  },
-  interactions: {
-    url: (_ctx, _interaction) => {
-      return `${basePath()}/api/interaction`
+    interactions: {
+      url: (_ctx, _interaction) => {
+        return `${basePath()}/api/interaction`
+      },
+      policy: modifiedInteractionPolicy,
     },
-    policy: modifiedInteractionPolicy,
-  },
-  ttl: {
-    Session: TTLs.SESSION,
-    Grant: TTLs.GRANT,
-    Interaction: TTLs.INTERACTION,
-    // Below copied from node-oidc-provider, if omitted it will complain
-    // Even though these seem like sensible defaults
-    AccessToken: function AccessTokenTTL(_ctx, token, _client) {
-      return token.resourceServer?.accessTokenTTL || 60 * 60 // 1 hour in seconds
-    },
-    AuthorizationCode: 60 /* 1 minute in seconds */,
-    BackchannelAuthenticationRequest: function BackchannelAuthenticationRequestTTL(ctx, _request, _client) {
-      if (ctx.oidc.params?.requested_expiry) {
+    ttl: {
+      Session: TTLs.SESSION,
+      Grant: TTLs.GRANT,
+      Interaction: TTLs.INTERACTION,
+      // Below copied from node-oidc-provider, if omitted it will complain
+      // Even though these seem like sensible defaults
+      AccessToken: function AccessTokenTTL(_ctx, token, _client) {
+        return token.resourceServer?.accessTokenTTL || 60 * 60 // 1 hour in seconds
+      },
+      AuthorizationCode: 60 /* 1 minute in seconds */,
+      BackchannelAuthenticationRequest: function BackchannelAuthenticationRequestTTL(ctx, _request, _client) {
+        if (ctx.oidc.params?.requested_expiry) {
         // 10 minutes in seconds or requested_expiry, whichever is shorter
-        return Math.min(10 * 60, +ctx.oidc.params.requested_expiry)
-      }
+          return Math.min(10 * 60, +ctx.oidc.params.requested_expiry)
+        }
 
-      return 10 * 60 // 10 minutes in seconds
-    },
-    ClientCredentials: function ClientCredentialsTTL(_ctx, token, _client) {
-      return token.resourceServer?.accessTokenTTL || 10 * 60 // 10 minutes in seconds
-    },
-    DeviceCode: 600 /* 10 minutes in seconds */,
-    IdToken: 3600 /* 1 hour in seconds */,
-    RefreshToken: function RefreshTokenTTL(ctx, token, client) {
-      if (
-        ctx.oidc.entities.RotatedRefreshToken
-        && client.applicationType === 'web'
-        && client.clientAuthMethod === 'none'
-        && !token.isSenderConstrained()
-      ) {
-      // Non-Sender Constrained SPA RefreshTokens do not have infinite expiration through rotation
-        return ctx.oidc.entities.RotatedRefreshToken.remainingTTL
-      }
+        return 10 * 60 // 10 minutes in seconds
+      },
+      ClientCredentials: function ClientCredentialsTTL(_ctx, token, _client) {
+        return token.resourceServer?.accessTokenTTL || 10 * 60 // 10 minutes in seconds
+      },
+      DeviceCode: 600 /* 10 minutes in seconds */,
+      IdToken: 3600 /* 1 hour in seconds */,
+      RefreshToken: function RefreshTokenTTL(ctx, token, client) {
+        if (
+          ctx.oidc.entities.RotatedRefreshToken
+          && client.applicationType === 'web'
+          && client.clientAuthMethod === 'none'
+          && !token.isSenderConstrained()
+        ) {
+          // Non-Sender Constrained SPA RefreshTokens do not have infinite expiration through rotation
+          return ctx.oidc.entities.RotatedRefreshToken.remainingTTL
+        }
 
-      return 14 * 24 * 60 * 60 // 14 days in seconds
+        return 14 * 24 * 60 * 60 // 14 days in seconds
+      },
     },
-  },
-  cookies: {
-    // keygrip for rotating cookie signing keys
-    keys: Keygrip(providerCookieKeys),
-    names: {
-      interaction: 'x-voidauth-interaction',
-      resume: 'x-voidauth-resume',
-      session: 'x-voidauth-session',
+    cookies: {
+      keys: cookieKeys,
+      names: {
+        interaction: 'x-voidauth-interaction',
+        resume: 'x-voidauth-resume',
+        session: 'x-voidauth-session',
+      },
+      long: {
+        httpOnly: true,
+        sameSite: 'lax',
+        domain: getSessionDomain(),
+      },
+      short: {
+        httpOnly: true,
+        sameSite: 'lax',
+        domain: getSessionDomain(),
+      },
     },
-    long: {
-      httpOnly: true,
-      sameSite: 'lax',
-      domain: getSessionDomain(),
-    },
-    short: {
-      httpOnly: true,
-      sameSite: 'lax',
-      domain: getSessionDomain(),
-    },
-  },
-  jwks: initialJwks,
-  clients: [
-    {
-      client_id: 'auth_internal_client',
-      // unique every time, never used
-      client_secret: randomBytes(24).toString('hex'),
-      // any redirect will work, injected custom redirect_uri validator below
-      redirect_uris: [appConfig.APP_URL],
-      response_modes: ['query'],
-      // not actually used for oidc, just for logging in for profile management
-      response_types: ['none'],
-      scope: 'openid',
-    }, {
-      client_id: 'proxyauth_internal_client',
-      // unique every time, never used
-      client_secret: randomBytes(24).toString('hex'),
-      // special redirect checking logic, injected custom redirect_uri validator below
-      redirect_uris: [appConfig.APP_URL],
-      response_modes: ['query'],
-      // not actually used for oidc, just for logging in for proxy auth
-      response_types: ['none'],
-      scope: 'openid',
-    },
-  ],
-  clientDefaults: {
-    scope: 'openid offline_access profile email groups',
-    grant_types: ['authorization_code', 'refresh_token'],
-    response_types: [
-      'code',
-      'none',
+    jwks: jwks,
+    clients: [
+      {
+        client_id: 'auth_internal_client',
+        // unique every time, never used
+        client_secret: randomBytes(24).toString('hex'),
+        // any redirect will work, injected custom redirect_uri validator below
+        redirect_uris: [appConfig.APP_URL],
+        response_modes: ['query'],
+        // not actually used for oidc, just for logging in for profile management
+        response_types: ['none'],
+        scope: 'openid',
+      }, {
+        client_id: 'proxyauth_internal_client',
+        // unique every time, never used
+        client_secret: randomBytes(24).toString('hex'),
+        // special redirect checking logic, injected custom redirect_uri validator below
+        redirect_uris: [appConfig.APP_URL],
+        response_modes: ['query'],
+        // not actually used for oidc, just for logging in for proxy auth
+        response_types: ['none'],
+        scope: 'openid',
+      },
     ],
-  },
-  claims: {
-    // OIDC 1.0 Standard
-    // address: ['address'],
-    email: ['email', 'email_verified'],
-    // phone: ['phone_number', 'phone_number_verified'],
-    profile: [
-      // 'birthdate',
-      // 'family_name',
-      // 'gender',
-      // 'given_name',
-      // 'locale',
-      // 'middle_name',
-      'name',
-      // 'nickname',
-      // 'picture',
-      'preferred_username',
-      // 'profile',
-      // 'updated_at',
-      // 'website',
-      // 'zoneinfo'
-    ],
-
-    // Additional
-    groups: ['groups'],
-  },
-  responseTypes: RESPONSE_TYPES.slice(),
-  conformIdTokenClaims: false,
-  extraClientMetadata: {
-    properties: ['skip_consent', 'require_mfa'],
-  },
-  issueRefreshToken: (_ctx, client, code) => {
-    if (!client.grantTypeAllowed('refresh_token')) {
-      return false
-    }
-    return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.clientAuthMethod === 'none')
-  },
-  renderError: (ctx, out, _error) => {
+    clientDefaults: {
+      scope: 'openid offline_access profile email groups custom',
+      grant_types: ['authorization_code', 'refresh_token'],
+      response_types: [
+        'code',
+        'none',
+      ],
+    },
+    claims: await getAllClaims(),
+    responseTypes: RESPONSE_TYPES.slice(),
+    conformIdTokenClaims: false,
+    extraClientMetadata: {
+      properties: ['skip_consent', 'require_mfa'],
+    },
+    issueRefreshToken: (_ctx, client, code) => {
+      if (!client.grantTypeAllowed('refresh_token')) {
+        return false
+      }
+      return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.clientAuthMethod === 'none')
+    },
+    renderError: (ctx, out, _error) => {
     // If ctx status is 403, redirect to forbidden page instead
-    if (ctx.status === 403) {
-      ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=${out.error}`)
-    } else if (ctx.status === 404) {
-      ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.NOT_FOUND}`)
-    } else {
+      if (ctx.status === 403) {
+        ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=${out.error}`)
+      } else if (ctx.status === 404) {
+        ctx.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.NOT_FOUND}`)
+      } else {
       // For other errors, show error message
-      ctx.body = {
-        error: out.error,
-        error_description: out.error_description,
+        ctx.body = {
+          error: out.error,
+          error_description: out.error_description,
+        }
       }
-    }
-  },
-  clientBasedCORS: (_ctx, origin, client) => {
-    const originUrl = URL.parse(origin)
-    if (originUrl?.protocol === 'https:') {
-      return true
-    }
+    },
+    clientBasedCORS: (_ctx, origin, client) => {
+      const originUrl = URL.parse(origin)
+      if (originUrl?.protocol === 'https:') {
+        return true
+      }
 
-    if (client.redirectUris?.some(uri => URL.parse(uri)?.origin === origin)) {
-      return true
-    }
+      if (client.redirectUris?.some(uri => URL.parse(uri)?.origin === origin)) {
+        return true
+      }
 
-    return false
-  },
-  findAccount: findAccount,
-  adapter: KnexAdapter,
-}
-
-export const provider = new Provider(`${appConfig.APP_URL}/oidc`, configuration)
-
-// Log provider errors
-provider.on('server_error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider server error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('authorization.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider authorization error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('backchannel.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider backchannel error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('jwks.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider jwks error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('discovery.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider discovery error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('end_session.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider end_session error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('grant.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider grant error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('introspection.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider introspection error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('pushed_authorization_request.error', (_ctx, error) => {
-  logger({
-    level: 'error',
-    message: 'oidc-provider pushed_authorization_request error',
-    errors: [{ name: error.name, message: error.message }],
-  })
-})
-provider.on('registration_create.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider registration_create error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('registration_read.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider registration_read error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('registration_delete.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider registration_delete error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('registration_update.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider registration_update error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('revocation.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider revocation error', errors: [{ name: error.name, message: error.message }] })
-})
-provider.on('userinfo.error', (_ctx, error) => {
-  logger({ level: 'error', message: 'oidc-provider userinfo error', errors: [{ name: error.name, message: error.message }] })
-})
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-const clientSchemaInvalidate = provider.Client.Schema.prototype.invalidate
-// Make sure this exists and library did not change
-assert.ok(clientSchemaInvalidate, 'oidc-provider provider.Client.Schema.prototype.invalidate does not exist.')
-
-// Split the checks for valid redirectUris for creating Clients
-// into wildcard and non-wildcard
-// eslint-disable-next-line @typescript-eslint/unbound-method
-const clientSchemaRedirectUris = provider.Client.Schema.prototype.redirectUris
-// Make sure this exists and library did not change
-assert.ok(clientSchemaRedirectUris, 'oidc-provider provider.Client.Schema.prototype.redirectUris does not exist.')
-provider.Client.Schema.prototype.redirectUris = function newRedirectUris(uris: string[], label: string = 'redirect_uris') {
-  // provide defaults here — use the instance property if caller omitted `uris`
-  if (typeof uris === 'undefined') {
-    uris = this.redirect_uris
+      return false
+    },
+    findAccount: findAccount,
+    adapter: KnexAdapter,
   }
 
-  const regularUris = uris.filter(u => !u.includes('*'))
-  clientSchemaRedirectUris.call(this, regularUris, label)
-
-  // Only allowed invalid URL property on wildcard redirect is port
-  // See if wildcard uris are valid with dummy port
-  const wildcardUris = uris.filter(u => u.includes('*')).map((u) => {
-    try {
-      const url = wildcardRedirect(u)
-      return `${url.protocol}//${url.hostname}${url.port ? `:${url.port.replaceAll('*', '9')}` : ''}${url.pathname}${url.search}${url.hash}`
-    } catch (e) {
-      const message = `${label} ${e instanceof Error ? e.message : 'must be valid URL.'}`
-      clientSchemaInvalidate.call(this, message)
-      return u
-    }
-  })
-  clientSchemaRedirectUris.call(this, wildcardUris, label)
+  return configuration
 }
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-const { redirectUriAllowed, postLogoutRedirectUriAllowed } = provider.Client.prototype
-provider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
-  if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
+async function createProvider(): Promise<[Provider, Configuration]> {
+  const config = await getNextConfig()
+  const nextProvider = new Provider(`${appConfig.APP_URL}/oidc`, config)
+  nextProvider.proxy = true
+  // Log provider errors
+  nextProvider.on('server_error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider server error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('authorization.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider authorization error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('backchannel.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider backchannel error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('jwks.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider jwks error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('discovery.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider discovery error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('end_session.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider end_session error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('grant.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider grant error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('introspection.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider introspection error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('pushed_authorization_request.error', (_ctx, error) => {
+    logger({
+      level: 'error',
+      message: 'oidc-provider pushed_authorization_request error',
+      errors: [{ name: error.name, message: error.message }],
+    })
+  })
+  nextProvider.on('registration_create.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider registration_create error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('registration_read.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider registration_read error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('registration_delete.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider registration_delete error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('registration_update.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider registration_update error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('revocation.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider revocation error', errors: [{ name: error.name, message: error.message }] })
+  })
+  nextProvider.on('userinfo.error', (_ctx, error) => {
+    logger({ level: 'error', message: 'oidc-provider userinfo error', errors: [{ name: error.name, message: error.message }] })
+  })
+
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const clientSchemaInvalidate = nextProvider.Client.Schema.prototype.invalidate
+  // Make sure this exists and library did not change
+  assert.ok(clientSchemaInvalidate, 'oidc-provider provider.Client.Schema.prototype.invalidate does not exist.')
+
+  // Split the checks for valid redirectUris for creating Clients
+  // into wildcard and non-wildcard
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const clientSchemaRedirectUris = nextProvider.Client.Schema.prototype.redirectUris
+  // Make sure this exists and library did not change
+  assert.ok(clientSchemaRedirectUris, 'oidc-provider provider.Client.Schema.prototype.redirectUris does not exist.')
+  nextProvider.Client.Schema.prototype.redirectUris = function newRedirectUris(uris: string[], label: string = 'redirect_uris') {
+    // provide defaults here, use the instance property if caller omitted `uris`
+    if (typeof uris === 'undefined') {
+      uris = this.redirect_uris
+    }
+
+    const regularUris = uris.filter(u => !u.includes('*'))
+    clientSchemaRedirectUris.call(this, regularUris, label)
+
+    // Only allowed invalid URL property on wildcard redirect is port
+    // See if wildcard uris are valid with dummy port
+    const wildcardUris = uris.filter(u => u.includes('*')).map((u) => {
+      try {
+        const url = wildcardRedirect(u)
+        return `${url.protocol}//${url.hostname}${url.port ? `:${url.port.replaceAll('*', '9')}` : ''}${url.pathname}${url.search}${url.hash}`
+      } catch (e) {
+        const message = `${label} ${e instanceof Error ? e.message : 'must be valid URL.'}`
+        clientSchemaInvalidate.call(this, message)
+        return u
+      }
+    })
+    clientSchemaRedirectUris.call(this, wildcardUris, label)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const { redirectUriAllowed, postLogoutRedirectUriAllowed } = nextProvider.Client.prototype
+  nextProvider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
+    if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
     // auth_internal_client redirect_uri is allowed if hostname is reachable by session domain
-    const redirectURL = URL.parse(redirectUri)
-    return !!redirectURL && sessionDomainReaches(redirectURL.hostname)
-  }
+      const redirectURL = URL.parse(redirectUri)
+      return !!redirectURL && sessionDomainReaches(redirectURL.hostname)
+    }
 
-  // proxyauth_internal_client redirect_uri is formatted like proxyauth callback and proxyauth_url redirect can be reached by session domain
-  if (Provider.ctx?.oidc.params?.client_id === 'proxyauth_internal_client') {
-    const redirectURL = URL.parse(redirectUri)
-    const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
-    const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
-    return !!redirectURL
-      && sessionDomainReaches(redirectURL.hostname)
-      && redirectURL.pathname.endsWith('/api/proxyauth_cb')
-      && !!proxyAuthURL
-      && sessionDomainReaches(proxyAuthURL.hostname)
-  }
+    // proxyauth_internal_client redirect_uri is formatted like proxyauth callback
+    // and proxyauth_url redirect can be reached by session domain
+    if (Provider.ctx?.oidc.params?.client_id === 'proxyauth_internal_client') {
+      const redirectURL = URL.parse(redirectUri)
+      const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
+      const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
+      return !!redirectURL
+        && sessionDomainReaches(redirectURL.hostname)
+        && redirectURL.pathname.endsWith('/api/proxyauth_cb')
+        && !!proxyAuthURL
+        && sessionDomainReaches(proxyAuthURL.hostname)
+    }
 
-  // Check if any client redirectUris are a wildcard match
-  if (this.redirectUris?.some((r: string) => {
-    return r.includes('*') && isMatch(redirectUri, r)
-  })) {
-    return true
-  }
+    // Check if any client redirectUris are a wildcard match
+    if (this.redirectUris?.some((r: string) => {
+      return r.includes('*') && isMatch(redirectUri, r)
+    })) {
+      return true
+    }
 
-  // Call the default redirectUriAllowed function
-  return redirectUriAllowed.call(this, redirectUri)
-}
-provider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutRedirectUriAllowed(postLogoutRedirectUri: string) {
+    // Call the default redirectUriAllowed function
+    return redirectUriAllowed.call(this, redirectUri)
+  }
+  nextProvider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutRedirectUriAllowed(postLogoutRedirectUri: string) {
   // Check if any client postLogoutRedirectUris are a wildcard match
-  if (this.postLogoutRedirectUris?.some((r: string) => {
-    return r.includes('*') && isMatch(postLogoutRedirectUri, r)
-  })) {
-    return true
+    if (this.postLogoutRedirectUris?.some((r: string) => {
+      return r.includes('*') && isMatch(postLogoutRedirectUri, r)
+    })) {
+      return true
+    }
+
+    // Call the default postLogoutRedirectUriAllowed function
+    return postLogoutRedirectUriAllowed.call(this, postLogoutRedirectUri)
   }
 
-  // Call the default postLogoutRedirectUriAllowed function
-  return postLogoutRedirectUriAllowed.call(this, postLogoutRedirectUri)
+  return [nextProvider, config]
 }
 
-export async function upsertClient(provider: Provider, clientMetadata: ClientResponse, user: Pick<User, 'id'>, ctx: unknown) {
+let [_provider, _config] = await createProvider()
+
+export async function resetProvider() {
+  [_provider, _config] = await createProvider()
+  // No need to clean up old provider, it is stored in a WeakMap
+}
+
+/**
+ * Expose the current provider instance
+ * Should not be stored, may be hot-swapped during a config change
+ * @returns the current provider instance
+ */
+export function provider() {
+  return _provider
+}
+
+export function getCurrentProviderConfig() {
+  return _config
+}
+
+export async function customClaimsNeedsUpdate() {
+  const currentClaims = await getAllClaims()
+  const providerConfig = getCurrentProviderConfig()
+  const providerClaims = providerConfig.claims ?? {}
+  return JSON.stringify(currentClaims.custom?.sort()) !== JSON.stringify(providerClaims.custom?.sort())
+}
+
+export async function upsertClient(clientMetadata: ClientResponse, user: Pick<User, 'id'>, ctx: unknown) {
   const { groups, ...metadata } = clientMetadata
-  await provider.Client.validate(metadata)
-  const client = await add(provider, metadata, { ctx, store: true })
-  await provider.Client.validate(client.metadata())
+  await provider().Client.validate(metadata)
+  const client = await add(provider(), metadata, { ctx, store: true })
+  await provider().Client.validate(client.metadata())
   const clientId = client.clientId
   const clientGroups: OIDCGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups)).map((g) => {
     return {
@@ -633,13 +645,13 @@ export async function upsertClient(provider: Provider, clientMetadata: ClientRes
 export async function removeClient(client_id: string) {
   // @ts-expect-error client adapter actually does exist
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  await provider.Client.adapter.destroy(client_id)
+  await provider().Client.adapter.destroy(client_id)
 }
 
 export async function getSession(req: IncomingMessage, res: ServerResponse) {
   try {
-    const ctx = provider.createContext(req, res)
-    return await provider.Session.get(ctx)
+    const ctx = provider().createContext(req, res)
+    return await provider().Session.get(ctx)
   } catch (_e) {
     return null
   }

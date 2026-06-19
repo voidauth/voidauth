@@ -45,6 +45,7 @@ export function urlFromWildcardHref(input: string) {
 }
 
 export function urlFromWildcardDomain(input: string) {
+  // input should not include a protocol
   // If the input does not start with http(s), add it so it can be later safely removed
   if (!input.startsWith('http:') && !input.startsWith('https:')) {
     input = 'http:' + input
@@ -60,7 +61,7 @@ export function urlFromWildcardDomain(input: string) {
     url.pathname += '*'
   }
 
-  return { ...url, hostname: url.hostname }
+  return { ...url, protocol: undefined }
 }
 
 /**
@@ -71,7 +72,7 @@ export function wildcardRedirect(input: string) {
   const uri = urlFromWildcardHref(input)
 
   if (!uri) {
-    throw new TypeError('Invalid, must include protocol and domain.')
+    throw new TypeError('Invalid, must include protocol.')
   }
 
   // redirect_uri must not include hash

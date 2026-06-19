@@ -15,6 +15,7 @@ import zod from 'zod'
 import { createPasswordReset, getPasswordResetURL } from './passwordReset'
 import { humanDuration } from '@shared/utils'
 import { TABLES } from '@shared/db'
+import { getUserCustomClaims } from './claims'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -96,6 +97,8 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc'))
 
+  const customClaims = await getUserCustomClaims(user.id)
+
   const hasMfaGroup = groups.some(g => g.mfaRequired)
 
   const hasTotp = await hasTOTP(id)
@@ -103,7 +106,11 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
+  return {
+    ...userWithoutPassword,
+    groups: groups.map(g => ({ id: g.id, name: g.name })),
+    customClaims,
+    hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
@@ -157,19 +164,31 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
         name?: string | null
         groups?: string[]
       } = { sub: id }
+      const scopes = new Set(scope.split(' '))
 
-      if (scope.includes('email')) {
+      if (scopes.has('email')) {
         accountClaims.email = user.email ?? null
         accountClaims.email_verified = !!user.emailVerified
       }
 
-      if (scope.includes('profile')) {
+      if (scopes.has('profile')) {
         accountClaims.preferred_username = user.username
         accountClaims.name = user.name
       }
 
-      if (scope.includes('groups')) {
+      if (scopes.has('groups')) {
         accountClaims.groups = user.groups.map(g => g.name)
+      }
+
+      if (scopes.has('custom')) {
+        for (const c of user.customClaims) {
+          try {
+            accountClaims[c.claim] = JSON.parse(c.value)
+          } catch (_e) {
+            // for claims that aren't valid JSON, treat them as strings
+            accountClaims[c.claim] = c.value
+          }
+        }
       }
 
       return accountClaims

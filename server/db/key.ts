@@ -95,17 +95,29 @@ async function createJWK() {
   await db().table<Key>(TABLES.KEY).insert(key)
 }
 
+async function cookieKeysNeedUpdate() {
+  const cookieKeys = await getCookieKeys()
+  return !cookieKeys.some(k => !pastHalfExpired(TTLs.COOKIE_KEY, k.expiresAt))
+}
+
+async function jwksNeedUpdate() {
+  const jwks = await getJWKs()
+  return !jwks.some(k => !pastHalfExpired(TTLs.OIDC_JWK, k.expiresAt))
+}
+
+export async function keysNeedUpdate() {
+  return await cookieKeysNeedUpdate() || await jwksNeedUpdate()
+}
+
 export async function makeKeysValid() {
   // check cookie key exist with more than half its ttl left, and if not create one
-  const cookieKeys = await getCookieKeys()
-  if (!cookieKeys.some(k => !pastHalfExpired(TTLs.COOKIE_KEY, k.expiresAt))) {
+  if (await cookieKeysNeedUpdate()) {
     // there is no cookie key with greater than half its life left, create a new one
     await createCookieKey()
   }
 
   // check JWK exist with more than half its ttl left, and if not create one
-  const jwks = await getJWKs()
-  if (!jwks.some(k => !pastHalfExpired(TTLs.OIDC_JWK, k.expiresAt))) {
+  if (await jwksNeedUpdate()) {
     // there are no jwk with greater than half its life left, create a new one
     await createJWK()
   }

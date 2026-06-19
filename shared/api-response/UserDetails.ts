@@ -1,6 +1,7 @@
 import type { RemoveKeys } from '@shared/utils'
 import type { Group } from '../db/Group.js'
 import type { User } from '../db/User.js'
+import type { UserCustomClaim } from '@shared/db/UserCustomClaims.js'
 
 export type UserWithoutPassword = RemoveKeys<User, 'passwordHash'> & {
   hasPassword: boolean
@@ -13,6 +14,7 @@ export type UserWithAdminIndicator = UserWithoutPassword & {
 
 export type UserDetails = UserWithAdminIndicator & {
   groups: Pick<Group, 'id' | 'name'>[]
+  customClaims: Pick<UserCustomClaim, 'claim' | 'value'>[]
   hasTotp: boolean
   hasPasskeys: boolean
   hasMfaGroup: boolean
@@ -38,4 +40,5 @@ export type CurrentUserDetails = Pick<
     // Guard, these fields should not be sent to an unprivileged frontend
     username?: undefined
     email?: undefined
+    customClaims?: undefined
   }

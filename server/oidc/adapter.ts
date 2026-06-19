@@ -14,12 +14,15 @@ function getExpireAt(expiresIn: number) {
 
 function parsePayload(payload: string, pt: PayloadType) {
   const parsed = JSON.parse(payload) as AdapterPayload
-  if (isClientPayload(pt, parsed) && parsed.client_secret != null) {
-    const client_secret = decryptString(parsed.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
-    if (client_secret == null) {
-      throw new Error('Cannot decrypt client_secret')
+  if (isClientPayload(pt, parsed)) {
+    if (parsed.client_secret != null) {
+      const client_secret = decryptString(parsed.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
+      if (client_secret == null) {
+        throw new Error('Cannot decrypt client_secret')
+      }
+      parsed.client_secret = client_secret
     }
-    parsed.client_secret = client_secret
+    parsed.scope = 'openid offline_access profile email groups custom'
   }
   return parsed
 }

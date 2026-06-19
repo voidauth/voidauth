@@ -20,6 +20,8 @@ export const TABLES = {
   EMAIL_LOG: 'email_log',
   OIDC_GROUP: 'oidc_group',
   TOTP: 'totp',
+  USER_CUSTOM_CLAIM: 'user_custom_claim',
+  INVITATION_CUSTOM_CLAIM: 'invitation_custom_claim',
 } as const
 
 export const TABLES_ORDER: ValueOf<typeof TABLES>[] = [
@@ -42,6 +44,8 @@ export const TABLES_ORDER: ValueOf<typeof TABLES>[] = [
   TABLES.EMAIL_LOG,
   TABLES.OIDC_GROUP,
   TABLES.TOTP,
+  TABLES.USER_CUSTOM_CLAIM,
+  TABLES.INVITATION_CUSTOM_CLAIM,
 ] as const
 
 if (!Object.values(TABLES).every(t => TABLES_ORDER.includes(t))) {

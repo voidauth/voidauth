@@ -134,10 +134,10 @@ router.get('/', async (req, res) => {
     // Check conditions to skip consent, after provider has already determined it is required
     const { redirect_uri, client_id, scope } = params
     if (typeof redirect_uri === 'string' && typeof client_id === 'string' && typeof scope === 'string') {
-      // Check if the client_id is auth_internal_client
+      // Check if the client_id is auth_internal_client or proxyauth_internal_client
       if (client_id === 'auth_internal_client' || client_id === 'proxyauth_internal_client') {
         const grantId = await applyConsent(interaction)
-        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+        const redir = await provider().interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
@@ -148,7 +148,7 @@ router.get('/', async (req, res) => {
       const client = await getClient(client_id)
       if (client?.skip_consent) {
         const grantId = await applyConsent(interaction)
-        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+        const redir = await provider().interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
@@ -159,7 +159,7 @@ router.get('/', async (req, res) => {
       const existingConsent = user?.id && await getExistingConsent(user.id, redirect_uri)
       if (existingConsent && !consentMissingScopes(existingConsent, scope).length) {
         const grantId = await applyConsent(interaction)
-        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+        const redir = await provider().interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
@@ -171,7 +171,7 @@ router.get('/', async (req, res) => {
     return
   } else if (prompt.name === 'select_account') {
     // Handle select_account prompt
-    const redir = await provider.interactionResult(req, res, { select_account: true }, {
+    const redir = await provider().interactionResult(req, res, { select_account: true }, {
       mergeWithLastSubmission: true,
     })
     res.redirect(redir)
@@ -224,7 +224,7 @@ router.post('/try-again', async (req, res) => {
   }
 
   const redir: Redirect = {
-    location: await provider.interactionResult(req, res, interaction.lastSubmission, {
+    location: await provider().interactionResult(req, res, interaction.lastSubmission, {
       mergeWithLastSubmission: true,
     }),
   }
@@ -262,7 +262,7 @@ router.get('/:uid/detail',
     }
     const { uid, params } = interaction
     const scope = typeof params.scope === 'string' ? params.scope : ''
-    const client = await provider.Client.find(params.client_id as string)
+    const client = await provider().Client.find(params.client_id as string)
     const details: ConsentDetails = {
       uid: uid,
       clientId: params.client_id as string,
@@ -290,7 +290,7 @@ router.post('/:uid/confirm/',
       prompt,
       params,
       session,
-    } = await provider.interactionDetails(req, res)
+    } = await provider().interactionDetails(req, res)
     const { uid: uidParam } = req.params
 
     if (uid !== uidParam) {
@@ -303,11 +303,11 @@ router.post('/:uid/confirm/',
       return
     }
 
-    const grantId = await applyConsent(await provider.interactionDetails(req, res))
+    const grantId = await applyConsent(await provider().interactionDetails(req, res))
     if (typeof params.redirect_uri === 'string' && typeof params.scope === 'string' && session?.accountId) {
       await addConsent(params.redirect_uri, session.accountId, params.scope)
     }
-    const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+    const redir = await provider().interactionResult(req, res, { consent: { grantId } }, {
       mergeWithLastSubmission: true,
     })
     res.redirect(redir)
@@ -1040,7 +1040,7 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
 
       return {
         success: true,
-        location: await provider.interactionResult(req, res, {
+        location: await provider().interactionResult(req, res, {
           login: {
             accountId: userId,
             ...(remember ? { remember } : {}), // only include 'remember' in login options if it is true
@@ -1057,7 +1057,7 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
 
 export async function getInteractionDetails(req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) {
   try {
-    return await provider.interactionDetails(req, res)
+    return await provider().interactionDetails(req, res)
   } catch (_e) {
     return null
   }
@@ -1081,10 +1081,10 @@ async function applyConsent(interactionDetails: Interaction) {
   const { details } = prompt
   const accountId = session?.accountId
 
-  let grant = !!interactionDetails.grantId && await provider.Grant.find(interactionDetails.grantId)
+  let grant = !!interactionDetails.grantId && await provider().Grant.find(interactionDetails.grantId)
 
   if (!grant) {
-    grant = new provider.Grant({
+    grant = new (provider()).Grant({
       accountId,
       clientId: params.client_id as string,
     })

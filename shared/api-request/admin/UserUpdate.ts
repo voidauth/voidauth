@@ -16,6 +16,10 @@ export const userUpdateValidator = {
     name: zod.string().trim(),
     id: zod.uuidv4(),
   })),
+  customClaims: zod.array(zod.object({
+    claim: zod.string().trim(),
+    value: zod.string(),
+  })),
 } as const
 
 export type UserUpdate = SchemaInfer<typeof userUpdateValidator>

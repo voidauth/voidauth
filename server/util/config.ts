@@ -432,7 +432,7 @@ const pslParsedAppUrl = psl.parse(appUrl().hostname)
 if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
   logger({
     level: 'debug',
-    message: `APP_URL: '${appConfig.APP_URL}' appears to be a private DNS zone.`,
+    message: `APP_URL: '${appConfig.APP_URL}' appears to be in a private DNS zone.`,
   })
 } else {
   logger({

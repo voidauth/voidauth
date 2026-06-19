@@ -1,6 +1,6 @@
 import { Router, type Response } from 'express'
 import { db, rollback } from '../db/db'
-import { isOIDCProviderError, provider, removeClient, upsertClient } from '../oidc/provider'
+import { customClaimsNeedsUpdate, isOIDCProviderError, provider, removeClient, resetProvider, upsertClient } from '../oidc/provider'
 import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomBytes, randomUUID } from 'crypto'
@@ -38,6 +38,7 @@ import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
+import type { UserCustomClaim } from '@shared/db/UserCustomClaims'
 
 export const adminRouter = Router()
 
@@ -110,7 +111,7 @@ async function upsertClientController(isCreate: boolean,
     }
     clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
 
-    await upsertClient(provider, clientMetadata, reqUser, provider.createContext(req, res))
+    await upsertClient(clientMetadata, reqUser, provider().createContext(req, res))
     res.send()
   } catch (e) {
     if (isOIDCProviderError(e)) {
@@ -316,9 +317,11 @@ adminRouter.patch('/user',
       return
     }
 
-    const { groups: _, ...user } = userUpdate
+    const { groups: userGroupNames, customClaims, ...user } = userUpdate
     const ucount = await db().table<User>(TABLES.USER).update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
-    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userUpdate.groups.map(g => g.name))
+
+    // Update groups
+    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userGroupNames.map(g => g.name))
     const userGroups: UserGroup[] = groups.map((g) => {
       return {
         groupId: g.id,
@@ -338,6 +341,31 @@ adminRouter.patch('/user',
     await db().table<UserGroup>(TABLES.USER_GROUP).delete()
       .where({ userId: userUpdate.id }).and
       .whereNotIn('groupId', userGroups.map(g => g.groupId))
+
+    // Update custom claims
+    if (customClaims[0]) {
+      const inserts = customClaims.map(c => ({
+        id: randomUUID(),
+        claim: c.claim,
+        value: c.value,
+        userId: userUpdate.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } satisfies UserCustomClaim))
+
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(inserts)
+        .onConflict(['claim', 'userId']).merge(mergeKeys(customClaims[0]))
+    }
+
+    // Remove any claims that are not still on user
+    await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete()
+      .where({ userId: userUpdate.id }).and
+      .whereNotIn('claim', customClaims.map(c => c.claim))
+
+    // Check if all custom claims matches current provider claims, update if not
+    if (await customClaimsNeedsUpdate()) {
+      await resetProvider()
+    }
 
     if (!ucount) {
       res.sendStatus(404)
