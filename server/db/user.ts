@@ -166,27 +166,32 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
       } = { sub: id }
       const scopes = new Set(scope.split(' '))
 
-      if (scopes.has('email')) {
-        accountClaims.email = user.email ?? null
-        accountClaims.email_verified = !!user.emailVerified
-      }
+      for (const scope of scopes) {
+        switch (scope) {
+          case 'email':
+            accountClaims.email = user.email ?? null
+            accountClaims.email_verified = !!user.emailVerified
+            break
 
-      if (scopes.has('profile')) {
-        accountClaims.preferred_username = user.username
-        accountClaims.name = user.name
-      }
+          case 'profile':
+            accountClaims.preferred_username = user.username
+            accountClaims.name = user.name
+            break
 
-      if (scopes.has('groups')) {
-        accountClaims.groups = user.groups.map(g => g.name)
-      }
+          case 'groups':
+            accountClaims.groups = user.groups.map(g => g.name)
+            break
 
-      if (scopes.has('custom')) {
-        for (const c of user.customClaims) {
-          try {
-            accountClaims[c.claim] = JSON.parse(c.value)
-          } catch (_e) {
-            // for claims that aren't valid JSON, treat them as strings
-            accountClaims[c.claim] = c.value
+          default: {
+            const claims = user.customClaims.filter(c => c.scope === scope)
+            for (const c of claims) {
+              try {
+                accountClaims[c.claim] = JSON.parse(c.value)
+              } catch (_e) {
+                // for claims that aren't valid JSON, treat them as strings
+                accountClaims[c.claim] = c.value
+              }
+            }
           }
         }
       }

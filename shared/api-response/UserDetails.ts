@@ -1,7 +1,7 @@
 import type { RemoveKeys } from '@shared/utils'
 import type { Group } from '../db/Group.js'
 import type { User } from '../db/User.js'
-import type { UserCustomClaim } from '@shared/db/UserCustomClaims.js'
+import type { CustomClaim, UserCustomClaim } from '@shared/db/CustomClaim.js'
 
 export type UserWithoutPassword = RemoveKeys<User, 'passwordHash'> & {
   hasPassword: boolean
@@ -14,7 +14,7 @@ export type UserWithAdminIndicator = UserWithoutPassword & {
 
 export type UserDetails = UserWithAdminIndicator & {
   groups: Pick<Group, 'id' | 'name'>[]
-  customClaims: Pick<UserCustomClaim, 'claim' | 'value'>[]
+  customClaims: (Pick<CustomClaim, 'scope' | 'claim'> & Pick<UserCustomClaim, 'value'>)[]
   hasTotp: boolean
   hasPasskeys: boolean
   hasMfaGroup: boolean

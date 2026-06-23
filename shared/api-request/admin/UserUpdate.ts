@@ -13,11 +13,12 @@ export const userUpdateValidator = {
   approved: zod.boolean(),
   mfaRequired: zod.boolean(),
   groups: zod.array(zod.object({
-    name: zod.string().trim(),
     id: zod.uuidv4(),
+    name: zod.string().trim(),
   })),
   customClaims: zod.array(zod.object({
-    claim: zod.string().trim(),
+    scope: zod.string().trim().regex(new RegExp('^[A-Za-z0-9._:~-]+$')),
+    claim: zod.string().trim().regex(new RegExp('^[a-zA-Z0-9_]+$')),
     value: zod.string(),
   })),
 } as const

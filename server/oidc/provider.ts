@@ -610,7 +610,24 @@ export async function customClaimsNeedsUpdate() {
   const currentClaims = await getAllClaims()
   const providerConfig = getCurrentProviderConfig()
   const providerClaims = providerConfig.claims ?? {}
-  return JSON.stringify(currentClaims.custom?.sort()) !== JSON.stringify(providerClaims.custom?.sort())
+
+  const normalize = (claims: Record<string, string[] | null>) => {
+    const out: Record<string, string[] | null> = {}
+    for (const key of Object.keys(claims).sort()) {
+      const val = claims[key]
+      if (!Array.isArray(val)) {
+        out[key] = []
+        continue
+      }
+      const arr = val
+      const uniq = Array.from(new Set(arr))
+      uniq.sort()
+      out[key] = uniq
+    }
+    return out
+  }
+
+  return JSON.stringify(normalize(currentClaims)) !== JSON.stringify(normalize(providerClaims))
 }
 
 export async function upsertClient(clientMetadata: ClientResponse, user: Pick<User, 'id'>, ctx: unknown) {

@@ -38,7 +38,8 @@ import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
-import type { UserCustomClaim } from '@shared/db/UserCustomClaims'
+import type { CustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
+import { cleanUnreferencedCustomClaims } from '../db/claims'
 
 export const adminRouter = Router()
 
@@ -318,10 +319,15 @@ adminRouter.patch('/user',
     }
 
     const { groups: userGroupNames, customClaims, ...user } = userUpdate
+    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userGroupNames.map(g => g.name))
+    if (groups.length !== userGroupNames.length) {
+      res.sendStatus(400)
+      return
+    }
+
     const ucount = await db().table<User>(TABLES.USER).update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
 
     // Update groups
-    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userGroupNames.map(g => g.name))
     const userGroups: UserGroup[] = groups.map((g) => {
       return {
         groupId: g.id,
@@ -342,25 +348,70 @@ adminRouter.patch('/user',
       .where({ userId: userUpdate.id }).and
       .whereNotIn('groupId', userGroups.map(g => g.groupId))
 
-    // Update custom claims
-    if (customClaims[0]) {
-      const inserts = customClaims.map(c => ({
-        id: randomUUID(),
-        claim: c.claim,
-        value: c.value,
-        userId: userUpdate.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } satisfies UserCustomClaim))
+    // Sync Custom Claims.
+    // We are going to do some confusing stuff here so that custom scopes+claims do not have to be managed
+    // manually in the webUI but just magically appear when they are added to a user
+    if (!customClaims.length) {
+      // remove all user custom claims
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete().where({ userId: userUpdate.id })
+    } else {
+      // Enrich customClaims with id data as it is found/generated
+      const richCustomClaims: ((typeof customClaims)[number] & { id?: string })[] = customClaims.map((c) => {
+        return { ...c }
+      })
 
-      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(inserts)
-        .onConflict(['claim', 'userId']).merge(mergeKeys(customClaims[0]))
+      // Load all existing custom claims
+      const existingClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).select('id', 'scope', 'claim')
+
+      // Find missing custom claims and insert them
+      const missingClaims: CustomClaim[] = []
+      for (const c of richCustomClaims) {
+        const existingClaim = existingClaims.find(ec => ec.scope === c.scope && ec.claim === ec.claim)
+        if (!existingClaim) {
+          const id = randomUUID()
+          c.id ??= id
+          missingClaims.push({ id, scope: c.scope, claim: c.claim, createdAt: new Date(), updatedAt: new Date() })
+        } else {
+          c.id ??= existingClaim.id
+        }
+      }
+      if (missingClaims[0]) {
+        await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(missingClaims)
+          .onConflict(['scope', 'claim']).merge(mergeKeys(missingClaims[0]))
+      }
+
+      // Delete any user custom claims not present in new custom claims payload
+      const customClaimIds = existingClaims
+        .filter(ec => richCustomClaims.some(c => c.scope === ec.scope && c.claim === ec.claim))
+        .map(ec => ec.id)
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete()
+        .where({ userId: userUpdate.id }).and
+        .whereNotIn('claimId', customClaimIds)
+
+      // Upsert provided user custom claims into user custom claims table
+      const upsertUserCustomClaims: UserCustomClaim[] = []
+      for (const c of richCustomClaims) {
+        if (!c.id) {
+          throw new Error('User Custom Claim cannot be inserted without claimId.')
+        }
+
+        upsertUserCustomClaims.push({
+          id: randomUUID(),
+          userId: userUpdate.id,
+          claimId: c.id,
+          value: c.value,
+          createdAt: new Date(),
+        })
+      }
+
+      if (upsertUserCustomClaims[0]) {
+        await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(upsertUserCustomClaims)
+          .onConflict(['claimId', 'userId']).merge(mergeKeys(upsertUserCustomClaims[0]))
+      }
     }
 
-    // Remove any claims that are not still on user
-    await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete()
-      .where({ userId: userUpdate.id }).and
-      .whereNotIn('claim', customClaims.map(c => c.claim))
+    // Remove any unreferenced custom_claim records
+    await cleanUnreferencedCustomClaims()
 
     // Check if all custom claims matches current provider claims, update if not
     if (await customClaimsNeedsUpdate()) {
