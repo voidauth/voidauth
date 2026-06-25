@@ -27,21 +27,27 @@ export class PasskeyService {
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
 
+  private seenKey(ecosystem?: string) {
+    return ecosystem ? `passkey_seen_${ecosystem}` : 'passkey_seen'
+  }
+
+  private skippedKey(ecosystem?: string) {
+    return ecosystem ? `passkey_skipped_${ecosystem}` : 'passkey_skipped'
+  }
+
   /**
-   * Checks if passkey registration or usage has ever been flagged in localStorage.
-   * Not a perfect solution, but until there is a method to check if a device passkey exists,
-   * this will have to do. This is just a hint and should not disable any functionality.
-   * @returns if there is passkey usage flagged in localStorage
+   * Falls back to the legacy unkeyed flag so existing users are not re-prompted after migration
    */
-  localPasskeySeen() {
+  localPasskeySeen(ecosystem?: string) {
+    if (ecosystem && localStorage.getItem(this.seenKey(ecosystem))) return true
     return !!localStorage.getItem('passkey_seen')
   }
 
   /**
-   * Checks if the passkey registration dialog has been skipped before
-   * @returns if the passkey dialog has previously been skipped
+   * Falls back to the legacy unkeyed flag so existing users are not re-prompted after migration
    */
-  localPasskeySkipped() {
+  localPasskeySkipped(ecosystem?: string) {
+    if (ecosystem && localStorage.getItem(this.skippedKey(ecosystem))) return true
     return !!localStorage.getItem('passkey_skipped')
   }
 
@@ -51,6 +57,21 @@ export class PasskeyService {
 
   resetPasskeySkipped() {
     localStorage.removeItem('passkey_skipped')
+  }
+
+  static getEcosystem(osName: string): string | undefined {
+    switch (osName) {
+      // iOS and macOS share iCloud Keychain, so treat them as the same ecosystem
+      case 'iOS':
+      case 'macOS':
+        return 'apple'
+      case 'Windows':
+        return 'windows'
+      case 'Android':
+        return 'android'
+      default:
+        return undefined
+    }
   }
 
   static getPlatform(osName: string): Pick<PasskeySupport, 'platformName' | 'platformIcon'> | null {
@@ -75,17 +96,21 @@ export class PasskeyService {
 
     let name: PasskeySupport['platformName']
     let icon: string | undefined
+    let ecosystem: string | undefined
     if (await platformAuthenticatorIsAvailable()) {
       const { os } = UAParser(navigator.userAgent)
-      const platformInfo = PasskeyService.getPlatform(os.name ?? '')
+      const osName = os.name ?? ''
+      const platformInfo = PasskeyService.getPlatform(osName)
       name = platformInfo?.platformName
       icon = platformInfo?.platformIcon
+      ecosystem = PasskeyService.getEcosystem(osName)
     }
 
     return {
       enabled: true,
       platformName: name,
       platformIcon: icon,
+      ecosystem,
     }
   }
 
@@ -97,24 +122,26 @@ export class PasskeyService {
     return firstValueFrom(this.http.patch<null>(`/api/interaction/passkey/${passkey_id}`, { displayName }))
   }
 
-  private async sendAuth(auth: AuthenticationResponseJSON, remember?: boolean) {
+  private async sendAuth(auth: AuthenticationResponseJSON, remember?: boolean, ecosystem?: string) {
     const result = firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/passkey/end', {
       ...auth,
       remember,
     }))
-    localStorage.setItem('passkey_seen', Date())
+    localStorage.setItem(this.seenKey(ecosystem), Date())
     return result
   }
 
   async login(opts: { remember?: boolean, requireVerified?: boolean } = {}) {
     const { remember = false, requireVerified } = opts
+    const { ecosystem } = await this.getPasskeySupport()
     const optionsJSON = await this.getAuthOptions(requireVerified)
     const auth = await startAuthentication({ optionsJSON })
-    return await this.sendAuth(auth, remember)
+    return await this.sendAuth(auth, remember, ecosystem)
   }
 
   async register(opts: { requireVerified?: boolean } = {}) {
     const { requireVerified } = opts
+    const { ecosystem } = await this.getPasskeySupport()
 
     const options = await firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>(
       '/api/interaction/passkey/registration/start',
@@ -122,8 +149,11 @@ export class PasskeyService {
     ))
     const reg = await startRegistration({ optionsJSON: options })
     try {
-      const result = await firstValueFrom(this.http.post<PasskeyRegisterResponse>('/api/interaction/passkey/registration/end', reg))
-      localStorage.setItem('passkey_seen', Date())
+      const result = await firstValueFrom(this.http.post<PasskeyRegisterResponse>(
+        '/api/interaction/passkey/registration/end',
+        { ...reg, ecosystem },
+      ))
+      localStorage.setItem(this.seenKey(ecosystem), Date())
 
       await this.openNamingDialog(result.passkeyId)
 
@@ -131,7 +161,7 @@ export class PasskeyService {
     } catch (error) {
       // Check if error because passkey already exists
       if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-        localStorage.setItem('passkey_seen', Date())
+        localStorage.setItem(this.seenKey(ecosystem), Date())
       }
       throw error
     }
@@ -160,21 +190,34 @@ export class PasskeyService {
     })
   }
 
-  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged' | 'hasPasskeys'>>) {
-    return user.isPrivileged
-      // && !user.hasPasskeys // Only ask to create a passkey if the user has none. Need to think about this.
-      && (await this.getPasskeySupport()).enabled
-      && !this.localPasskeySeen()
-      && !this.localPasskeySkipped()
+  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged' | 'passkeyEcosystems' | 'passkeySkippedEcosystems'>>) {
+    if (!user.isPrivileged) return false
+
+    const support = await this.getPasskeySupport()
+    if (!support.enabled) return false
+
+    const { ecosystem } = support
+
+    if (ecosystem && user.passkeyEcosystems?.includes(ecosystem)) return false
+    if (this.localPasskeySeen(ecosystem)) return false
+    if (ecosystem && user.passkeySkippedEcosystems?.includes(ecosystem)) return false
+    if (this.localPasskeySkipped(ecosystem)) return false
+
+    return true
   }
 
   async dialogRegistration() {
+    const { ecosystem } = await this.getPasskeySupport()
+
     return new Promise<void>((resolve, _reject) => {
       const dialog = this.dialog.open(PasskeyDialog, { disableClose: true })
 
       dialog.afterClosed().subscribe((result) => {
         if (!result) {
-          localStorage.setItem('passkey_skipped', Date())
+          localStorage.setItem(this.skippedKey(ecosystem), Date())
+          if (ecosystem) {
+            firstValueFrom(this.http.post('/api/user/passkey/skip', { ecosystem })).catch(() => {})
+          }
           resolve()
           return
         }
@@ -202,6 +245,7 @@ export type PasskeySupport = {
   enabled: boolean
   platformName?: 'Face ID' | 'Touch ID'
   platformIcon?: string
+  ecosystem?: string
 }
 
 @Component({
@@ -224,7 +268,7 @@ export type PasskeySupport = {
     </mat-dialog-actions>
   `,
   styles: `
-    
+
   `,
 })
 class PasskeyDialog implements OnInit {

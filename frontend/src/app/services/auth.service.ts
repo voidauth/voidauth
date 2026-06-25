@@ -65,14 +65,14 @@ export class AuthService {
     }))
   }
 
-  async endPasskeySignup(body: RegistrationResponseJSON & Omit<RegisterUser, 'password'>) {
+  async endPasskeySignup(body: RegistrationResponseJSON & Omit<RegisterUser, 'password'> & { ecosystem?: string }) {
     try {
       const result = await firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/register/passkey/end', body))
-      localStorage.setItem('passkey_seen', 'true')
+      localStorage.setItem(body.ecosystem ? `passkey_seen_${body.ecosystem}` : 'passkey_seen', 'true')
       return result
     } catch (error) {
       if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-        localStorage.setItem('passkey_seen', 'true')
+        localStorage.setItem(body.ecosystem ? `passkey_seen_${body.ecosystem}` : 'passkey_seen', 'true')
       }
       throw error
     }
@@ -110,14 +110,14 @@ export class AuthService {
     return firstValueFrom(this.http.post<PublicKeyCredentialCreationOptionsJSON>('/api/public/reset_password/passkey/start', body))
   }
 
-  async resetPasswordPasskeyEnd(body: Omit<ResetPassword, 'newPassword'> & RegistrationResponseJSON) {
+  async resetPasswordPasskeyEnd(body: Omit<ResetPassword, 'newPassword'> & RegistrationResponseJSON & { ecosystem?: string }) {
     try {
       const result = await firstValueFrom(this.http.post<PasswordResetResponse>('/api/public/reset_password/passkey/end', body))
-      localStorage.setItem('passkey_seen', 'true')
+      localStorage.setItem(body.ecosystem ? `passkey_seen_${body.ecosystem}` : 'passkey_seen', 'true')
       return result
     } catch (error) {
       if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-        localStorage.setItem('passkey_seen', 'true')
+        localStorage.setItem(body.ecosystem ? `passkey_seen_${body.ecosystem}` : 'passkey_seen', 'true')
       }
       throw error
     }

@@ -14,6 +14,7 @@ export type Passkey = Pick<Audit, 'createdAt'> & {
   transports?: string | null // CSV array
 
   lastUsed: Date | number
+  ecosystem?: string | null
 }
 
 const _typeCheckPasskey: DBColumnTypesCheck<Passkey> = true
