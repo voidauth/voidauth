@@ -1,39 +1,7 @@
 import { TABLES } from '@shared/db'
 import { db } from './db'
 import type { CustomClaim, InvitationCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
-
-const protectedScopes = [
-  'openid',
-  'address',
-  'email',
-  'phone',
-  'profile',
-  'groups',
-] as const
-
-const protectedClaims = [
-  'address',
-  'email',
-  'email_verified',
-  'phone_number',
-  'phone_number_verified',
-  'birthdate',
-  'family_name',
-  'gender',
-  'given_name',
-  'locale',
-  'middle_name',
-  'name',
-  'nickname',
-  'picture',
-  'preferred_username',
-  'profile',
-  'updated_at',
-  'website',
-  'zoneinfo',
-  'groups',
-  'roles',
-] as const
+import { PROTECTED_CLAIMS, PROTECTED_SCOPES } from '@shared/constants'
 
 const defaultScopeClaims = {
   // OIDC 1.0 Standard
@@ -59,23 +27,24 @@ const defaultScopeClaims = {
 
   // Additional
   groups: ['groups'],
-} as const satisfies Partial<Record<typeof protectedScopes[number], (typeof protectedClaims[number])[]>>
+} as const satisfies Partial<Record<typeof PROTECTED_SCOPES[number], (typeof PROTECTED_CLAIMS[number])[]>>
 
-export async function getCustomClaims(): Promise<{
-  [key: string]: string[]
-}> {
+export async function getCustomClaims(): Promise<Record<string, string[]>> {
   const claims = (await db()
     .select('scope', 'claim')
     .table<CustomClaim>(TABLES.CUSTOM_CLAIM))
     .reduce<{ [key: string]: string[] }>((acc, c) => {
-      if ((protectedScopes as ReadonlyArray<string>).includes(c.scope) || (protectedClaims as ReadonlyArray<string>).includes(c.claim)) {
+      if ((PROTECTED_SCOPES as ReadonlyArray<string>).includes(c.scope)
+        || (c.claim && (PROTECTED_CLAIMS as ReadonlyArray<string>).includes(c.claim))) {
         return acc
       }
 
       if (!acc[c.scope]) {
         acc[c.scope] = []
       }
-      acc[c.scope]?.push(c.claim)
+      if (c.claim) {
+        acc[c.scope]?.push(c.claim)
+      }
       return acc
     }, {})
   return {
@@ -83,11 +52,18 @@ export async function getCustomClaims(): Promise<{
   }
 }
 
-export async function getAllClaims(): Promise<typeof defaultScopeClaims & Awaited<ReturnType<typeof getCustomClaims>>> {
+export async function getAllClaims(): Promise<Record<string, string[]>> {
   return {
     ...(await getCustomClaims()),
     ...defaultScopeClaims,
   }
+}
+
+export async function getAllScopes() {
+  return [
+    ...Object.keys(await getAllClaims()),
+    'openid', 'offline_access',
+  ]
 }
 
 export async function getUserCustomClaims(userId: string) {
@@ -95,7 +71,7 @@ export async function getUserCustomClaims(userId: string) {
     .select('scope', 'claim', 'value')
     .table<CustomClaim>(TABLES.CUSTOM_CLAIM)
     .innerJoin<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM, `${TABLES.CUSTOM_CLAIM}.id`, `${TABLES.USER_CUSTOM_CLAIM}.claimId`)
-    .where({ userId }))
+    .where({ userId })).filter(c => !!c.claim) as { scope: string, claim: string, value: string }[]
   return claims
 }
 

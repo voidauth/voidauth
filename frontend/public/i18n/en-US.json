@@ -307,14 +307,20 @@
         "add-group": "Add Group",
         "security-groups": "Security Groups:",
         "user-expiration-date": "Access Expiration Date",
-        "user-expiration-time": "Access Expiration Time"
+        "user-expiration-time": "Access Expiration Time",
+        "custom-claims": "Custom Claims",
+        "scope": "Scope",
+        "claim": "Claim",
+        "value": "Value",
+        "no-custom-claims": "No custom claims configured."
       },
       "actions": {
         "sign-out": "Sign Out"
       },
       "tooltips": {
         "remove": "Remove",
-        "open": "Open"
+        "open": "Open",
+        "edit": "Edit"
       }
     },
     "clients": {

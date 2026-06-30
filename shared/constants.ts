@@ -2,6 +2,8 @@ export const ADMIN_GROUP = 'auth_admins' as const
 export const ADMIN_USER = 'auth_admin' as const
 
 export const USERNAME_REGEX = /^[A-Za-z0-9_]{1,32}$/
+export const CUSTOM_CLAIM_SCOPE_REGEX = /^[A-Za-z0-9._:~-]+$/
+export const CUSTOM_CLAIM_CLAIM_REGEX = /^[a-zA-Z0-9_]+$/
 
 // Paths that the server might redirect the frontend toward
 export const REDIRECT_PATHS = {
@@ -58,3 +60,59 @@ export const TTLs = {
   DAY: 1 * DAY,
   YEAR: 1 * YEAR,
 } as const
+
+export const PROTECTED_SCOPES = [
+  'openid',
+  'offline_access',
+  'address',
+  'email',
+  'phone',
+  'profile',
+
+  'groups',
+  'group',
+  'roles',
+  'role',
+] as const
+
+export const PROTECTED_CLAIMS = [
+  'address',
+  'email',
+  'email_verified',
+  'phone_number',
+  'phone_number_verified',
+  'birthdate',
+  'family_name',
+  'gender',
+  'given_name',
+  'locale',
+  'middle_name',
+  'name',
+  'nickname',
+  'picture',
+  'preferred_username',
+  'profile',
+  'updated_at',
+  'website',
+  'zoneinfo',
+
+  'groups',
+  'group',
+  'roles',
+  'role',
+] as const
+
+const _CLIENT_DEFAULTS = {
+  scope: 'openid offline_access profile email groups',
+  grant_types: ['authorization_code', 'refresh_token'],
+  response_types: [
+    'code',
+    'none',
+  ],
+} as const
+
+export const CLIENT_DEFAULTS = {
+  scope: _CLIENT_DEFAULTS.scope,
+  grant_types: [..._CLIENT_DEFAULTS.grant_types],
+  response_types: [..._CLIENT_DEFAULTS.response_types],
+}

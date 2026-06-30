@@ -15,6 +15,7 @@ import { UserService } from '../../../../services/user.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
+import { CustomClaimDialogComponent } from '../../../../dialogs/custom-claim-dialog/custom-claim-dialog.component'
 import type { ItemIn, Nullable } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe } from '@ngx-translate/core'
@@ -44,6 +45,12 @@ export class UserComponent implements OnInit {
     disabled: false,
   }, [])
 
+  public customClaimColumns = ['scope', 'claim', 'value', 'actions']
+
+  public get customClaims() {
+    return this.form.controls.customClaims.value
+  }
+
   public form = new FormGroup({
     username: new FormControl<string | null>(null, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
     email: new FormControl<string | null>(null, [isValidEmail]),
@@ -53,6 +60,7 @@ export class UserComponent implements OnInit {
     approved: new FormControl<boolean>(false, { nonNullable: true }),
     mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
     groups: new FormControl<UserDetails['groups']>([], { nonNullable: true }),
+    customClaims: new FormControl<UserUpdate['customClaims']>([], { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<UserUpdate, 'id' | 'username'> & Nullable<Pick<UserUpdate, 'username'>>>>
 
   private adminService = inject(AdminService)
@@ -86,6 +94,7 @@ export class UserComponent implements OnInit {
           approved: !!user.approved,
           mfaRequired: !!user.mfaRequired,
           groups: user.groups,
+          customClaims: user.customClaims,
           expiresAt: user.expiresAt ? new Date(user.expiresAt) : null,
         })
 
@@ -135,6 +144,61 @@ export class UserComponent implements OnInit {
     this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g.name !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
+  }
+
+  addCustomClaim() {
+    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+      data: {
+        header: 'Add Custom Claim',
+        existingClaims: this.form.controls.customClaims.value,
+      },
+      disableClose: true,
+    })
+
+    dialogRef.afterClosed().subscribe((result: ItemIn<UserUpdate['customClaims']> | null) => {
+      if (!result) {
+        return
+      }
+
+      this.form.controls.customClaims.setValue([
+        ...this.form.controls.customClaims.value,
+        result,
+      ].sort((a, b) => {
+        return a.scope.localeCompare(b.scope, undefined, { sensitivity: 'base' })
+          || a.claim.localeCompare(b.claim, undefined, { sensitivity: 'base' })
+      }))
+      this.form.controls.customClaims.markAsDirty()
+    })
+  }
+
+  editCustomClaim(claimToEdit: ItemIn<UserUpdate['customClaims']>) {
+    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+      data: {
+        header: 'Edit Custom Claim',
+        existingClaims: this.form.controls.customClaims.value,
+        editClaim: claimToEdit,
+      },
+      disableClose: true,
+    })
+
+    dialogRef.afterClosed().subscribe((result: ItemIn<UserUpdate['customClaims']> | null) => {
+      if (!result) {
+        return
+      }
+
+      this.form.controls.customClaims.setValue(
+        this.form.controls.customClaims.value.map((claim) => {
+          return claim === claimToEdit ? result : claim
+        }),
+      )
+      this.form.controls.customClaims.markAsDirty()
+    })
+  }
+
+  removeCustomClaim(removed: ItemIn<UserUpdate['customClaims']>) {
+    const updated = this.form.controls.customClaims.value.filter(c => c !== removed)
+    this.form.controls.customClaims.setValue(updated)
+    this.form.controls.customClaims.markAsDirty()
   }
 
   async submit() {

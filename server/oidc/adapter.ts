@@ -22,7 +22,6 @@ function parsePayload(payload: string, pt: PayloadType) {
       }
       parsed.client_secret = client_secret
     }
-    parsed.scope = 'openid offline_access profile email groups custom'
   }
   return parsed
 }

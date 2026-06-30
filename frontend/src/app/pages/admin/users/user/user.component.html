@@ -85,6 +85,65 @@
         </mat-error>
       }
 
+      <mat-expansion-panel style="width: 100%">
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ "admin.user.labels.custom-claims" | translate }}</mat-panel-title>
+        </mat-expansion-panel-header>
+        <table mat-table [dataSource]="customClaims" style="width: 100%">
+          <ng-container matColumnDef="scope">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.user.labels.scope" | translate }}</th>
+            <td mat-cell *matCellDef="let claim" style="white-space: normal; word-break: break-word">{{ claim.scope }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="claim">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.user.labels.claim" | translate }}</th>
+            <td mat-cell *matCellDef="let claim" style="white-space: normal; word-break: break-word">{{ claim.claim }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="value">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.user.labels.value" | translate }}</th>
+            <td mat-cell *matCellDef="let claim" style="white-space: normal; word-break: break-word">{{ claim.value }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th style="text-align: right" mat-header-cell *matHeaderCellDef>
+              <button mat-icon-button type="button" (click)="addCustomClaim()">
+                <mat-icon fontSet="material-icons-round" matSuffix>add</mat-icon>
+              </button>
+            </th>
+            <td mat-cell *matCellDef="let claim" style="text-align: right">
+              <div>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="editCustomClaim(claim)"
+                  [matTooltip]="'admin.user.tooltips.edit' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="removeCustomClaim(claim)"
+                  [matTooltip]="'admin.user.tooltips.remove' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="customClaimColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: customClaimColumns"></tr>
+        </table>
+
+        @if (!customClaims.length) {
+          <div align="center" style="padding: 16px">
+            {{ "admin.user.labels.no-custom-claims" | translate }}
+          </div>
+        }
+      </mat-expansion-panel>
+
       <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; width: 100%">
         <mat-form-field style="flex: 1 1 260px">
           <mat-label>{{ "admin.user.labels.user-expiration-date" | translate }}</mat-label>

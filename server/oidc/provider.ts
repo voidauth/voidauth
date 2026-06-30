@@ -1,8 +1,8 @@
-import Provider, { type Configuration } from 'oidc-provider'
+import Provider, { type ClientMetadata, type Configuration } from 'oidc-provider'
 import { findAccount, getUserById, userRequiresMfa } from '../db/user'
 import appConfig, { basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
 import { KnexAdapter } from './adapter'
-import { ADMIN_GROUP, REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, CLIENT_DEFAULTS, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import { interactionPolicy } from 'oidc-provider'
@@ -16,7 +16,6 @@ import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
 import { randomBytes } from 'crypto'
 import { logger } from '../util/logger'
 import { getClient } from '../db/client'
-import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { OIDCGroup, Group } from '@shared/db/Group'
 import add from 'oidc-provider/lib/helpers/add_client.js'
 import { db } from '../db/db'
@@ -49,6 +48,10 @@ declare module 'oidc-provider' {
     }
   }
 }
+
+/**
+ * Provider Configuration
+ */
 
 // Modify consent interaction policy to check for user and client groups
 const { Check, base } = interactionPolicy
@@ -329,7 +332,7 @@ async function getNextConfig() {
       AuthorizationCode: 60 /* 1 minute in seconds */,
       BackchannelAuthenticationRequest: function BackchannelAuthenticationRequestTTL(ctx, _request, _client) {
         if (ctx.oidc.params?.requested_expiry) {
-        // 10 minutes in seconds or requested_expiry, whichever is shorter
+          // 10 minutes in seconds or requested_expiry, whichever is shorter
           return Math.min(10 * 60, +ctx.oidc.params.requested_expiry)
         }
 
@@ -396,14 +399,7 @@ async function getNextConfig() {
         scope: 'openid',
       },
     ],
-    clientDefaults: {
-      scope: 'openid offline_access profile email groups custom',
-      grant_types: ['authorization_code', 'refresh_token'],
-      response_types: [
-        'code',
-        'none',
-      ],
-    },
+    clientDefaults: CLIENT_DEFAULTS,
     claims: await getAllClaims(),
     responseTypes: RESPONSE_TYPES.slice(),
     conformIdTokenClaims: false,
@@ -606,32 +602,19 @@ export function getCurrentProviderConfig() {
   return _config
 }
 
-export async function customClaimsNeedsUpdate() {
+/**
+ * Provider Utilities
+ */
+
+export async function providerClaimsDesynced() {
   const currentClaims = await getAllClaims()
   const providerConfig = getCurrentProviderConfig()
   const providerClaims = providerConfig.claims ?? {}
 
-  const normalize = (claims: Record<string, string[] | null>) => {
-    const out: Record<string, string[] | null> = {}
-    for (const key of Object.keys(claims).sort()) {
-      const val = claims[key]
-      if (!Array.isArray(val)) {
-        out[key] = []
-        continue
-      }
-      const arr = val
-      const uniq = Array.from(new Set(arr))
-      uniq.sort()
-      out[key] = uniq
-    }
-    return out
-  }
-
-  return JSON.stringify(normalize(currentClaims)) !== JSON.stringify(normalize(providerClaims))
+  return JSON.stringify(currentClaims) !== JSON.stringify(providerClaims)
 }
 
-export async function upsertClient(clientMetadata: ClientResponse, user: Pick<User, 'id'>, ctx: unknown) {
-  const { groups, ...metadata } = clientMetadata
+export async function upsertClient(metadata: ClientMetadata, groups: string[], user: Pick<User, 'id'>, ctx: unknown) {
   await provider().Client.validate(metadata)
   const client = await add(provider(), metadata, { ctx, store: true })
   await provider().Client.validate(client.metadata())

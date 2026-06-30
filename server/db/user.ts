@@ -166,8 +166,8 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
       } = { sub: id }
       const scopes = new Set(scope.split(' '))
 
-      for (const scope of scopes) {
-        switch (scope) {
+      for (const s of scopes) {
+        switch (s) {
           case 'email':
             accountClaims.email = user.email ?? null
             accountClaims.email_verified = !!user.emailVerified
@@ -183,7 +183,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
             break
 
           default: {
-            const claims = user.customClaims.filter(c => c.scope === scope)
+            const claims = user.customClaims.filter(c => c.scope === s)
             for (const c of claims) {
               try {
                 accountClaims[c.claim] = JSON.parse(c.value)
