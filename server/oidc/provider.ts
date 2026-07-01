@@ -607,17 +607,21 @@ export async function upsertClient(provider: Provider, clientMetadata: ClientRes
   const client = await add(provider, metadata, { ctx, store: true })
   await provider.Client.validate(client.metadata())
   const clientId = client.clientId
-  const clientGroups: OIDCGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups)).map((g) => {
-    return {
-      groupId: g.id,
-      oidcId: clientId,
-      oidcType: PayloadTypes.Client,
-      createdBy: user.id,
-      updatedBy: user.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-  })
+  const clientGroups: OIDCGroup[] = groups.length > 0
+    ? (await db().select().table<Group>(TABLES.GROUP)
+        .whereRaw(`LOWER("name") IN (${groups.map(() => 'LOWER(?)').join(',')})`, groups))
+        .map((g) => {
+          return {
+            groupId: g.id,
+            oidcId: clientId,
+            oidcType: PayloadTypes.Client,
+            createdBy: user.id,
+            updatedBy: user.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }
+        })
+    : []
   if (clientGroups[0]) {
     await db().table<OIDCGroup>(TABLES.OIDC_GROUP).insert(clientGroups)
       .onConflict(['groupId', 'oidcId', 'oidcType']).merge(mergeKeys(clientGroups[0]))
