@@ -1,1 +1,587 @@
-{}
+{
+  "login": {
+    "password": {
+      "label": "Wachtwoord"
+    },
+    "username": {
+      "label": "Gebruikersnaam of e-mailadres"
+    },
+    "forgot-password": "Wachtwoord vergeten",
+    "remember-me": "Mijn gegevens onthouden",
+    "actions": {
+      "login": "Inloggen",
+      "sign-up": "Aanmelden"
+    },
+    "title": "Inloggen"
+  },
+  "contact-us": {
+    "actions": {
+      "label": "Contact"
+    }
+  },
+  "app": {
+    "loading": "Laden...",
+    "navigation": {
+      "profile": "Profiel",
+      "admin": {
+        "title": "Admin",
+        "oidc-apps": "OIDC Apps",
+        "proxyauth-domains": "ProxyAuth Domains",
+        "users": "Gebruikers",
+        "groups": "Groepen",
+        "invitations": "Uitnodigingen",
+        "password-resets": "Herstelde wachtwoorden",
+        "sent-mail": "Verzonden e-mail"
+      },
+      "logout": "Uitloggen"
+    }
+  },
+  "passkey-title": "Passkey",
+  "passkey-dialog": {
+    "title": "{{platformName}} inschakelen?",
+    "actions": {
+      "passkey": "{{platformName}} inschakelen"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "{{platformName}} gebruiken",
+      "register-passkey": "Passkey registreren",
+      "back": "Terug"
+    },
+    "title": "Multi-factor authenticatie vereist"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "Aanmelden met {{platformName}}",
+      "sign-up": "Aanmelden",
+      "login": "Inloggen"
+    },
+    "title": {
+      "accept-invitation": "Uitnodiging accepteren",
+      "sign-up": "Aanmelden"
+    },
+    "username": {
+      "label": "Gebruikersnaam"
+    },
+    "email": {
+      "label": "E-mailadres"
+    },
+    "name": {
+      "label": "Naam"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "{{platformName}} inschakelen",
+      "reset-password": "Wachtwoord opnieuw instellen"
+    },
+    "title": "Wachtwoord opnieuw instellen"
+  },
+  "approval-required": {
+    "content": "Uw account moet worden goedgekeurd voordat u kunt inloggen. Wacht even of neem contact op met een beheerder voor hulp.",
+    "title": "Goedkeuring vereist",
+    "actions": {
+      "login": "Inloggen",
+      "try-again": "Opnieuw proberen"
+    }
+  },
+  "forbidden": {
+    "title": "Toegang verboden",
+    "content": "U bent niet gemachtigd voor toegang tot deze bron.",
+    "actions": {
+      "back": "Terug"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "Inloggen"
+    },
+    "info": {
+      "sign-into-question": "Wilt u inloggen bij <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "Nadat u bent ingelogd, wordt u omgeleid naar <b>{{redirect}}</b>"
+    },
+    "title": "Bevestigen"
+  },
+  "forgot-password": {
+    "username": {
+      "label": "E-mailadres of gebruikersnaam"
+    },
+    "actions": {
+      "send": "Versturen",
+      "send-again": "Opnieuw versturen",
+      "create-again": "Opnieuw aanmaken",
+      "create": "Aanmaken"
+    },
+    "title": "Wachtwoord vergeten"
+  },
+  "form-errors": {
+    "required": "Vereist.",
+    "min": "Moet minstens {{min}} zijn.",
+    "max": "Mag niet groter zijn dan {{max}}.",
+    "minLength": "Moet minstens {{requiredLength}} tekens lang zijn.",
+    "maxLength": "Moet minder dan {{requiredLength}} tekens lang zijn.",
+    "email": "Geen geldig e-mailadres.",
+    "default": "Ongeldige waarde.",
+    "alpha-num-underscore-only": "Alleen A-Z, 0-9, en _ toegestaan"
+  },
+  "logout": {
+    "title": "Uitloggen",
+    "info": {
+      "logout-question": "Wilt u uitloggen?"
+    },
+    "actions": {
+      "yes": "Ja",
+      "back": "Terug",
+      "no": "Nee"
+    }
+  },
+  "page-not-found": {
+    "title": "De pagina kan niet worden gevonden",
+    "actions": {
+      "go-home": "Terug naar startpagina"
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "E-mailadres verifiëren...",
+        "email-could-not-be-verified": "E-mailadres kan niet worden geverifieerd",
+        "sending-new-verification": "Nieuwe verificatie versturen...",
+        "email-verification-could-not-be-sent": "E-mail verificatie kan niet worden verzonden"
+      },
+      "actions": {
+        "send-again": "Opnieuw versturen"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "Verificatiemail verzonden",
+        "email-verification-required": "E-mailverificatie vereist"
+      },
+      "actions": {
+        "logout": "Uitloggen",
+        "send-again": "Opnieuw versturen",
+        "send-verification": "Verificatie versturen"
+      },
+      "email": {
+        "label": "E-mailadres"
+      }
+    }
+  },
+  "settings": {
+    "title": "Instellingen",
+    "sections": {
+      "profile": {
+        "title": "Profiel",
+        "username": {
+          "label": "Gebruikersnaam"
+        },
+        "name": {
+          "label": "Naam"
+        },
+        "actions": {
+          "submit": {
+            "label": "Profiel bijwerken"
+          }
+        },
+        "email": {
+          "label": "E-mailadres",
+          "actions": {
+            "submit": {
+              "label": "E-mailadres bijwerken"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "Beveiliging",
+        "password": {
+          "set": {
+            "label": "Wachtwoord instellen"
+          },
+          "change": {
+            "label": "Wachtwoord wijzigen"
+          }
+        },
+        "passkeys": {
+          "title": "Passkeys",
+          "noPasskeys": "U heeft geen geregistreerde wachtwoorden.",
+          "register": {
+            "label": "Passkey registreren"
+          },
+          "manage": {
+            "title": "Passkeys beheren"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "Bewerken"
+            },
+            "delete": {
+              "tooltip": "Verwijderen"
+            }
+          }
+        },
+        "mfa": {
+          "title": "Multi-factor authenticatie",
+          "status": {
+            "enabled": "Multi-factor authenticatie is ingeschakeld.",
+            "disabled": "Multi-factor authenticatie is niet ingeschakeld."
+          },
+          "authenticators": {
+            "has": "U heeft ten minste één geregistreerde Authentificator.",
+            "none": "U heeft geen geregistreerde Authentificators."
+          },
+          "add": {
+            "label": "Authenticator toevoegen"
+          },
+          "enable": {
+            "label": "MFA inschakelen"
+          }
+        }
+      },
+      "account": {
+        "title": "Account",
+        "removePassword": {
+          "label": "Wachtwoord verwijderen",
+          "tooltip": {
+            "noPassword": "U heeft geen wachtwoord om te verwijderen",
+            "noPasskeys": "U heeft geen Passkeys"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "Alle Passkeys verwijderen",
+          "tooltip": {
+            "noPasskeys": "U heeft geen Passkeys om te verwijderen",
+            "noPassword": "U heeft geen wachtwoord"
+          }
+        },
+        "disableMfa": {
+          "label": "MFA uitschakelen"
+        },
+        "removeAuthenticators": {
+          "label": "Authenticators verwijderen"
+        },
+        "deleteAccount": {
+          "label": "Account verwijderen"
+        }
+      }
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "Bewerken",
+        "delete": "Verwijderen",
+        "update": "Bijwerken",
+        "create": "Aanmaken",
+        "view": "Weergeven",
+        "open": "Openen",
+        "remove": "Verwijderen"
+      },
+      "labels": {
+        "mfa-required": "MFA vereist",
+        "email-verified": "E-mailadres geverifieerd",
+        "approved": "Goedgekeurd"
+      },
+      "messages": {
+        "all-users-have-access": "Geen groepen, ALLE gebruikers hebben toegang."
+      }
+    },
+    "users": {
+      "empty-state": "Geen gebruikers.",
+      "actions": {
+        "select": "Selecteren",
+        "approve": "Goedkeuren"
+      },
+      "labels": {
+        "search": "Zoeken"
+      }
+    },
+    "user": {
+      "title": "Gebruiker bijwerken",
+      "labels": {
+        "username": "Gebruikersnaam",
+        "name": "Naam",
+        "email": "E-mailadres",
+        "add-group": "Groep toevoegen",
+        "security-groups": "Veiligheidsgroepen:",
+        "user-expiration-date": "Toegang vervaldatum",
+        "user-expiration-time": "Toegang vervaltijd"
+      },
+      "actions": {
+        "sign-out": "Uitloggen"
+      },
+      "tooltips": {
+        "remove": "Verwijderen",
+        "open": "Openen"
+      }
+    },
+    "clients": {
+      "empty-state": "Geen OIDC Apps.",
+      "actions": {
+        "create": "OIDC App aanmaken"
+      }
+    },
+    "client": {
+      "title": "OIDC App",
+      "labels": {
+        "name": "Naam",
+        "home-page-url": "Homepage URL",
+        "logo-url": "Logo URL",
+        "add-group": "Groep toevoegen",
+        "client-id": "Client-ID",
+        "auth-method": "Auth-methode",
+        "client-secret": "Cliëntgeheim",
+        "redirect-url": "Nieuwe omleidings-URL",
+        "response-types": "Reactietypes",
+        "grant-types": "Toekenningstypes",
+        "postlogout-url": "PostLogout URL",
+        "allowed-groups": "Toegestane groepen:",
+        "redirect-urls": "Omleidings-URLs:"
+      },
+      "hints": {
+        "pkce-required": "PKCE vereist met deze authenticatiemethode.",
+        "not-required": "Niet vereist voor huidige authenticatiemethode.",
+        "postlogout-redirect": "Toegestane omleidings-URL na uitloggen bij door de client geïnitieerd uitloggen."
+      },
+      "checkboxes": {
+        "skip-consent": "Toestemming overslaan",
+        "mfa-required": "MFA vereist"
+      },
+      "tooltips": {
+        "skip-consent": "Gebruikersbevestiging voor deze app overslaan.",
+        "mfa-required": "Gebruikers moeten mfa gebruiken voor toegang tot deze app.",
+        "copy-client-id": "Client-ID kopiëren",
+        "copy-secret": "Geheim kopiëren"
+      },
+      "messages": {
+        "client-id-copied": "Client-ID naar klembord gekopieerd.",
+        "secret-copied": "Geheim gekopieerd naar klembord."
+      }
+    },
+    "domains": {
+      "empty-state": "Geen domeinen.",
+      "actions": {
+        "create": "ProxyAuth-domein aanmaken"
+      }
+    },
+    "domain": {
+      "title": "ProxyAuth-domein",
+      "labels": {
+        "domain": "Domein",
+        "max-session-length": "Max sessie-duur (minuten)",
+        "add-group": "Groep toevoegen",
+        "allowed-groups": "Toegestane groepen:"
+      },
+      "placeholders": {
+        "domain": "bijv. *.uw.domein.com/path/"
+      },
+      "sections": {
+        "domain-help": "Domein Hulp"
+      },
+      "hints": {
+        "no-re-auth": "Blanco betekent geen herauthenticatie vereist."
+      },
+      "help-text": {
+        "0": "Domein mag geen protocol bevatten, kan een pad en een poort bevatten en ondersteunt wildcards (*) op elke positie.",
+        "1": "<b>example.domain.com/api/alive</b> zal slechts de toegang tot één eindpunt controleren.",
+        "2": "<b>example.domain.com/api/*</b> controleert de toegang tot alle eindpunten onder /api."
+      }
+    },
+    "password-resets": {
+      "labels": {
+        "create-link": "Wachtwoordherstellink aanmaken"
+      },
+      "tooltips": {
+        "send-email": "Stuur e-mail naar {{email}}",
+        "copy-link": "Link kopiëren",
+        "delete": "Verwijderen"
+      },
+      "messages": {
+        "link-copied": "Herstellink naar klembord gekopieerd."
+      }
+    },
+    "emails": {
+      "empty-state": "Geen verzonden e-mail.",
+      "actions": {
+        "send-test": "Test e-mail versturen"
+      },
+      "tooltips": {
+        "preview": "Voorbeeld",
+        "view-user": "Gebruiker weergeven"
+      }
+    },
+    "groups": {
+      "empty-state": "Geen groepen.",
+      "actions": {
+        "create": "Groep aanmaken"
+      }
+    },
+    "group": {
+      "title": "Groep",
+      "labels": {
+        "name": "Naam",
+        "add-user": "Gebruiker toevoegen",
+        "users": "Gebruikers:"
+      },
+      "checkboxes": {
+        "mfa-required": "MFA vereist",
+        "auto-assign": "Automatisch toewijzen"
+      }
+    },
+    "invitations": {
+      "empty-state": "Geen uitnodigingen.",
+      "actions": {
+        "create": "Uitnodiging aanmaken"
+      }
+    },
+    "invitation": {
+      "title": "Uitnodiging",
+      "labels": {
+        "invite-link": "Uitnodigingslink",
+        "username": "Gebruikersnaam",
+        "email": "E-mailadres",
+        "name": "Naam",
+        "add-group": "Groep toevoegen",
+        "security-groups": "Veiligheidsgroepen:",
+        "user-expiration-date": "Toegang vervaldatum",
+        "user-expiration-time": "Toegang vervaltijd"
+      },
+      "tooltips": {
+        "copy-invite-link": "Uitnodigingslink kopiëren",
+        "unsaved-changes": "U heeft niet-opgeslagen wijzigingen.",
+        "send-to": "Uitnodiging versturen naar: {{email}}"
+      },
+      "messages": {
+        "link-copied": "Uitnodigingslink gekopieerd naar klembord.",
+        "email-not-verified": "Kan geen e-mail sturen naar uitnodigingslink, e-mailverbinding niet geverifieerd.",
+        "no-email": "Kan geen e-mail sturen naar uitnodigingslink, uitnodiging bevat geen e-mailadres."
+      },
+      "actions": {
+        "send": "Uitnodiging versturen"
+      },
+      "checkboxes": {
+        "email-verified": "E-mailadres geverifieerd"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "Inloggen"
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": "{{label}} gekopieerd naar klembord."
+      }
+    },
+    "oidc-info": {
+      "title": "OIDC-informatie",
+      "labels": {
+        "issuer": "OIDC-uitgever eindpunt",
+        "well-known": "Bekend eindpunt",
+        "authorization": "Autorisatie eindpunt",
+        "token": "Token eindpunt",
+        "userinfo": "Gebruikersinformatie-eindpunt",
+        "logout": "Logout eindpunt",
+        "jwks": "JWKs eindpunt"
+      },
+      "actions": {
+        "all-info": "Alle info"
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "Nieuw wachtwoord",
+        "old-password": "Oud wachtwoord",
+        "confirm-password": "Wachtwoord bevestigen"
+      }
+    },
+    "totp-input": {
+      "title": "Hierdoor wordt Multi-Factor Authenticatie op uw account ingeschakeld.",
+      "labels": {
+        "show-secret": "Geheim weergeven"
+      },
+      "text": {
+        "qrcode-instruction": "Scan de QR-code of voer het geheim in uw Authenticator in",
+        "then": "daarna",
+        "enter-token": "Voer de token van de authenticator in om door te gaan"
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "Systeem",
+        "light": "Licht",
+        "dark": "Donker"
+      }
+    },
+    "email-input": {
+      "message": {
+        "default": "Voer hieronder een e-mailadres in."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Annuleren"
+        },
+        "confirm": {
+          "label": "Bevestigen"
+        }
+      }
+    },
+    "totp-register": {
+      "title": "Authenticator toevoegen",
+      "actions": {
+        "cancel": {
+          "label": "Annuleren"
+        }
+      }
+    },
+    "passkey-edit": {
+      "title": "Passkey-naam bewerken",
+      "message": {
+        "default": "Voer een naam in voor deze Passkey."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Annuleren"
+        },
+        "save": {
+          "label": "Opslaan"
+        }
+      }
+    },
+    "confirm": {
+      "instructions": "Om te bevestigen, typ <b>{{requiredText}}</b> in het onderstaande veld.",
+      "actions": {
+        "cancel": {
+          "label": "Annuleren"
+        },
+        "confirm": {
+          "label": "Bevestigen"
+        }
+      }
+    }
+  },
+  "user-expired": {
+    "title": "Toegang tot account verlopen",
+    "content": "Uw toegang tot uw account is verlopen, neem contact op met een beheerder om de toegang te verlengen.",
+    "actions": {
+      "login": "Inloggen",
+      "try-again": "Opnieuw proberen"
+    }
+  },
+  "passkey-name": {
+    "title": "Passkey-naam",
+    "prompt": "Naam instellen voor de nieuwe Passkey?",
+    "actions": {
+      "skip": {
+        "label": "Overslaan"
+      },
+      "save": {
+        "label": "Opslaan"
+      }
+    }
+  }
+}
