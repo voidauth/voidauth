@@ -3,8 +3,9 @@ import { db } from '../db/db'
 import type { OIDCPayload, PayloadType } from '@shared/db/OIDCPayload'
 import appConfig from '../util/config'
 import { TABLES } from '@shared/db'
-import { decryptString, encryptString } from '../db/util'
+import { encryptString } from '../db/util'
 import { logger } from '../util/logger'
+import { parseClientPayload } from '../db/client'
 
 function getExpireAt(expiresIn: number) {
   return expiresIn
@@ -13,17 +14,12 @@ function getExpireAt(expiresIn: number) {
 }
 
 function parsePayload(payload: string, pt: PayloadType) {
-  const parsed = JSON.parse(payload) as AdapterPayload
-  if (isClientPayload(pt, parsed)) {
-    if (parsed.client_secret != null) {
-      const client_secret = decryptString(parsed.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
-      if (client_secret == null) {
-        throw new Error('Cannot decrypt client_secret')
-      }
-      parsed.client_secret = client_secret
-    }
+  switch (pt) {
+    case 'Client':
+      return parseClientPayload(payload, { strict: true })
+    default:
+      return JSON.parse(payload) as AdapterPayload
   }
-  return parsed
 }
 
 function stringifyPayload(payload: AdapterPayload, pt: PayloadType) {

@@ -6,6 +6,29 @@ import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { Group, OIDCGroup } from '@shared/db/Group'
 import { decryptString } from './util'
 import { TABLES } from '@shared/db'
+import { getProviderScopeCache } from './claims'
+
+export function parseClientPayload(payload: string, options?: { strict: boolean }): ClientMetadata {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const client: ClientMetadata = JSON.parse(payload)
+  // decrypt client_secret if it exists
+  if (client.client_secret != null) {
+    const client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
+    if (client_secret != null) {
+      client.client_secret = client_secret
+    } else {
+      if (options?.strict) {
+        throw new Error('Cannot decrypt client_secret')
+      }
+    }
+  }
+  // filter custom scopes to only those that exist in the provider (using cached)
+  if (client.scope) {
+    const scopes = client.scope.split(' ').filter(s => getProviderScopeCache().has(s))
+    client.scope = scopes.join(' ')
+  }
+  return client
+}
 
 // When getting list of clients, do not error on un-decryptable client_secret, just don't include it
 export async function getClients(): Promise<ClientResponse[]> {
@@ -25,14 +48,7 @@ export async function getClients(): Promise<ClientResponse[]> {
       if (existing && r.groupName) {
         existing.groups.push(r.groupName)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const c: ClientMetadata = JSON.parse(r.payload)
-        if (c.client_secret) {
-          const client_secret = decryptString(c.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
-          if (client_secret) {
-            c.client_secret = client_secret
-          }
-        }
+        const c = parseClientPayload(r.payload, { strict: false })
         const cr: ClientResponse = { ...c, groups: [] }
         if (r.groupName) {
           cr.groups.push(r.groupName)
@@ -64,15 +80,7 @@ export async function getClient(client_id: string): Promise<ClientResponse | und
     return
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const client: ClientMetadata = JSON.parse(clientDB.payload)
-
-  if (client.client_secret) {
-    const client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
-    if (client_secret) {
-      client.client_secret = client_secret
-    }
-  }
+  const client: ClientMetadata = parseClientPayload(clientDB.payload, { strict: false })
 
   const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)
     .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')

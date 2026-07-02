@@ -75,12 +75,28 @@ export const PROTECTED_SCOPES = [
   'role',
 ] as const
 
+export const PROTECTED_SCOPES_SET = new Set<string>(PROTECTED_SCOPES)
+
 export const PROTECTED_CLAIMS = [
+  'iss',
+  'sub',
+  'aud',
+  'exp',
+  'iat',
+  'auth_time',
+  'nonce',
+  'acr',
+  'amr',
+  'azp',
+
   'address',
+
   'email',
   'email_verified',
+
   'phone_number',
   'phone_number_verified',
+
   'birthdate',
   'family_name',
   'gender',
@@ -101,6 +117,8 @@ export const PROTECTED_CLAIMS = [
   'roles',
   'role',
 ] as const
+
+export const PROTECTED_CLAIMS_SET = new Set<string>(PROTECTED_CLAIMS)
 
 const _CLIENT_DEFAULTS = {
   scope: 'openid offline_access profile email groups',

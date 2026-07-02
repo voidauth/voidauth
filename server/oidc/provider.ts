@@ -2,7 +2,7 @@ import Provider, { type ClientMetadata, type Configuration } from 'oidc-provider
 import { findAccount, getUserById, userRequiresMfa } from '../db/user'
 import appConfig, { basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
 import { KnexAdapter } from './adapter'
-import { ADMIN_GROUP, CLIENT_DEFAULTS, REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, CLIENT_DEFAULTS, PROTECTED_SCOPES_SET, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import { interactionPolicy } from 'oidc-provider'
@@ -13,7 +13,7 @@ import { wildcardRedirect } from '@shared/url'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { getProxyAuthWithCache } from '../db/proxyAuth'
 import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
-import { randomBytes } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 import { logger } from '../util/logger'
 import { getClient } from '../db/client'
 import type { OIDCGroup, Group } from '@shared/db/Group'
@@ -23,7 +23,8 @@ import { mergeKeys } from '../db/util'
 import type { User } from '@shared/db/User'
 import { PayloadTypes } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
-import { getAllClaims } from '../db/claims'
+import { cleanUnreferencedCustomClaims, getAllClaims, updateProviderScopeCache } from '../db/claims'
+import type { CustomScope } from '@shared/db/CustomClaim'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -401,7 +402,7 @@ async function getNextConfig() {
     ],
     clientDefaults: CLIENT_DEFAULTS,
     claims: await getAllClaims(),
-    responseTypes: RESPONSE_TYPES.slice(),
+    responseTypes: [...RESPONSE_TYPES],
     conformIdTokenClaims: false,
     extraClientMetadata: {
       properties: ['skip_consent', 'require_mfa'],
@@ -579,6 +580,8 @@ async function createProvider(): Promise<[Provider, Configuration]> {
     return postLogoutRedirectUriAllowed.call(this, postLogoutRedirectUri)
   }
 
+  await updateProviderScopeCache()
+
   return [nextProvider, config]
 }
 
@@ -619,6 +622,8 @@ export async function upsertClient(metadata: ClientMetadata, groups: string[], u
   const client = await add(provider(), metadata, { ctx, store: true })
   await provider().Client.validate(client.metadata())
   const clientId = client.clientId
+
+  // Sync groups for the client
   const clientGroups: OIDCGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups)).map((g) => {
     return {
       groupId: g.id,
@@ -634,10 +639,28 @@ export async function upsertClient(metadata: ClientMetadata, groups: string[], u
     await db().table<OIDCGroup>(TABLES.OIDC_GROUP).insert(clientGroups)
       .onConflict(['groupId', 'oidcId', 'oidcType']).merge(mergeKeys(clientGroups[0]))
   }
-
   await db().table<OIDCGroup>(TABLES.OIDC_GROUP).delete()
     .where({ oidcId: clientId }).and
     .whereNotIn('groupId', clientGroups.map(g => g.groupId))
+
+  // Sync scopes for the client
+  const scopes = metadata.scope?.split(' ') || []
+  // Make sure that client scopes exist in scopes list
+  const customScopes: CustomScope[] = scopes.filter(s => !PROTECTED_SCOPES_SET.has(s)).map(s => ({
+    id: randomUUID(),
+    scope: s,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }))
+  if (customScopes[0]) {
+    await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).insert(customScopes).onConflict(['scope']).merge(mergeKeys(customScopes[0]))
+  }
+  // Clean up scopes
+  await cleanUnreferencedCustomClaims()
+  // If scopes are not synced with provider, reset provider
+  if (await providerClaimsDesynced()) {
+    await resetProvider()
+  }
 
   return client
 }

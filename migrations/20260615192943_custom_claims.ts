@@ -39,7 +39,7 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema
-    .dropTable('invitation_custom_claim')
     .dropTable('user_custom_claim')
     .dropTable('custom_claim')
+    .dropTable('custom_scope')
 }
