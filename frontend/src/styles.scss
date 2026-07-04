@@ -19,7 +19,7 @@ body {
 
   // global variables
   --form-max-width: 800px;
-  --form-min-width: 300px;
+  --form-min-width: 350px;
 
   // Material component theme overrides
   @include mat.sidenav-overrides((

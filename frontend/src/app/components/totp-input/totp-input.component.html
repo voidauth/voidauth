@@ -8,41 +8,45 @@
 
     <img style="border-radius: 4px" width="240" height="240" [src]="qrcodeData" />
 
-    <mat-accordion>
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title> {{ "components.totp-input.labels.show-secret" | translate }} </mat-panel-title>
-        </mat-expansion-panel-header>
-        <p style="text-align: center; margin: 0px">
-          <small
-            ><b>{{ secret() }}</b></small
+    <div style="text-align: center; padding-top: 8px">
+      <small
+        ><b>{{ "components.totp-input.labels.secret" | translate }}</b></small
+      >
+      @if (secret(); as secretValue) {
+        <div style="display: flex; flex-direction: row; align-items: center; justify-content: center">
+          <p>
+            <b>{{ secretValue }}</b>
+          </p>
+          <button
+            class="field-suffix"
+            type="button"
+            mat-icon-button
+            matSuffix
+            matTooltip="{{ 'components.totp-input.tooltips.copy-secret' | translate }}"
+            [cdkCopyToClipboard]="secretValue"
+            (click)="onSecretCopy()"
           >
-        </p>
-      </mat-expansion-panel>
-    </mat-accordion>
+            <mat-icon fontSet="material-icons-round" matSuffix>copy</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
 
     <p style="padding: 0px 16px; text-align: center">{{ "components.totp-input.text.qrcode-instruction" | translate }}</p>
 
     <app-text-divider [text]="'components.totp-input.text.then' | translate"></app-text-divider>
   }
 
-  <div class="totp-digit-container">
-    @for (digit of code; let i = $index; track i) {
-      <mat-form-field class="totp-field">
-        <input
-          matInput
-          type="text"
-          maxlength="1"
-          [disabled]="disabled()"
-          [id]="'totp-digit-' + i"
-          (input)="onDigitInput($event, i)"
-          (keydown)="onKeyDown($event)"
-          (paste)="onPaste($event)"
-          class="totp-digit-input"
-          pattern="\d*"
-        />
-      </mat-form-field>
-    }
-  </div>
+  <mat-form-field class="totp-field">
+    <input
+      id="totp_input"
+      matInput
+      type="text"
+      inputmode="numeric"
+      [disabled]="disabled()"
+      (input)="onCodeInput($event)"
+      class="totp-digit-input"
+    />
+  </mat-form-field>
   <p style="text-align: center; margin-top: 0px">{{ "components.totp-input.text.enter-token" | translate }}</p>
 </div>
