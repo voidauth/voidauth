@@ -5,6 +5,10 @@
   align-items: center;
   width: 100%;
   overflow-x: hidden;
+
+  > * {
+    margin: 12px;
+  }
 }
 
 .totp-field {
