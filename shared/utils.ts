@@ -87,3 +87,7 @@ function humanDurationHelper(ms: number): string | null {
   }
   return null
 }
+
+export function stringCompare(a: string, b: string, options?: Intl.CollatorOptions): number {
+  return a.localeCompare(b, undefined, { sensitivity: 'base', ...options })
+}

@@ -80,6 +80,7 @@ export const PROTECTED_SCOPES_SET = new Set<string>(PROTECTED_SCOPES)
 export const PROTECTED_CLAIMS = [
   'iss',
   'sub',
+  'sid',
   'aud',
   'exp',
   'iat',

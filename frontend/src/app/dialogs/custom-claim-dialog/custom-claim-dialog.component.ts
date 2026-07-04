@@ -8,7 +8,7 @@ import { AdminService } from '../../services/admin.service'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaims'
 import { CUSTOM_CLAIM_CLAIM_REGEX, CUSTOM_CLAIM_SCOPE_REGEX, PROTECTED_CLAIMS, PROTECTED_SCOPES } from '@shared/constants'
-import type { ItemIn } from '@shared/utils'
+import { stringCompare, type ItemIn } from '@shared/utils'
 
 type CustomClaimEntry = ItemIn<UserUpdate['customClaims']>
 
@@ -116,8 +116,7 @@ export class CustomClaimDialogComponent implements OnInit {
       const claims: CustomClaimsResponse = await this.adminService.customClaims()
       this.customClaimsByScope = claims
       this.availableScopes = Object.keys(claims)
-        .filter(scope => !this.isProtectedScope(scope)) // should not happen
-        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+        .filter(scope => !this.isProtectedScope(scope)).sort(stringCompare)
 
       const allClaims = new Set<string>()
       for (const scopeClaims of Object.values(claims)) {
@@ -127,8 +126,7 @@ export class CustomClaimDialogComponent implements OnInit {
           }
         }
       }
-      this.availableClaims = Array.from(allClaims)
-        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+      this.availableClaims = Array.from(allClaims).sort(stringCompare)
 
       this.updateScopeOptions(this.scope.value)
       this.updateClaimOptions(this.claim.value)

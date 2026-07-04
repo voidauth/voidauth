@@ -3,7 +3,7 @@ import * as _types_valid from '../@types/type_validator'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import path from 'node:path'
 import fs from 'node:fs'
-import { providerClaimsDesynced, provider, resetProvider } from '../oidc/provider'
+import { isProviderClaimsDesynced, provider, resetProvider } from '../oidc/provider'
 import { generateTheme } from '../util/theme'
 import { getUserSessionInteraction, router } from '../routes/api'
 import helmet from 'helmet'
@@ -342,7 +342,7 @@ export async function serve() {
         }
 
         // Check if current custom claims match custom claims on the provider config
-        if (await providerClaimsDesynced()) {
+        if (await isProviderClaimsDesynced()) {
           providerNeedsReset = true
         }
 

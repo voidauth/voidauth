@@ -19,6 +19,7 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
+import { stringCompare } from '@shared/utils'
 
 @Component({
   selector: 'app-invitation',
@@ -98,7 +99,7 @@ export class InvitationComponent {
           }
 
           if (this.adminConfig.defaultGroups.length) {
-            this.form.controls.groups.setValue(this.adminConfig.defaultGroups.sort())
+            this.form.controls.groups.setValue(this.adminConfig.defaultGroups.sort(stringCompare))
             this.form.controls.groups.markAsDirty()
           }
         }
@@ -159,7 +160,7 @@ export class InvitationComponent {
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort(stringCompare))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()

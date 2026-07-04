@@ -12,16 +12,16 @@ import { CLIENT_AUTH_METHODS,
   UNIQUE_RESPONSE_TYPES,
   type ClientUpsertRequest } from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
-import { type ItemIn, type Nullable, optionalizeNullable } from '@shared/utils'
+import { type ItemIn, type Nullable, optionalizeNullable, stringCompare } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
-import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { isValidWildcardRedirect, validateWildcardRedirects } from '@shared/url'
 import { TranslatePipe } from '@ngx-translate/core'
 import { TranslateService } from '@ngx-translate/core'
+import { CUSTOM_CLAIM_SCOPE_REGEX } from '@shared/constants'
 
 export type TypedControls<T> = {
   [K in keyof T]-?: FormControl<Required<T>[K]>
@@ -100,13 +100,17 @@ export class UpsertClientComponent implements OnInit {
     scopes: new FormControl<string[]>([], { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<ClientUpsertRequest, 'client_id'> & Nullable<Pick<ClientUpsertRequest, 'client_id'>>>>
 
-  public groups: string[] = []
+  public availableGroups: string[] = []
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
-  groupSelect = new FormControl<string>({
-    value: '',
-    disabled: false,
-  }, [])
+  groupSelect = new FormControl<string | null>(null)
+
+  public availableScopes: string[] = []
+  public unselectedScopes: string[] = []
+  public selectableScopes: string[] = []
+  scopeInput = new FormControl<string | null>(null, [
+    Validators.pattern(CUSTOM_CLAIM_SCOPE_REGEX),
+  ])
 
   redirectUrlControl = new FormControl<string>({
     value: '',
@@ -152,8 +156,22 @@ export class UpsertClientComponent implements OnInit {
         this.spinnerService.show()
         this.client_id = params.get('client_id')
 
-        this.groups = (await this.adminService.groups()).map(g => g.name)
-        this.groupAutoFilter()
+        try {
+          this.availableGroups = (await this.adminService.groups())
+            .map(g => g.name).sort(stringCompare)
+          this.groupAutoFilter()
+        } catch {
+          // do nothing
+        }
+
+        try {
+          this.availableScopes = (await this.adminService.scopes())
+            .filter(scope => !!scope.trim())
+            .sort(stringCompare)
+          this.scopeAutoFilter()
+        } catch {
+          // do nothing
+        }
 
         await this.getCurrentClientData()
       } catch (e) {
@@ -205,7 +223,7 @@ export class UpsertClientComponent implements OnInit {
         logo_uri: client.logo_uri ?? null,
         client_uri: client.client_uri ?? null,
         groups: client.groups,
-        scopes: client.scope?.split(' '),
+        scopes: client.scope?.split(/\s+/).filter(Boolean) ?? [],
       })
 
       const initialResponseType: ItemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
@@ -234,11 +252,13 @@ export class UpsertClientComponent implements OnInit {
     if (toggle) {
       this.form.disable()
       this.groupSelect.disable()
+      this.scopeInput.disable()
       this.redirectUrlControl.disable()
       this.responseTypeControl.disable()
     } else {
       this.form.enable()
       this.groupSelect.enable()
+      this.scopeInput.enable()
       this.redirectUrlControl.enable()
       this.responseTypeControl.enable()
     }
@@ -340,7 +360,7 @@ export class UpsertClientComponent implements OnInit {
   }
 
   groupAutoFilter(value: string = '') {
-    this.unselectedGroups = this.groups.filter((g) => {
+    this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.includes(g)
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
@@ -353,14 +373,16 @@ export class UpsertClientComponent implements OnInit {
     }
   }
 
-  addGroup(event: MatAutocompleteSelectedEvent) {
-    const value = event.option.value as string
+  addGroup(value: string) {
+    value = value.trim()
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort(stringCompare))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
+    this.groupSelect.markAsUntouched()
+    this.groupSelect.updateValueAndValidity()
     this.groupAutoFilter()
   }
 
@@ -370,11 +392,59 @@ export class UpsertClientComponent implements OnInit {
     this.groupAutoFilter()
   }
 
+  scopeAutoFilter(value: string = '') {
+    this.unselectedScopes = this.availableScopes.filter((s) => {
+      return !this.form.controls.scopes.value.includes(s)
+    })
+    this.selectableScopes = this.unselectedScopes.filter((s) => {
+      return s.toLowerCase().includes(value.toLowerCase())
+    }).slice(0, 5)
+    if (this.unselectedScopes.length) {
+      this.scopeInput.enable()
+    } else {
+      this.scopeInput.disable()
+    }
+  }
+
+  addScope(value: string): boolean {
+    value = value.trim()
+    if (!value) {
+      return false
+    }
+
+    this.scopeInput.setValue(value, { emitEvent: false })
+    this.scopeInput.markAsTouched()
+    this.scopeInput.updateValueAndValidity()
+
+    if (!this.scopeInput.valid) {
+      return false
+    }
+
+    const existingScopes = this.form.controls.scopes.value
+    if (existingScopes.includes(value)) {
+      this.scopeInput.setValue(null)
+      this.scopeInput.markAsUntouched()
+      return false
+    }
+
+    this.form.controls.scopes.setValue([value].concat(existingScopes).sort(stringCompare))
+    this.form.controls.scopes.markAsDirty()
+    this.scopeInput.setValue(null)
+    this.scopeInput.markAsUntouched()
+    this.scopeInput.updateValueAndValidity()
+    return true
+  }
+
+  removeScope(value: string) {
+    this.form.controls.scopes.setValue((this.form.controls.scopes.value).filter(scope => scope !== value))
+    this.form.controls.scopes.markAsDirty()
+  }
+
   addRedirectUrl(value: string) {
     if (this.form.controls.redirect_uris.value.includes(value)) {
       return
     }
-    this.form.controls.redirect_uris.setValue([value].concat(this.form.controls.redirect_uris.value).sort())
+    this.form.controls.redirect_uris.setValue([value].concat(this.form.controls.redirect_uris.value).sort(stringCompare))
     this.form.controls.redirect_uris.markAsDirty()
     this.form.controls.redirect_uris.updateValueAndValidity()
     this.form.controls.post_logout_redirect_uri.markAsTouched()

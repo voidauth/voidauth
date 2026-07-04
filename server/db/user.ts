@@ -15,7 +15,7 @@ import zod from 'zod'
 import { createPasswordReset, getPasswordResetURL } from './passwordReset'
 import { humanDuration } from '@shared/utils'
 import { TABLES } from '@shared/db'
-import { getUserCustomClaims } from './claims'
+import { getProviderScopeClaimCache, getUserCustomClaims } from './claims'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -164,36 +164,36 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
         name?: string | null
         groups?: string[]
       } = { sub: id }
-      const scopes = new Set(scope.split(' '))
+      const scopes = new Set(scope.split(/\s+/).filter(Boolean))
 
+      // Do custom scope processing
+      const providerScopeClaims = getProviderScopeClaimCache()
+      const customClaims = user.customClaims.filter((c) => {
+        return providerScopeClaims.scopes.has(c.scope) && providerScopeClaims.claims[c.scope]?.includes(c.claim)
+      })
       for (const s of scopes) {
-        switch (s) {
-          case 'email':
-            accountClaims.email = user.email ?? null
-            accountClaims.email_verified = !!user.emailVerified
-            break
-
-          case 'profile':
-            accountClaims.preferred_username = user.username
-            accountClaims.name = user.name
-            break
-
-          case 'groups':
-            accountClaims.groups = user.groups.map(g => g.name)
-            break
-
-          default: {
-            const claims = user.customClaims.filter(c => c.scope === s)
-            for (const c of claims) {
-              try {
-                accountClaims[c.claim] = JSON.parse(c.value)
-              } catch (_e) {
-                // for claims that aren't valid JSON, treat them as strings
-                accountClaims[c.claim] = c.value
-              }
-            }
+        const claims = customClaims.filter(c => c.scope === s)
+        for (const c of claims) {
+          try {
+            accountClaims[c.claim] = JSON.parse(c.value)
+          } catch (_e) {
+            // for claims that aren't valid JSON, treat them as strings
+            accountClaims[c.claim] = c.value
           }
         }
+      }
+
+      // Do defined scope processing
+      if (scopes.has('profile')) {
+        accountClaims.preferred_username = user.username
+        accountClaims.name = user.name
+      }
+      if (scopes.has('email')) {
+        accountClaims.email = user.email ?? null
+        accountClaims.email_verified = !!user.emailVerified
+      }
+      if (scopes.has('groups')) {
+        accountClaims.groups = user.groups.map(g => g.name)
       }
 
       return accountClaims

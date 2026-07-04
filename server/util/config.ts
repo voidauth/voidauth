@@ -299,7 +299,7 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
       case 'CLIENT_SCOPE':
         // Can be either comma or space separated
         client.scope = (validateClientVar(
-          value.split(',').join(' ').split(' ').map(v => v.trim()).filter(Boolean), clientUpsertValidator.scopes)).join(' ')
+          value.split(',').join(' ').split(/\s+/).filter(Boolean), clientUpsertValidator.scopes)).join(' ')
         break
       case 'CLIENT_POST_LOGOUT_URLS': {
         const urls = validateClientVar(value, clientUpsertValidator.post_logout_redirect_uri)

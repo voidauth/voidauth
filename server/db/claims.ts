@@ -30,14 +30,25 @@ const defaultScopeClaims = {
   groups: ['groups'],
 } as const satisfies Partial<Record<typeof PROTECTED_SCOPES[number], (typeof PROTECTED_CLAIMS[number])[]>>
 
-const providerScopeCache = new Set<string>()
-export async function updateProviderScopeCache() {
-  const scopes = await getAllScopes()
-  providerScopeCache.clear()
-  scopes.forEach(s => providerScopeCache.add(s))
+// Set up remote cache of current provider scopes and claims
+type ProviderScopeClaimCache = {
+  scopes: Set<string>
+  claims: Record<string, string[]>
 }
-export function getProviderScopeCache() {
-  return new Set(providerScopeCache)
+const providerScopeClaimCache: ProviderScopeClaimCache = {
+  scopes: new Set(),
+  claims: {},
+}
+export function updateProviderScopeClaimCache(scopeClaims: ProviderScopeClaimCache) {
+  providerScopeClaimCache.scopes.clear()
+  scopeClaims.scopes.forEach(s => providerScopeClaimCache.scopes.add(s))
+  providerScopeClaimCache.claims = JSON.parse(JSON.stringify(scopeClaims.claims)) as Record<string, string[]>
+}
+export function getProviderScopeClaimCache(): ProviderScopeClaimCache {
+  return {
+    scopes: new Set(providerScopeClaimCache.scopes),
+    claims: JSON.parse(JSON.stringify(providerScopeClaimCache.claims)) as Record<string, string[]>,
+  }
 }
 
 export async function getCustomClaims(): Promise<Record<string, string[]>> {
@@ -72,7 +83,7 @@ export async function getAllClaims(): Promise<Record<string, string[]>> {
 }
 
 export async function getCustomScopes() {
-  return await db().select().table<CustomScope>(TABLES.CUSTOM_SCOPE)
+  return (await db().select().table<CustomScope>(TABLES.CUSTOM_SCOPE)).filter(s => !PROTECTED_SCOPES_SET.has(s.scope))
 }
 
 export async function getAllScopes(): Promise<string[]> {
@@ -110,8 +121,10 @@ export async function cleanUnreferencedCustomClaims() {
   const referencedScopeNames: string[] = Array.from(new Set([
     ...(await db().select('id', 'payload').table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where({ type: PayloadTypes.Client })).map((r) => {
       const c: unknown = JSON.parse(r.payload)
-      return (c && typeof c === 'object' && 'scope' in c && typeof c.scope === 'string' && c.scope) ? c.scope : null
-    }).filter(s => s != null),
+      return (c && typeof c === 'object' && 'scope' in c && typeof c.scope === 'string' && c.scope)
+        ? c.scope.split(/\s+/).filter(Boolean)
+        : []
+    }).flat(),
   ]))
   await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).delete()
     .where((w) => {

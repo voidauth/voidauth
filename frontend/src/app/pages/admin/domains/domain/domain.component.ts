@@ -10,7 +10,7 @@ import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
-import { type Nullable } from '@shared/utils'
+import { stringCompare, type Nullable } from '@shared/utils'
 import { isValidWildcardDomain } from '@shared/url'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { MatDialog } from '@angular/material/dialog'
@@ -109,7 +109,7 @@ export class DomainComponent {
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort(stringCompare))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()

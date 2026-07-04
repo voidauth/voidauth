@@ -1,6 +1,6 @@
 import { Router, type Response } from 'express'
 import { db, rollback } from '../db/db'
-import { providerClaimsDesynced, isOIDCProviderError, provider, removeClient, resetProvider, upsertClient } from '../oidc/provider'
+import { isProviderClaimsDesynced, isOIDCProviderError, provider, removeClient, resetProvider, upsertClient } from '../oidc/provider'
 import { clientUpsertValidator, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomBytes, randomUUID } from 'crypto'
@@ -455,7 +455,7 @@ adminRouter.patch('/user',
     await cleanUnreferencedCustomClaims()
 
     // Check if all custom claims matches current provider claims, update if not
-    if (await providerClaimsDesynced()) {
+    if (await isProviderClaimsDesynced()) {
       await resetProvider()
     }
 

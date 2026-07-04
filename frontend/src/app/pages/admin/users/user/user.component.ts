@@ -16,7 +16,7 @@ import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { CustomClaimDialogComponent } from '../../../../dialogs/custom-claim-dialog/custom-claim-dialog.component'
-import type { ItemIn, Nullable } from '@shared/utils'
+import { stringCompare, type ItemIn, type Nullable } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe } from '@ngx-translate/core'
 
@@ -133,8 +133,7 @@ export class UserComponent implements OnInit {
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value)
-      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })))
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort((a, b) => stringCompare(a.name, b.name)))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()
@@ -164,8 +163,7 @@ export class UserComponent implements OnInit {
         ...this.form.controls.customClaims.value,
         result,
       ].sort((a, b) => {
-        return a.scope.localeCompare(b.scope, undefined, { sensitivity: 'base' })
-          || a.claim.localeCompare(b.claim, undefined, { sensitivity: 'base' })
+        return stringCompare(a.scope, b.scope) || stringCompare(a.claim, b.claim)
       }))
       this.form.controls.customClaims.markAsDirty()
     })

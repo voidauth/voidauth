@@ -15,7 +15,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
-import { humanDuration } from '@shared/utils'
+import { humanDuration, stringCompare } from '@shared/utils'
 import { AsyncPipe } from '@angular/common'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
@@ -69,7 +69,7 @@ export class PasswordResetsComponent {
     try {
       this.spinnerService.show()
       this.users = (await this.adminService.users()).sort((a, b) => {
-        return a.username.localeCompare(b.username, undefined, { sensitivity: 'base' })
+        return stringCompare(a.username, b.username)
       })
       this.userAutoFilter()
 

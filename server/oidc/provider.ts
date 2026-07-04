@@ -23,7 +23,7 @@ import { mergeKeys } from '../db/util'
 import type { User } from '@shared/db/User'
 import { PayloadTypes } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
-import { cleanUnreferencedCustomClaims, getAllClaims, updateProviderScopeCache } from '../db/claims'
+import { cleanUnreferencedCustomClaims, getAllClaims, getAllScopes, updateProviderScopeClaimCache } from '../db/claims'
 import type { CustomScope } from '@shared/db/CustomClaim'
 
 // Extend 'oidc-provider' where needed
@@ -273,7 +273,7 @@ async function getNextConfig() {
     throw new Error('No Cookie Signing Keys found.')
   }
 
-  const configuration: Configuration = {
+  const configuration = {
     features: {
       devInteractions: {
         enabled: false,
@@ -300,7 +300,7 @@ async function getNextConfig() {
         enabled: true,
       },
       claimsParameter: {
-        enabled: true,
+        enabled: false,
       },
       rpInitiatedLogout: {
       // custom logout question page
@@ -402,6 +402,7 @@ async function getNextConfig() {
     ],
     clientDefaults: CLIENT_DEFAULTS,
     claims: await getAllClaims(),
+    scopes: await getAllScopes(),
     responseTypes: [...RESPONSE_TYPES],
     conformIdTokenClaims: false,
     extraClientMetadata: {
@@ -441,7 +442,7 @@ async function getNextConfig() {
     },
     findAccount: findAccount,
     adapter: KnexAdapter,
-  }
+  } satisfies Configuration
 
   return configuration
 }
@@ -580,7 +581,10 @@ async function createProvider(): Promise<[Provider, Configuration]> {
     return postLogoutRedirectUriAllowed.call(this, postLogoutRedirectUri)
   }
 
-  await updateProviderScopeCache()
+  updateProviderScopeClaimCache({
+    scopes: new Set(config.scopes),
+    claims: config.claims,
+  })
 
   return [nextProvider, config]
 }
@@ -609,15 +613,40 @@ export function getCurrentProviderConfig() {
  * Provider Utilities
  */
 
-export async function providerClaimsDesynced() {
+export async function isProviderClaimsDesynced() {
   const currentClaims = await getAllClaims()
+  const currentScopes = await getAllScopes()
   const providerConfig = getCurrentProviderConfig()
   const providerClaims = providerConfig.claims ?? {}
+  const providerScopes = providerConfig.scopes ?? []
 
-  return JSON.stringify(currentClaims) !== JSON.stringify(providerClaims)
+  const claimsDesynced = JSON.stringify(currentClaims) !== JSON.stringify(providerClaims)
+  const scopesDesynced = JSON.stringify(currentScopes) !== JSON.stringify(providerScopes)
+  return claimsDesynced || scopesDesynced
 }
 
 export async function upsertClient(metadata: ClientMetadata, groups: string[], user: Pick<User, 'id'>, ctx: unknown) {
+  // Sync scopes for the client
+  const scopes = Array.from(new Set(metadata.scope?.split(/\s+/).filter(Boolean) || []))
+  if (!scopes.includes('openid')) {
+    scopes.push('openid')
+  }
+  // Make sure that client scopes exist in scopes list
+  const customScopes: CustomScope[] = scopes.filter(s => !PROTECTED_SCOPES_SET.has(s)).map(s => ({
+    id: randomUUID(),
+    scope: s,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }))
+  if (customScopes[0]) {
+    await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).insert(customScopes).onConflict(['scope']).merge(mergeKeys(customScopes[0]))
+  }
+
+  // Add any new scopes to the provider by resetting it
+  if (await isProviderClaimsDesynced()) {
+    await resetProvider()
+  }
+
   await provider().Client.validate(metadata)
   const client = await add(provider(), metadata, { ctx, store: true })
   await provider().Client.validate(client.metadata())
@@ -643,22 +672,10 @@ export async function upsertClient(metadata: ClientMetadata, groups: string[], u
     .where({ oidcId: clientId }).and
     .whereNotIn('groupId', clientGroups.map(g => g.groupId))
 
-  // Sync scopes for the client
-  const scopes = metadata.scope?.split(' ') || []
-  // Make sure that client scopes exist in scopes list
-  const customScopes: CustomScope[] = scopes.filter(s => !PROTECTED_SCOPES_SET.has(s)).map(s => ({
-    id: randomUUID(),
-    scope: s,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }))
-  if (customScopes[0]) {
-    await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).insert(customScopes).onConflict(['scope']).merge(mergeKeys(customScopes[0]))
-  }
   // Clean up scopes
   await cleanUnreferencedCustomClaims()
   // If scopes are not synced with provider, reset provider
-  if (await providerClaimsDesynced()) {
+  if (await isProviderClaimsDesynced()) {
     await resetProvider()
   }
 

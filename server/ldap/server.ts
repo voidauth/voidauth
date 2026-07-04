@@ -19,6 +19,7 @@ import {
 } from './directory'
 import { timingSafeEqual } from 'node:crypto'
 import zod from 'zod'
+import { stringCompare } from '@shared/utils'
 
 const RESULT_SUCCESS = 0
 const RESULT_OPERATIONS_ERROR = 1
@@ -552,11 +553,11 @@ function filterMatches(filter: LDAPFilter, attributes: LDAPAttributes): boolean 
       return !filterMatches(filter.filter, attributes)
     case 'equality':
     case 'approx':
-      return attributeValues(attributes, filter.attribute).some(value => value.toLowerCase() === filter.value.toLowerCase())
+      return attributeValues(attributes, filter.attribute).some(value => value.toLocaleLowerCase() === filter.value.toLocaleLowerCase())
     case 'greaterOrEqual':
-      return attributeValues(attributes, filter.attribute).some(value => value.localeCompare(filter.value) >= 0)
+      return attributeValues(attributes, filter.attribute).some(value => stringCompare(value, filter.value) >= 0)
     case 'lessOrEqual':
-      return attributeValues(attributes, filter.attribute).some(value => value.localeCompare(filter.value) <= 0)
+      return attributeValues(attributes, filter.attribute).some(value => stringCompare(value, filter.value) <= 0)
     case 'present':
       return attributeValues(attributes, filter.attribute).length > 0
     case 'substrings':

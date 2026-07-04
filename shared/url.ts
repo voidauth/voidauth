@@ -1,3 +1,5 @@
+import { stringCompare } from './utils'
+
 type URLPatternGroups = {
   protocol?: string
   userinfo?: string
@@ -178,7 +180,7 @@ export function sortWildcardDomains(ad: string, bd: string) {
     return pathResult
   }
 
-  return b.href.localeCompare(a.href)
+  return stringCompare(b.href, a.href)
 }
 
 function sortWildcardParts(aParts: string[], bParts: string[]) {

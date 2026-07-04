@@ -344,7 +344,9 @@
         "grant-types": "Grant Types",
         "postlogout-url": "PostLogout URL",
         "allowed-groups": "Allowed Groups:",
-        "redirect-urls": "Redirect URLs:"
+        "redirect-urls": "Redirect URLs:",
+        "add-scope": "Add Scope",
+        "allowed-scopes": "Allowed Scopes:"
       },
       "hints": {
         "pkce-required": "PKCE Required with this Auth Method.",

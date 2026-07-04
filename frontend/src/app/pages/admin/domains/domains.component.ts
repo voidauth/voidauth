@@ -13,6 +13,7 @@ import { sortWildcardDomains } from '@shared/url'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { TranslatePipe } from '@ngx-translate/core'
+import { stringCompare } from '@shared/utils'
 
 @Component({
   selector: 'app-domains',
@@ -66,10 +67,7 @@ export class DomainsComponent {
       this.dataSource.data.sort((a, b) => sortWildcardDomains(a.domain, b.domain))
     } else {
       this.dataSource.data.sort((a, b) => {
-        return String(a[field]).localeCompare(String(b[field]), undefined, {
-          numeric: false,
-          sensitivity: 'base',
-        })
+        return stringCompare(String(a[field]), String(b[field]))
       })
     }
 
