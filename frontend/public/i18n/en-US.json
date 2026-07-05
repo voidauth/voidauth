@@ -502,12 +502,18 @@
     "totp-input": {
       "title": "This will enable Multi-Factor Authentication on your account.",
       "labels": {
-        "show-secret": "Show Secret"
+        "secret": "Secret:"
       },
       "text": {
         "qrcode-instruction": "Scan the QRCode or Enter the Secret in your Authenticator",
         "then": "then",
         "enter-token": "Enter Token from Authenticator to Continue"
+      },
+      "tooltips": {
+        "copy-secret": "Copy secret to clipboard."
+      },
+      "messages": {
+        "copied-secret": "Secret copied to clipboard."
       }
     },
     "theme-toggle": {
