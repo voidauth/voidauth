@@ -13,15 +13,12 @@
 
 .totp-field {
   text-align: center;
+  width: 80%;
+  min-width: 200px;
 }
 
-.totp-digit-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  width: 300px;
-}
-
-.totp-digit-input {
+input.totp-digit-input {
   text-align: center;
+  font-size: 24px;
+  font-weight: bold;
 }
