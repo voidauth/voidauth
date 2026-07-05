@@ -156,6 +156,8 @@ export class UpsertClientComponent implements OnInit {
         this.spinnerService.show()
         this.client_id = params.get('client_id')
 
+        await this.getCurrentClientData()
+
         try {
           this.availableGroups = (await this.adminService.groups())
             .map(g => g.name).sort(stringCompare)
@@ -172,8 +174,6 @@ export class UpsertClientComponent implements OnInit {
         } catch {
           // do nothing
         }
-
-        await this.getCurrentClientData()
       } catch (e) {
         console.error(e)
         this.snackbarService.error('Error loading OIDC App Details.')

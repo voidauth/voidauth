@@ -64,6 +64,7 @@ export const TTLs = {
 export const PROTECTED_SCOPES = [
   'openid',
   'offline_access',
+
   'address',
   'email',
   'phone',
@@ -78,6 +79,7 @@ export const PROTECTED_SCOPES = [
 export const PROTECTED_SCOPES_SET = new Set<string>(PROTECTED_SCOPES)
 
 export const PROTECTED_CLAIMS = [
+  // oidc provider package protects some of these, but add them anyways
   'iss',
   'sub',
   'sid',

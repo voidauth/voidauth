@@ -261,15 +261,15 @@ router.get('/:uid/detail',
       return
     }
     const { uid, params } = interaction
-    const scope = typeof params.scope === 'string' ? params.scope : ''
-    const client = await provider().Client.find(params.client_id as string)
+    const scope = typeof params.scope === 'string' ? params.scope : null
+    const client = typeof params.client_id === 'string' ? await provider().Client.find(params.client_id) : undefined
     const details: ConsentDetails = {
       uid: uid,
-      clientId: params.client_id as string,
+      clientId: typeof params.client_id === 'string' ? params.client_id : undefined,
       clientName: client?.clientName,
       logoUri: client?.logoUri,
-      redirectUri: params.redirect_uri as string,
-      scopes: scope.split(' '),
+      redirectUri: typeof params.redirect_uri === 'string' ? params.redirect_uri : undefined,
+      scopes: scope?.split(/\s+/).filter(Boolean),
     }
 
     res.send(details)

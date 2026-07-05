@@ -167,8 +167,9 @@ export async function serve() {
     force: false,
   })
   // certain static assets should have Cross-Origin-Resource-Policy = cross-origin header
-  const brandImgRegex = new RegExp(`(logo|favicon|apple-touch-icon)\\.(svg|png|jpg|jpeg)`)
-  const brandImgPathRegex = new RegExp(`^${basePath()}/${brandImgRegex.source}$`)
+  const brandImgBaseRegex = new RegExp(`(logo|favicon|apple-touch-icon)\\.(svg|png|jpg|jpeg)`)
+  const brandImgRegex = new RegExp(`^${brandImgBaseRegex.source}$`)
+  const brandImgPathRegex = new RegExp(`^${basePath()}/${brandImgBaseRegex.source}$`)
   app.use(brandImgPathRegex, (_req, res, next) => {
     // Allow branding assets to be used cross-origin
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
