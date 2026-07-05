@@ -501,7 +501,6 @@
     },
     "totp-input": {
       "title": "Hierdoor wordt Multi-Factor Authenticatie op uw account ingeschakeld.",
-      "labels": {},
       "text": {
         "qrcode-instruction": "Scan de QR-code of voer het geheim in uw Authenticator in",
         "then": "daarna",
