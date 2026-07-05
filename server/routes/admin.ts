@@ -323,7 +323,7 @@ adminRouter.patch('/user',
     const { groups: userGroupNames, customClaims: userCustomClaims, ...user } = userUpdate
 
     // Validate user custom claims
-    const userCustomClaimKeys: Record<string, Record<string, true>> = {}
+    const userCustomClaimKeys: Record<string, Set<string>> = {}
     for (const customClaim of userCustomClaims) {
       // Make sure scope and claim are not protected
       if (PROTECTED_SCOPES_SET.has(customClaim.scope) || PROTECTED_CLAIMS_SET.has(customClaim.claim)) {
@@ -331,17 +331,17 @@ adminRouter.patch('/user',
         return
       }
       // Check and make sure no duplicate scope+claim records in user custom claims
-      if (userCustomClaimKeys[customClaim.scope]?.[customClaim.claim]) {
+      if (userCustomClaimKeys[customClaim.scope]?.has(customClaim.claim)) {
         res.status(400).send({ message: 'Duplicate custom claim scope + claim combinations are not allowed.' })
         return
       }
       let scopeClaims = userCustomClaimKeys[customClaim.scope]
       if (!scopeClaims) {
-        const newScopeClaims = {}
+        const newScopeClaims = new Set<string>()
         userCustomClaimKeys[customClaim.scope] = newScopeClaims
         scopeClaims = newScopeClaims
       }
-      scopeClaims[customClaim.claim] = true
+      scopeClaims.add(customClaim.claim)
     }
 
     const existingUser = await db().table<User>(TABLES.USER).where({ id: userUpdate.id }).first()

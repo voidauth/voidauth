@@ -47,10 +47,6 @@ export class UserComponent implements OnInit {
 
   public customClaimColumns = ['scope', 'claim', 'value', 'actions']
 
-  public get customClaims() {
-    return this.form.controls.customClaims.value
-  }
-
   public form = new FormGroup({
     username: new FormControl<string | null>(null, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
     email: new FormControl<string | null>(null, [isValidEmail]),

@@ -97,7 +97,7 @@ export class UpsertClientComponent implements OnInit {
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     client_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     groups: new FormControl<string[]>([], { nonNullable: true }),
-    scopes: new FormControl<string[]>([], { nonNullable: true }),
+    scopes: new FormControl<string[]>(['openid', 'profile', 'email', 'groups', 'offline_access'].sort(), { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<ClientUpsertRequest, 'client_id'> & Nullable<Pick<ClientUpsertRequest, 'client_id'>>>>
 
   public availableGroups: string[] = []
@@ -223,7 +223,7 @@ export class UpsertClientComponent implements OnInit {
         logo_uri: client.logo_uri ?? null,
         client_uri: client.client_uri ?? null,
         groups: client.groups,
-        scopes: client.scope?.split(/\s+/).filter(Boolean) ?? [],
+        scopes: client.scope?.split(/\s+/).filter(Boolean) ?? ['openid', 'profile', 'email', 'groups', 'offline_access'].sort(),
       })
 
       const initialResponseType: ItemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []

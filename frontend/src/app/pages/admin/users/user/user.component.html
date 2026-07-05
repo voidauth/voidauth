@@ -89,7 +89,7 @@
         <mat-expansion-panel-header>
           <mat-panel-title>{{ "admin.user.labels.custom-claims" | translate }}</mat-panel-title>
         </mat-expansion-panel-header>
-        <table mat-table [dataSource]="customClaims" style="width: 100%">
+        <table mat-table [dataSource]="form.controls.customClaims.value" style="width: 100%">
           <ng-container matColumnDef="scope">
             <th mat-header-cell *matHeaderCellDef>{{ "admin.user.labels.scope" | translate }}</th>
             <td mat-cell *matCellDef="let claim" style="white-space: normal; word-break: break-word">{{ claim.scope }}</td>
@@ -137,7 +137,7 @@
           <tr mat-row *matRowDef="let row; columns: customClaimColumns"></tr>
         </table>
 
-        @if (!customClaims.length) {
+        @if (!form.controls.customClaims.value.length) {
           <div align="center" style="padding: 16px">
             {{ "admin.user.labels.no-custom-claims" | translate }}
           </div>
