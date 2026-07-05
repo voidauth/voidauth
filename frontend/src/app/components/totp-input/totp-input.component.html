@@ -42,7 +42,11 @@
       id="totp_input"
       matInput
       type="text"
+      name="totp"
       inputmode="numeric"
+      autocomplete="one-time-code"
+      maxlength="6"
+      pattern="[0-9]*"
       [disabled]="disabled()"
       (input)="onCodeInput($event)"
       class="totp-digit-input"
