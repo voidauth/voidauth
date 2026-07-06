@@ -27,7 +27,6 @@ export class LogoutComponent implements OnInit {
   private spinnerService = inject(SpinnerService)
 
   public baseHref = getBaseHrefPath()
-
   history = window.history
 
   async ngOnInit() {

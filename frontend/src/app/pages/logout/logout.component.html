@@ -13,7 +13,9 @@
           {{ "logout.actions.yes" | translate }}
         </button>
         @if (history.length) {
-          <button mat-button type="button" (click)="history.back()">{{ "logout.actions.back" | translate }}</button>
+          <button mat-button type="button" (click)="history.back()">
+            {{ "logout.actions.back" | translate }}
+          </button>
         } @else {
           <button mat-button type="submit">{{ "logout.actions.no" | translate }}</button>
         }
