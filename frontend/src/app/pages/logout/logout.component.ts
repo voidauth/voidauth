@@ -27,8 +27,6 @@ export class LogoutComponent implements OnInit {
   private spinnerService = inject(SpinnerService)
 
   public baseHref = getBaseHrefPath()
-  protected isSubmitting = false
-
   history = window.history
 
   async ngOnInit() {
@@ -60,51 +58,6 @@ export class LogoutComponent implements OnInit {
     } else {
       this.spinnerService.show(true)
       window.location.assign(`${this.baseHref}/oidc/session/end`)
-    }
-  }
-
-  protected async onSubmit(event: SubmitEvent) {
-    event.preventDefault()
-
-    if (this.isSubmitting) return
-
-    const form = event.currentTarget
-    if (!(form instanceof HTMLFormElement)) return
-
-    const formData = new FormData(form)
-    const body = new URLSearchParams()
-    for (const [key, value] of formData.entries()) {
-      if (typeof value === 'string') {
-        body.append(key, value)
-      }
-    }
-
-    try {
-      this.isSubmitting = true
-      this.spinnerService.show(true)
-
-      const response = await fetch(form.action, {
-        method: 'POST',
-        body: body.toString(),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        },
-        credentials: 'include',
-        redirect: 'manual',
-      })
-
-      const location = response.headers.get('location')
-      if (location) {
-        window.location.assign(location)
-        return
-      }
-
-      if (response.status >= 400) {
-        throw new Error('Logout failed. Please try again.')
-      }
-    } finally {
-      this.isSubmitting = false
-      this.spinnerService.hide()
     }
   }
 }

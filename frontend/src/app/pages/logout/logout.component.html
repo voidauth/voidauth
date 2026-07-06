@@ -1,7 +1,7 @@
 <h1>{{ "logout.title" | translate }}</h1>
 <mat-card class="form-card">
   <mat-card-content>
-    <form autocomplete="off" [action]="baseHref + '/oidc/session/end/confirm'" method="post" (submit)="onSubmit($event)">
+    <form autocomplete="off" [action]="baseHref + '/oidc/session/end/confirm'" method="post">
       <!-- TODO: Display OIDC App name/id if provided -->
       @if (privUser) {
         <h2>{{ privUser.name ?? privUser.username }}</h2>
@@ -9,15 +9,15 @@
       <p>{{ "logout.info.logout-question" | translate }}</p>
       <input type="hidden" name="xsrf" [value]="challenge" />
       <mat-card-actions>
-        <button mat-flat-button autofocus="" [disabled]="!challenge || isSubmitting" type="submit" value="yes" name="logout">
+        <button mat-flat-button autofocus="" [disabled]="!challenge" type="submit" value="yes" name="logout">
           {{ "logout.actions.yes" | translate }}
         </button>
         @if (history.length) {
-          <button mat-button type="button" (click)="history.back()" [disabled]="isSubmitting">
+          <button mat-button type="button" (click)="history.back()">
             {{ "logout.actions.back" | translate }}
           </button>
         } @else {
-          <button mat-button type="submit" [disabled]="isSubmitting">{{ "logout.actions.no" | translate }}</button>
+          <button mat-button type="submit">{{ "logout.actions.no" | translate }}</button>
         }
       </mat-card-actions>
     </form>
