@@ -17,10 +17,12 @@ export class SpinnerService {
   }
 
   hide() {
-    this.count--
-    setTimeout(() => {
-      this.checkStatusHide()
-    }, 2000) // Keep the spinner visible for a bit to avoid flickering
+    this.count = Math.max(0, this.count - 1)
+    if (this.count <= 0) {
+      setTimeout(() => {
+        this.checkStatusHide()
+      }, 2000) // Keep the spinner visible for a bit to avoid flickering
+    }
   }
 
   private checkStatusShow() {

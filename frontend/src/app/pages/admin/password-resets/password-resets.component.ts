@@ -68,14 +68,21 @@ export class PasswordResetsComponent {
     // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
-      this.users = (await this.adminService.users()).sort((a, b) => {
+
+      const [users, passwordResets, config] = await Promise.all([
+        this.adminService.users(),
+        this.adminService.passwordResets(),
+        this.configService.getConfig(),
+      ])
+
+      this.users = users.sort((a, b) => {
         return a.username.localeCompare(b.username, undefined, { sensitivity: 'base' })
       })
       this.userAutoFilter()
 
-      this.config = await this.configService.getConfig()
+      this.config = config
 
-      this.dataSource.data = await this.adminService.passwordResets()
+      this.dataSource.data = passwordResets
       this.dataSource.paginator = this.paginator()
       this.dataSource.sort = this.sort()
     } finally {

@@ -70,9 +70,13 @@ export class EmailsComponent {
     try {
       this.spinnerService.show()
 
-      this.me = await this.userService.getMyUser()
-      this.config = await this.configService.getConfig()
-      await this.setData()
+      const [me, config, _] = await Promise.all([
+        this.userService.getMyUser(),
+        this.configService.getConfig(),
+        this.setData(),
+      ])
+      this.me = me
+      this.config = config
 
       this.paginator().page.subscribe(async () => {
         await this.setData()
