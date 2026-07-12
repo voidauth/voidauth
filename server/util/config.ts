@@ -1,4 +1,5 @@
 import { exit } from 'node:process'
+import { readFile } from 'node:fs/promises'
 import { booleanString } from './util'
 import { logger } from './logger'
 import * as psl from 'psl'
@@ -404,10 +405,30 @@ function stringDuration(durationStr: unknown) {
 
 const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
 
-// read from process env vars
-configKeys.forEach((key: keyof Config) => {
-  assignConfigValue(key, process.env[key])
-})
+// read from process env vars or the given FILE__
+for (const key of configKeys) {
+  const envValue = process.env[key]
+  const fileEnvKey = `FILE__${key}`
+  const fileEnvKeyValue = process.env[fileEnvKey]
+  const fileValue = fileEnvKeyValue !== undefined
+    ? (await readFile(fileEnvKeyValue, 'utf8')
+        .catch((err: unknown) => {
+          if ((<{ code: unknown }>err).code !== 'ENOENT') {
+            throw err
+          }
+        })
+      )?.trim()
+    : undefined
+  if (envValue && fileValue) {
+    logger({
+      level: 'error',
+      message: `${key} and ${fileEnvKey} cannot both be set.`,
+    })
+    exit(1)
+  }
+  const value = envValue ?? fileValue
+  assignConfigValue(key, value)
+}
 
 refreshDeclaredClients(await registerDockerListener())
 
