@@ -33,14 +33,14 @@ export function parseClientPayload(payload: string, options?: { strict: boolean 
 // When getting list of clients, do not error on un-decryptable client_secret, just don't include it
 export async function getClients(): Promise<ClientResponse[]> {
   const clients = (await db()
-    .select<{ id: string, payload: string, groupName?: string }[]>(
+    .select(
       db().ref('id').withSchema(TABLES.OIDC_PAYLOADS),
       db().ref('payload').withSchema(TABLES.OIDC_PAYLOADS),
       db().ref('name').as('groupName').withSchema(TABLES.GROUP),
     )
     .table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
-    .leftOuterJoin<OIDCGroup>(TABLES.OIDC_GROUP, `${TABLES.OIDC_PAYLOADS}.id`, 'oidc_group.oidcId')
-    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
+    .leftOuterJoin<OIDCGroup | Record<string, null>>(TABLES.OIDC_GROUP, `${TABLES.OIDC_PAYLOADS}.id`, 'oidc_group.oidcId')
+    .leftOuterJoin<Group | Record<string, null>>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ type: PayloadTypes.Client })
     .orderBy(db().ref('id').withSchema(TABLES.OIDC_PAYLOADS), 'asc'))
     .reduce<ClientResponse[]>((arr, r) => {
@@ -83,7 +83,7 @@ export async function getClient(client_id: string): Promise<ClientResponse | und
   const client: ClientMetadata = parseClientPayload(clientDB.payload, { strict: false })
 
   const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)
-    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
+    .innerJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ oidcId: client_id }))
     .map(g => g.name)
   return { ...client, groups, declared: false as const }

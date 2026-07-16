@@ -41,7 +41,7 @@
             (input)="groupAutoFilter(input.value)"
             (focus)="groupAutoFilter(input.value)"
           />
-          <mat-autocomplete (optionSelected)="addGroup($event); input.value = ''" requireSelection #auto="matAutocomplete">
+          <mat-autocomplete #auto="matAutocomplete" requireSelection (optionSelected)="addGroup($event.option.value); input.value = ''">
             @for (option of selectableGroups; track option) {
               <mat-option [value]="option">{{ option.name }}</mat-option>
             }

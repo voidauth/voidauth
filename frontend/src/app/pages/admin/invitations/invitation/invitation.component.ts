@@ -1,7 +1,6 @@
 import { AsyncPipe, CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
-import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { ActivatedRoute, Router } from '@angular/router'
 import { USERNAME_REGEX } from '@shared/constants'
 import { MaterialModule } from '../../../../material-module'
@@ -39,7 +38,7 @@ export class InvitationComponent {
   public config?: ConfigResponse
   public adminConfig?: AdminConfig
 
-  public groups: string[] = []
+  public availableGroups: string[] = []
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
   groupSelect = new FormControl<string>({
@@ -83,7 +82,7 @@ export class InvitationComponent {
 
         this.config = await this.configService.getConfig()
         this.adminConfig = await this.adminService.config()
-        this.groups = (await this.adminService.groups()).map(g => g.name)
+        this.availableGroups = (await this.adminService.groups()).map(g => g.name)
 
         if (id) {
           // We are updating an invite
@@ -142,7 +141,7 @@ export class InvitationComponent {
   }
 
   groupAutoFilter(value: string = '') {
-    this.unselectedGroups = this.groups.filter((g) => {
+    this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.includes(g)
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
@@ -155,14 +154,16 @@ export class InvitationComponent {
     }
   }
 
-  addGroup(event: MatAutocompleteSelectedEvent) {
-    const value = event.option.value as string
+  addGroup(value: string) {
+    value = value.trim()
     if (!value) {
       return
     }
     this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort(stringCompare))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
+    this.groupSelect.markAsUntouched()
+    this.groupSelect.updateValueAndValidity()
     this.groupAutoFilter()
   }
 

@@ -39,8 +39,8 @@ import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
 import type { CustomClaim, CustomScope, UserCustomClaim } from '@shared/db/CustomClaim'
-import { cleanUnreferencedCustomClaims, getAllScopes, getCustomClaims } from '../db/claims'
-import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaims'
+import { getAllScopes, getCustomClaimsRecords } from '../db/claims'
+import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaimResponse'
 import type { ClientMetadata } from 'oidc-provider'
 
 export const adminRouter = Router()
@@ -54,9 +54,9 @@ adminRouter.get('/config', async (_req, res) => {
   } satisfies AdminConfig)
 })
 
-adminRouter.get('/custom_claims', async (_req, res) => {
-  const claims = await getCustomClaims()
-  res.send(claims satisfies CustomClaimsResponse)
+adminRouter.get('/custom_scopes_claims', async (_req, res) => {
+  const claims = await getCustomClaimsRecords()
+  res.send(claims satisfies CustomClaimsResponse[])
 })
 
 adminRouter.get('/scopes', async (_req, res) => {
@@ -413,13 +413,14 @@ adminRouter.patch('/user',
           id: randomUUID(),
           scopeId: matchingScope.id,
           claim: c.claim,
+          includedInLdap: false, // by default do not include in LDAP, but include in merge keys so that it does not overwrite
           createdAt: new Date(),
           updatedAt: new Date(),
         }
       })
       if (customClaims[0]) {
         customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
-          .onConflict(['scopeId', 'claim']).merge(mergeKeys(customClaims[0])).returning('*')
+          .onConflict(['scopeId', 'claim']).merge(mergeKeys(customClaims[0], ['includedInLdap'])).returning('*')
       }
 
       // Delete any user custom claims not present in new custom claims payload
@@ -443,6 +444,7 @@ adminRouter.patch('/user',
           claimId: matchingClaim.id,
           value: c.value,
           createdAt: new Date(),
+          updatedAt: new Date(),
         }
       })
       if (upsertUserCustomClaims[0]) {
@@ -450,9 +452,6 @@ adminRouter.patch('/user',
           .onConflict(['claimId', 'userId']).merge(mergeKeys(upsertUserCustomClaims[0]))
       }
     }
-
-    // Remove any unreferenced custom_claim records
-    await cleanUnreferencedCustomClaims()
 
     // Check if all custom claims matches current provider claims, update if not
     if (await isProviderClaimsDesynced()) {

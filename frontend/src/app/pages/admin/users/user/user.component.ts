@@ -8,7 +8,6 @@ import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { USERNAME_REGEX } from '@shared/constants'
 import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../../../services/user.service'
@@ -37,7 +36,7 @@ export class UserComponent implements OnInit {
   public me?: CurrentUserDetails
   public id: string | null = null
 
-  public groups: ItemIn<UserDetails['groups']>[] = []
+  public availableGroups: ItemIn<UserDetails['groups']>[] = []
   public unselectedGroups: ItemIn<UserDetails['groups']>[] = []
   public selectableGroups: ItemIn<UserDetails['groups']>[] = []
   groupSelect = new FormControl<string>({
@@ -94,7 +93,7 @@ export class UserComponent implements OnInit {
           expiresAt: user.expiresAt ? new Date(user.expiresAt) : null,
         })
 
-        this.groups = await this.adminService.groups()
+        this.availableGroups = await this.adminService.groups()
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
@@ -111,7 +110,7 @@ export class UserComponent implements OnInit {
   }
 
   groupAutoFilter(value: string = '') {
-    this.unselectedGroups = this.groups.filter((g) => {
+    this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.some(f => f.name === g.name)
     })
     this.selectableGroups = this.unselectedGroups.filter((g) => {
@@ -124,14 +123,12 @@ export class UserComponent implements OnInit {
     }
   }
 
-  addGroup(event: MatAutocompleteSelectedEvent) {
-    const value = event.option.value as ItemIn<UserDetails['groups']> | null
-    if (!value) {
-      return
-    }
+  addGroup(value: ItemIn<UserDetails['groups']>) {
     this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort((a, b) => stringCompare(a.name, b.name)))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
+    this.groupSelect.markAsUntouched()
+    this.groupSelect.updateValueAndValidity()
     this.groupAutoFilter()
   }
 

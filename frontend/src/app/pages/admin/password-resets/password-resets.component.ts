@@ -20,7 +20,7 @@ import { AsyncPipe } from '@angular/common'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
-  selector: 'app-password-sets',
+  selector: 'app-password-resets',
   imports: [
     MaterialModule,
     ValidationErrorPipe,

@@ -6,7 +6,7 @@ import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { AsyncPipe } from '@angular/common'
 import { AdminService } from '../../services/admin.service'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
-import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaims'
+import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaimResponse'
 import { CUSTOM_CLAIM_CLAIM_REGEX, CUSTOM_CLAIM_SCOPE_REGEX, PROTECTED_CLAIMS, PROTECTED_SCOPES } from '@shared/constants'
 import { stringCompare, type ItemIn } from '@shared/utils'
 
@@ -37,7 +37,7 @@ export class CustomClaimDialogComponent implements OnInit {
   public availableClaims: string[] = []
   public filteredScopes: string[] = []
   public filteredClaims: string[] = []
-  private customClaimsByScope: CustomClaimsResponse = {}
+  private customScopeClaims: CustomClaimsResponse[] = []
   private readonly protectedScopes = new Set<string>(PROTECTED_SCOPES)
   private readonly protectedClaims = new Set<string>(PROTECTED_CLAIMS)
   public isEditMode = false
@@ -113,20 +113,21 @@ export class CustomClaimDialogComponent implements OnInit {
 
   private async loadCustomClaimOptions(): Promise<void> {
     try {
-      const claims: CustomClaimsResponse = await this.adminService.customClaims()
-      this.customClaimsByScope = claims
-      this.availableScopes = Object.keys(claims)
-        .filter(scope => !this.isProtectedScope(scope)).sort(stringCompare)
-
-      const allClaims = new Set<string>()
-      for (const scopeClaims of Object.values(claims)) {
-        for (const claim of scopeClaims) {
-          if (!this.isProtectedClaim(claim)) {
-            allClaims.add(claim)
-          }
+      const scopesClaims: CustomClaimsResponse[] = await this.adminService.customScopesClaims()
+      this.customScopeClaims = scopesClaims
+      this.availableScopes = scopesClaims.reduce<string[]>((scopes, scopeclaim) => {
+        if (!scopes.includes(scopeclaim.scope)) {
+          scopes.push(scopeclaim.scope)
         }
-      }
-      this.availableClaims = Array.from(allClaims).sort(stringCompare)
+        return scopes
+      }, []).filter(scope => !this.isProtectedScope(scope)).sort(stringCompare)
+
+      this.availableClaims = scopesClaims.reduce<string[]>((claimsList, scopeclaim) => {
+        if (scopeclaim.claim && !claimsList.includes(scopeclaim.claim)) {
+          claimsList.push(scopeclaim.claim)
+        }
+        return claimsList
+      }, []).filter(claim => !this.isProtectedClaim(claim)).sort(stringCompare)
 
       this.updateScopeOptions(this.scope.value)
       this.updateClaimOptions(this.claim.value)
@@ -153,13 +154,28 @@ export class CustomClaimDialogComponent implements OnInit {
   public updateClaimOptions(value: string | null) {
     const filterValue = value?.trim().toLowerCase() ?? ''
     const selectedScope = this.scope.value
-    const baseOptions = selectedScope && this.customClaimsByScope[selectedScope]
-      ? this.customClaimsByScope[selectedScope].filter(option =>
-          !this.claimAlreadyExists(selectedScope, option) && !this.isProtectedClaim(option))
-      : this.availableClaims
-    this.filteredClaims = filterValue
-      ? baseOptions.filter(option => option.toLowerCase().includes(filterValue)).slice(0, 10)
-      : baseOptions.slice(0, 10)
+    let baseOptions: string[]
+    if (!selectedScope) {
+      baseOptions = this.availableClaims
+    } else {
+      baseOptions = this.customScopeClaims
+        .reduce<string[]>((claimsList, scopeclaim) => {
+          if (scopeclaim.scope === selectedScope
+            && scopeclaim.claim
+            && !claimsList.includes(scopeclaim.claim)
+            && !this.claimAlreadyExists(selectedScope, scopeclaim.claim)
+            && !this.isProtectedClaim(scopeclaim.claim)) {
+            claimsList.push(scopeclaim.claim)
+          }
+          return claimsList
+        }, [])
+    }
+
+    if (filterValue) {
+      baseOptions = baseOptions.filter(option => option.toLowerCase().includes(filterValue))
+    }
+
+    this.filteredClaims = baseOptions.slice(0, 10)
   }
 
   private protectedScopeValidator(): ValidatorFn {

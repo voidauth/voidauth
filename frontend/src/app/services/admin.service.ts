@@ -6,7 +6,7 @@ import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
 import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
-import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaims'
+import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaimResponse'
 import { type InvitationDetails } from '@shared/api-response/InvitationDetails'
 import type { Group } from '@shared/db/Group'
 import type { Invitation } from '@shared/db/Invitation'
@@ -45,8 +45,8 @@ export class AdminService {
     return firstValueFrom(this.http.get<string[]>('/api/admin/scopes'))
   }
 
-  async customClaims() {
-    return firstValueFrom(this.http.get<CustomClaimsResponse>('/api/admin/custom_claims'))
+  async customScopesClaims() {
+    return firstValueFrom(this.http.get<CustomClaimsResponse[]>('/api/admin/custom_scopes_claims'))
   }
 
   async clients() {

@@ -13,11 +13,12 @@ export type CustomClaim = Pick<Audit, 'createdAt' | 'updatedAt'> & {
   id: string
   scopeId: CustomScope['id']
   claim: string
+  includedInLdap: boolean
 }
 
 const _typeCheckCustomClaim: DBColumnTypesCheck<CustomClaim> = true
 
-export type UserCustomClaim = Pick<Audit, 'createdAt'> & {
+export type UserCustomClaim = Pick<Audit, 'createdAt' | 'updatedAt'> & {
   id: string
   userId: User['id']
   claimId: CustomClaim['id']

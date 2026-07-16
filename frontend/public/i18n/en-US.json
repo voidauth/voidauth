@@ -31,7 +31,8 @@
         "groups": "Groups",
         "invitations": "Invitations",
         "password-resets": "Password Resets",
-        "sent-mail": "Sent Mail"
+        "sent-mail": "Sent Mail",
+        "scopes-claims": "Scopes and Claims"
       },
       "logout": "Logout"
     }

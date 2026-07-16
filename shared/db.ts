@@ -54,7 +54,7 @@ if (!Object.values(TABLES).every(t => TABLES_ORDER.includes(t))) {
   throw new Error('Migration tables list is missing tables.')
 }
 
-export const BOOL_COLUMNS = ['emailVerified', 'approved', 'backedUp', 'mfaRequired', 'autoAssign'] as const
+export const BOOL_COLUMNS = ['emailVerified', 'approved', 'backedUp', 'mfaRequired', 'autoAssign', 'includedInLdap'] as const
 export const DATE_COLUMNS = ['createdAt', 'updatedAt', 'expiresAt', 'lastUsed', 'userExpiresAt', 'consumedAt'] as const
 
 // Helpers to make sure all boolean and date columns are included in BOOL_COLUMNS and DATE_COLUMNS

@@ -2,7 +2,9 @@ import { TABLES } from '@shared/db'
 import { db } from './db'
 import type { CustomScope, CustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
 import { PROTECTED_CLAIMS, PROTECTED_CLAIMS_SET, PROTECTED_SCOPES_SET, PROTECTED_SCOPES } from '@shared/constants'
+import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaimResponse'
 import { PayloadTypes, type OIDCPayload } from '@shared/db/OIDCPayload'
+import type { ClientMetadata } from 'oidc-provider'
 
 const defaultScopeClaims = {
   // OIDC 1.0 Standard
@@ -51,17 +53,24 @@ export function getProviderScopeClaimCache(): ProviderScopeClaimCache {
   }
 }
 
-export async function getCustomClaims(): Promise<Record<string, string[]>> {
-  const claims = (await db()
-    .select('scope', 'claim')
+export async function getCustomClaimsRecords(): Promise<CustomClaimsResponse[]> {
+  const scopesClaims = (await db()
+    .select(
+      db().ref('id').withSchema(TABLES.CUSTOM_SCOPE).as('scopeId'),
+      db().ref('id').withSchema(TABLES.CUSTOM_CLAIM).as('claimId'),
+      db().ref('scope').withSchema(TABLES.CUSTOM_SCOPE),
+      db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM),
+      db().ref('includedInLdap').withSchema(TABLES.CUSTOM_CLAIM))
     .table<CustomScope>(TABLES.CUSTOM_SCOPE)
-    .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, `${TABLES.CUSTOM_SCOPE}.id`, `${TABLES.CUSTOM_CLAIM}.scopeId`))
-    .reduce<{ [key: string]: string[] }>((acc, c) => {
-      if (PROTECTED_SCOPES_SET.has(c.scope)
-        || (c.claim && PROTECTED_CLAIMS_SET.has(c.claim))) {
-        return acc
-      }
+    .leftOuterJoin<CustomClaim | Record<string, null>>(TABLES.CUSTOM_CLAIM, `${TABLES.CUSTOM_SCOPE}.id`, `${TABLES.CUSTOM_CLAIM}.scopeId`))
+    .filter(c => !PROTECTED_SCOPES_SET.has(c.scope) && (!c.claim || !PROTECTED_CLAIMS_SET.has(c.claim)))
 
+  return scopesClaims
+}
+
+export async function getCustomClaims(): Promise<Record<string, string[]>> {
+  const claims = (await getCustomClaimsRecords())
+    .reduce<{ [key: string]: string[] }>((acc, c) => {
       if (!acc[c.scope]) {
         acc[c.scope] = []
       }
@@ -96,7 +105,7 @@ export async function getAllScopes(): Promise<string[]> {
 
 export async function getUserCustomClaims(userId: string) {
   const claims = (await db()
-    .select('scope', 'claim', 'value')
+    .select('scope', 'claim', 'value', 'includedInLdap')
     .table<CustomScope>(TABLES.CUSTOM_SCOPE)
     .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, `${TABLES.CUSTOM_SCOPE}.id`, `${TABLES.CUSTOM_CLAIM}.scopeId`)
     .innerJoin<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM, `${TABLES.CUSTOM_CLAIM}.id`, `${TABLES.USER_CUSTOM_CLAIM}.claimId`)
@@ -104,41 +113,25 @@ export async function getUserCustomClaims(userId: string) {
   return claims
 }
 
-export async function cleanUnreferencedCustomClaims() {
-  const referencedClaimIds = Array.from(new Set([
-    ...(await db().distinct('claimId').table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM)).map(r => r.claimId),
-  ]))
-  await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).delete()
-    .where((w) => {
-      if (referencedClaimIds.length) {
-        w.whereNotIn('id', referencedClaimIds)
-      }
+/**
+ * Because client scopes are stored raw as a string, make sure they are valid
+ */
+export async function cleanMissingClientScopes() {
+  // get all scopes
+  const allScopes = await getAllScopes()
+  // Ensure clients only have scopes in list
+  const clients = (await db().select('id', 'payload').table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where({ type: PayloadTypes.Client }))
+    .map((r) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const c: ClientMetadata = JSON.parse(r.payload)
+      return { id: r.id, metadata: c }
     })
-
-  const referencedScopeIds: string[] = Array.from(new Set([
-    ...(await db().distinct('scopeId').table<CustomClaim>(TABLES.CUSTOM_CLAIM)).map(r => r.scopeId),
-  ]))
-  const referencedScopeNames: string[] = Array.from(new Set([
-    ...(await db().select('id', 'payload').table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where({ type: PayloadTypes.Client })).map((r) => {
-      const c: unknown = JSON.parse(r.payload)
-      return (c && typeof c === 'object' && 'scope' in c && typeof c.scope === 'string' && c.scope)
-        ? c.scope.split(/\s+/).filter(Boolean)
-        : []
-    }).flat(),
-  ]))
-  await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).delete()
-    .where((w) => {
-      let started = false
-      if (referencedScopeIds.length) {
-        w.whereNotIn('id', referencedScopeIds)
-        started = true
-      }
-      if (referencedScopeNames.length) {
-        if (started) {
-          w.and.whereNotIn('scope', referencedScopeNames)
-        } else {
-          w.whereNotIn('scope', referencedScopeNames)
-        }
-      }
-    })
+  for (const client of clients) {
+    const clientScopes = client.metadata.scope?.split(/\s+/).filter(Boolean) ?? []
+    const validScopes = clientScopes.filter(s => allScopes.includes(s))
+    if (validScopes.length !== clientScopes.length) {
+      client.metadata.scope = validScopes.join(' ')
+      await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).update({ payload: JSON.stringify(client.metadata) }).where({ id: client.id })
+    }
+  }
 }

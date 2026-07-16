@@ -23,7 +23,7 @@ import { mergeKeys } from '../db/util'
 import type { User } from '@shared/db/User'
 import { PayloadTypes } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
-import { cleanUnreferencedCustomClaims, getAllClaims, getAllScopes, updateProviderScopeClaimCache } from '../db/claims'
+import { getAllClaims, getAllScopes, updateProviderScopeClaimCache } from '../db/claims'
 import type { CustomScope } from '@shared/db/CustomClaim'
 
 // Extend 'oidc-provider' where needed
@@ -672,8 +672,6 @@ export async function upsertClient(metadata: ClientMetadata, groups: string[], u
     .where({ oidcId: clientId }).and
     .whereNotIn('groupId', clientGroups.map(g => g.groupId))
 
-  // Clean up scopes
-  await cleanUnreferencedCustomClaims()
   // If scopes are not synced with provider, reset provider
   if (await isProviderClaimsDesynced()) {
     await resetProvider()
