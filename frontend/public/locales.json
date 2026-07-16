@@ -3,5 +3,6 @@
   { "code": "zh-CN", "display": "中文" },
   { "code": "fr-FR", "display": "Français" },
   { "code": "et-EE", "display": "Eesti" },
-  { "code": "de-DE", "display": "Deutsch" }
+  { "code": "de-DE", "display": "Deutsch" },
+  { "code": "nl-NL", "display": "Nederlands" }
 ]

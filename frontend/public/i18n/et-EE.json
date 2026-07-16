@@ -501,9 +501,6 @@
     },
     "totp-input": {
       "title": "See lubab sinu kontol mitmeastmelise autentimise.",
-      "labels": {
-        "show-secret": "Näita salavõtit"
-      },
       "text": {
         "qrcode-instruction": "Skanni QR-kood või sisesta salavõti oma autentimisrakendusse",
         "then": "seejärel",

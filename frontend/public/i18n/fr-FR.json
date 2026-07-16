@@ -501,9 +501,6 @@
     },
     "totp-input": {
       "title": "Cela activera l'authentification multifactorielle sur votre compte.",
-      "labels": {
-        "show-secret": "Afficher le secret"
-      },
       "text": {
         "qrcode-instruction": "Scannez le QR code ou saisissez le secret dans votre authentificateur",
         "then": "puis",

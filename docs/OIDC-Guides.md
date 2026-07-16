@@ -423,6 +423,31 @@ Redirect URLs: https://jellyseerr.example.com/login?provider=voidauth&callback=t
 
 <br>
 
+## <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/karakeep.svg" width="28" /> Karakeep
+
+Karakeep can be set up to use VoidAuth as an OIDC Provider using environment variables. See the [Karakeep Authentication Documentation](https://docs.karakeep.app/configuration/environment-variables/#authentication--signup) for full details.
+
+**Environment Variables:**
+
+```bash
+OAUTH_WELLKNOWN_URL="Copy from VoidAuth OIDC Info (Well-Known Endpoint)"
+OAUTH_CLIENT_ID="your-client-id"
+OAUTH_CLIENT_SECRET="your-client-secret"
+NEXTAUTH_URL="https://karakeep.example.com"
+
+```
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://karakeep.example.com/api/auth/callback/custom
+```
+
+<br>
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/png/komodo.png" width="28" /> Komodo
 
 > [!NOTE]

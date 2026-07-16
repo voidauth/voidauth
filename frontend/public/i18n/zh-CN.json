@@ -500,9 +500,6 @@
     },
     "totp-input": {
       "title": "这将为您的账户启用多因素认证。",
-      "labels": {
-        "show-secret": "显示密钥"
-      },
       "text": {
         "qrcode-instruction": "扫描二维码或在您的身份验证器中输入密钥",
         "then": "然后",

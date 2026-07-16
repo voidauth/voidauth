@@ -84,8 +84,14 @@ export class UsersComponent {
     // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
-      this.me = await this.userService.getMyUser()
-      this.dataSource.data = await this.adminService.users()
+
+      const [me, users] = await Promise.all([
+        this.userService.getMyUser(),
+        this.adminService.users(),
+      ])
+      this.me = me
+      this.dataSource.data = users
+
       this.dataSource.paginator = this.paginator()
       this.dataSource.sort = this.sort()
 
