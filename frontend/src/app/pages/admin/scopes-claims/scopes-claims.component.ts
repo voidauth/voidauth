@@ -40,11 +40,6 @@ export class ScopesClaimsComponent {
       header: 'Claim',
       cell: element => element.claim || '-',
     },
-    {
-      columnDef: 'includedInLdap',
-      header: 'Included in LDAP',
-      cell: element => element.includedInLdap ? 'Yes' : 'No',
-    },
   ]
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
@@ -71,17 +66,20 @@ export class ScopesClaimsComponent {
     if (!customClaim) {
       return
     }
-    const message = customClaim.claim
-      ? `Are you sure you want to remove custom claim '${customClaim.scope}/${customClaim.claim}'?`
+
+    const message = customClaim.claimId
+      ? `Are you sure you want to remove custom claim '${customClaim.scope}/${customClaim.claim}'? This will not remove the scope ${customClaim.scope}.`
       : `Are you sure you want to remove custom scope '${customClaim.scope}'?`
-    const dialogRef = this.dialog.open(ConfirmComponent, {
+    const confirmDialog = this.dialog.open(ConfirmComponent, {
       data: {
         message: message,
         header: 'Delete',
       },
     })
 
-    dialogRef.afterClosed().subscribe((result) => {
+    // If a claimId is not provided, we should try to delete the whole scope.
+    // But if a claimId is provided, we should delete just the claim.
+    confirmDialog.afterClosed().subscribe(async (result) => {
       if (!result) {
         return
       }
@@ -90,9 +88,21 @@ export class ScopesClaimsComponent {
         this.spinnerService.show()
         // TODO: Implement delete custom scope claim API call
         console.error('Not Implemented: delete custom scope claim')
+        console.error(`scopeId: ${scopeId}, claimId: ${claimId ?? 'null'}`)
         this.snackbarService.error('Not Implemented: delete custom scope claim')
-        // this.dataSource.data = this.dataSource.data.filter(g => g.claimId !== customClaim.claimId)
+        if (claimId) {
+          // await this.adminService.deleteCustomClaim(claimId)
+        } else {
+          // await this.adminService.deleteCustomScope(scopeId)
+        }
         // this.snackbarService.message('Custom claim was deleted.')
+        // Refresh the data from the server.
+        try {
+          this.spinnerService.show()
+          this.dataSource.data = await this.adminService.customScopesClaims()
+        } finally {
+          this.spinnerService.hide()
+        }
       } catch (_e) {
         this.snackbarService.error('Could not delete custom claim.')
       } finally {

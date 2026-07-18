@@ -18,16 +18,10 @@ export async function up(knex: Knex): Promise<void> {
       table.uuid('id').primary().notNullable()
       table.string('scopeId').notNullable().references('id').inTable('custom_scope').onDelete('CASCADE')
       table.string('claim').notNullable()
-      // whether the claim is included in an ldap response
-      table.boolean('includedInLdap').notNullable()
       table.timestamp('createdAt', { useTz: true }).notNullable()
       table.timestamp('updatedAt', { useTz: true }).notNullable()
 
       table.unique(['scopeId', 'claim'])
-      // table can only have unique claim names included in LDAP
-      table.unique(['claim'], {
-        predicate: knex.whereRaw('includedInLdap = true'),
-      })
     })
 
   // table for custom claims for a user

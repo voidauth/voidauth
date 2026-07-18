@@ -473,6 +473,12 @@
       "checkboxes": {
         "email-verified": "Email Verified"
       }
+    },
+    "claims": {
+      "actions": {
+        "create": "Create Claim"
+      },
+      "empty-state": "No Custom Claims."
     }
   },
   "components": {

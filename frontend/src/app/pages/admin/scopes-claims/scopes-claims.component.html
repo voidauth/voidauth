@@ -1,6 +1,6 @@
 <div class="container">
   <span style="align-self: end">
-    <a mat-flat-button routerLink="/admin/claims">{{ "admin.domains.actions.create" | translate }}</a>
+    <a mat-flat-button routerLink="/admin/claim">{{ "admin.claims.actions.create" | translate }}</a>
   </span>
 
   <table mat-table [dataSource]="dataSource" matSort>
@@ -22,7 +22,11 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row" class="actions">
-        <a mat-icon-button [routerLink]="['/admin', 'claim', row.id]" [matTooltip]="'admin.common.actions.edit' | translate">
+        <a
+          mat-icon-button
+          [routerLink]="['/admin', 'claim', row.scopeId].concat(row.claimId ? [row.claimId] : [])"
+          [matTooltip]="'admin.common.actions.edit' | translate"
+        >
           <mat-icon fontSet="material-icons-round">edit</mat-icon>
         </a>
         <button
@@ -42,7 +46,7 @@
     <!-- Row shown when there is no matching data. -->
     <tr *matNoDataRow>
       <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1">
-        <h1>{{ "admin.domains.empty-state" | translate }}</h1>
+        <h1>{{ "admin.claims.empty-state" | translate }}</h1>
       </td>
     </tr>
   </table>

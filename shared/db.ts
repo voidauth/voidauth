@@ -54,7 +54,7 @@ if (!Object.values(TABLES).every(t => TABLES_ORDER.includes(t))) {
   throw new Error('Migration tables list is missing tables.')
 }
 
-export const BOOL_COLUMNS = ['emailVerified', 'approved', 'backedUp', 'mfaRequired', 'autoAssign', 'includedInLdap'] as const
+export const BOOL_COLUMNS = ['emailVerified', 'approved', 'backedUp', 'mfaRequired', 'autoAssign'] as const
 export const DATE_COLUMNS = ['createdAt', 'updatedAt', 'expiresAt', 'lastUsed', 'userExpiresAt', 'consumedAt'] as const
 
 // Helpers to make sure all boolean and date columns are included in BOOL_COLUMNS and DATE_COLUMNS
@@ -69,3 +69,6 @@ type KeysCorrectType<T extends Record<string, unknown>> = T extends {
 } ? true : never
 
 export type DBColumnTypesCheck<T extends Record<string, unknown>> = AllBoolKeysListed<T> & AllDateKeysListed<T> & KeysCorrectType<T>
+
+// Utility type for left joins, input type is either whole or all of it's properties are null
+export type FoundOrNull<T extends Record<string, unknown>> = T | { [K in keyof T]: null }

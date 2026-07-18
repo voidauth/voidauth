@@ -39,7 +39,7 @@ import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
 import type { CustomClaim, CustomScope, UserCustomClaim } from '@shared/db/CustomClaim'
-import { getAllScopes, getCustomClaimsRecords } from '../db/claims'
+import { cleanMissingClientScopes, getAllScopes, getCustomClaimsRecords } from '../db/claims'
 import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaimResponse'
 import type { ClientMetadata } from 'oidc-provider'
 
@@ -52,16 +52,6 @@ adminRouter.get('/config', async (_req, res) => {
     defaultUserExpireDuration: appConfig.DEFAULT_USER_EXPIRES_IN,
     defaultGroups: (await db().table<Group>(TABLES.GROUP).select('name').where({ autoAssign: true })).map(g => g.name),
   } satisfies AdminConfig)
-})
-
-adminRouter.get('/custom_scopes_claims', async (_req, res) => {
-  const claims = await getCustomClaimsRecords()
-  res.send(claims satisfies CustomClaimsResponse[])
-})
-
-adminRouter.get('/scopes', async (_req, res) => {
-  const claims = await getAllScopes()
-  res.send(claims satisfies string[])
 })
 
 adminRouter.get('/clients', async (_req, res) => {
@@ -180,6 +170,54 @@ adminRouter.delete('/client/:client_id',
       return
     }
     await removeClient(client_id)
+    res.send()
+  })
+
+adminRouter.get('/custom_scopes_claims', async (_req, res) => {
+  const claims = await getCustomClaimsRecords()
+  res.send(claims satisfies CustomClaimsResponse[])
+})
+
+adminRouter.get('/scopes', async (_req, res) => {
+  const claims = await getAllScopes()
+  res.send(claims satisfies string[])
+})
+
+adminRouter.delete('/scope/:scopeId',
+  zodValidate({
+    params: { scopeId: zod.uuid() },
+  }),
+  async (req, res) => {
+    const { scopeId } = req.params
+    const customScope = await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).where({ id: scopeId }).first()
+    if (!customScope) {
+      res.sendStatus(404)
+      return
+    }
+    // make sure the scope has no claims before deleting it
+    const claims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ scopeId }).select()
+    if (claims.length > 0) {
+      res.status(400).send({ message: 'Cannot delete scope with associated claims' })
+      return
+    }
+    await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).where({ id: scopeId }).delete()
+    // make sure no clients were using that scope, and remove it from their scopes if they were
+    await cleanMissingClientScopes()
+    res.send()
+  })
+
+adminRouter.delete('/claim/:claimId',
+  zodValidate({
+    params: { claimId: zod.uuid() },
+  }),
+  async (req, res) => {
+    const { claimId } = req.params
+    const customClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id: claimId }).first()
+    if (!customClaim) {
+      res.sendStatus(404)
+      return
+    }
+    await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id: claimId }).delete()
     res.send()
   })
 
@@ -413,14 +451,13 @@ adminRouter.patch('/user',
           id: randomUUID(),
           scopeId: matchingScope.id,
           claim: c.claim,
-          includedInLdap: false, // by default do not include in LDAP, but include in merge keys so that it does not overwrite
           createdAt: new Date(),
           updatedAt: new Date(),
         }
       })
       if (customClaims[0]) {
         customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
-          .onConflict(['scopeId', 'claim']).merge(mergeKeys(customClaims[0], ['includedInLdap'])).returning('*')
+          .onConflict(['scopeId', 'claim']).merge(mergeKeys(customClaims[0])).returning('*')
       }
 
       // Delete any user custom claims not present in new custom claims payload

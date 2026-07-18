@@ -1,4 +1,4 @@
-import { TABLES } from '@shared/db'
+import { TABLES, type FoundOrNull } from '@shared/db'
 import { db } from './db'
 import type { CustomScope, CustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
 import { PROTECTED_CLAIMS, PROTECTED_CLAIMS_SET, PROTECTED_SCOPES_SET, PROTECTED_SCOPES } from '@shared/constants'
@@ -54,15 +54,13 @@ export function getProviderScopeClaimCache(): ProviderScopeClaimCache {
 }
 
 export async function getCustomClaimsRecords(): Promise<CustomClaimsResponse[]> {
-  const scopesClaims = (await db()
-    .select(
-      db().ref('id').withSchema(TABLES.CUSTOM_SCOPE).as('scopeId'),
-      db().ref('id').withSchema(TABLES.CUSTOM_CLAIM).as('claimId'),
-      db().ref('scope').withSchema(TABLES.CUSTOM_SCOPE),
-      db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM),
-      db().ref('includedInLdap').withSchema(TABLES.CUSTOM_CLAIM))
+  const scopesClaims = (await db().select(
+    db().ref('id').withSchema(TABLES.CUSTOM_SCOPE).as('scopeId'),
+    db().ref('scope').withSchema(TABLES.CUSTOM_SCOPE),
+    db().ref('id').withSchema(TABLES.CUSTOM_CLAIM).as('claimId'),
+    db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM))
     .table<CustomScope>(TABLES.CUSTOM_SCOPE)
-    .leftOuterJoin<CustomClaim | Record<string, null>>(TABLES.CUSTOM_CLAIM, `${TABLES.CUSTOM_SCOPE}.id`, `${TABLES.CUSTOM_CLAIM}.scopeId`))
+    .leftOuterJoin<FoundOrNull<CustomClaim>>(TABLES.CUSTOM_CLAIM, `${TABLES.CUSTOM_SCOPE}.id`, `${TABLES.CUSTOM_CLAIM}.scopeId`))
     .filter(c => !PROTECTED_SCOPES_SET.has(c.scope) && (!c.claim || !PROTECTED_CLAIMS_SET.has(c.claim)))
 
   return scopesClaims
@@ -105,7 +103,7 @@ export async function getAllScopes(): Promise<string[]> {
 
 export async function getUserCustomClaims(userId: string) {
   const claims = (await db()
-    .select('scope', 'claim', 'value', 'includedInLdap')
+    .select('scope', 'claim', 'value')
     .table<CustomScope>(TABLES.CUSTOM_SCOPE)
     .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, `${TABLES.CUSTOM_SCOPE}.id`, `${TABLES.CUSTOM_CLAIM}.scopeId`)
     .innerJoin<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM, `${TABLES.CUSTOM_CLAIM}.id`, `${TABLES.USER_CUSTOM_CLAIM}.claimId`)

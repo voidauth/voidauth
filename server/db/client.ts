@@ -5,7 +5,7 @@ import appConfig from '../util/config'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { Group, OIDCGroup } from '@shared/db/Group'
 import { decryptString } from './util'
-import { TABLES } from '@shared/db'
+import { TABLES, type FoundOrNull } from '@shared/db'
 import { getProviderScopeClaimCache } from './claims'
 
 export function parseClientPayload(payload: string, options?: { strict: boolean }): ClientMetadata {
@@ -33,14 +33,14 @@ export function parseClientPayload(payload: string, options?: { strict: boolean 
 // When getting list of clients, do not error on un-decryptable client_secret, just don't include it
 export async function getClients(): Promise<ClientResponse[]> {
   const clients = (await db()
-    .select(
+    .select<(Pick<OIDCPayload, 'id' | 'payload'> & { groupName: FoundOrNull<Group>['name'] })[]>(
       db().ref('id').withSchema(TABLES.OIDC_PAYLOADS),
       db().ref('payload').withSchema(TABLES.OIDC_PAYLOADS),
       db().ref('name').as('groupName').withSchema(TABLES.GROUP),
     )
     .table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
-    .leftOuterJoin<OIDCGroup | Record<string, null>>(TABLES.OIDC_GROUP, `${TABLES.OIDC_PAYLOADS}.id`, 'oidc_group.oidcId')
-    .leftOuterJoin<Group | Record<string, null>>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
+    .leftOuterJoin<FoundOrNull<OIDCGroup>>(TABLES.OIDC_GROUP, `${TABLES.OIDC_PAYLOADS}.id`, 'oidc_group.oidcId')
+    .leftOuterJoin<FoundOrNull<Group>>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ type: PayloadTypes.Client })
     .orderBy(db().ref('id').withSchema(TABLES.OIDC_PAYLOADS), 'asc'))
     .reduce<ClientResponse[]>((arr, r) => {
