@@ -59,7 +59,7 @@ export class GroupsComponent {
     }
   }
 
-  delete(id: string) {
+  onDelete(id: string) {
     const group = this.dataSource.data.find(g => g.id === id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {

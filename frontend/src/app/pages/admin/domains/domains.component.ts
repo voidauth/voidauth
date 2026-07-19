@@ -80,7 +80,7 @@ export class DomainsComponent {
     this.dataSource.data = this.dataSource.data.splice(0)
   }
 
-  delete(proxyauth_id: string) {
+  onDelete(proxyauth_id: string) {
     const domain = this.dataSource.data.find(d => d.id === proxyauth_id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {

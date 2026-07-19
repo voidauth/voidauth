@@ -33,7 +33,7 @@ export class PasskeyNameDialog {
 
       const passkeyPlatformName = PasskeyService.getPlatform(os)?.platformName ?? ''
 
-      const label = [os, passkeyPlatformName].filter(l => !!l).join(' - ')
+      const label = [os, passkeyPlatformName].filter(Boolean).join(' - ')
 
       const suggested = label || null
       return (suggested && suggested.length > 64) ? suggested.slice(0, 61) + '...' : suggested

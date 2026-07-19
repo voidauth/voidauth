@@ -87,7 +87,7 @@ export class TranslationService {
       // Find exact match first, then try to find a match that starts with the browser language parts ('en' ~ 'en-US' ~ 'en-GB')
       const browserLangParts = browserLang.split('-')
       for (let i = browserLangParts.length; i >= 1; i--) {
-        const subBrowserLang = browserLangParts.slice(0, i).filter(p => !!p).join('-')
+        const subBrowserLang = browserLangParts.slice(0, i).filter(Boolean).join('-')
         const foundLang = this.availableLangs().find(lang => lang.code.toLowerCase() === subBrowserLang.toLowerCase())
         if (foundLang && await this._setLang(foundLang.code, true)) {
           return

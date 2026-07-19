@@ -794,6 +794,61 @@ Redirect URLs: https://seafile.example.com/oauth/callback/
 
 <br>
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/sync-in.svg" width="28" /> Sync-in
+
+Add these lines to the Sync-in configuration file named `environment.yaml`:
+
+**Sync-in Configuration:**
+
+```yaml
+auth:
+  provider: 'oidc'                                  # provider: 'mysql' | 'ldap' | 'oidc'
+  oidc:
+    issuerUrl: 'https://auth.example.com.net/oidc'  # issuerUrl: obtained from OIDC App config
+    clientId: 'CLIENT-ID'                           # clientId: obtained from OIDC App config
+    clientSecret: 'CLIENT-SECRET'                   # clientSecret: obtained from OIDC App config
+    redirectUri: 'https://sync-in.example.com/api/auth/oidc/callback'
+    options:
+      autoCreateUser: false                         # 'true' enables automatic creation of ne Sync-in user accounts
+      autoCreatePermissions: []                     # e.g.: [personal_space, spaces_access] (array required)
+      storageQuotaClaim: storageQuota
+      adminRoleOrGroup:
+      enablePasswordAuth: true
+      autoSyncAvatar: true
+      autoRedirect: false                           # 'true' skips Sync-in login page directly into VoidAuth login
+      buttonText: 'Continue with OpenID Connect'
+    security:
+      scope: 'openid email profile'                 # Common scopes: openid (required), email, profile, groups, roles
+      supportPKCE: false
+      allowInsecureRequests: false
+      tokenEndpointAuthMethod: client_secret_basic
+      tokenSigningAlg: RS256
+      userInfoSigningAlg: 
+      skipSubjectCheck: false
+      requireVerifiedEmail: false
+      allowPrivateIpAvatarDownload: true
+```
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Name: Sync-in
+Home Page URL: https://sync-in.example.com
+Logo URL: https://sync-in.example.com/assets/favicon.svg
+Client ID: your-client-id
+Auth Method: Client Secret Basic
+Client Secret: your-client-secret
+Redirect URLs: https://sync-in.example.com//api/auth/oidc/callback
+Response Types: code
+Grant Types: authorization_code, refresh_token
+PostLogout URL: <empty>
+```
+
+> [!NOTE]
+> You will need to restart (DOWN/UP) Sync-in server for the modifications to take effect.
+
+<br>
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/unraid.svg" width="28" /> Unraid
 
 Navigate to **Settings** > **Management Access** > **Unraid API Settings** in the Unraid WebGUI. Add a new OIDC provider by clicking the + button. See the [Unraid OIDC Provider Setup](https://docs.unraid.net/API/oidc-provider-setup/) for full details.
