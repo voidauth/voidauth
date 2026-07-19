@@ -61,7 +61,7 @@
           mat-icon-button
           type="button"
           [disabled]="row.id === me?.id"
-          (click)="delete(row.id)"
+          (click)="onDelete(row.id)"
           [matTooltip]="'admin.common.actions.delete' | translate"
         >
           <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>

@@ -31,6 +31,10 @@ export function urlFromWildcardHref(input: string) {
   }
 
   // TODO: base url parameter to match URL.parse
+  const userInfoParts = url.userinfo?.split(':')
+  const username = userInfoParts?.[0] ?? ''
+  // the rest of the parts joined together is the password, since passwords can contain colons
+  const password = userInfoParts?.slice(1).join(':') ?? ''
   return {
     protocol: url.protocol,
     hostname: url.hostname ?? '',
@@ -39,8 +43,8 @@ export function urlFromWildcardHref(input: string) {
     href: input,
     search: url.search ?? '',
     hash: url.hash ?? '',
-    username: url.userinfo?.split(':')[0] ?? '',
-    password: url.userinfo?.split(':')[1] ?? '',
+    username,
+    password,
   }
 }
 
@@ -152,16 +156,16 @@ export function sortWildcardDomains(ad: string, bd: string) {
   // Check if one domain has more subdomains
   const ah = a.hostname
   const bh = b.hostname
-  const aSubs = ah.split('.').filter(s => !!s).reverse()
-  const bSubs = bh.split('.').filter(s => !!s).reverse()
+  const aSubs = ah.split('.').filter(Boolean).reverse()
+  const bSubs = bh.split('.').filter(Boolean).reverse()
   const subResult = sortWildcardParts(aSubs, bSubs)
   if (subResult) {
     return subResult
   }
 
   // Check if one domain has more specific port number
-  const aPort = a.port != '' ? [a.port] : ['*']
-  const bPort = b.port != '' ? [b.port] : ['*']
+  const aPort = a.port !== '' ? [a.port] : ['*']
+  const bPort = b.port !== '' ? [b.port] : ['*']
   const portResult = sortWildcardParts(aPort, bPort)
   if (portResult) {
     return portResult
@@ -170,8 +174,8 @@ export function sortWildcardDomains(ad: string, bd: string) {
   // Check if one path has more subpaths
   const ap = a.pathname
   const bp = b.pathname
-  const aPaths = ap.split('/').filter(s => !!s)
-  const bPaths = bp.split('/').filter(s => !!s)
+  const aPaths = ap.split('/').filter(Boolean)
+  const bPaths = bp.split('/').filter(Boolean)
   const pathResult = sortWildcardParts(aPaths, bPaths)
   if (pathResult) {
     return pathResult
@@ -197,13 +201,14 @@ function sortWildcardParts(aParts: string[], bParts: string[]) {
     }
 
     // check each part individually
+    const partWildRegex = new RegExp('\\*', 'g')
     for (let i = 0; i < aParts.length; i++) {
       // check if one has an earlier wildcard part
       // or more wildcards in a part
       const aPart = aParts[i] as string
       const bPart = bParts[i] as string
-      const aPartWildCount = aPart.match(new RegExp('\\*', 'g'))?.length ?? 0
-      const bPartWildCount = bPart.match(new RegExp('\\*', 'g'))?.length ?? 0
+      const aPartWildCount = aPart.match(partWildRegex)?.length ?? 0
+      const bPartWildCount = bPart.match(partWildRegex)?.length ?? 0
       if (aPartWildCount || bPartWildCount) {
         // This part has wildcard(s)
         // check if one has more, if so it is MORE specific

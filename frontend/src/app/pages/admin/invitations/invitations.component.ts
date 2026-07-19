@@ -72,7 +72,7 @@ export class InvitationsComponent {
     }
   }
 
-  delete(id: string) {
+  onDelete(id: string) {
     const invite = this.dataSource.data.find(i => i.id === id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
