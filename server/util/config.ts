@@ -1,5 +1,5 @@
 import { exit } from 'node:process'
-import { readFile } from 'node:fs/promises'
+import { readFileSync } from 'node:fs'
 import { booleanString } from './util'
 import { logger } from './logger'
 import * as psl from 'psl'
@@ -408,24 +408,32 @@ for (const key of configKeys) {
   const envValue = process.env[key]
   const fileEnvKey = `FILE__${key}`
   const fileEnvKeyValue = process.env[fileEnvKey]
-  const fileValue = fileEnvKeyValue !== undefined
-    ? (await readFile(fileEnvKeyValue, 'utf8')
-        .catch((err: unknown) => {
-          if ((<{ code: unknown }>err).code !== 'ENOENT') {
-            throw err
-          }
-        })
-      )?.trim()
-    : undefined
-  if (envValue && fileValue) {
+
+  // If both env and file env are set, log error and exit
+  if (envValue && fileEnvKeyValue) {
     logger({
       level: 'error',
-      message: `${key} and ${fileEnvKey} cannot both be set.`,
+      message: `Environment variables ${key} and ${fileEnvKey} cannot both be set.`,
     })
     exit(1)
+  } else if (fileEnvKeyValue) {
+    // If FILE__* is set, must use that file value (do not fallback to regular env var)
+    let fileValue: string | undefined = undefined
+    try {
+      fileValue = readFileSync(fileEnvKeyValue, 'utf8').trim()
+    } catch (e) {
+      // Log error and exit if file cannot be read
+      logger({
+        level: 'error',
+        message: `Error reading file for environment variable ${fileEnvKey}.`,
+        errors: e instanceof Error ? [e] : [{ message: String(e) }],
+      })
+      exit(1)
+    }
+    assignConfigValue(key, fileValue)
+  } else {
+    assignConfigValue(key, envValue)
   }
-  const value = envValue ?? fileValue
-  assignConfigValue(key, value)
 }
 
 refreshDeclaredClients(await registerDockerListener())
