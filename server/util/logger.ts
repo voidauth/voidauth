@@ -22,6 +22,14 @@ export type LogShape = {
     source: string
     amr: string[] // OIDC Authentication Methods Reference
   }
+  // auth factor added to user
+  authentication?: {
+    user_id: string
+    username: string
+    amr: string[]
+    remember?: boolean
+  }
+  // interaction details for OIDC login flow
   interaction?: {
     prompt: string
     reasons: string[]
@@ -39,11 +47,6 @@ export type LogShape = {
   // zod validations errors for API requests
   api_validation?: {
     error: Record<string, unknown>
-  }
-  // login factor added to user
-  login?: {
-    user_id: string
-    amr: string[]
   }
   declared_client?: {
     client_id?: string

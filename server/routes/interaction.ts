@@ -426,6 +426,7 @@ router.post('/register',
 
     // See where we need to redirect the user to, depending on config
     const redir = await loginResult(req, res, {
+      username: user.username,
       userId: user.id,
       amr: ['pwd'],
     })
@@ -586,6 +587,7 @@ router.post('/register/passkey/end',
     // See where we need to redirect the user to, depending on config
     const redir = await loginResult(req, res, {
       userId: user.id,
+      username: user.username,
       amr: addAmr,
     })
 
@@ -664,6 +666,7 @@ router.post('/passkey/registration/end',
 
     const redir = await loginResult(req, res, {
       userId: user.id,
+      username: user.username,
       amr: addAmr,
     })
 
@@ -750,6 +753,7 @@ router.post('/login',
     // check if email verification or approval needed, if not log in
     const redir = await loginResult(req, res, {
       userId: user.id,
+      username: user.username,
       amr: ['pwd'],
       remember,
     })
@@ -891,6 +895,7 @@ router.post('/passkey/end',
 
     const redir = await loginResult(req, res, {
       userId: user.id,
+      username: user.username,
       amr: addAmr,
       remember,
     })
@@ -929,6 +934,7 @@ router.post('/totp',
 
     const redir = await loginResult(req, res, {
       userId: user.id,
+      username: user.username,
       amr: ['totp'],
     })
 
@@ -977,6 +983,7 @@ router.post('/verify_email',
 
     const redir = await loginResult(req, res, {
       userId: user.id,
+      username: user.username,
       amr: ['email'],
     })
 
@@ -987,18 +994,21 @@ router.post('/verify_email',
 async function loginResult(req: IncomingMessage, res: Response, options: {
   amr: string[]
   userId: string
+  username: string
   remember?: boolean
 }): Promise<Redirect | undefined> {
   let { amr } = options
-  const { userId, remember = false } = options
+  const { userId, username, remember = false } = options
   const includesFirstFactorAmr = amrFactors.firstFactors.some(f => amr.includes(f))
 
   logger({
     level: 'debug',
     message: 'Adding login factor to user',
-    login: {
+    authentication: {
       user_id: userId,
+      username: username,
       amr,
+      ...(remember ? { remember } : {}), // only include 'remember' in login options if it is true
     },
   })
 
