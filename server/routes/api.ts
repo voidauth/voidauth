@@ -205,13 +205,11 @@ export async function getUserSessionInteraction(req: Request, res: Response) {
   logger({
     level: 'debug',
     message: `User found in ${String(source)}`,
-    details: {
-      user: {
-        id: currentUser.id,
-        username: currentUser.username,
-        source: source ?? 'unknown',
-        amr: currentUser.amr,
-      },
+    user: {
+      id: currentUser.id,
+      username: currentUser.username,
+      source: source ?? 'unknown',
+      amr: currentUser.amr,
     },
   })
 

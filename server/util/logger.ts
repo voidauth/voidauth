@@ -7,49 +7,49 @@ export type LogShape = {
   level: 'debug' | 'info' | 'error'
   timestamp?: number
   message: string
-  details?: {
-    request?: {
-      ip: string | undefined
-      method: string
-      path: string
-    }
-    response?: {
-      statusCode: number
-      location?: string
-    }
-    user?: {
-      id: string
-      username: string
-      source: string
-      amr: string[] // OIDC Authentication Methods Reference
-    }
-    interaction?: {
-      prompt: string
-      reasons: string[]
-      client_id: string
-      redirect_uri: string
-    }
-    proxyauth?: {
-      action?: string
-      reason?: string
-      url?: string
-      urlDomain?: string
-      domain?: string
-      domainGroups?: string[]
-    }
-    api_validation?: {
-      error: Record<string, unknown>
-    }
-    login?: {
-      user_id: string
-      amr: string[]
-    }
-    declared_client?: {
-      client_id?: string
-      source?: string
-      variable?: string
-      value?: string
-    }
+  request?: {
+    ip?: string
+    method: string
+    path: string
+  }
+  response?: {
+    statusCode: number
+    location?: string // 3xx redirect location
+  }
+  user?: {
+    id: string
+    username: string
+    source: string
+    amr: string[] // OIDC Authentication Methods Reference
+  }
+  interaction?: {
+    prompt: string
+    reasons: string[]
+    client_id: string
+    redirect_uri: string
+  }
+  proxyauth?: {
+    action?: string
+    reason?: string
+    url?: string
+    urlDomain?: string
+    matchedDomain?: string
+    domainGroups?: string[]
+  }
+  // zod validations errors for API requests
+  api_validation?: {
+    error: Record<string, unknown>
+  }
+  // login factor added to user
+  login?: {
+    user_id: string
+    amr: string[]
+  }
+  declared_client?: {
+    client_id?: string
+    source?: string
+    variable?: string
+    value?: string
   }
   errors?: {
     name?: string
@@ -84,26 +84,19 @@ export function logger(log: LogShape) {
   if (!store.log) {
     store.log = log
   } else {
-    // keep the highest level between the two logs
-    // the log with the highest levels properties takes precedence
-    // details should be deep merged
-    const levelPriority = { debug: 1, info: 2, error: 3 }
-    const higherLog = levelPriority[log.level] >= levelPriority[store.log.level] ? log : store.log
-    const lowerLog = higherLog === log ? store.log : log
+    const earlierTimestamp = store.log.timestamp && log.timestamp
+      ? Math.min(store.log.timestamp, log.timestamp)
+      : log.timestamp || store.log.timestamp
 
-    const earlierTimestamp = higherLog.timestamp && lowerLog.timestamp
-      ? Math.min(higherLog.timestamp, lowerLog.timestamp)
-      : lowerLog.timestamp || higherLog.timestamp
-
-    const error = higherLog.errors && lowerLog.errors ? higherLog.errors.concat(lowerLog.errors) : higherLog.errors || lowerLog.errors
+    const errors = store.log.errors && log.errors ? store.log.errors.concat(log.errors) : store.log.errors || log.errors
 
     store.log = {
-      ...lowerLog, ...higherLog,
+      // merge the two logs, with the new log taking precedence
+      ...store.log, ...log,
       // earlier timestamp takes precedence
       timestamp: earlierTimestamp,
-      details: lowerLog.details || higherLog.details ? { ...lowerLog.details, ...higherLog.details } : undefined,
-      // error should be taken from the log with the higher level, and if they do not exist should be unset
-      errors: error,
+      // errors are combined
+      errors,
     }
   }
   return log // do not print the log immediately, it will be printed when purgeAsyncLog is called

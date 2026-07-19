@@ -82,13 +82,11 @@ router.get('/', async (req, res) => {
   logger({
     level: 'debug',
     message: `Interaction required`,
-    details: {
-      interaction: {
-        prompt: prompt.name,
-        reasons: prompt.reasons,
-        client_id: params.client_id as string,
-        redirect_uri: params.redirect_uri as string,
-      },
+    interaction: {
+      prompt: prompt.name,
+      reasons: prompt.reasons,
+      client_id: params.client_id as string,
+      redirect_uri: params.redirect_uri as string,
     },
   })
 
@@ -998,11 +996,9 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
   logger({
     level: 'debug',
     message: 'Adding login factor to user',
-    details: {
-      login: {
-        user_id: userId,
-        amr,
-      },
+    login: {
+      user_id: userId,
+      amr,
     },
   })
 
