@@ -74,7 +74,7 @@ export class ClientsComponent implements AfterViewInit {
     }
   }
 
-  delete(client_id: string) {
+  onDelete(client_id: string) {
     const client = this.dataSource.data.find(c => c.client_id === client_id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {

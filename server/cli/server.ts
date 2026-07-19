@@ -98,13 +98,11 @@ export async function serve() {
       logger({
         level: 'debug',
         message: 'API Request Started',
-        details: {
-          request: {
-            ip: req.ip,
-            method: req.method,
-            // show only original path without query to avoid logging sensitive info
-            path: req.baseUrl + req.path,
-          },
+        request: {
+          ip: req.ip,
+          method: req.method,
+          // show only original path without query to avoid logging sensitive info
+          path: req.baseUrl + req.path,
         },
       })
       res.on('finish', async () => {
@@ -113,11 +111,9 @@ export async function serve() {
           logger({
             level: 'debug',
             message: 'API Response Sent',
-            details: {
-              response: {
-                statusCode: res.statusCode,
-                location: res.getHeader('Location') ? String(res.getHeader('Location')) : undefined,
-              },
+            response: {
+              statusCode: res.statusCode,
+              location: res.getHeader('Location') ? String(res.getHeader('Location')) : undefined,
             },
           })
 

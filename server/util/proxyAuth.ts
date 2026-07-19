@@ -25,11 +25,9 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     logger({
       level: 'debug',
       message: `ProxyAuth access granted, request to self URL`,
-      details: {
-        proxyauth: {
-          action: 'access_granted',
-          reason: 'request_to_self_url',
-        },
+      proxyauth: {
+        action: 'access_granted',
+        reason: 'request_to_self_url',
       },
     })
     res.status(200).send()
@@ -49,13 +47,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     logger({
       level: 'debug',
       message: `ProxyAuth forbidden due to no domain match`,
-      details: {
-        proxyauth: {
-          action: 'forbidden',
-          reason: 'proxyauth_domain_no_match',
-          url: url.href,
-          urlDomain: formattedUrl,
-        },
+      proxyauth: {
+        action: 'forbidden',
+        reason: 'proxyauth_domain_no_match',
+        url: url.href,
+        urlDomain: formattedUrl,
       },
     })
     res.redirect(redirCode, `${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=proxyauth_domain_no_match`)
@@ -89,13 +85,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     logger({
       level: 'debug',
       message: `User found in proxy-authorization header`,
-      details: {
-        user: {
-          id: user.id,
-          username: user.username,
-          source: 'proxy-authorization',
-          amr,
-        },
+      user: {
+        id: user.id,
+        username: user.username,
+        source: 'proxy-authorization',
+        amr,
       },
     })
   } else if (authorizationHeader) {
@@ -115,13 +109,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     logger({
       level: 'debug',
       message: `User found in authorization header`,
-      details: {
-        user: {
-          id: user.id,
-          username: user.username,
-          source: 'authorization',
-          amr,
-        },
+      user: {
+        id: user.id,
+        username: user.username,
+        source: 'authorization',
+        amr,
       },
     })
   } else {
@@ -129,13 +121,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     logger({
       level: 'debug',
       message: `Session not found, redirect to login`,
-      details: {
-        proxyauth: {
-          action: 'redirect_to_login',
-          reason: 'session_not_found',
-          url: url.href,
-          domain: match.domain,
-        },
+      proxyauth: {
+        action: 'redirect_to_login',
+        reason: 'session_not_found',
+        url: url.href,
+        matchedDomain: match.domain,
       },
     })
     res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
@@ -148,13 +138,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     logger({
       level: 'debug',
       message: `User has not finished login`,
-      details: {
-        proxyauth: {
-          action: 'redirect_to_login',
-          reason: 'login_not_finished',
-          url: url.href,
-          domain: match.domain,
-        },
+      proxyauth: {
+        action: 'redirect_to_login',
+        reason: 'login_not_finished',
+        url: url.href,
+        matchedDomain: match.domain,
       },
     })
     res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
@@ -167,13 +155,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     logger({
       level: 'debug',
       message: `MFA required for domain`,
-      details: {
-        proxyauth: {
-          action: 'redirect_to_login',
-          reason: 'domain_mfa_required',
-          url: url.href,
-          domain: match.domain,
-        },
+      proxyauth: {
+        action: 'redirect_to_login',
+        reason: 'domain_mfa_required',
+        url: url.href,
+        matchedDomain: match.domain,
       },
     })
     res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
@@ -186,15 +172,13 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
       logger({
         level: 'debug',
         message: `ProxyAuth forbidden due to user groups missing any group for domain`,
-        details: {
-          proxyauth: {
-            action: 'forbidden',
-            reason: 'user_group_missing',
-            url: url.href,
-            urlDomain: formattedUrl,
-            domain: match.domain,
-            domainGroups: match.groups,
-          },
+        proxyauth: {
+          action: 'forbidden',
+          reason: 'user_group_missing',
+          url: url.href,
+          urlDomain: formattedUrl,
+          matchedDomain: match.domain,
+          domainGroups: match.groups,
         },
       })
       res.redirect(redirCode, `${appConfig.APP_URL}/${REDIRECT_PATHS.FORBIDDEN}?reason=user_group_missing`)
@@ -238,13 +222,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
           logger({
             level: 'debug',
             message: `Failed to set Remote-Groups header for group, skipping group`,
-            details: {
-              proxyauth: {
-                action: 'set_header_failed',
-                reason: group.name,
-                url: url.href,
-                domain: match.domain,
-              },
+            proxyauth: {
+              action: 'set_header_failed',
+              reason: group.name,
+              url: url.href,
+              matchedDomain: match.domain,
             },
           })
         }
@@ -254,12 +236,10 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   logger({
     level: 'debug',
     message: `ProxyAuth access granted`,
-    details: {
-      proxyauth: {
-        action: 'access_granted',
-        domain: match.domain,
-        reason: 'checks_passed',
-      },
+    proxyauth: {
+      action: 'access_granted',
+      matchedDomain: match.domain,
+      reason: 'checks_passed',
     },
   })
   res.status(200).send()

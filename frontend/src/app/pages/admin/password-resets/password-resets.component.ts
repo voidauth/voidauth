@@ -109,7 +109,7 @@ export class PasswordResetsComponent {
     }
   }
 
-  delete(id: string) {
+  onDelete(id: string) {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
         message: `Are you sure you want to delete this password reset link?`,

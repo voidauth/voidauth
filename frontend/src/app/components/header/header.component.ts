@@ -40,8 +40,8 @@ export class HeaderComponent implements OnInit {
   async ngOnInit() {
     try {
       this.spinnerService.show()
-      this.user = await this.userService.getMyUser()
       this.config = await this.configService.getConfig()
+      this.user = await this.userService.getMyUser()
     } catch (_e) {
       // user just isn't logged in
       this.userNotFound.set(true)

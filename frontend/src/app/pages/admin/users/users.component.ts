@@ -131,7 +131,7 @@ export class UsersComponent {
     this.selected = []
   }
 
-  delete(id: string) {
+  onDelete(id: string) {
     const user = this.dataSource.data.find(u => u.id === id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {

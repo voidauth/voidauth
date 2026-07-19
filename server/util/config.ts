@@ -357,13 +357,11 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
     logger({
       level: 'error',
       message: 'Error processing declared client variable',
-      details: {
-        declared_client: {
-          client_id,
-          source,
-          variable,
-          value: loggedValue,
-        },
+      declared_client: {
+        client_id,
+        source,
+        variable,
+        value: loggedValue,
       },
       errors: e instanceof Error ? [e] : [{ message: String(e) }],
     })
