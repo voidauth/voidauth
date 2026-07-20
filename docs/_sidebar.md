@@ -2,6 +2,7 @@
 * [Getting Started](Getting-Started.md)
 * [User Experience](End‐User-Usage.md)
 - Admin Guides
+  * [Configuration](Configuration.md)
   * [OIDC App Setup](OIDC-Setup.md)
   * [OIDC App Guides](OIDC-Guides.md)
   * [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md)

@@ -28,10 +28,7 @@ export async function getClients(): Promise<ClientResponse[]> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const c: ClientMetadata = JSON.parse(r.payload)
         if (c.client_secret) {
-          const client_secret = decryptString(c.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
-          if (client_secret) {
-            c.client_secret = client_secret
-          }
+          c.client_secret = decryptString(c.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY]) ?? undefined
         }
         const cr: ClientResponse = { ...c, groups: [] }
         if (r.groupName) {
@@ -68,10 +65,7 @@ export async function getClient(client_id: string): Promise<ClientResponse | und
   const client: ClientMetadata = JSON.parse(clientDB.payload)
 
   if (client.client_secret) {
-    const client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
-    if (client_secret) {
-      client.client_secret = client_secret
-    }
+    client.client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY]) ?? undefined
   }
 
   const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)

@@ -434,7 +434,6 @@ OAUTH_WELLKNOWN_URL="Copy from VoidAuth OIDC Info (Well-Known Endpoint)"
 OAUTH_CLIENT_ID="your-client-id"
 OAUTH_CLIENT_SECRET="your-client-secret"
 NEXTAUTH_URL="https://karakeep.example.com"
-
 ```
 
 **In VoidAuth OIDC App Page:**
@@ -796,56 +795,44 @@ Redirect URLs: https://seafile.example.com/oauth/callback/
 
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/sync-in.svg" width="28" /> Sync-in
 
-Add these lines to the Sync-in configuration file named `environment.yaml`:
+Sync-in can be configured to use VoidAuth for OIDC by adding these lines to its `environment.yaml` file.
 
-**Sync-in Configuration:**
+**Sync-in Environment Yaml File**
 
 ```yaml
 auth:
-  provider: 'oidc'                                  # provider: 'mysql' | 'ldap' | 'oidc'
+  provider: oidc
   oidc:
-    issuerUrl: 'https://auth.example.com.net/oidc'  # issuerUrl: obtained from OIDC App config
-    clientId: 'CLIENT-ID'                           # clientId: obtained from OIDC App config
-    clientSecret: 'CLIENT-SECRET'                   # clientSecret: obtained from OIDC App config
-    redirectUri: 'https://sync-in.example.com/api/auth/oidc/callback'
-    options:
-      autoCreateUser: false                         # 'true' enables automatic creation of ne Sync-in user accounts
-      autoCreatePermissions: []                     # e.g.: [personal_space, spaces_access] (array required)
-      storageQuotaClaim: storageQuota
-      adminRoleOrGroup:
-      enablePasswordAuth: true
-      autoSyncAvatar: true
-      autoRedirect: false                           # 'true' skips Sync-in login page directly into VoidAuth login
-      buttonText: 'Continue with OpenID Connect'
+    issuerUrl: # Copy from VoidAuth OIDC Info (OIDC Issuer Endpoint)
+    clientId: 'your-client-id'
+    clientSecret: 'your-client-secret'
+    redirectUri: 'http://syncin.example.com/api/auth/oidc/callback' # Must exactly match the entry in VoidAuth
+
     security:
-      scope: 'openid email profile'                 # Common scopes: openid (required), email, profile, groups, roles
-      supportPKCE: false
-      allowInsecureRequests: false
-      tokenEndpointAuthMethod: client_secret_basic
-      tokenSigningAlg: RS256
-      userInfoSigningAlg: 
-      skipSubjectCheck: false
-      requireVerifiedEmail: false
-      allowPrivateIpAvatarDownload: true
+      scope: 'openid email profile groups'
+      # requireVerifiedEmail: true # Enable to only allow users with verified emails. Should be used in conjunction with VoidAuth EMAIL_VERIFICATION environment variable
+
+    # Additional OIDC Options (Optional)
+    options:
+      autoCreateUser: true       # Automatically creates local accounts on first OIDC sign-in
+      # enablePasswordAuth: false  # Disables local login
+      adminRoleOrGroup: # Set to OIDC Group you can assign to Sync-in admins
+      # storageQuotaClaim: 'sync_in_storage_quota'
+      # autoRedirect: true         # Automatically redirects users to the OIDC provider for authentication, skipping Sync-in login page
+      buttonText: 'Continue with OpenID Connect'
 ```
+
+> [!NOTE]
+> You will need to restart the Sync-in server for the modifications to the environment.yaml take effect.
 
 **In VoidAuth OIDC App Page:**
 
 ```plaintext
-Name: Sync-in
-Home Page URL: https://sync-in.example.com
-Logo URL: https://sync-in.example.com/assets/favicon.svg
 Client ID: your-client-id
 Auth Method: Client Secret Basic
 Client Secret: your-client-secret
-Redirect URLs: https://sync-in.example.com//api/auth/oidc/callback
-Response Types: code
-Grant Types: authorization_code, refresh_token
-PostLogout URL: <empty>
+Redirect URLs: https://sync-in.example.com/api/auth/oidc/callback
 ```
-
-> [!NOTE]
-> You will need to restart (DOWN/UP) Sync-in server for the modifications to take effect.
 
 <br>
 
@@ -878,7 +865,7 @@ Redirect URLs: https://unraid.example.com/graphql/api/auth/oidc/callback
 
 <br>
 
-## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/vaultwarden.svg" width="28" /> Vaultwarden
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/vaultwarden-light.svg" width="28" /> Vaultwarden
 
 > [!NOTE]
 > Vaultwarden can be configured in three different ways: environment variables, ENV_FILE or via a config.json (editable through the admin page). The steps below assumes the [admin page has been enabled](https://github.com/dani-garcia/vaultwarden/wiki/Enabling-admin-page), but can be applied to all options. For details on the environment variables options, refer to the [Vaultwarden documentation](https://github.com/dani-garcia/vaultwarden/wiki/Enabling-SSO-support-using-OpenId-Connect).

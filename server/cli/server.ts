@@ -316,7 +316,7 @@ export async function serve() {
 
   // interval to delete expired db entries and keep keys up to date
   let previousJwks = initialJwks
-  async function doMaintenance() {
+  async function doMaintenance(initialRun: boolean = false) {
     await als.run({}, async () => {
       await transaction()
       try {
@@ -324,14 +324,16 @@ export async function serve() {
         await clearAllExpiredEntries()
 
         // Update encrypted table values to the current STORAGE_KEY
-        await updateEncryptedTables()
+        await updateEncryptedTables(initialRun)
 
         // make DB keys all valid
         await makeKeysValid()
 
         // ensure that initial user is properly setup
         // Create initial admin user and group
-        await createInitialAdmin()
+        if (initialRun) {
+          await createInitialAdmin()
+        }
 
         // update provider cookie keys
         const cookieKeys = (await getCookieKeys()).map(k => k.value)
@@ -382,7 +384,7 @@ export async function serve() {
     })
   }
 
-  await doMaintenance()
+  await doMaintenance(true)
   setInterval(async () => {
     // Do initial key setup and cleanup
     await doMaintenance()
