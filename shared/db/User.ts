@@ -11,6 +11,7 @@ export type User = Pick<Audit, 'createdAt' | 'updatedAt'> & {
   approved: boolean | number
   mfaRequired: boolean | number
   expiresAt?: number | Date | null
+  passkeySkippedEcosystems?: string | null
 }
 
 const _typeCheck: DBColumnTypesCheck<User> = true
