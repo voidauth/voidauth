@@ -96,7 +96,7 @@ export async function getLDAPEntryByDN(dn: string) {
   return (await getLDAPEntries()).find(entry => dnEqual(entry.dn, dn))
 }
 
-export async function getLDAPUserByDN(dn: string) {
+export async function getLDAPUserIdByDN(dn: string) {
   // remove the user base DN suffix and parse the uid from the remaining DN
   const userBaseDN = usersBaseDN()
   if (dn.toLowerCase().endsWith(userBaseDN.toLowerCase())) {
@@ -113,11 +113,11 @@ export async function getLDAPUserByDN(dn: string) {
   if (!uid) {
     return undefined
   }
-  const users = await db().table<User>(TABLES.USER).select().where({ username: uid })
+  const users = await db().table<User>(TABLES.USER).select('id').where({ username: uid })
   if (!users.length || users.length > 1) {
     return undefined
   }
-  return users[0]
+  return users[0]?.id
 }
 
 export function entryInScope(baseDN: string, entryDN: string, scope: LDAPSearchScope) {
