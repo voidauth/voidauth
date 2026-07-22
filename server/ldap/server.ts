@@ -3,7 +3,7 @@ import net, { type Socket } from 'node:net'
 import tls from 'node:tls'
 import appConfig from '../util/config'
 import { logger, purgeAsyncLog } from '../util/logger'
-import { checkPasswordHash, getUserById } from '../db/user'
+import { checkPasswordHash } from '../db/user'
 import { userCanLogin } from '../util/auth'
 import {
   dnEqual,
@@ -278,16 +278,15 @@ async function handleBind(connection: LDAPConnection, messageId: number, op: BER
     }
 
     // not using defined bind dn, check if it is a user
-    const userId = await getLDAPUserIdByDN(dn)
-    if (!userId || !password || !await checkPasswordHash(userId, password)) {
+    const user = await getLDAPUserIdByDN(dn)
+    if (!user || !password || !await checkPasswordHash(user.id, password)) {
       logger({ level: 'debug', message: 'LDAP bind request with invalid user credentials' })
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_INVALID_CREDENTIALS))
       return
     }
 
-    const details = await getUserById(userId)
-    if (!userCanLogin(details, ['pwd'])) {
-      logger({ level: 'debug', message: 'LDAP bind request with user unable to login with only password' })
+    if (!userCanLogin(user, ['pwd'])) {
+      logger({ level: 'debug', message: 'LDAP bind request with user unable to login with a password' })
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_INVALID_CREDENTIALS))
       return
     }
