@@ -80,6 +80,30 @@ class Config {
   LDAP_TLS_CERT_FILE?: string
   LDAP_TLS_KEY_FILE?: string
 
+  // LDAP Sync — pulls users and groups from an external LDAP directory.
+  // When enabled the four variables below are required; all others have
+  // sensible defaults matching an OpenLDAP / 389 DS schema.
+  LDAP_SYNC_ENABLED: boolean = false
+  LDAP_SYNC_URL?: string
+  LDAP_SYNC_BIND_DN?: string
+  LDAP_SYNC_BIND_PASSWORD?: string
+  LDAP_SYNC_BASE_DN?: string
+  LDAP_SYNC_USER_SEARCH_FILTER?: string
+  LDAP_SYNC_GROUPS_SEARCH_FILTER?: string
+  LDAP_SYNC_SKIP_CERT_VERIFICATION: boolean = false
+  /** When true, keep user data (set approved=false, expiresAt=now). When false, delete. */
+  LDAP_SYNC_KEEP_DISABLED_USERS: boolean = false
+  LDAP_SYNC_USER_UNIQUE_ID_ATTRIBUTE?: string
+  LDAP_SYNC_USERNAME_ATTRIBUTE?: string
+  LDAP_SYNC_USER_MAIL_ATTRIBUTE?: string
+  LDAP_SYNC_USER_FIRSTNAME_ATTRIBUTE?: string
+  LDAP_SYNC_USER_LASTNAME_ATTRIBUTE?: string
+  LDAP_SYNC_GROUP_MEMBERS_ATTRIBUTE?: string
+  LDAP_SYNC_GROUP_UNIQUE_IDENTIFIER_ATTRIBUTE?: string
+  LDAP_SYNC_GROUP_NAME_ATTRIBUTE?: string
+  LDAP_SYNC_ADMIN_GROUP_NAME?: string
+  LDAP_SYNC_TIME = 3600
+
   DECLARED_CLIENTS = new Map<string, ClientResponse>()
 }
 
@@ -92,6 +116,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'PASSWORD_STRENGTH':
     case 'API_RATELIMIT':
     case 'LDAP_PORT':
+    case 'LDAP_SYNC_TIME':
       appConfig[key] = posInt(value) ?? appConfig[key]
       break
 
@@ -120,6 +145,9 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'MIGRATE_TO_DB_SSL':
     case 'MIGRATE_TO_DB_SSL_VERIFICATION':
     case 'LDAP_ENABLED':
+    case 'LDAP_SYNC_ENABLED':
+    case 'LDAP_SYNC_SKIP_CERT_VERIFICATION':
+    case 'LDAP_SYNC_KEEP_DISABLED_USERS':
       appConfig[key] = booleanString(value) ?? appConfig[key]
       break
 
@@ -148,6 +176,21 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'LDAP_BIND_PASSWORD':
     case 'LDAP_TLS_CERT_FILE':
     case 'LDAP_TLS_KEY_FILE':
+    case 'LDAP_SYNC_URL':
+    case 'LDAP_SYNC_BIND_DN':
+    case 'LDAP_SYNC_BIND_PASSWORD':
+    case 'LDAP_SYNC_BASE_DN':
+    case 'LDAP_SYNC_ADMIN_GROUP_NAME':
+    case 'LDAP_SYNC_USER_SEARCH_FILTER':
+    case 'LDAP_SYNC_GROUPS_SEARCH_FILTER':
+    case 'LDAP_SYNC_USER_UNIQUE_ID_ATTRIBUTE':
+    case 'LDAP_SYNC_USERNAME_ATTRIBUTE':
+    case 'LDAP_SYNC_USER_MAIL_ATTRIBUTE':
+    case 'LDAP_SYNC_USER_FIRSTNAME_ATTRIBUTE':
+    case 'LDAP_SYNC_USER_LASTNAME_ATTRIBUTE':
+    case 'LDAP_SYNC_GROUP_MEMBERS_ATTRIBUTE':
+    case 'LDAP_SYNC_GROUP_UNIQUE_IDENTIFIER_ATTRIBUTE':
+    case 'LDAP_SYNC_GROUP_NAME_ATTRIBUTE':
       appConfig[key] = stringOnly(value) ?? appConfig[key]
       break
 
@@ -588,6 +631,41 @@ if (appConfig.LDAP_ENABLED) {
     logger({
       level: 'error',
       message: 'LDAP_TLS_CERT_FILE and LDAP_TLS_KEY_FILE must be set together.',
+    })
+    exit(1)
+  }
+}
+
+// Validate required LDAP sync variables are present when the feature is enabled.
+if (appConfig.LDAP_SYNC_ENABLED) {
+  if (!appConfig.LDAP_SYNC_URL) {
+    logger({
+      level: 'error',
+      message: 'LDAP_SYNC_URL must be set when LDAP_SYNC_ENABLED is true.',
+    })
+    exit(1)
+  }
+
+  if (!appConfig.LDAP_SYNC_BIND_DN) {
+    logger({
+      level: 'error',
+      message: 'LDAP_SYNC_BIND_DN must be set when LDAP_SYNC_ENABLED is true.',
+    })
+    exit(1)
+  }
+
+  if (!appConfig.LDAP_SYNC_BIND_PASSWORD) {
+    logger({
+      level: 'error',
+      message: 'LDAP_SYNC_BIND_PASSWORD must be set when LDAP_SYNC_ENABLED is true.',
+    })
+    exit(1)
+  }
+
+  if (!appConfig.LDAP_SYNC_BASE_DN) {
+    logger({
+      level: 'error',
+      message: 'LDAP_SYNC_BASE_DN must be set when LDAP_SYNC_ENABLED is true.',
     })
     exit(1)
   }

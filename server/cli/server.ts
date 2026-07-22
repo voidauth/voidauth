@@ -19,6 +19,7 @@ import { logger, purgeAsyncLog } from '../util/logger'
 import { sensitiveRateLimit, standardRateLimit } from '../util/rateLimit'
 import { FORBIDDEN_PATHS, NOT_FOUND_PATHS } from '@shared/constants'
 import { startLDAPServer } from '../ldap/server'
+import { syncLDAP } from '../ldap/sync'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -389,4 +390,11 @@ export async function serve() {
     // Do initial key setup and cleanup
     await doMaintenance()
   }, ((8 * 60) + randomInt(2 * 60)) * 1000)
+
+  // LDAP sync runs on its own interval (default 3600 s, configurable via LDAP_SYNC_TIME).
+  // It also runs once at startup so the first sync happens immediately.
+  await syncLDAP()
+  setInterval(async () => {
+    await syncLDAP()
+  }, appConfig.LDAP_SYNC_TIME * 1000)
 }

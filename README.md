@@ -39,6 +39,7 @@ Features:
 - 🌐 OpenID Connect (OIDC) Provider
 - 🔄 Proxy ForwardAuth
 - 📖 LDAP Directory Server
+- ➰ LDAP Directory Sync
 - 👤 User and Groups Management
 - 📨 User Self-Registration and Invitations
 - 🎨 Customizable (Logo, Title, Theme Color, Email Templates)
