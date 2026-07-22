@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { AuthService } from '../../services/auth.service'
 import { ActivatedRoute } from '@angular/router'
 import { HttpErrorResponse } from '@angular/common/http'
@@ -11,11 +11,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-consent',
-  imports: [
-    MaterialModule,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, TranslatePipe],
   templateUrl: './consent.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './consent.component.scss',
 })
 export class ConsentComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../../material-module'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
@@ -21,14 +21,9 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-password-sets',
-  imports: [
-    MaterialModule,
-    ValidationErrorPipe,
-    ReactiveFormsModule,
-    AsyncPipe,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, ValidationErrorPipe, ReactiveFormsModule, AsyncPipe, TranslatePipe],
   templateUrl: './password-resets.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './password-resets.component.scss',
 })
 export class PasswordResetsComponent {
@@ -136,11 +131,15 @@ export class PasswordResetsComponent {
   }
 
   userAutoFilter(value: string = '') {
-    this.selectableUsers = this.users.filter((u) => {
-      return u.username.toLowerCase().includes(value.toLowerCase())
-        || u.email?.toLowerCase().includes(value.toLowerCase())
-        || u.name?.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
+    this.selectableUsers = this.users
+      .filter((u) => {
+        return (
+          u.username.toLowerCase().includes(value.toLowerCase())
+          || u.email?.toLowerCase().includes(value.toLowerCase())
+          || u.name?.toLowerCase().includes(value.toLowerCase())
+        )
+      })
+      .slice(0, 5)
   }
 
   displayUser(user?: UserWithoutPassword) {

@@ -1,24 +1,21 @@
-import { Component, signal } from '@angular/core'
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core'
 
 @Component({
   selector: 'app-logo',
   imports: [],
   template: `
-  @if (logoFile()) {
-    <img
-      #logo
-      [src]="logoFile()"
-      alt="Logo"
-    />
-  }
+    @if (logoFile()) {
+      <img #logo [src]="logoFile()" alt="Logo" />
+    }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
-  img {
-    padding: 4px;
-    height: 100%;
-    object-fit: contain;
-    object-position: left;
-  }
+    img {
+      padding: 4px;
+      height: 100%;
+      object-fit: contain;
+      object-position: left;
+    }
   `,
 })
 export class LogoComponent {

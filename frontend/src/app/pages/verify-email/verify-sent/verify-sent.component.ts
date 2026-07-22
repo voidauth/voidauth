@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { MaterialModule } from '../../../material-module'
 import { HttpErrorResponse } from '@angular/common/http'
@@ -17,10 +17,9 @@ import { REDIRECT_PATHS } from '@shared/constants'
 
 @Component({
   selector: 'app-verify-sent',
-  imports: [
-    MaterialModule, TranslatePipe, ReactiveFormsModule, ValidationErrorPipe, AsyncPipe,
-  ],
+  imports: [MaterialModule, TranslatePipe, ReactiveFormsModule, ValidationErrorPipe, AsyncPipe],
   templateUrl: './verify-sent.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './verify-sent.component.scss',
 })
 export class VerifySentComponent implements OnInit {
@@ -30,10 +29,13 @@ export class VerifySentComponent implements OnInit {
   currentUser?: CurrentUserDetails
 
   public emailForm = new FormGroup({
-    email: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required, isValidEmail]),
+    email: new FormControl<string>(
+      {
+        value: '',
+        disabled: false,
+      },
+      [Validators.required, isValidEmail],
+    ),
   })
 
   private router = inject(Router)

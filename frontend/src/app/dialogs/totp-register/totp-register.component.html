@@ -1,6 +1,6 @@
 <h1 matDialogTitle>{{ "components.totp-register.title" | translate }}</h1>
 <app-totp-input
-  [enableMfa]="data?.enableMfa"
+  [enableMfa]="$safeNavigationMigration(data?.enableMfa)"
   [uri]="uri()"
   [secret]="secret()"
   [disabled]="disabled()"

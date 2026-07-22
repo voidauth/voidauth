@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
@@ -20,15 +20,9 @@ import type { Nullable } from '@shared/utils'
 
 @Component({
   selector: 'app-group',
-  imports: [
-    CommonModule,
-    MaterialModule,
-    ValidationErrorPipe,
-    ReactiveFormsModule,
-    RouterLink,
-    TranslatePipe,
-  ],
+  imports: [CommonModule, MaterialModule, ValidationErrorPipe, ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './group.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './group.component.scss',
 })
 export class GroupComponent {
@@ -96,11 +90,15 @@ export class GroupComponent {
     this.unselectedUsers = this.users.filter((u) => {
       return !this.form.controls.users.value.find(gu => u.id === gu.id)
     })
-    this.selectableUsers = this.unselectedUsers.filter((u) => {
-      return u.username.toLowerCase().includes(value.toLowerCase())
-        || u.email?.toLowerCase().includes(value.toLowerCase())
-        || u.name?.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
+    this.selectableUsers = this.unselectedUsers
+      .filter((u) => {
+        return (
+          u.username.toLowerCase().includes(value.toLowerCase())
+          || u.email?.toLowerCase().includes(value.toLowerCase())
+          || u.name?.toLowerCase().includes(value.toLowerCase())
+        )
+      })
+      .slice(0, 5)
     if (this.unselectedUsers.length) {
       this.userSelect.enable()
     } else {
@@ -113,17 +111,18 @@ export class GroupComponent {
     if (!value) {
       return
     }
-    this.form.controls.users.setValue([{ id: value.id, username: value.username }]
-      .concat(this.form.controls.users.value).sort((a, b) => {
+    this.form.controls.users.setValue(
+      [{ id: value.id, username: value.username }].concat(this.form.controls.users.value).sort((a, b) => {
         return a.id > b.id ? 1 : -1
-      }))
+      }),
+    )
     this.form.controls.users.markAsDirty()
     this.userSelect.setValue(null)
     this.userAutoFilter()
   }
 
   removeUser(value: string) {
-    this.form.controls.users.setValue((this.form.controls.users.value).filter(u => u.id !== value))
+    this.form.controls.users.setValue(this.form.controls.users.value.filter(u => u.id !== value))
     this.form.controls.users.markAsDirty()
     this.userAutoFilter()
   }

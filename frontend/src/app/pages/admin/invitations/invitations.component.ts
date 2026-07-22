@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -16,12 +16,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-invitations',
-  imports: [
-    MaterialModule,
-    RouterLink,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, RouterLink, TranslatePipe],
   templateUrl: './invitations.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './invitations.component.scss',
 })
 export class InvitationsComponent {
@@ -49,7 +46,7 @@ export class InvitationsComponent {
     {
       columnDef: 'userExpiresAt',
       header: 'Access Expires',
-      cell: element => element.userExpiresAt ? humanDuration(new Date(element.userExpiresAt).getTime() - new Date().getTime()) : '-',
+      cell: element => (element.userExpiresAt ? humanDuration(new Date(element.userExpiresAt).getTime() - new Date().getTime()) : '-'),
     },
   ]
 

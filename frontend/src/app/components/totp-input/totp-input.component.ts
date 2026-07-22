@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output, signal, type AfterViewInit } from '@angular/core'
+import { Component, effect, inject, input, output, signal, type AfterViewInit, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { ReactiveFormsModule } from '@angular/forms'
 import QRCode from 'qrcode'
@@ -10,6 +10,7 @@ import { SnackbarService } from '../../services/snackbar.service'
   selector: 'app-totp-input',
   imports: [MaterialModule, ReactiveFormsModule, TextDividerComponent, TranslatePipe],
   templateUrl: './totp-input.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './totp-input.component.scss',
 })
 export class TotpInputComponent implements AfterViewInit {
@@ -34,11 +35,13 @@ export class TotpInputComponent implements AfterViewInit {
         QRCode.toDataURL(uri, {
           margin: 1,
           width: 240 * 3,
-        }).then((d) => {
-          this.qrcodeData = d
-        }).catch((e: unknown) => {
-          console.error(e)
         })
+          .then((d) => {
+            this.qrcodeData = d
+          })
+          .catch((e: unknown) => {
+            console.error(e)
+          })
       }
     })
   }

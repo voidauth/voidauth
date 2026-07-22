@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { type Sort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -16,12 +16,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-domains',
-  imports: [
-    MaterialModule,
-    RouterLink,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, RouterLink, TranslatePipe],
   templateUrl: './domains.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './domains.component.scss',
 })
 export class DomainsComponent {
@@ -38,7 +35,7 @@ export class DomainsComponent {
     {
       columnDef: 'groups',
       header: 'Allowed Groups',
-      cell: element => element.groups.length ? element.groups.join('\n') : '*',
+      cell: element => (element.groups.length ? element.groups.join('\n') : '*'),
     },
   ]
 

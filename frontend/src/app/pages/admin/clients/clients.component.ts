@@ -1,4 +1,4 @@
-import { Component, inject, type AfterViewInit, viewChild } from '@angular/core'
+import { Component, inject, type AfterViewInit, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { AdminService } from '../../../services/admin.service'
 import { MaterialModule } from '../../../material-module'
 import { MatPaginator } from '@angular/material/paginator'
@@ -22,13 +22,9 @@ export type TableColumn<T> = {
 
 @Component({
   selector: 'app-clients',
-  imports: [
-    MaterialModule,
-    RouterLink,
-    OidcInfoComponent,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, RouterLink, OidcInfoComponent, TranslatePipe],
   templateUrl: './clients.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './clients.component.scss',
 })
 export class ClientsComponent implements AfterViewInit {
@@ -51,7 +47,7 @@ export class ClientsComponent implements AfterViewInit {
     {
       columnDef: 'groups',
       header: 'Allowed Groups',
-      cell: element => element.groups.length ? element.groups.join('\n') : '*',
+      cell: element => (element.groups.length ? element.groups.join('\n') : '*'),
     },
   ]
 

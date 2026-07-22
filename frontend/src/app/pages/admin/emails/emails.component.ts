@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -21,12 +21,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-emails',
-  imports: [
-    MaterialModule,
-    RouterLink,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, RouterLink, TranslatePipe],
   templateUrl: './emails.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './emails.component.scss',
 })
 export class EmailsComponent {
@@ -70,11 +67,7 @@ export class EmailsComponent {
     try {
       this.spinnerService.show()
 
-      const [me, config, _] = await Promise.all([
-        this.userService.getMyUser(),
-        this.configService.getConfig(),
-        this.setData(),
-      ])
+      const [me, config, _] = await Promise.all([this.userService.getMyUser(), this.configService.getConfig(), this.setData()])
       this.me = me
       this.config = config
 
@@ -109,13 +102,15 @@ export class EmailsComponent {
 
   sendTestEmail() {
     const testEmailDialog = this.dialog.open<EmailInputComponent, { message?: string, header?: string, initial?: string }>(
-      EmailInputComponent, {
+      EmailInputComponent,
+      {
         data: {
           header: 'Send Test Email',
           initial: this.me?.email,
         },
         disableClose: true,
-      })
+      },
+    )
 
     testEmailDialog.afterClosed().subscribe(async (data) => {
       if (data && typeof data === 'string') {
@@ -145,13 +140,13 @@ export class EmailsComponent {
 
 @Component({
   selector: 'app-email-preview',
-  imports: [
-    MaterialModule,
-  ],
+  imports: [MaterialModule],
   template: `
-    <h2 mat-dialog-title><b>{{dialogData.subject}}</b></h2>
+    <h2 mat-dialog-title>
+      <b>{{ dialogData.subject }}</b>
+    </h2>
     <div class="content">
-      <p>To: {{dialogData.to}}</p>
+      <p>To: {{ dialogData.to }}</p>
       <div style="flex-grow: 1;">
         <iframe [srcdoc]="body"></iframe>
       </div>
@@ -160,6 +155,7 @@ export class EmailsComponent {
       <button mat-button [mat-dialog-close]="true">Close</button>
     </mat-dialog-actions>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
     :host {
       display: flex;
