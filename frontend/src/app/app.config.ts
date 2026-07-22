@@ -1,8 +1,7 @@
 import { type ApplicationConfig, provideZoneChangeDetection } from '@angular/core'
 import { provideRouter } from '@angular/router'
 import { routes } from './app.routes'
-import { provideHttpClient, withInterceptors, type HttpInterceptorFn, withXhr } from '@angular/common/http'
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'
+import { provideHttpClient, withInterceptors, type HttpInterceptorFn } from '@angular/common/http'
 import { getBaseHrefPath } from './services/config.service'
 import { provideTranslateService } from '@ngx-translate/core'
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader'
@@ -33,9 +32,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withXhr(), withInterceptors([baseHrefInterceptor])),
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    provideAnimationsAsync(),
+    provideHttpClient(withInterceptors([baseHrefInterceptor])),
     provideTranslateService({
       loader: provideTranslateHttpLoader({
         prefix: '/i18n/',

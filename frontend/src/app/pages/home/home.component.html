@@ -188,7 +188,7 @@
           [matTooltip]="
             !user?.hasPassword
               ? ('settings.sections.account.removePassword.tooltip.noPassword' | translate)
-              : !user?.hasPasskeys
+              : !user.hasPasskeys
                 ? ('settings.sections.account.removePassword.tooltip.noPasskeys' | translate)
                 : null
           "
@@ -197,7 +197,7 @@
             type="button"
             class="error-button"
             (click)="removePassword()"
-            [disabled]="!user?.hasPassword || !user?.hasPasskeys"
+            [disabled]="!user?.hasPassword || !user.hasPasskeys"
           >
             {{ "settings.sections.account.removePassword.label" | translate }}
           </button></span
@@ -207,7 +207,7 @@
           [matTooltip]="
             !user?.hasPasskeys
               ? ('settings.sections.account.removeAllPasskeys.tooltip.noPasskeys' | translate)
-              : !user?.hasPassword
+              : !user.hasPassword
                 ? ('settings.sections.account.removeAllPasskeys.tooltip.noPassword' | translate)
                 : null
           "
@@ -216,7 +216,7 @@
             type="button"
             class="error-button"
             (click)="removeAllPasskeys()"
-            [disabled]="!user?.hasPasskeys || !user?.hasPassword"
+            [disabled]="!user?.hasPasskeys || !user.hasPassword"
           >
             {{ "settings.sections.account.removeAllPasskeys.label" | translate }}
           </button></span
@@ -233,7 +233,7 @@
             type="button"
             class="error-button"
             (click)="removeAllAuthenticators()"
-            [disabled]="!user?.hasTotp && (!user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired)"
+            [disabled]="!user?.hasTotp && (!user?.mfaRequired || user.hasMfaGroup || config?.mfaRequired)"
           >
             @if (user?.mfaRequired || user?.hasMfaGroup || config?.mfaRequired) {
               {{ "settings.sections.account.disableMfa.label" | translate }}

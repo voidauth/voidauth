@@ -45,9 +45,9 @@
         <button mat-flat-button [disabled]="form.invalid" type="button" (click)="passkey()">
           {{
             "registration.actions.passkey-sign-up"
-              | translate: { platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) }
+              | translate: { platformName: passkeySupport.platformName ?? ("passkey-title" | translate) }
           }}
-          <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+          <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport.platformIcon ?? "key" }}</mat-icon>
         </button>
       }
 
