@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { AuthService } from '../../../services/auth.service'
 import { HttpErrorResponse } from '@angular/common/http'
@@ -13,12 +13,9 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-verify',
-  imports: [
-    CommonModule,
-    MaterialModule,
-    TranslatePipe,
-  ],
+  imports: [CommonModule, MaterialModule, TranslatePipe],
   templateUrl: './verify.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './verify.component.scss',
 })
 export class VerifyComponent implements OnInit {
@@ -76,7 +73,7 @@ export class VerifyComponent implements OnInit {
       // See if we want to ask the user to register a passkey
       try {
         const user = (await this.authService.interactionExists()).user
-        if (user && await this.passkeyService.shouldAskPasskey(user)) {
+        if (user && (await this.passkeyService.shouldAskPasskey(user))) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }

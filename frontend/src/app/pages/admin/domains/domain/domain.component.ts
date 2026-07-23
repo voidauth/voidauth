@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { ActivatedRoute, Router } from '@angular/router'
@@ -19,14 +19,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-domain',
-  imports: [
-    CommonModule,
-    MaterialModule,
-    ValidationErrorPipe,
-    ReactiveFormsModule,
-    TranslatePipe,
-  ],
+  imports: [CommonModule, MaterialModule, ValidationErrorPipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './domain.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './domain.component.scss',
 })
 export class DomainComponent {
@@ -35,18 +30,24 @@ export class DomainComponent {
   public groups: string[] = []
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
-  groupSelect = new FormControl<string>({
-    value: '',
-    disabled: false,
-  }, [])
+  groupSelect = new FormControl<string>(
+    {
+      value: '',
+      disabled: false,
+    },
+    [],
+  )
 
   public form = new FormGroup({
-    domain: new FormControl<string | null>(null, [Validators.required, (c) => {
-      if (!isValidWildcardDomain(c.value as string)) {
-        return { invalid: 'Must be a valid domain with optional path, supports wildcard (*)' }
-      }
-      return null
-    }]),
+    domain: new FormControl<string | null>(null, [
+      Validators.required,
+      (c) => {
+        if (!isValidWildcardDomain(c.value as string)) {
+          return { invalid: 'Must be a valid domain with optional path, supports wildcard (*)' }
+        }
+        return null
+      },
+    ]),
     groups: new FormControl<string[]>([], { nonNullable: true }),
     maxSessionLength: new FormControl<number | null>(null, [Validators.min(5), Validators.max(525600)]),
     mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
@@ -83,7 +84,8 @@ export class DomainComponent {
   }
 
   resetForm(proxyAuth: ProxyAuthResponse) {
-    this.form.reset({ domain: proxyAuth.domain,
+    this.form.reset({
+      domain: proxyAuth.domain,
       groups: proxyAuth.groups,
       mfaRequired: !!proxyAuth.mfaRequired,
       maxSessionLength: proxyAuth.maxSessionLength,
@@ -94,9 +96,11 @@ export class DomainComponent {
     this.unselectedGroups = this.groups.filter((g) => {
       return !this.form.controls.groups.value.includes(g)
     })
-    this.selectableGroups = this.unselectedGroups.filter((g) => {
-      return g.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
+    this.selectableGroups = this.unselectedGroups
+      .filter((g) => {
+        return g.toLowerCase().includes(value.toLowerCase())
+      })
+      .slice(0, 5)
     if (this.unselectedGroups.length) {
       this.groupSelect.enable()
     } else {
@@ -116,7 +120,7 @@ export class DomainComponent {
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g !== value))
+    this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }

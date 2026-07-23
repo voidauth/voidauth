@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { AuthService } from '../../services/auth.service'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MaterialModule } from '../../material-module'
@@ -23,6 +23,7 @@ import { AsyncPipe } from '@angular/common'
   selector: 'app-registration',
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     ReactiveFormsModule,
     MaterialModule,
@@ -36,20 +37,29 @@ import { AsyncPipe } from '@angular/common'
 })
 export class RegistrationComponent implements OnInit {
   public form = new FormGroup({
-    username: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
+    username: new FormControl<string>(
+      {
+        value: '',
+        disabled: false,
+      },
+      [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)],
+    ),
 
-    email: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [isValidEmail]),
+    email: new FormControl<string>(
+      {
+        value: '',
+        disabled: false,
+      },
+      [isValidEmail],
+    ),
 
-    name: new FormControl<string | null>({
-      value: null,
-      disabled: false,
-    }, [Validators.minLength(1)]),
+    name: new FormControl<string | null>(
+      {
+        value: null,
+        disabled: false,
+      },
+      [Validators.minLength(1)],
+    ),
   })
 
   passwordControl = new FormControl<string>('')
@@ -165,7 +175,7 @@ export class RegistrationComponent implements OnInit {
       // See if we want to ask the user to register a passkey
       try {
         const user = (await this.authService.interactionExists()).user
-        if (user && await this.passkeyService.shouldAskPasskey(user)) {
+        if (user && (await this.passkeyService.shouldAskPasskey(user))) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }

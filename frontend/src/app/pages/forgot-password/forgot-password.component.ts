@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { ConfigService } from '../../services/config.service'
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms'
 import { MaterialModule } from '../../material-module'
@@ -13,14 +13,9 @@ import { AsyncPipe } from '@angular/common'
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [
-    ReactiveFormsModule,
-    MaterialModule,
-    ValidationErrorPipe,
-    TranslatePipe,
-    AsyncPipe,
-  ],
+  imports: [ReactiveFormsModule, MaterialModule, ValidationErrorPipe, TranslatePipe, AsyncPipe],
   templateUrl: './forgot-password.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './forgot-password.component.scss',
 })
 export class ForgotPasswordComponent implements OnInit {
@@ -28,10 +23,13 @@ export class ForgotPasswordComponent implements OnInit {
   emailSent: boolean = false
 
   public form = new FormGroup({
-    input: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required]),
+    input: new FormControl<string>(
+      {
+        value: '',
+        disabled: false,
+      },
+      [Validators.required],
+    ),
   })
 
   configService = inject(ConfigService)

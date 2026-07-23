@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
@@ -6,12 +6,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-confirm',
-  imports: [
-    MaterialModule,
-    ReactiveFormsModule,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './confirm.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './confirm.component.scss',
 })
 export class ConfirmComponent {

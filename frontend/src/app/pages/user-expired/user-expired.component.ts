@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { ConfigService } from '../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { MaterialModule } from '../../material-module'
@@ -11,9 +11,9 @@ import { SpinnerService } from '../../services/spinner.service'
   selector: 'app-user-expired',
   imports: [MaterialModule, RouterLink, TranslatePipe],
   templateUrl: './user-expired.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './user-expired.component.scss',
 })
-
 export class UserExpiredComponent implements OnInit {
   config?: ConfigResponse
 

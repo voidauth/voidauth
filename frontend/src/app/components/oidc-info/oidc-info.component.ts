@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { CopyFieldComponent } from '../copy-field/copy-field.component'
 import { ConfigService, getCurrentHost, type WellknownConfig } from '../../services/config.service'
@@ -7,12 +7,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-oidc-info',
-  imports: [
-    MaterialModule,
-    CopyFieldComponent,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, CopyFieldComponent, TranslatePipe],
   templateUrl: './oidc-info.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './oidc-info.component.scss',
 })
 export class OidcInfoComponent implements OnInit {

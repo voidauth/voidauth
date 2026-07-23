@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { MaterialModule } from '../../../../material-module'
@@ -21,15 +21,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-user',
-  imports: [
-    CommonModule,
-    MaterialModule,
-    RouterLink,
-    ValidationErrorPipe,
-    ReactiveFormsModule,
-    TranslatePipe,
-  ],
+  imports: [CommonModule, MaterialModule, RouterLink, ValidationErrorPipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './user.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './user.component.scss',
 })
 export class UserComponent implements OnInit {
@@ -39,10 +33,13 @@ export class UserComponent implements OnInit {
   public groups: ItemIn<UserDetails['groups']>[] = []
   public unselectedGroups: ItemIn<UserDetails['groups']>[] = []
   public selectableGroups: ItemIn<UserDetails['groups']>[] = []
-  groupSelect = new FormControl<string>({
-    value: '',
-    disabled: false,
-  }, [])
+  groupSelect = new FormControl<string>(
+    {
+      value: '',
+      disabled: false,
+    },
+    [],
+  )
 
   public form = new FormGroup({
     username: new FormControl<string | null>(null, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
@@ -109,9 +106,11 @@ export class UserComponent implements OnInit {
     this.unselectedGroups = this.groups.filter((g) => {
       return !this.form.controls.groups.value.some(f => f.name === g.name)
     })
-    this.selectableGroups = this.unselectedGroups.filter((g) => {
-      return g.name.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
+    this.selectableGroups = this.unselectedGroups
+      .filter((g) => {
+        return g.name.toLowerCase().includes(value.toLowerCase())
+      })
+      .slice(0, 5)
     if (this.unselectedGroups.length) {
       this.groupSelect.enable()
     } else {
@@ -124,15 +123,16 @@ export class UserComponent implements OnInit {
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value)
-      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })))
+    this.form.controls.groups.setValue(
+      [value].concat(this.form.controls.groups.value).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })),
+    )
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
     this.groupAutoFilter()
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g.name !== value))
+    this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g.name !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }

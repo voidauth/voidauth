@@ -1,6 +1,6 @@
 import translationsEN from '../../public/i18n/en-US.json'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { RouterLink, RouterOutlet } from '@angular/router'
 import { HeaderComponent } from './components/header/header.component'
 import { MaterialModule } from './material-module'
@@ -12,14 +12,9 @@ import { TranslationService } from './services/translation.service'
 
 @Component({
   selector: 'app-root',
-  imports: [
-    RouterOutlet,
-    MaterialModule,
-    HeaderComponent,
-    RouterLink,
-    TranslatePipe,
-  ],
+  imports: [RouterOutlet, MaterialModule, HeaderComponent, RouterLink, TranslatePipe],
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { TranslationService } from '../../services/translation.service'
 
@@ -6,6 +6,7 @@ import { TranslationService } from '../../services/translation.service'
   selector: 'app-lang-switcher',
   imports: [MaterialModule],
   templateUrl: './lang-switcher.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './lang-switcher.component.scss',
 })
 export class LangSwitcherComponent {
@@ -26,8 +27,7 @@ export class LangSwitcherComponent {
     }
     // Wonky logic to convert country code to flag emoji Unicode
     // eslint-disable-next-line @typescript-eslint/no-misused-spread
-    const codePoints = [...(countryCode.toUpperCase())]
-      .map(char => 127397 + char.charCodeAt(0))
+    const codePoints = [...countryCode.toUpperCase()].map(char => 127397 + char.charCodeAt(0))
     const flag = String.fromCodePoint(...codePoints)
     return flag
   }

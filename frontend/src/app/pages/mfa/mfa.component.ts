@@ -1,4 +1,4 @@
-import { Component, inject, signal, type OnInit } from '@angular/core'
+import { Component, inject, signal, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { TotpInputComponent } from '../../components/totp-input/totp-input.component'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { MatButtonModule } from '@angular/material/button'
@@ -21,6 +21,7 @@ import { loginFactors } from '@shared/user'
   selector: 'app-mfa',
   imports: [TotpInputComponent, TextDividerComponent, MatButtonModule, MaterialModule, TranslatePipe],
   templateUrl: './mfa.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './mfa.component.scss',
 })
 export class MfaComponent implements OnInit {
@@ -83,7 +84,7 @@ export class MfaComponent implements OnInit {
       // See if we want to ask the user to register a passkey
       try {
         const user = (await this.authService.interactionExists()).user
-        if (user && await this.passkeyService.shouldAskPasskey(user)) {
+        if (user && (await this.passkeyService.shouldAskPasskey(user))) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }

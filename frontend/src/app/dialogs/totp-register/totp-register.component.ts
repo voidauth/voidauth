@@ -1,4 +1,4 @@
-import { Component, inject, signal, type OnInit } from '@angular/core'
+import { Component, inject, signal, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { MaterialModule } from '../../material-module'
 import { TotpInputComponent } from '../../components/totp-input/totp-input.component'
@@ -12,6 +12,7 @@ import { TranslatePipe } from '@ngx-translate/core'
   selector: 'app-totp-register',
   imports: [MaterialModule, TotpInputComponent, TranslatePipe],
   templateUrl: './totp-register.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './totp-register.component.scss',
 })
 export class TotpRegisterComponent implements OnInit {

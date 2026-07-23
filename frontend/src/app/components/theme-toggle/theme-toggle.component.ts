@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { ThemeService, type ThemeMode } from '../../services/theme.service'
 import { MaterialModule } from '../../material-module'
 import { TranslatePipe } from '@ngx-translate/core'
@@ -7,6 +7,7 @@ import { TranslatePipe } from '@ngx-translate/core'
   selector: 'app-theme-toggle',
   imports: [MaterialModule, TranslatePipe],
   templateUrl: './theme-toggle.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './theme-toggle.component.scss',
 })
 export class ThemeToggleComponent {
