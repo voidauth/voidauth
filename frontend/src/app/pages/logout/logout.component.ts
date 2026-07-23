@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { ActivatedRoute, Router } from '@angular/router'
 import { getBaseHrefPath } from '../../services/config.service'
@@ -9,11 +9,9 @@ import { SpinnerService } from '../../services/spinner.service'
 
 @Component({
   selector: 'app-logout',
-  imports: [
-    MaterialModule,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, TranslatePipe],
   templateUrl: './logout.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './logout.component.scss',
 })
 export class LogoutComponent implements OnInit {

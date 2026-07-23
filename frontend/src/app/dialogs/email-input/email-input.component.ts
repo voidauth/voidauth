@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { MaterialModule } from '../../material-module'
@@ -9,14 +9,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-email-input',
-  imports: [
-    MaterialModule,
-    ReactiveFormsModule,
-    ValidationErrorPipe,
-    AsyncPipe,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, ReactiveFormsModule, ValidationErrorPipe, AsyncPipe, TranslatePipe],
   templateUrl: './email-input.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './email-input.component.scss',
 })
 export class EmailInputComponent {

@@ -27,7 +27,7 @@
           mat-icon-button
           [disabled]="row.name === ADMIN_GROUP"
           type="button"
-          (click)="delete(row.id)"
+          (click)="onDelete(row.id)"
           [matTooltip]="'admin.common.actions.delete' | translate"
         >
           <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>

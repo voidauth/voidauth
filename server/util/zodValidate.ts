@@ -97,10 +97,8 @@ export function zodValidate<
       logger({
         level: 'debug',
         message: 'API Validation failed',
-        details: {
-          api_validation: {
-            error: errors,
-          },
+        api_validation: {
+          error: errors,
         },
       })
       res.status(422).json(errors)

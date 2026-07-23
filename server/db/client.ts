@@ -12,14 +12,10 @@ export function parseClientPayload(payload: string, options?: { strict: boolean 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const client: ClientMetadata = JSON.parse(payload)
   // decrypt client_secret if it exists
-  if (client.client_secret != null) {
-    const client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY])
-    if (client_secret != null) {
-      client.client_secret = client_secret
-    } else {
-      if (options?.strict) {
-        throw new Error('Cannot decrypt client_secret')
-      }
+  if (client.client_secret) {
+    client.client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY]) ?? undefined
+    if (client.client_secret == null && options?.strict) {
+      throw new Error('Cannot decrypt client_secret')
     }
   }
   // filter custom scopes to only those that exist in the provider (using cached)

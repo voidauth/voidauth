@@ -1,5 +1,5 @@
 import { AsyncPipe, CommonModule } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { USERNAME_REGEX } from '@shared/constants'
@@ -22,15 +22,9 @@ import { stringCompare } from '@shared/utils'
 
 @Component({
   selector: 'app-invitation',
-  imports: [
-    CommonModule,
-    MaterialModule,
-    ValidationErrorPipe,
-    ReactiveFormsModule,
-    AsyncPipe,
-    TranslatePipe,
-  ],
+  imports: [CommonModule, MaterialModule, ValidationErrorPipe, ReactiveFormsModule, AsyncPipe, TranslatePipe],
   templateUrl: './invitation.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './invitation.component.scss',
 })
 export class InvitationComponent {
@@ -41,28 +35,36 @@ export class InvitationComponent {
   public availableGroups: string[] = []
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
-  groupSelect = new FormControl<string>({
-    value: '',
-    disabled: false,
-  }, [])
+  groupSelect = new FormControl<string>(
+    {
+      value: '',
+      disabled: false,
+    },
+    [],
+  )
 
   public inviteLink?: string
   public inviteEmail?: string | null
 
-  public form = new FormGroup({
-    username: new FormControl<string | null>(null, [Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
-    email: new FormControl<string | null>(null, [isValidEmail]),
-    name: new FormControl<string | null>(null, [Validators.minLength(1)]),
-    userExpiresAt: new FormControl<Date | null>(null, []),
-    emailVerified: new FormControl<boolean>({ value: true, disabled: true }, { nonNullable: true }),
-    groups: new FormControl<string[]>([], { nonNullable: true }),
-  }, [(c) => {
-    const f = c as FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
-    if (!f.controls.email.value && !f.controls.username.value) {
-      return { usernameOrEmail: 'Username or Email are required.' }
-    }
-    return null
-  }]) satisfies FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
+  public form = new FormGroup(
+    {
+      username: new FormControl<string | null>(null, [Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
+      email: new FormControl<string | null>(null, [isValidEmail]),
+      name: new FormControl<string | null>(null, [Validators.minLength(1)]),
+      userExpiresAt: new FormControl<Date | null>(null, []),
+      emailVerified: new FormControl<boolean>({ value: true, disabled: true }, { nonNullable: true }),
+      groups: new FormControl<string[]>([], { nonNullable: true }),
+    },
+    [
+      (c) => {
+        const f = c as FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
+        if (!f.controls.email.value && !f.controls.username.value) {
+          return { usernameOrEmail: 'Username or Email are required.' }
+        }
+        return null
+      },
+    ],
+  ) satisfies FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
 
   private adminService = inject(AdminService)
   private configService = inject(ConfigService)
@@ -129,9 +131,7 @@ export class InvitationComponent {
       email: invitation.email ?? null,
       groups: invitation.groups,
       emailVerified: !!invitation.emailVerified,
-      userExpiresAt: invitation.userExpiresAt
-        ? new Date(invitation.userExpiresAt)
-        : null,
+      userExpiresAt: invitation.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
     })
     this.inviteEmail = invitation.email
     if (!this.config) {
@@ -144,9 +144,11 @@ export class InvitationComponent {
     this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.includes(g)
     })
-    this.selectableGroups = this.unselectedGroups.filter((g) => {
-      return g.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
+    this.selectableGroups = this.unselectedGroups
+      .filter((g) => {
+        return g.toLowerCase().includes(value.toLowerCase())
+      })
+      .slice(0, 5)
     if (this.unselectedGroups.length) {
       this.groupSelect.enable()
     } else {
@@ -168,7 +170,7 @@ export class InvitationComponent {
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g !== value))
+    this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }

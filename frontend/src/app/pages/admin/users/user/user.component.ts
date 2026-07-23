@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { MaterialModule } from '../../../../material-module'
@@ -21,15 +21,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-user',
-  imports: [
-    CommonModule,
-    MaterialModule,
-    RouterLink,
-    ValidationErrorPipe,
-    ReactiveFormsModule,
-    TranslatePipe,
-  ],
+  imports: [CommonModule, MaterialModule, RouterLink, ValidationErrorPipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './user.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './user.component.scss',
 })
 export class UserComponent implements OnInit {
@@ -39,10 +33,13 @@ export class UserComponent implements OnInit {
   public availableGroups: ItemIn<UserDetails['groups']>[] = []
   public unselectedGroups: ItemIn<UserDetails['groups']>[] = []
   public selectableGroups: ItemIn<UserDetails['groups']>[] = []
-  groupSelect = new FormControl<string>({
-    value: '',
-    disabled: false,
-  }, [])
+  groupSelect = new FormControl<string>(
+    {
+      value: '',
+      disabled: false,
+    },
+    [],
+  )
 
   public customClaimColumns = ['scope', 'claim', 'value', 'actions']
 
@@ -113,9 +110,11 @@ export class UserComponent implements OnInit {
     this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.some(f => f.name === g.name)
     })
-    this.selectableGroups = this.unselectedGroups.filter((g) => {
-      return g.name.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
+    this.selectableGroups = this.unselectedGroups
+      .filter((g) => {
+        return g.name.toLowerCase().includes(value.toLowerCase())
+      })
+      .slice(0, 5)
     if (this.unselectedGroups.length) {
       this.groupSelect.enable()
     } else {
@@ -133,7 +132,7 @@ export class UserComponent implements OnInit {
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g.name !== value))
+    this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g.name !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }

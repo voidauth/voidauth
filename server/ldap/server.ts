@@ -2,15 +2,15 @@ import fs from 'node:fs'
 import net, { type Socket } from 'node:net'
 import tls from 'node:tls'
 import appConfig from '../util/config'
-import { logger } from '../util/logger'
-import { checkPasswordHash, getUserById } from '../db/user'
+import { logger, purgeAsyncLog } from '../util/logger'
+import { checkPasswordHash } from '../db/user'
 import { userCanLogin } from '../util/auth'
 import {
   dnEqual,
   entryInScope,
   getLDAPEntries,
   getLDAPEntryByDN,
-  getLDAPUserByDN,
+  getLDAPUserIdByDN,
   type LDAPAttributes,
   type LDAPEntry,
   type LDAPSearchScope,
@@ -20,6 +20,7 @@ import {
 import { timingSafeEqual } from 'node:crypto'
 import zod from 'zod'
 import { stringCompare } from '@shared/utils'
+import { als } from '../util/als'
 
 const RESULT_SUCCESS = 0
 const RESULT_OPERATIONS_ERROR = 1
@@ -124,7 +125,7 @@ export function startLDAPServer() {
     logger({
       level: 'error',
       message: 'LDAP Server error',
-      errors: [error],
+      errors: [error instanceof Error ? error : { message: String(error) }],
     })
   })
 
@@ -146,22 +147,26 @@ function handleConnection(socket: Socket) {
   }
 
   socket.on('data', (chunk) => {
-    if (connection.buffer.length + chunk.length > MAX_BUFFER_SIZE) {
-      logger({ level: 'debug', message: 'LDAP client sent too much data; closing connection' })
-      connection.socket.write(ldapResult(0, 0x61, RESULT_OPERATIONS_ERROR, '', 'Frame too large'))
-      connection.socket.destroy()
-      return
-    }
+    als.run({}, () => {
+      if (connection.buffer.length + chunk.length > MAX_BUFFER_SIZE) {
+        logger({ level: 'debug', message: 'LDAP client sent too much data; closing connection' })
+        connection.socket.write(ldapResult(0, 0x61, RESULT_OPERATIONS_ERROR, '', 'Frame too large'))
+        connection.socket.destroy()
+        return
+      }
 
-    connection.buffer = Buffer.concat([connection.buffer, chunk])
-    void processBuffer(connection)
+      connection.buffer = Buffer.concat([connection.buffer, chunk])
+      void processBuffer(connection).then(() => {
+        purgeAsyncLog()
+      })
+    })
   })
 
   socket.on('error', (error) => {
     logger({
       level: 'debug',
       message: 'LDAP client connection error',
-      errors: [error],
+      errors: [error instanceof Error ? error : { message: String(error) }],
     })
   })
 }
@@ -212,21 +217,27 @@ async function processBuffer(connection: LDAPConnection) {
 async function handleMessage(connection: LDAPConnection, message: LDAPMessage) {
   switch (message.op.tag) {
     case 0x60:
+      logger({ level: 'debug', message: 'LDAP handle bind request' })
       await handleBind(connection, message.id, message.op)
       return
     case 0x63:
+      logger({ level: 'debug', message: 'LDAP handle search request' })
       await handleSearch(connection, message.id, message.op)
       return
     case 0x6e:
+      logger({ level: 'debug', message: 'LDAP handle compare request' })
       await handleCompare(connection, message.id, message.op)
       return
     case 0x77:
+      logger({ level: 'debug', message: 'LDAP handle extended request' })
       handleExtendedRequest(connection, message.id, message.op)
       return
     case 0x42:
+      // 'close connection' request. We oblige.
       connection.socket.end()
       return
     default:
+      logger({ level: 'debug', message: 'LDAP unsupported operation' })
       connection.socket.write(ldapResult(message.id, 0x61, RESULT_PROTOCOL_ERROR, '', 'Unsupported LDAP operation'))
   }
 }
@@ -240,11 +251,13 @@ async function handleBind(connection: LDAPConnection, messageId: number, op: BER
     const password = auth.tag === 0x80 ? auth.value.toString('utf8') : ''
 
     if (version !== 3 || auth.tag !== 0x80) {
+      logger({ level: 'debug', message: 'LDAP bind request with unsupported version or authentication method' })
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_PROTOCOL_ERROR))
       return
     }
 
     if (dnEqual(dn, '') && password === '') {
+      logger({ level: 'debug', message: 'LDAP bind request with empty DN and password' })
       connection.bindDN = ''
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_SUCCESS))
       return
@@ -254,28 +267,32 @@ async function handleBind(connection: LDAPConnection, messageId: number, op: BER
       if (appConfig.LDAP_BIND_PASSWORD
         && appConfig.LDAP_BIND_PASSWORD.length === password.length
         && timingSafeEqual(Buffer.from(password), Buffer.from(appConfig.LDAP_BIND_PASSWORD))) {
+        logger({ level: 'debug', message: 'LDAP bind request with valid bind DN and password' })
         connection.bindDN = appConfig.LDAP_BIND_DN
         connection.socket.write(ldapResult(messageId, 0x61, RESULT_SUCCESS))
         return
       }
 
+      logger({ level: 'debug', message: 'LDAP bind request with invalid bind DN or password' })
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_INVALID_CREDENTIALS))
       return
     }
 
     // not using defined bind dn, check if it is a user
-    const user = await getLDAPUserByDN(dn)
+    const user = await getLDAPUserIdByDN(dn)
     if (!user || !password || !await checkPasswordHash(user.id, password)) {
+      logger({ level: 'debug', message: 'LDAP bind request with invalid user credentials' })
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_INVALID_CREDENTIALS))
       return
     }
 
-    const details = await getUserById(user.id)
-    if (!userCanLogin(details, ['pwd'])) {
+    if (!userCanLogin(user, ['pwd'])) {
+      logger({ level: 'debug', message: 'LDAP bind request with user unable to login with a password' })
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_INVALID_CREDENTIALS))
       return
     }
 
+    logger({ level: 'debug', message: 'LDAP bind request with valid user credentials' })
     connection.bindDN = dn
     connection.socket.write(ldapResult(messageId, 0x61, RESULT_SUCCESS))
   } catch (error) {
@@ -292,6 +309,7 @@ async function handleSearch(connection: LDAPConnection, messageId: number, op: B
   try {
     const req = readSearchRequest(op.value)
     if (!canSearch(connection) && !(dnEqual(req.baseDN, '') && searchScope(req.scope) === 'base')) {
+      logger({ level: 'debug', message: 'LDAP search denied due to insufficient access' })
       connection.socket.write(ldapResult(messageId, 0x65, RESULT_INSUFFICIENT_ACCESS))
       return
     }
@@ -317,6 +335,7 @@ async function handleSearch(connection: LDAPConnection, messageId: number, op: B
       }
     }
 
+    logger({ level: 'debug', message: `LDAP search completed, sent ${String(sent)} entries` })
     connection.socket.write(ldapResult(messageId, 0x65, RESULT_SUCCESS))
   } catch (error) {
     logger({
@@ -331,6 +350,7 @@ async function handleSearch(connection: LDAPConnection, messageId: number, op: B
 async function handleCompare(connection: LDAPConnection, messageId: number, op: BERElement) {
   try {
     if (!canSearch(connection)) {
+      logger({ level: 'debug', message: 'LDAP compare denied due to insufficient access' })
       connection.socket.write(ldapResult(messageId, 0x6f, RESULT_INSUFFICIENT_ACCESS))
       return
     }
@@ -338,9 +358,10 @@ async function handleCompare(connection: LDAPConnection, messageId: number, op: 
     const req = readCompareRequest(op.value)
     const entry = await getLDAPEntryByDN(req.dn)
     const values = attributeValues(entry?.attributes, req.attribute)
-    const result = values.some(value => value === req.value) ? RESULT_COMPARE_TRUE : RESULT_COMPARE_FALSE
+    const result = values.some(value => value === req.value)
 
-    connection.socket.write(ldapResult(messageId, 0x6f, result))
+    logger({ level: 'debug', message: `LDAP compare completed, result: ${String(result)}` })
+    connection.socket.write(ldapResult(messageId, 0x6f, result ? RESULT_COMPARE_TRUE : RESULT_COMPARE_FALSE))
   } catch (error) {
     logger({
       level: 'debug',
@@ -357,6 +378,7 @@ function handleExtendedRequest(connection: LDAPConnection, messageId: number, op
     const ext = reader.readElement()
 
     if (ext.tag !== 0x80) {
+      logger({ level: 'debug', message: 'LDAP extended request with invalid tag' })
       connection.socket.write(ldapResult(messageId, 0x61, RESULT_PROTOCOL_ERROR))
       return
     }
@@ -364,6 +386,7 @@ function handleExtendedRequest(connection: LDAPConnection, messageId: number, op
     const requestName = ext.value.toString('utf8')
     // Validate that it looks right
     if (!/^\d+(\.\d+)+$/.test(requestName)) {
+      logger({ level: 'debug', message: 'LDAP extended request with invalid OID format' })
       connection.socket.write(ldapExtendedResponse(messageId, RESULT_OPERATIONS_ERROR, '', 'Invalid extended request OID'))
       return
     }
@@ -371,14 +394,17 @@ function handleExtendedRequest(connection: LDAPConnection, messageId: number, op
     switch (requestName) {
       case '1.3.6.1.4.1.4203.1.11.3': {
         const authzId = connection.bindDN ? `dn:${connection.bindDN}` : ''
+        logger({ level: 'debug', message: 'LDAP extended request completed for OID: 1.3.6.1.4.1.4203.1.11.3' })
         connection.socket.write(ldapExtendedResponse(messageId, RESULT_SUCCESS, '', '', undefined, authzId))
         return
       }
       case '1.3.6.1.4.1.1466.20037': {
+        logger({ level: 'debug', message: 'LDAP extended request completed for OID: 1.3.6.1.4.1.1466.20037' })
         connection.socket.write(ldapExtendedResponse(messageId, RESULT_OPERATIONS_ERROR, '', 'StartTLS not supported'))
         return
       }
       default: {
+        logger({ level: 'debug', message: 'LDAP extended request with unsupported OID' })
         connection.socket.write(ldapExtendedResponse(messageId, RESULT_OPERATIONS_ERROR, '', `Unsupported extended request: ${requestName}`))
         return
       }

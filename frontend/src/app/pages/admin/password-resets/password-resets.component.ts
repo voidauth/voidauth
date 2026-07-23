@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../../material-module'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
@@ -29,6 +29,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
     TranslatePipe,
   ],
   templateUrl: './password-resets.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './password-resets.component.scss',
 })
 export class PasswordResetsComponent {
@@ -68,14 +69,21 @@ export class PasswordResetsComponent {
     // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
-      this.users = (await this.adminService.users()).sort((a, b) => {
+
+      const [users, passwordResets, config] = await Promise.all([
+        this.adminService.users(),
+        this.adminService.passwordResets(),
+        this.configService.getConfig(),
+      ])
+
+      this.users = users.sort((a, b) => {
         return stringCompare(a.username, b.username)
       })
       this.userAutoFilter()
 
-      this.config = await this.configService.getConfig()
+      this.config = config
 
-      this.dataSource.data = await this.adminService.passwordResets()
+      this.dataSource.data = passwordResets
       this.dataSource.paginator = this.paginator()
       this.dataSource.sort = this.sort()
     } finally {
@@ -102,7 +110,7 @@ export class PasswordResetsComponent {
     }
   }
 
-  delete(id: string) {
+  onDelete(id: string) {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
         message: `Are you sure you want to delete this password reset link?`,
@@ -129,11 +137,15 @@ export class PasswordResetsComponent {
   }
 
   userAutoFilter(value: string = '') {
-    this.selectableUsers = this.users.filter((u) => {
-      return u.username.toLowerCase().includes(value.toLowerCase())
-        || u.email?.toLowerCase().includes(value.toLowerCase())
-        || u.name?.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
+    this.selectableUsers = this.users
+      .filter((u) => {
+        return (
+          u.username.toLowerCase().includes(value.toLowerCase())
+          || u.email?.toLowerCase().includes(value.toLowerCase())
+          || u.name?.toLowerCase().includes(value.toLowerCase())
+        )
+      })
+      .slice(0, 5)
   }
 
   displayUser(user?: UserWithoutPassword) {

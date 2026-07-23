@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { ConfigService } from '../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { MaterialModule } from '../../material-module'
@@ -8,9 +8,9 @@ import { TranslatePipe } from '@ngx-translate/core'
   selector: 'app-forbidden',
   imports: [MaterialModule, TranslatePipe],
   templateUrl: './forbidden.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './forbidden.component.scss',
 })
-
 export class ForbiddenComponent implements OnInit {
   config?: ConfigResponse
 

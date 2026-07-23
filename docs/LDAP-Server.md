@@ -18,7 +18,7 @@ The LDAP directory is backed by VoidAuth users and security groups:
 
 ## Configuration
 
-LDAP is disabled by default. To enable it, add the LDAP environment variables to the VoidAuth service. See the available configuration environment variables on the [Getting Started](Getting-Started.md#ldap-settings) page.
+LDAP is disabled by default. To enable it, add the LDAP environment variables to the VoidAuth service. See the available configuration environment variables on the [Configuration](Configuration.md#ldap-settings) page.
 
 > [!WARNING]
 > Plain LDAP sends bind passwords over the network without encryption. Use this only on a trusted private network, or enable LDAPS with `LDAP_TLS_CERT_FILE` and `LDAP_TLS_KEY_FILE`.

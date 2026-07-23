@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -16,12 +16,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-groups',
-  imports: [
-    MaterialModule,
-    RouterLink,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, RouterLink, TranslatePipe],
   templateUrl: './groups.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './groups.component.scss',
 })
 export class GroupsComponent {
@@ -59,7 +56,7 @@ export class GroupsComponent {
     }
   }
 
-  delete(id: string) {
+  onDelete(id: string) {
     const group = this.dataSource.data.find(g => g.id === id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {

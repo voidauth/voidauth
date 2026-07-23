@@ -1,5 +1,5 @@
 /* eslint-disable @stylistic/lines-between-class-members */
-import { Component, inject, viewChild, type OnDestroy, type OnInit } from '@angular/core'
+import { Component, inject, viewChild, type OnDestroy, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
@@ -27,16 +27,9 @@ import { CommonModule } from '@angular/common'
 
 @Component({
   selector: 'app-home',
-  imports: [
-    ReactiveFormsModule,
-    MaterialModule,
-    ValidationErrorPipe,
-    PasswordSetComponent,
-    TranslatePipe,
-    AsyncPipe,
-    CommonModule,
-  ],
+  imports: [ReactiveFormsModule, MaterialModule, ValidationErrorPipe, PasswordSetComponent, TranslatePipe, AsyncPipe, CommonModule],
   templateUrl: './home.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnInit, OnDestroy {
@@ -47,68 +40,92 @@ export class HomeComponent implements OnInit, OnDestroy {
   config?: ConfigResponse
 
   public profileForm = new FormGroup({
-    name: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.minLength(1)]),
+    name: new FormControl<string>(
+      {
+        value: '',
+        disabled: false,
+      },
+      [Validators.minLength(1)],
+    ),
   })
 
   public emailForm = new FormGroup({
-    email: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required, isValidEmail]),
+    email: new FormControl<string>(
+      {
+        value: '',
+        disabled: false,
+      },
+      [Validators.required, isValidEmail],
+    ),
   })
 
-  public passwordForm = new FormGroup({
-    oldPassword: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, []),
-    newPassword: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required]),
-    confirmPassword: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required]),
-  }, {
-    validators: (g) => {
-      const passAreEqual = g.get('newPassword')?.value === g.get('confirmPassword')?.value
-      if (!passAreEqual) {
-        g.get('confirmPassword')?.setErrors({ notEqual: 'Must equal Password' })
-        return { notEqual: 'Passwords do not match' }
-      }
-      g.get('confirmPassword')?.setErrors(null)
-      return null
+  public passwordForm = new FormGroup(
+    {
+      oldPassword: new FormControl<string>(
+        {
+          value: '',
+          disabled: false,
+        },
+        [],
+      ),
+      newPassword: new FormControl<string>(
+        {
+          value: '',
+          disabled: false,
+        },
+        [Validators.required],
+      ),
+      confirmPassword: new FormControl<string>(
+        {
+          value: '',
+          disabled: false,
+        },
+        [Validators.required],
+      ),
     },
-  })
+    {
+      validators: (g) => {
+        const passAreEqual = g.get('newPassword')?.value === g.get('confirmPassword')?.value
+        if (!passAreEqual) {
+          g.get('confirmPassword')?.setErrors({ notEqual: 'Must equal Password' })
+          return { notEqual: 'Passwords do not match' }
+        }
+        g.get('confirmPassword')?.setErrors(null)
+        return null
+      },
+    },
+  )
 
   passkeyColumns: TableColumn<PasskeyResponse>[] = [
     {
       columnDef: 'displayName',
       header: 'Name/ID',
       // User name if exists, otherwise use id convert from base64Url to base64, then convert to hex
-      cell: element => element.displayName || atob(element.id.replace(/-/g, '+').replace(/_/g, '/'))
-        .split('')
-        .map(function (aChar) {
-          return ('00' + aChar.charCodeAt(0).toString(16)).slice(-2)
-        }).join('').slice(0, 4),
+      cell: element =>
+        element.displayName
+        || atob(element.id.replace(/-/g, '+').replace(/_/g, '/'))
+          .split('')
+          .map(function (aChar) {
+            return ('00' + aChar.charCodeAt(0).toString(16)).slice(-2)
+          })
+          .join('')
+          .slice(0, 4),
     },
     {
       columnDef: 'lastUsed',
       header: 'Last Used',
-      cell: element => element.lastUsed
-        ? new Date(element.lastUsed).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-        : '-',
+      cell: element =>
+        element.lastUsed
+          ? new Date(element.lastUsed).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '-',
     },
     {
       columnDef: 'createdAt',
       header: 'Created At',
-      cell: element => element.createdAt
-        ? new Date(element.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-        : '-',
+      cell: element =>
+        element.createdAt
+          ? new Date(element.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '-',
     },
   ]
   displayedPasskeyColumns = ([] as string[]).concat(this.passkeyColumns.map(c => c.columnDef)).concat(['actions'])
@@ -270,10 +287,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       try {
         this.spinnerService.show()
-        await this.passkeyService.updatePasskey(
-          id,
-          result,
-        )
+        await this.passkeyService.updatePasskey(id, result)
         this.snackbarService.message('Passkey updated.')
       } catch (_e) {
         this.snackbarService.error('Could not update Passkey.')

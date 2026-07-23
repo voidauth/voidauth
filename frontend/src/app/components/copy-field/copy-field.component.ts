@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core'
+import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
 import { MaterialModule } from '../../material-module'
 import { SnackbarService } from '../../services/snackbar.service'
@@ -6,11 +6,9 @@ import { TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-copy-field',
-  imports: [
-    MaterialModule,
-    ReactiveFormsModule,
-  ],
+  imports: [MaterialModule, ReactiveFormsModule],
   templateUrl: './copy-field.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './copy-field.component.scss',
 })
 export class CopyFieldComponent {

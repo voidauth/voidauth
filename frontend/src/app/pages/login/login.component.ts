@@ -1,4 +1,14 @@
-import { ChangeDetectorRef, Component, ElementRef, inject, viewChild, type AfterViewInit, type OnDestroy, type OnInit } from '@angular/core'
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  inject,
+  viewChild,
+  type AfterViewInit,
+  type OnDestroy,
+  type OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core'
 import { AuthService } from '../../services/auth.service'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
@@ -19,15 +29,8 @@ import { AsyncPipe } from '@angular/common'
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [
-    ReactiveFormsModule,
-    MaterialModule,
-    ValidationErrorPipe,
-    RouterLink,
-    TextDividerComponent,
-    TranslatePipe,
-    AsyncPipe,
-  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [ReactiveFormsModule, MaterialModule, ValidationErrorPipe, RouterLink, TextDividerComponent, TranslatePipe, AsyncPipe],
 })
 export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   public config?: ConfigResponse
@@ -63,9 +66,12 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   private passwordField = viewChild<ElementRef>('passwordField')
 
   async ngOnInit() {
-    this.configService.getConfig().then(c => this.config = c).catch((e: unknown) => {
-      throw e
-    })
+    this.configService
+      .getConfig()
+      .then(c => (this.config = c))
+      .catch((e: unknown) => {
+        throw e
+      })
 
     this.route.queryParamMap.subscribe((p) => {
       const username = p.get('username')
@@ -133,7 +139,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       // See if we want to ask the user to register a passkey
       try {
         const user = (await this.authService.interactionExists()).user
-        if (user && await this.passkeyService.shouldAskPasskey(user)) {
+        if (user && (await this.passkeyService.shouldAskPasskey(user))) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }

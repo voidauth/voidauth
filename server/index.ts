@@ -69,40 +69,50 @@ export const argv = yargs(hideBin(process.argv))
       }
     })
   .command(
-    'generate password-reset [username]',
-    'Generate a password reset link for an existing user.',
-    yg => yg
-      .positional('username', { type: 'string', describe: 'Existing user username' })
-      .option('username', {
-        alias: 'u',
-        type: 'string',
-        describe: 'Existing user username',
-      }),
-    async (argv) => {
-      try {
-        if (!argv.username) {
-          logger({
-            level: 'error',
-            message: 'Username must be specified',
-          })
-          exit(2)
-        }
-        const gpr = await import('./cli/generatePasswordReset.ts')
-        const result = await gpr.generatePasswordReset(argv.username)
-        console.log(`\nPassword Reset link created (valid for ${humanDuration(TTLs.PASSWORD_RESET * 1000)}): \n\n${result}\n`)
-        exit(0)
-      } catch (e) {
-        logger({
-          level: 'error',
-          message: 'Failed to generate password reset link',
-          errors: e instanceof Error ? [e] : [{ message: String(e) }],
-        })
-        exit(1)
-      }
+    'generate',
+    'Generate values or entities.',
+    y => y
+      .strict()
+      .command(
+        'password-reset [username]',
+        'Generate a password reset link for an existing user.',
+        yg => yg
+          .positional('username', { type: 'string', describe: 'Existing user username' })
+          .option('username', {
+            alias: 'u',
+            type: 'string',
+            describe: 'Existing user username',
+          }),
+        async (argv) => {
+          try {
+            if (!argv.username) {
+              logger({
+                level: 'error',
+                message: 'Username must be specified',
+              })
+              exit(2)
+            }
+            const gpr = await import('./cli/generatePasswordReset.ts')
+            const result = await gpr.generatePasswordReset(argv.username)
+            console.log(`\nPassword Reset link created (valid for ${humanDuration(TTLs.PASSWORD_RESET * 1000)}): \n\n${result}\n`)
+            exit(0)
+          } catch (e) {
+            logger({
+              level: 'error',
+              message: 'Failed to generate password reset link',
+              errors: e instanceof Error ? [e] : [{ message: String(e) }],
+            })
+            exit(1)
+          }
+        },
+      )
+      .command('random', 'Generate a random value.', {}, async () => {
+        const { randomBytes } = await import('crypto')
+        console.log(randomBytes(24).toString('hex'))
+      })
+      .demandCommand(1, 'Please specify a subcommand: password-reset or random'),
+    async () => {
+      /* no top level command */
     },
   )
-  .command('generate random', 'Generate a random value.', {}, async () => {
-    const { randomBytes } = await import('crypto')
-    console.log(randomBytes(24).toString('hex'))
-  })
   .parse()

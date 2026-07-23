@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { type Sort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -17,12 +17,9 @@ import { stringCompare } from '@shared/utils'
 
 @Component({
   selector: 'app-domains',
-  imports: [
-    MaterialModule,
-    RouterLink,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, RouterLink, TranslatePipe],
   templateUrl: './domains.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './domains.component.scss',
 })
 export class DomainsComponent {
@@ -39,7 +36,7 @@ export class DomainsComponent {
     {
       columnDef: 'groups',
       header: 'Allowed Groups',
-      cell: element => element.groups.length ? element.groups.join('\n') : '*',
+      cell: element => (element.groups.length ? element.groups.join('\n') : '*'),
     },
   ]
 
@@ -78,7 +75,7 @@ export class DomainsComponent {
     this.dataSource.data = this.dataSource.data.splice(0)
   }
 
-  delete(proxyauth_id: string) {
+  onDelete(proxyauth_id: string) {
     const domain = this.dataSource.data.find(d => d.id === proxyauth_id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {

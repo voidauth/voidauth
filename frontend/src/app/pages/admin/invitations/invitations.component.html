@@ -23,7 +23,7 @@
         <a mat-icon-button [routerLink]="['/admin', 'invitation', row.id]" [matTooltip]="'admin.common.actions.edit' | translate">
           <mat-icon fontSet="material-icons-round">edit</mat-icon>
         </a>
-        <button mat-icon-button type="button" (click)="delete(row.id)" [matTooltip]="'admin.common.actions.delete' | translate">
+        <button mat-icon-button type="button" (click)="onDelete(row.id)" [matTooltip]="'admin.common.actions.delete' | translate">
           <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
         </button>
       </td>

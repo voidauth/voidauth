@@ -1,4 +1,4 @@
-import { Component, inject, output, signal, type OnInit } from '@angular/core'
+import { Component, inject, output, signal, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component'
 import { MaterialModule } from '../../material-module'
@@ -13,15 +13,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-header',
-  imports: [
-    MaterialModule,
-    ThemeToggleComponent,
-    RouterLink,
-    LogoComponent,
-    LangSwitcherComponent,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, ThemeToggleComponent, RouterLink, LogoComponent, LangSwitcherComponent, TranslatePipe],
   templateUrl: './header.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit {
@@ -40,8 +34,8 @@ export class HeaderComponent implements OnInit {
   async ngOnInit() {
     try {
       this.spinnerService.show()
-      this.user = await this.userService.getMyUser()
       this.config = await this.configService.getConfig()
+      this.user = await this.userService.getMyUser()
     } catch (_e) {
       // user just isn't logged in
       this.userNotFound.set(true)

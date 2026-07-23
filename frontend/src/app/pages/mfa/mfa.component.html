@@ -14,8 +14,8 @@
         @if (user?.hasPasskeys) {
           <app-text-divider text="or" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyLogin()">
-            {{ "mfa.actions.use-passkey" | translate: { platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}
-            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport?.platformIcon ?? "key" }}</mat-icon>
+            {{ "mfa.actions.use-passkey" | translate: { platformName: passkeySupport.platformName ?? ("passkey-title" | translate) } }}
+            <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport.platformIcon ?? "key" }}</mat-icon>
           </button>
         }
         @if (user?.isPrivileged) {

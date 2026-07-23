@@ -1,4 +1,4 @@
-import { Component, inject, viewChild } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../../material-module'
 import { MatTableDataSource } from '@angular/material/table'
 import { MatPaginator } from '@angular/material/paginator'
@@ -20,13 +20,9 @@ import { humanDuration } from '@shared/utils'
 
 @Component({
   selector: 'app-users',
-  imports: [
-    MaterialModule,
-    RouterLink,
-    ReactiveFormsModule,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, RouterLink, ReactiveFormsModule, TranslatePipe],
   templateUrl: './users.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './users.component.scss',
 })
 export class UsersComponent {
@@ -52,18 +48,18 @@ export class UsersComponent {
       columnDef: 'emailVerified',
       header: 'Email Verified',
       isIcon: true,
-      cell: element => element.emailVerified ? 'done' : 'not_interested',
+      cell: element => (element.emailVerified ? 'done' : 'not_interested'),
     },
     {
       columnDef: 'approved',
       header: 'Approved',
       isIcon: true,
-      cell: element => element.approved ? 'done' : 'not_interested',
+      cell: element => (element.approved ? 'done' : 'not_interested'),
     },
     {
       columnDef: 'expiresAt',
       header: 'Expires',
-      cell: element => element.expiresAt ? humanDuration(new Date(element.expiresAt).getTime() - new Date().getTime()) : '-',
+      cell: element => (element.expiresAt ? humanDuration(new Date(element.expiresAt).getTime() - new Date().getTime()) : '-'),
     },
   ]
 
@@ -84,33 +80,37 @@ export class UsersComponent {
     // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
-      this.me = await this.userService.getMyUser()
-      this.dataSource.data = await this.adminService.users()
+
+      const [me, users] = await Promise.all([this.userService.getMyUser(), this.adminService.users()])
+      this.me = me
+      this.dataSource.data = users
+
       this.dataSource.paginator = this.paginator()
       this.dataSource.sort = this.sort()
 
       this.paginator().page.subscribe((_p) => {
-        this.selected.forEach(s => s.source.checked = false)
+        this.selected.forEach(s => (s.source.checked = false))
         this.selected = []
       })
     } finally {
       this.spinnerService.hide()
     }
 
-    this.search.valueChanges.pipe(
-      debounceTime(500),
-      distinctUntilChanged(),
-    ).subscribe((searchTerm) => {
+    this.search.valueChanges.pipe(debounceTime(500), distinctUntilChanged()).subscribe((searchTerm) => {
       this.spinnerService.show()
-      this.adminService.users(searchTerm).then((users) => {
-        this.dataSource.data = users
-        this.selected.forEach(s => s.source.checked = false)
-        this.selected = []
-      }).catch((e: unknown) => {
-        console.error(e)
-      }).finally(() => {
-        this.spinnerService.hide()
-      })
+      this.adminService
+        .users(searchTerm)
+        .then((users) => {
+          this.dataSource.data = users
+          this.selected.forEach(s => (s.source.checked = false))
+          this.selected = []
+        })
+        .catch((e: unknown) => {
+          console.error(e)
+        })
+        .finally(() => {
+          this.spinnerService.hide()
+        })
     })
   }
 
@@ -121,11 +121,11 @@ export class UsersComponent {
     } else {
       this.displayedColumns = this.displayedColumns.filter(c => c !== 'multi')
     }
-    this.selected.forEach(s => s.source.checked = false)
+    this.selected.forEach(s => (s.source.checked = false))
     this.selected = []
   }
 
-  delete(id: string) {
+  onDelete(id: string) {
     const user = this.dataSource.data.find(u => u.id === id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
@@ -179,7 +179,7 @@ export class UsersComponent {
             u.approved = true
           }
         })
-        this.selected.forEach(s => s.source.checked = false)
+        this.selected.forEach(s => (s.source.checked = false))
         this.selected = []
 
         this.toggleSelectEnabled()
@@ -209,7 +209,7 @@ export class UsersComponent {
         this.spinnerService.show()
         await this.adminService.deleteUsers(this.selected.map(s => s.id))
         this.dataSource.data = this.dataSource.data.filter(u => !this.selected.some(s => s.id === u.id))
-        this.selected.forEach(s => s.source.checked = false)
+        this.selected.forEach(s => (s.source.checked = false))
         this.selected = []
 
         this.toggleSelectEnabled()

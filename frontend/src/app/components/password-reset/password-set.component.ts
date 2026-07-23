@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core'
+import { Component, input, ChangeDetectionStrategy } from '@angular/core'
 import { ReactiveFormsModule, FormControl } from '@angular/forms'
 import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
@@ -8,15 +8,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-password-set',
-  imports: [
-    ReactiveFormsModule,
-    MaterialModule,
-    ValidationErrorPipe,
-    NewPasswordInputComponent,
-    AsyncPipe,
-    TranslatePipe,
-  ],
+  imports: [ReactiveFormsModule, MaterialModule, ValidationErrorPipe, NewPasswordInputComponent, AsyncPipe, TranslatePipe],
   templateUrl: './password-set.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './password-set.component.scss',
 })
 export class PasswordSetComponent {

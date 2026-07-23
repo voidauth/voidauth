@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { AdminService } from '../../../../services/admin.service'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
@@ -7,10 +7,13 @@ import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import { isValidWebURLControl, isValidWildcardRedirectControl } from '../../../../validators/validators'
-import { CLIENT_AUTH_METHODS,
-  GRANT_TYPES, RESPONSE_TYPES,
+import {
+  CLIENT_AUTH_METHODS,
+  GRANT_TYPES,
+  RESPONSE_TYPES,
   UNIQUE_RESPONSE_TYPES,
-  type ClientUpsertRequest } from '@shared/api-request/admin/ClientUpsert'
+  type ClientUpsertRequest,
+} from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
 import { type ItemIn, type Nullable, optionalizeNullable, stringCompare } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
@@ -24,7 +27,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { CUSTOM_CLAIM_SCOPE_REGEX } from '@shared/constants'
 
 export type TypedControls<T> = {
-  [K in keyof T]-?: FormControl<Required<T>[K]>
+  [K in keyof T]-?: FormControl<Required<T>[K]>;
 }
 
 export function generateBase64URLString(bytes: number) {
@@ -34,15 +37,9 @@ export function generateBase64URLString(bytes: number) {
 
 @Component({
   selector: 'app-upsert-client',
-  imports: [
-    CommonModule,
-    MaterialModule,
-    ValidationErrorPipe,
-    ReactiveFormsModule,
-    OidcInfoComponent,
-    TranslatePipe,
-  ],
+  imports: [CommonModule, MaterialModule, ValidationErrorPipe, ReactiveFormsModule, OidcInfoComponent, TranslatePipe],
   templateUrl: './upsert-client.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './upsert-client.component.scss',
 })
 export class UpsertClientComponent implements OnInit {
@@ -91,7 +88,8 @@ export class UpsertClientComponent implements OnInit {
           }
         }
         return null
-      }]),
+      },
+    ]),
     skip_consent: new FormControl<boolean>(true, { nonNullable: true }),
     require_mfa: new FormControl<boolean>(false, { nonNullable: true }),
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
@@ -112,33 +110,44 @@ export class UpsertClientComponent implements OnInit {
     Validators.pattern(CUSTOM_CLAIM_SCOPE_REGEX),
   ])
 
-  redirectUrlControl = new FormControl<string>({
-    value: '',
-    disabled: false,
-  }, [isValidWildcardRedirectControl, (c: AbstractControl<string>) => {
-    const url = c.value
-    const existing = (this.form as typeof this.form | undefined)?.controls.redirect_uris.value
-    if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
-      return null
-    }
-    const all = existing.concat([url])
-    try {
-      validateWildcardRedirects(all)
-    } catch (e) {
-      return {
-        invalid: e instanceof Error ? e.message : 'A Redirect URL is invalid.',
-      }
-    }
-    return null
-  }])
+  redirectUrlControl = new FormControl<string>(
+    {
+      value: '',
+      disabled: false,
+    },
+    [
+      isValidWildcardRedirectControl,
+      (c: AbstractControl<string>) => {
+        const url = c.value
+        const existing = (this.form as typeof this.form | undefined)?.controls.redirect_uris.value
+        if (!url || !existing?.length || !isValidWildcardRedirect(url)) {
+          return null
+        }
+        const all = existing.concat([url])
+        try {
+          validateWildcardRedirects(all)
+        } catch (e) {
+          return {
+            invalid: e instanceof Error ? e.message : 'A Redirect URL is invalid.',
+          }
+        }
+        return null
+      },
+    ],
+  )
 
-  responseTypeControl = new FormControl<ItemIn<typeof UNIQUE_RESPONSE_TYPES>[]>(['code'], [(c) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (c.value?.length === 1 && c.value[0] === 'token') {
-      return { invalid: 'This is an invalid Response Type selection.' }
-    }
-    return null
-  }])
+  responseTypeControl = new FormControl<ItemIn<typeof UNIQUE_RESPONSE_TYPES>[]>(
+    ['code'],
+    [
+      (c) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (c.value?.length === 1 && c.value[0] === 'token') {
+          return { invalid: 'This is an invalid Response Type selection.' }
+        }
+        return null
+      },
+    ],
+  )
 
   pwdShow = false
 
@@ -212,11 +221,10 @@ export class UpsertClientComponent implements OnInit {
         client_name: client.client_name ?? null,
         client_secret: client.client_secret ?? null,
         redirect_uris: client.redirect_uris ?? [],
-        token_endpoint_auth_method: client.token_endpoint_auth_method as ItemIn<typeof CLIENT_AUTH_METHODS> | undefined
-          ?? 'client_secret_basic',
+        token_endpoint_auth_method:
+          (client.token_endpoint_auth_method as ItemIn<typeof CLIENT_AUTH_METHODS> | undefined) ?? 'client_secret_basic',
         response_types: client.response_types ?? ['code'],
-        grant_types: client.grant_types as (ClientUpsertRequest['grant_types'] | undefined)
-          ?? ['authorization_code', 'refresh_token'],
+        grant_types: (client.grant_types as ClientUpsertRequest['grant_types'] | undefined) ?? ['authorization_code', 'refresh_token'],
         post_logout_redirect_uri: client.post_logout_redirect_uris?.[0] ?? null,
         skip_consent: client.skip_consent ?? true,
         require_mfa: client.require_mfa ?? false,
@@ -363,9 +371,11 @@ export class UpsertClientComponent implements OnInit {
     this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.includes(g)
     })
-    this.selectableGroups = this.unselectedGroups.filter((g) => {
-      return g.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
+    this.selectableGroups = this.unselectedGroups
+      .filter((g) => {
+        return g.toLowerCase().includes(value.toLowerCase())
+      })
+      .slice(0, 5)
     if (this.unselectedGroups.length) {
       this.groupSelect.enable()
     } else {
@@ -387,7 +397,7 @@ export class UpsertClientComponent implements OnInit {
   }
 
   removeGroup(value: string) {
-    this.form.controls.groups.setValue((this.form.controls.groups.value).filter(g => g !== value))
+    this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }
@@ -452,7 +462,7 @@ export class UpsertClientComponent implements OnInit {
   }
 
   removeRedirectUrl(value: string) {
-    this.form.controls.redirect_uris.setValue((this.form.controls.redirect_uris.value).filter(r => r !== value))
+    this.form.controls.redirect_uris.setValue(this.form.controls.redirect_uris.value.filter(r => r !== value))
     this.form.updateValueAndValidity()
     this.redirectUrlControl.updateValueAndValidity()
     this.form.controls.redirect_uris.markAsDirty()

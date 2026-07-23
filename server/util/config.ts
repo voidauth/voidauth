@@ -1,4 +1,5 @@
 import { exit } from 'node:process'
+import { readFileSync } from 'node:fs'
 import { booleanString } from './util'
 import { logger } from './logger'
 import * as psl from 'psl'
@@ -318,13 +319,11 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
     logger({
       level: 'error',
       message: 'Error processing declared client variable',
-      details: {
-        declared_client: {
-          client_id,
-          source,
-          variable,
-          value: loggedValue,
-        },
+      declared_client: {
+        client_id,
+        source,
+        variable,
+        value: loggedValue,
       },
       errors: e instanceof Error ? [e] : [{ message: String(e) }],
     })
@@ -408,10 +407,38 @@ function stringDuration(durationStr: unknown) {
 
 const configKeys = Object.getOwnPropertyNames(appConfig) as (keyof Config)[]
 
-// read from process env vars
-configKeys.forEach((key: keyof Config) => {
-  assignConfigValue(key, process.env[key])
-})
+// read from process env vars or the given FILE__
+for (const key of configKeys) {
+  const envValue = process.env[key]
+  const fileEnvKey = `FILE__${key}`
+  const fileEnvKeyValue = process.env[fileEnvKey]
+
+  // If both env and file env are set, log error and exit
+  if (envValue && fileEnvKeyValue) {
+    logger({
+      level: 'error',
+      message: `Environment variables ${key} and ${fileEnvKey} cannot both be set.`,
+    })
+    exit(1)
+  } else if (fileEnvKeyValue) {
+    // If FILE__* is set, must use that file value (do not fallback to regular env var)
+    let fileValue: string | undefined = undefined
+    try {
+      fileValue = readFileSync(fileEnvKeyValue, 'utf8').trim()
+    } catch (e) {
+      // Log error and exit if file cannot be read
+      logger({
+        level: 'error',
+        message: `Error reading file for environment variable ${fileEnvKey}.`,
+        errors: e instanceof Error ? [e] : [{ message: String(e) }],
+      })
+      exit(1)
+    }
+    assignConfigValue(key, fileValue)
+  } else {
+    assignConfigValue(key, envValue)
+  }
+}
 
 refreshDeclaredClients(await registerDockerListener())
 

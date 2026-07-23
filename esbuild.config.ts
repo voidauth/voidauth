@@ -64,6 +64,7 @@ await esbuild.build({
     'pg-query-stream',
     'tedious',
     'oracledb',
+    'mariadb',
     'cpu-features',
     '*.node',
   ]),

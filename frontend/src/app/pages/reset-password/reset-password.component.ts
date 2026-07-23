@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { MaterialModule } from '../../material-module'
 import { AuthService } from '../../services/auth.service'
@@ -17,14 +17,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-reset-password',
-  imports: [
-    MaterialModule,
-    ReactiveFormsModule,
-    PasswordSetComponent,
-    TextDividerComponent,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, ReactiveFormsModule, PasswordSetComponent, TextDividerComponent, TranslatePipe],
   templateUrl: './reset-password.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './reset-password.component.scss',
 })
 export class ResetPasswordComponent {
@@ -33,26 +28,35 @@ export class ResetPasswordComponent {
   config?: ConfigResponse
   passkeySupport?: PasskeySupport
 
-  public passwordForm = new FormGroup({
-    newPassword: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required]),
-    confirmPassword: new FormControl<string>({
-      value: '',
-      disabled: false,
-    }, [Validators.required]),
-  }, {
-    validators: (g) => {
-      const passAreEqual = g.get('newPassword')?.value === g.get('confirmPassword')?.value
-      if (!passAreEqual) {
-        g.get('confirmPassword')?.setErrors({ notEqual: 'Must equal Password' })
-        return { notEqual: 'Passwords do not match' }
-      }
-      g.get('confirmPassword')?.setErrors(null)
-      return null
+  public passwordForm = new FormGroup(
+    {
+      newPassword: new FormControl<string>(
+        {
+          value: '',
+          disabled: false,
+        },
+        [Validators.required],
+      ),
+      confirmPassword: new FormControl<string>(
+        {
+          value: '',
+          disabled: false,
+        },
+        [Validators.required],
+      ),
     },
-  })
+    {
+      validators: (g) => {
+        const passAreEqual = g.get('newPassword')?.value === g.get('confirmPassword')?.value
+        if (!passAreEqual) {
+          g.get('confirmPassword')?.setErrors({ notEqual: 'Must equal Password' })
+          return { notEqual: 'Passwords do not match' }
+        }
+        g.get('confirmPassword')?.setErrors(null)
+        return null
+      },
+    },
+  )
 
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)

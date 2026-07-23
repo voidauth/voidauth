@@ -4,7 +4,7 @@ import type { Group, UserGroup } from '@shared/db/Group'
 import { TABLES } from '@shared/db'
 import appConfig from '../util/config'
 import { stringCompare, type Nullable } from '@shared/utils'
-import { getLDAPVisibleUsers } from '../db/user'
+import { getLDAPVisibleUsers, getUserByUsername } from '../db/user'
 import { parseDN } from './util'
 
 export const MAX_SEARCH_RESULTS = 1000
@@ -96,7 +96,7 @@ export async function getLDAPEntryByDN(dn: string) {
   return (await getLDAPEntries()).find(entry => dnEqual(entry.dn, dn))
 }
 
-export async function getLDAPUserByDN(dn: string) {
+export async function getLDAPUserIdByDN(dn: string) {
   // remove the user base DN suffix and parse the uid from the remaining DN
   const userBaseDN = usersBaseDN()
   if (dn.toLowerCase().endsWith(userBaseDN.toLowerCase())) {
@@ -113,11 +113,7 @@ export async function getLDAPUserByDN(dn: string) {
   if (!uid) {
     return undefined
   }
-  const users = await db().table<User>(TABLES.USER).select().where({ username: uid })
-  if (!users.length || users.length > 1) {
-    return undefined
-  }
-  return users[0]
+  return getUserByUsername(uid)
 }
 
 export function entryInScope(baseDN: string, entryDN: string, scope: LDAPSearchScope) {

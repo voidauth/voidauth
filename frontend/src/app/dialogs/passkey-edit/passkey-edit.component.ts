@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { MaterialModule } from '../../material-module'
@@ -7,13 +7,9 @@ import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-passkey-edit',
-  imports: [
-    MaterialModule,
-    ReactiveFormsModule,
-    ValidationErrorPipe,
-    TranslatePipe,
-  ],
+  imports: [MaterialModule, ReactiveFormsModule, ValidationErrorPipe, TranslatePipe],
   templateUrl: './passkey-edit.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './passkey-edit.component.scss',
 })
 export class PasskeyEditDialog {

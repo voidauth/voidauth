@@ -140,4 +140,7 @@ This project would not be possible without the incredible work of others. For a 
 <a href="https://github.com/katekyonni">
 <img src="https://github.com/katekyonni.png?size=60" alt="katekyonni">
 </a>
+<a href="https://github.com/bluntwit">
+<img src="https://github.com/bluntwit.png?size=60" alt="bluntwit">
+</a>
 </span>
