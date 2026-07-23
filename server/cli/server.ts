@@ -32,8 +32,7 @@ export async function serve() {
 
   const app = express()
 
-  // MUST be hosted behind ssl terminating proxy
-  app.enable('trust proxy')
+  app.set('trust proxy', appConfig.TRUSTED_PROXIES)
   provider.proxy = true
 
   app.use(helmet({
