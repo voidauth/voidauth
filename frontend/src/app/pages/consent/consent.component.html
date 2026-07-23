@@ -1,4 +1,5 @@
 <h1>{{ "consent.title" | translate }}</h1>
+@let destination = details?.clientName ?? redirectHost ?? details?.redirectUri ?? "unknown";
 @if (details) {
   <mat-card class="form-card">
     <mat-card-content>
@@ -9,13 +10,9 @@
           }
           <br />
           <br />
-          <div
-            [innerHTML]="
-              'consent.info.sign-into-question' | translate: { destination: details.clientName ?? redirectHost ?? details.redirectUri }
-            "
-          ></div>
+          <div [innerHTML]="'consent.info.sign-into-question' | translate: { destination: destination }"></div>
           <br />
-          @if (redirectHost) {
+          @if (details.redirectUri !== destination) {
             <p [innerHTML]="'consent.info.post-signin-redir-notice' | translate: { redirect: details.redirectUri }"></p>
           }
         </div>

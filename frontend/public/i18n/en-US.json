@@ -31,7 +31,8 @@
         "groups": "Groups",
         "invitations": "Invitations",
         "password-resets": "Password Resets",
-        "sent-mail": "Sent Mail"
+        "sent-mail": "Sent Mail",
+        "scopes-claims": "Scopes and Claims"
       },
       "logout": "Logout"
     }
@@ -307,14 +308,20 @@
         "add-group": "Add Group",
         "security-groups": "Security Groups:",
         "user-expiration-date": "Access Expiration Date",
-        "user-expiration-time": "Access Expiration Time"
+        "user-expiration-time": "Access Expiration Time",
+        "custom-claims": "Custom Claims",
+        "scope": "Scope",
+        "claim": "Claim",
+        "value": "Value",
+        "no-custom-claims": "No custom claims configured."
       },
       "actions": {
         "sign-out": "Sign Out"
       },
       "tooltips": {
         "remove": "Remove",
-        "open": "Open"
+        "open": "Open",
+        "edit": "Edit"
       }
     },
     "clients": {
@@ -338,7 +345,9 @@
         "grant-types": "Grant Types",
         "postlogout-url": "PostLogout URL",
         "allowed-groups": "Allowed Groups:",
-        "redirect-urls": "Redirect URLs:"
+        "redirect-urls": "Redirect URLs:",
+        "add-scope": "Add Scope",
+        "allowed-scopes": "Allowed Scopes:"
       },
       "hints": {
         "pkce-required": "PKCE Required with this Auth Method.",
@@ -464,6 +473,12 @@
       "checkboxes": {
         "email-verified": "Email Verified"
       }
+    },
+    "claims": {
+      "actions": {
+        "create": "Create Claim"
+      },
+      "empty-state": "No Custom Claims."
     }
   },
   "components": {

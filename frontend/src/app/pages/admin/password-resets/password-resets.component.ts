@@ -15,13 +15,19 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
-import { humanDuration } from '@shared/utils'
+import { humanDuration, stringCompare } from '@shared/utils'
 import { AsyncPipe } from '@angular/common'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
-  selector: 'app-password-sets',
-  imports: [MaterialModule, ValidationErrorPipe, ReactiveFormsModule, AsyncPipe, TranslatePipe],
+  selector: 'app-password-resets',
+  imports: [
+    MaterialModule,
+    ValidationErrorPipe,
+    ReactiveFormsModule,
+    AsyncPipe,
+    TranslatePipe,
+  ],
   templateUrl: './password-resets.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './password-resets.component.scss',
@@ -71,7 +77,7 @@ export class PasswordResetsComponent {
       ])
 
       this.users = users.sort((a, b) => {
-        return a.username.localeCompare(b.username, undefined, { sensitivity: 'base' })
+        return stringCompare(a.username, b.username)
       })
       this.userAutoFilter()
 

@@ -20,6 +20,9 @@ export const TABLES = {
   EMAIL_LOG: 'email_log',
   OIDC_GROUP: 'oidc_group',
   TOTP: 'totp',
+  CUSTOM_SCOPE: 'custom_scope',
+  CUSTOM_CLAIM: 'custom_claim',
+  USER_CUSTOM_CLAIM: 'user_custom_claim',
 } as const
 
 export const TABLES_ORDER: ValueOf<typeof TABLES>[] = [
@@ -42,6 +45,9 @@ export const TABLES_ORDER: ValueOf<typeof TABLES>[] = [
   TABLES.EMAIL_LOG,
   TABLES.OIDC_GROUP,
   TABLES.TOTP,
+  TABLES.CUSTOM_SCOPE,
+  TABLES.CUSTOM_CLAIM,
+  TABLES.USER_CUSTOM_CLAIM,
 ] as const
 
 if (!Object.values(TABLES).every(t => TABLES_ORDER.includes(t))) {
@@ -63,3 +69,6 @@ type KeysCorrectType<T extends Record<string, unknown>> = T extends {
 } ? true : never
 
 export type DBColumnTypesCheck<T extends Record<string, unknown>> = AllBoolKeysListed<T> & AllDateKeysListed<T> & KeysCorrectType<T>
+
+// Utility type for left joins, input type is either whole or all of it's properties are null
+export type FoundOrNull<T extends Record<string, unknown>> = T | { [K in keyof T]: null }

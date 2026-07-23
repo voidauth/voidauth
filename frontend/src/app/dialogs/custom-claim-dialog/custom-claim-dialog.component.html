@@ -1,0 +1,65 @@
+<h2 mat-dialog-title>{{ data.header ?? (isEditMode ? "Edit Custom Claim" : "Add Custom Claim") }}</h2>
+<form [formGroup]="form">
+  <mat-dialog-content>
+    <mat-form-field style="width: 100%">
+      <mat-label>Scope</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="scope"
+        [matAutocomplete]="scopeAuto"
+        (input)="updateScopeOptions(scope.value)"
+        (focus)="updateScopeOptions(scope.value)"
+      />
+      <mat-autocomplete #scopeAuto="matAutocomplete">
+        @for (option of filteredScopes; track option) {
+          <mat-option [value]="option">{{ option }}</mat-option>
+        }
+      </mat-autocomplete>
+      @if (scope.errors) {
+        <mat-error>{{ scope.errors | validationError: "Allowed: A-Z, a-z, 0-9, ., _, :, ~, -" | async }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field style="width: 100%">
+      <mat-label>Claim</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="claim"
+        [matAutocomplete]="claimAuto"
+        (input)="updateClaimOptions(claim.value)"
+        (focus)="updateClaimOptions(claim.value)"
+      />
+      <mat-autocomplete #claimAuto="matAutocomplete">
+        @for (option of filteredClaims; track option) {
+          <mat-option [value]="option">{{ option }}</mat-option>
+        }
+      </mat-autocomplete>
+      @if (claim.errors) {
+        <mat-error>{{ claim.errors | validationError: "Allowed: A-Z, a-z, 0-9, _" | async }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field style="width: 100%">
+      <mat-label>Value</mat-label>
+      <textarea matInput type="text" formControlName="value"></textarea>
+      @if (value.errors) {
+        <mat-error>{{ value.errors | validationError: "Value is required" | async }}</mat-error>
+      }
+    </mat-form-field>
+
+    @if (form.errors) {
+      <div style="color: var(--mat-sys-error)">
+        {{ form.errors | validationError: "Form is invalid." | async }}
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-flat-button type="submit" [mat-dialog-close]="claimValue" [disabled]="form.invalid">
+      {{ isEditMode ? "Save" : "Add" }}
+    </button>
+  </mat-dialog-actions>
+</form>

@@ -10,6 +10,7 @@ export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefin
 
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 
+// Returns input type but all properties that are nullable are now optional and not nullable
 export type OptionalizedNullable<T> = {
   [K in keyof T]: null extends T[K] ? Exclude<T[K], null> | undefined : T[K]
 }
@@ -86,4 +87,8 @@ function humanDurationHelper(ms: number): string | null {
     return String(seconds) + ' second' + ((seconds > 1) ? 's' : '')
   }
   return null
+}
+
+export function stringCompare(a: string, b: string, options?: Intl.CollatorOptions): number {
+  return a.localeCompare(b, undefined, { sensitivity: 'base', ...options })
 }

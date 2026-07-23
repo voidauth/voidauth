@@ -5,19 +5,38 @@ import appConfig from '../util/config'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { Group, OIDCGroup } from '@shared/db/Group'
 import { decryptString } from './util'
-import { TABLES } from '@shared/db'
+import { TABLES, type FoundOrNull } from '@shared/db'
+import { getProviderScopeClaimCache } from './claims'
+
+export function parseClientPayload(payload: string, options?: { strict: boolean }): ClientMetadata {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const client: ClientMetadata = JSON.parse(payload)
+  // decrypt client_secret if it exists
+  if (client.client_secret) {
+    client.client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY]) ?? undefined
+    if (client.client_secret == null && options?.strict) {
+      throw new Error('Cannot decrypt client_secret')
+    }
+  }
+  // filter custom scopes to only those that exist in the provider (using cached)
+  if (client.scope) {
+    const scopes = client.scope.split(/\s+/).filter(Boolean).filter(s => getProviderScopeClaimCache().scopes.has(s))
+    client.scope = scopes.join(' ')
+  }
+  return client
+}
 
 // When getting list of clients, do not error on un-decryptable client_secret, just don't include it
 export async function getClients(): Promise<ClientResponse[]> {
   const clients = (await db()
-    .select<{ id: string, payload: string, groupName?: string }[]>(
+    .select<(Pick<OIDCPayload, 'id' | 'payload'> & { groupName: FoundOrNull<Group>['name'] })[]>(
       db().ref('id').withSchema(TABLES.OIDC_PAYLOADS),
       db().ref('payload').withSchema(TABLES.OIDC_PAYLOADS),
       db().ref('name').as('groupName').withSchema(TABLES.GROUP),
     )
     .table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
-    .leftOuterJoin<OIDCGroup>(TABLES.OIDC_GROUP, `${TABLES.OIDC_PAYLOADS}.id`, 'oidc_group.oidcId')
-    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
+    .leftOuterJoin<FoundOrNull<OIDCGroup>>(TABLES.OIDC_GROUP, `${TABLES.OIDC_PAYLOADS}.id`, 'oidc_group.oidcId')
+    .leftOuterJoin<FoundOrNull<Group>>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ type: PayloadTypes.Client })
     .orderBy(db().ref('id').withSchema(TABLES.OIDC_PAYLOADS), 'asc'))
     .reduce<ClientResponse[]>((arr, r) => {
@@ -25,11 +44,7 @@ export async function getClients(): Promise<ClientResponse[]> {
       if (existing && r.groupName) {
         existing.groups.push(r.groupName)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const c: ClientMetadata = JSON.parse(r.payload)
-        if (c.client_secret) {
-          c.client_secret = decryptString(c.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY]) ?? undefined
-        }
+        const c = parseClientPayload(r.payload, { strict: false })
         const cr: ClientResponse = { ...c, groups: [] }
         if (r.groupName) {
           cr.groups.push(r.groupName)
@@ -61,15 +76,10 @@ export async function getClient(client_id: string): Promise<ClientResponse | und
     return
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const client: ClientMetadata = JSON.parse(clientDB.payload)
-
-  if (client.client_secret) {
-    client.client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY]) ?? undefined
-  }
+  const client: ClientMetadata = parseClientPayload(clientDB.payload, { strict: false })
 
   const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)
-    .leftOuterJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
+    .innerJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')
     .where({ oidcId: client_id }))
     .map(g => g.name)
   return { ...client, groups, declared: false as const }

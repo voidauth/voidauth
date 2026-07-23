@@ -13,6 +13,11 @@ export type UserWithAdminIndicator = UserWithoutPassword & {
 
 export type UserDetails = UserWithAdminIndicator & {
   groups: Pick<Group, 'id' | 'name'>[]
+  customClaims: {
+    scope: string
+    claim: string
+    value: string
+  }[]
   hasTotp: boolean
   hasPasskeys: boolean
   hasMfaGroup: boolean
@@ -38,4 +43,5 @@ export type CurrentUserDetails = Pick<
     // Guard, these fields should not be sent to an unprivileged frontend
     username?: undefined
     email?: undefined
+    customClaims?: undefined
   }

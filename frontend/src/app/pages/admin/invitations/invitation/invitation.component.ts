@@ -1,7 +1,6 @@
 import { AsyncPipe, CommonModule } from '@angular/common'
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
-import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { ActivatedRoute, Router } from '@angular/router'
 import { USERNAME_REGEX } from '@shared/constants'
 import { MaterialModule } from '../../../../material-module'
@@ -19,6 +18,7 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
+import { stringCompare } from '@shared/utils'
 
 @Component({
   selector: 'app-invitation',
@@ -32,7 +32,7 @@ export class InvitationComponent {
   public config?: ConfigResponse
   public adminConfig?: AdminConfig
 
-  public groups: string[] = []
+  public availableGroups: string[] = []
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
   groupSelect = new FormControl<string>(
@@ -84,7 +84,7 @@ export class InvitationComponent {
 
         this.config = await this.configService.getConfig()
         this.adminConfig = await this.adminService.config()
-        this.groups = (await this.adminService.groups()).map(g => g.name)
+        this.availableGroups = (await this.adminService.groups()).map(g => g.name)
 
         if (id) {
           // We are updating an invite
@@ -100,7 +100,7 @@ export class InvitationComponent {
           }
 
           if (this.adminConfig.defaultGroups.length) {
-            this.form.controls.groups.setValue(this.adminConfig.defaultGroups.sort())
+            this.form.controls.groups.setValue(this.adminConfig.defaultGroups.sort(stringCompare))
             this.form.controls.groups.markAsDirty()
           }
         }
@@ -141,7 +141,7 @@ export class InvitationComponent {
   }
 
   groupAutoFilter(value: string = '') {
-    this.unselectedGroups = this.groups.filter((g) => {
+    this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.includes(g)
     })
     this.selectableGroups = this.unselectedGroups
@@ -156,14 +156,16 @@ export class InvitationComponent {
     }
   }
 
-  addGroup(event: MatAutocompleteSelectedEvent) {
-    const value = event.option.value as string
+  addGroup(value: string) {
+    value = value.trim()
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort(stringCompare))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
+    this.groupSelect.markAsUntouched()
+    this.groupSelect.updateValueAndValidity()
     this.groupAutoFilter()
   }
 

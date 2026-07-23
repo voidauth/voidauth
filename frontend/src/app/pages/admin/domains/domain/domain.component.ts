@@ -1,6 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { ActivatedRoute, Router } from '@angular/router'
 import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
@@ -10,7 +9,7 @@ import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
-import { type Nullable } from '@shared/utils'
+import { stringCompare, type Nullable } from '@shared/utils'
 import { isValidWildcardDomain } from '@shared/url'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { MatDialog } from '@angular/material/dialog'
@@ -27,7 +26,7 @@ import { TranslatePipe } from '@ngx-translate/core'
 export class DomainComponent {
   public id: string | null = null
 
-  public groups: string[] = []
+  public availableGroups: string[] = []
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
   groupSelect = new FormControl<string>(
@@ -72,7 +71,7 @@ export class DomainComponent {
           this.resetForm(proxyAuth)
         }
 
-        this.groups = (await this.adminService.groups()).map(g => g.name)
+        this.availableGroups = (await this.adminService.groups()).map(g => g.name)
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
@@ -93,7 +92,7 @@ export class DomainComponent {
   }
 
   groupAutoFilter(value: string = '') {
-    this.unselectedGroups = this.groups.filter((g) => {
+    this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.includes(g)
     })
     this.selectableGroups = this.unselectedGroups
@@ -108,14 +107,16 @@ export class DomainComponent {
     }
   }
 
-  addGroup(event: MatAutocompleteSelectedEvent) {
-    const value = event.option.value as string
+  addGroup(value: string) {
+    value = value.trim()
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort(stringCompare))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
+    this.groupSelect.markAsUntouched()
+    this.groupSelect.updateValueAndValidity()
     this.groupAutoFilter()
   }
 

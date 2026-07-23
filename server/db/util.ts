@@ -80,14 +80,17 @@ export function decryptString(input: string, storageKeys: (string | undefined)[]
   return value
 }
 
+const exludedMergeKeys = ['id', 'createdAt', 'createdBy'] as const
 /**
  *
  * @param inserted DB object being inserted
  * @returns A list of keys on inserted that does not included commonly excluded keys
  */
-export function mergeKeys<T extends object>(inserted: T): (keyof T)[] {
-  const exludedKeys = ['createdAt', 'createdBy']
-  return Object.keys(inserted).filter(k => !exludedKeys.includes(k)) as (keyof T)[]
+export function mergeKeys<T extends object, U extends keyof T>(inserted: T, alsoExclude: U[] = []):
+(keyof Omit<T, typeof alsoExclude[number] | typeof exludedMergeKeys[number]>)[] {
+  const exludedKeys = [...exludedMergeKeys, ...alsoExclude]
+  return Object.keys(inserted)
+    .filter(k => !(exludedKeys as string[]).includes(k)) as (keyof Omit<T, typeof alsoExclude[number] | typeof exludedMergeKeys[number]>)[]
 }
 
 /**
