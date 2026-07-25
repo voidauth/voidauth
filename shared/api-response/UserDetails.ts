@@ -14,7 +14,6 @@ export type UserWithAdminIndicator = UserWithoutPassword & {
 export type UserDetails = UserWithAdminIndicator & {
   groups: Pick<Group, 'id' | 'name'>[]
   customClaims: {
-    scope: string
     claim: string
     value: string
   }[]

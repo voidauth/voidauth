@@ -6,7 +6,7 @@ import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { Group, OIDCGroup } from '@shared/db/Group'
 import { decryptString } from './util'
 import { TABLES, type FoundOrNull } from '@shared/db'
-import { getProviderScopeClaimCache } from './claims'
+import { CLIENT_DEFAULTS } from '@shared/constants'
 
 export function parseClientPayload(payload: string, options?: { strict: boolean }): ClientMetadata {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -18,11 +18,8 @@ export function parseClientPayload(payload: string, options?: { strict: boolean 
       throw new Error('Cannot decrypt client_secret')
     }
   }
-  // filter custom scopes to only those that exist in the provider (using cached)
-  if (client.scope) {
-    const scopes = client.scope.split(/\s+/).filter(Boolean).filter(s => getProviderScopeClaimCache().scopes.has(s))
-    client.scope = scopes.join(' ')
-  }
+  // use default client scope every time
+  client.scope = CLIENT_DEFAULTS.scope
   return client
 }
 

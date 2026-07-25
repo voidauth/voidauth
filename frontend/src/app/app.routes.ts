@@ -56,7 +56,7 @@ export const routes: Routes = [
 
   { path: 'admin/passwordresets', loadComponent: () => import('./pages/admin/password-resets/password-resets.component').then(m => m.PasswordResetsComponent), canActivate: [isAdminGuard] },
 
-  { path: 'admin/claims', loadComponent: () => import('./pages/admin/scopes-claims/scopes-claims.component').then(m => m.ScopesClaimsComponent), canActivate: [isAdminGuard] },
+  { path: 'admin/claims', loadComponent: () => import('./pages/admin/custom-claims/custom-claims.component').then(m => m.CustomClaimsComponent), canActivate: [isAdminGuard] },
 
   { path: 'admin/emails', loadComponent: () => import('./pages/admin/emails/emails.component').then(m => m.EmailsComponent), canActivate: [isAdminGuard] },
 

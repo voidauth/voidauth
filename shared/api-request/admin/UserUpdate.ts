@@ -1,4 +1,4 @@
-import { CUSTOM_CLAIM_CLAIM_REGEX, CUSTOM_CLAIM_SCOPE_REGEX, USERNAME_REGEX } from '@shared/constants'
+import { CUSTOM_CLAIM_CLAIM_REGEX, USERNAME_REGEX } from '@shared/constants'
 import type { SchemaInfer } from '@shared/utils'
 import { coerceEmailOrNull, nameValidation } from '@shared/validators'
 import zod from 'zod'
@@ -17,7 +17,6 @@ export const userUpdateValidator = {
     name: zod.string().trim(),
   })),
   customClaims: zod.array(zod.object({
-    scope: zod.string().trim().regex(CUSTOM_CLAIM_SCOPE_REGEX),
     claim: zod.string().trim().regex(CUSTOM_CLAIM_CLAIM_REGEX),
     value: zod.string().trim().min(1),
   })),

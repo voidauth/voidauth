@@ -24,7 +24,6 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { isValidWildcardRedirect, validateWildcardRedirects } from '@shared/url'
 import { TranslatePipe } from '@ngx-translate/core'
 import { TranslateService } from '@ngx-translate/core'
-import { CUSTOM_CLAIM_SCOPE_REGEX } from '@shared/constants'
 
 export type TypedControls<T> = {
   [K in keyof T]-?: FormControl<Required<T>[K]>;
@@ -95,20 +94,12 @@ export class UpsertClientComponent implements OnInit {
     logo_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     client_uri: new FormControl<string | null>(null, [isValidWebURLControl]),
     groups: new FormControl<string[]>([], { nonNullable: true }),
-    scopes: new FormControl<string[]>(['openid', 'profile', 'email', 'groups', 'offline_access'].sort(), { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<ClientUpsertRequest, 'client_id'> & Nullable<Pick<ClientUpsertRequest, 'client_id'>>>>
 
   public availableGroups: string[] = []
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
   groupSelect = new FormControl<string | null>(null)
-
-  public availableScopes: string[] = []
-  public unselectedScopes: string[] = []
-  public selectableScopes: string[] = []
-  scopeInput = new FormControl<string | null>(null, [
-    Validators.pattern(CUSTOM_CLAIM_SCOPE_REGEX),
-  ])
 
   redirectUrlControl = new FormControl<string>(
     {
@@ -174,15 +165,6 @@ export class UpsertClientComponent implements OnInit {
         } catch {
           // do nothing
         }
-
-        try {
-          this.availableScopes = (await this.adminService.scopes())
-            .filter(scope => !!scope.trim())
-            .sort(stringCompare)
-          this.scopeAutoFilter()
-        } catch {
-          // do nothing
-        }
       } catch (e) {
         console.error(e)
         this.snackbarService.error('Error loading OIDC App Details.')
@@ -231,7 +213,6 @@ export class UpsertClientComponent implements OnInit {
         logo_uri: client.logo_uri ?? null,
         client_uri: client.client_uri ?? null,
         groups: client.groups,
-        scopes: client.scope?.split(/\s+/).filter(Boolean) ?? ['openid', 'profile', 'email', 'groups', 'offline_access'].sort(),
       })
 
       const initialResponseType: ItemIn<typeof UNIQUE_RESPONSE_TYPES>[] = []
@@ -260,13 +241,11 @@ export class UpsertClientComponent implements OnInit {
     if (toggle) {
       this.form.disable()
       this.groupSelect.disable()
-      this.scopeInput.disable()
       this.redirectUrlControl.disable()
       this.responseTypeControl.disable()
     } else {
       this.form.enable()
       this.groupSelect.enable()
-      this.scopeInput.enable()
       this.redirectUrlControl.enable()
       this.responseTypeControl.enable()
     }
@@ -400,54 +379,6 @@ export class UpsertClientComponent implements OnInit {
     this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
-  }
-
-  scopeAutoFilter(value: string = '') {
-    this.unselectedScopes = this.availableScopes.filter((s) => {
-      return !this.form.controls.scopes.value.includes(s)
-    })
-    this.selectableScopes = this.unselectedScopes.filter((s) => {
-      return s.toLowerCase().includes(value.toLowerCase())
-    }).slice(0, 5)
-    if (this.unselectedScopes.length) {
-      this.scopeInput.enable()
-    } else {
-      this.scopeInput.disable()
-    }
-  }
-
-  addScope(value: string): boolean {
-    value = value.trim()
-    if (!value) {
-      return false
-    }
-
-    this.scopeInput.setValue(value, { emitEvent: false })
-    this.scopeInput.markAsTouched()
-    this.scopeInput.updateValueAndValidity()
-
-    if (!this.scopeInput.valid) {
-      return false
-    }
-
-    const existingScopes = this.form.controls.scopes.value
-    if (existingScopes.includes(value)) {
-      this.scopeInput.setValue(null)
-      this.scopeInput.markAsUntouched()
-      return false
-    }
-
-    this.form.controls.scopes.setValue([value].concat(existingScopes).sort(stringCompare))
-    this.form.controls.scopes.markAsDirty()
-    this.scopeInput.setValue(null)
-    this.scopeInput.markAsUntouched()
-    this.scopeInput.updateValueAndValidity()
-    return true
-  }
-
-  removeScope(value: string) {
-    this.form.controls.scopes.setValue((this.form.controls.scopes.value).filter(scope => scope !== value))
-    this.form.controls.scopes.markAsDirty()
   }
 
   addRedirectUrl(value: string) {

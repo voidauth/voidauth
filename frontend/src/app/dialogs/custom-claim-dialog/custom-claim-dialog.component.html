@@ -2,26 +2,6 @@
 <form [formGroup]="form">
   <mat-dialog-content>
     <mat-form-field style="width: 100%">
-      <mat-label>Scope</mat-label>
-      <input
-        matInput
-        type="text"
-        formControlName="scope"
-        [matAutocomplete]="scopeAuto"
-        (input)="updateScopeOptions(scope.value)"
-        (focus)="updateScopeOptions(scope.value)"
-      />
-      <mat-autocomplete #scopeAuto="matAutocomplete">
-        @for (option of filteredScopes; track option) {
-          <mat-option [value]="option">{{ option }}</mat-option>
-        }
-      </mat-autocomplete>
-      @if (scope.errors) {
-        <mat-error>{{ scope.errors | validationError: "Allowed: A-Z, a-z, 0-9, ., _, :, ~, -" | async }}</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field style="width: 100%">
       <mat-label>Claim</mat-label>
       <input
         matInput

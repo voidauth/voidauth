@@ -41,7 +41,7 @@ export class UserComponent implements OnInit {
     [],
   )
 
-  public customClaimColumns = ['scope', 'claim', 'value', 'actions']
+  public customClaimColumns = ['claim', 'value', 'actions']
 
   public form = new FormGroup({
     username: new FormControl<string | null>(null, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
@@ -155,7 +155,7 @@ export class UserComponent implements OnInit {
         ...this.form.controls.customClaims.value,
         result,
       ].sort((a, b) => {
-        return stringCompare(a.scope, b.scope) || stringCompare(a.claim, b.claim)
+        return stringCompare(a.claim, b.claim)
       }))
       this.form.controls.customClaims.markAsDirty()
     })

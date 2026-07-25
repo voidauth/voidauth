@@ -18,7 +18,6 @@ import { logger, purgeAsyncLog } from '../util/logger'
 import { sensitiveRateLimit, standardRateLimit } from '../util/rateLimit'
 import { FORBIDDEN_PATHS, NOT_FOUND_PATHS } from '@shared/constants'
 import { startLDAPServer } from '../ldap/server'
-import { cleanMissingClientScopes } from '../db/claims'
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -333,9 +332,6 @@ export async function serve() {
         if (initialRun) {
           await createInitialAdmin()
         }
-
-        // Clean up scopes in OIDC clients
-        await cleanMissingClientScopes()
 
         let providerNeedsReset = false
 

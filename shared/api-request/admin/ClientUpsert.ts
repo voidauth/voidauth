@@ -35,7 +35,6 @@ export const clientUpsertValidator = {
   logo_uri: zod.union([zod.url().trim(), emptyString]).nullable().transform(v => v || undefined).optional(),
   client_uri: zod.union([zod.url().trim(), emptyString]).nullable().transform(v => v || undefined).optional(),
   groups: zod.array(zod.string().trim().min(1)),
-  scopes: zod.array(zod.string().trim().min(1)),
 }
 
 export type ClientUpsertRequest = SchemaInferInput<typeof clientUpsertValidator>

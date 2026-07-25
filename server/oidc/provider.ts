@@ -2,7 +2,7 @@ import Provider, { type ClientMetadata, type Configuration } from 'oidc-provider
 import { findAccount, getUserById, userRequiresMfa } from '../db/user'
 import appConfig, { basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
 import { KnexAdapter } from './adapter'
-import { ADMIN_GROUP, CLIENT_DEFAULTS, PROTECTED_SCOPES_SET, REDIRECT_PATHS, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, CLIENT_DEFAULTS, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import { interactionPolicy } from 'oidc-provider'
@@ -13,7 +13,7 @@ import { wildcardRedirect } from '@shared/url'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { getProxyAuthWithCache } from '../db/proxyAuth'
 import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
-import { randomBytes, randomUUID } from 'crypto'
+import { randomBytes } from 'crypto'
 import { logger } from '../util/logger'
 import { getClient } from '../db/client'
 import type { OIDCGroup, Group } from '@shared/db/Group'
@@ -23,8 +23,8 @@ import { mergeKeys } from '../db/util'
 import type { User } from '@shared/db/User'
 import { PayloadTypes } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
-import { getAllClaims, getAllScopes, updateProviderScopeClaimCache } from '../db/claims'
-import type { CustomScope } from '@shared/db/CustomClaim'
+import { getAllClaims, getCustomClaims } from '../db/claims'
+import { getCurrentProviderConfig, setCurrentProviderConfig } from './configuration'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -402,7 +402,6 @@ async function getNextConfig() {
     ],
     clientDefaults: CLIENT_DEFAULTS,
     claims: await getAllClaims(),
-    scopes: await getAllScopes(),
     responseTypes: [...RESPONSE_TYPES],
     conformIdTokenClaims: false,
     extraClientMetadata: {
@@ -447,7 +446,7 @@ async function getNextConfig() {
   return configuration
 }
 
-async function createProvider(): Promise<[Provider, Configuration]> {
+async function createProvider(): Promise<Provider> {
   const config = await getNextConfig()
   const nextProvider = new Provider(`${appConfig.APP_URL}/oidc`, config)
   nextProvider.proxy = true
@@ -581,18 +580,15 @@ async function createProvider(): Promise<[Provider, Configuration]> {
     return postLogoutRedirectUriAllowed.call(this, postLogoutRedirectUri)
   }
 
-  updateProviderScopeClaimCache({
-    scopes: new Set(config.scopes),
-    claims: config.claims,
-  })
+  setCurrentProviderConfig(config)
 
-  return [nextProvider, config]
+  return nextProvider
 }
 
-let [_provider, _config] = await createProvider()
+let _provider = await createProvider()
 
 export async function resetProvider() {
-  [_provider, _config] = await createProvider()
+  _provider = await createProvider()
   // No need to clean up old provider, it is stored in a WeakMap
 }
 
@@ -605,48 +601,24 @@ export function provider() {
   return _provider
 }
 
-export function getCurrentProviderConfig() {
-  return _config
-}
-
 /**
  * Provider Utilities
  */
 
 export async function isProviderClaimsDesynced() {
-  const currentClaims = await getAllClaims()
-  const currentScopes = await getAllScopes()
+  const currentClaims = await getCustomClaims()
   const providerConfig = getCurrentProviderConfig()
-  const providerClaims = providerConfig.claims ?? {}
-  const providerScopes = providerConfig.scopes ?? []
+  if (!providerConfig) {
+    return
+  }
 
-  const claimsDesynced = JSON.stringify(currentClaims) !== JSON.stringify(providerClaims)
-  const scopesDesynced = JSON.stringify(currentScopes) !== JSON.stringify(providerScopes)
-  return claimsDesynced || scopesDesynced
+  const providerClaims = (providerConfig.claims ?? {})['openid'] ?? []
+
+  const claimsDesynced = (new Set(currentClaims)).symmetricDifference(new Set(providerClaims)).values().toArray().length > 0
+  return claimsDesynced
 }
 
 export async function upsertClient(metadata: ClientMetadata, groups: string[], user: Pick<User, 'id'>, ctx: unknown) {
-  // Sync scopes for the client
-  const scopes = Array.from(new Set(metadata.scope?.split(/\s+/).filter(Boolean) || []))
-  if (!scopes.includes('openid')) {
-    scopes.push('openid')
-  }
-  // Make sure that client scopes exist in scopes list
-  const customScopes: CustomScope[] = scopes.filter(s => !PROTECTED_SCOPES_SET.has(s)).map(s => ({
-    id: randomUUID(),
-    scope: s,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }))
-  if (customScopes[0]) {
-    await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).insert(customScopes).onConflict(['scope']).merge(mergeKeys(customScopes[0]))
-  }
-
-  // Add any new scopes to the provider by resetting it
-  if (await isProviderClaimsDesynced()) {
-    await resetProvider()
-  }
-
   await provider().Client.validate(metadata)
   const client = await add(provider(), metadata, { ctx, store: true })
   await provider().Client.validate(client.metadata())
@@ -671,11 +643,6 @@ export async function upsertClient(metadata: ClientMetadata, groups: string[], u
   await db().table<OIDCGroup>(TABLES.OIDC_GROUP).delete()
     .where({ oidcId: clientId }).and
     .whereNotIn('groupId', clientGroups.map(g => g.groupId))
-
-  // If scopes are not synced with provider, reset provider
-  if (await isProviderClaimsDesynced()) {
-    await resetProvider()
-  }
 
   return client
 }

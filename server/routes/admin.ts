@@ -7,7 +7,7 @@ import { randomBytes, randomUUID } from 'crypto'
 import { getClient, getClients } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
 import { groupUpsertValidator } from '@shared/api-request/admin/GroupUpsert'
-import { ADMIN_GROUP, PROTECTED_CLAIMS_SET, PROTECTED_SCOPES_SET, TTLs } from '@shared/constants'
+import { ADMIN_GROUP, PROTECTED_CLAIMS_SET, TTLs } from '@shared/constants'
 import { userUpdateValidator } from '@shared/api-request/admin/UserUpdate'
 import { endSessions, getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
@@ -38,9 +38,8 @@ import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
-import type { CustomClaim, CustomScope, UserCustomClaim } from '@shared/db/CustomClaim'
-import { cleanMissingClientScopes, getAllScopes, getCustomClaimsRecords } from '../db/claims'
-import type { CustomClaimsResponse } from '@shared/api-response/admin/CustomClaimResponse'
+import type { CustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
+import { getCustomClaimsRecords } from '../db/claims'
 import type { ClientMetadata } from 'oidc-provider'
 
 export const adminRouter = Router()
@@ -103,11 +102,10 @@ async function upsertClientController(isCreate: boolean,
       return
     }
 
-    const { scopes, groups, post_logout_redirect_uri, ...rest } = clientUpsert
+    const { groups, post_logout_redirect_uri, ...rest } = clientUpsert
     const clientMetadata: ClientMetadata & typeof rest = rest
 
     clientMetadata.post_logout_redirect_uris = post_logout_redirect_uri ? [post_logout_redirect_uri] : []
-    clientMetadata.scope = scopes.join(' ')
 
     // determine proper Application Type
     let hasHttpProtocol = false
@@ -173,38 +171,10 @@ adminRouter.delete('/client/:client_id',
     res.send()
   })
 
-adminRouter.get('/custom_scopes_claims', async (_req, res) => {
+adminRouter.get('/custom_claims', async (_req, res) => {
   const claims = await getCustomClaimsRecords()
-  res.send(claims satisfies CustomClaimsResponse[])
+  res.send(claims satisfies CustomClaim[])
 })
-
-adminRouter.get('/scopes', async (_req, res) => {
-  const claims = await getAllScopes()
-  res.send(claims satisfies string[])
-})
-
-adminRouter.delete('/scope/:scopeId',
-  zodValidate({
-    params: { scopeId: zod.uuid() },
-  }),
-  async (req, res) => {
-    const { scopeId } = req.params
-    const customScope = await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).where({ id: scopeId }).first()
-    if (!customScope) {
-      res.sendStatus(404)
-      return
-    }
-    // make sure the scope has no claims before deleting it
-    const claims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ scopeId }).select()
-    if (claims.length > 0) {
-      res.status(400).send({ message: 'Cannot delete scope with associated claims' })
-      return
-    }
-    await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).where({ id: scopeId }).delete()
-    // make sure no clients were using that scope, and remove it from their scopes if they were
-    await cleanMissingClientScopes()
-    res.send()
-  })
 
 adminRouter.delete('/claim/:claimId',
   zodValidate({
@@ -361,25 +331,18 @@ adminRouter.patch('/user',
     const { groups: userGroupNames, customClaims: userCustomClaims, ...user } = userUpdate
 
     // Validate user custom claims
-    const userCustomClaimKeys: Record<string, Set<string>> = {}
-    for (const customClaim of userCustomClaims) {
-      // Make sure scope and claim are not protected
-      if (PROTECTED_SCOPES_SET.has(customClaim.scope) || PROTECTED_CLAIMS_SET.has(customClaim.claim)) {
-        res.status(400).send({ message: 'A custom scope or claim is reserved.' })
-        return
-      }
-      // Check and make sure no duplicate scope+claim records in user custom claims
-      if (userCustomClaimKeys[customClaim.scope]?.has(customClaim.claim)) {
-        res.status(400).send({ message: 'Duplicate custom claim scope + claim combinations are not allowed.' })
-        return
-      }
-      let scopeClaims = userCustomClaimKeys[customClaim.scope]
-      if (!scopeClaims) {
-        const newScopeClaims = new Set<string>()
-        userCustomClaimKeys[customClaim.scope] = newScopeClaims
-        scopeClaims = newScopeClaims
-      }
-      scopeClaims.add(customClaim.claim)
+    // check if any claims are protected
+    if (userCustomClaims.some(c => PROTECTED_CLAIMS_SET.has(c.claim))) {
+      res.status(400).send({ message: 'A custom claim is reserved.' })
+      return
+    }
+
+    const uniqueCustomClaims = new Set(userCustomClaims.map(c => c.claim))
+
+    // make sure no duplicate claims
+    if (uniqueCustomClaims.values().toArray().length !== userCustomClaims.length) {
+      res.status(400).send({ message: 'Duplicate custom claims are not allowed.' })
+      return
     }
 
     const existingUser = await db().table<User>(TABLES.USER).where({ id: userUpdate.id }).first()
@@ -422,34 +385,16 @@ adminRouter.patch('/user',
       .whereNotIn('groupId', userGroups.map(g => g.groupId))
 
     // Sync Custom Claims.
-    // We are going to do some confusing stuff here so that custom scopes+claims do not have to be managed
+    // We are going to do some confusing stuff here so that custom claims do not have to be managed
     // manually in the webUI but just ***magically*** appear when they are added to a user
     if (!userCustomClaims.length) {
       // remove all user custom claims
       await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete().where({ userId: userUpdate.id })
     } else {
       // Make sure all the custom claims the user wants exist
-      // Start with the scopes
-      let customScopes: CustomScope[] = userCustomClaims.map(c => ({
-        id: randomUUID(),
-        scope: c.scope,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }))
-      if (customScopes[0]) {
-        customScopes = await db().table<CustomScope>(TABLES.CUSTOM_SCOPE).insert(customScopes)
-          .onConflict(['scope']).merge(mergeKeys(customScopes[0])).returning('*')
-      }
-
-      // Then make sure there are matching claims
       let customClaims: CustomClaim[] = userCustomClaims.map((c) => {
-        const matchingScope = customScopes.find(cc => cc.scope === c.scope)
-        if (!matchingScope) {
-          throw new Error('Matching scope for user custom claim could not be found!')
-        }
         return {
           id: randomUUID(),
-          scopeId: matchingScope.id,
           claim: c.claim,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -457,7 +402,7 @@ adminRouter.patch('/user',
       })
       if (customClaims[0]) {
         customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
-          .onConflict(['scopeId', 'claim']).merge(mergeKeys(customClaims[0])).returning('*')
+          .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
       }
 
       // Delete any user custom claims not present in new custom claims payload
@@ -467,11 +412,7 @@ adminRouter.patch('/user',
 
       // Upsert provided user custom claims into user custom claims table
       const upsertUserCustomClaims: UserCustomClaim[] = userCustomClaims.map((c) => {
-        const matchingScope = customScopes.find(cc => cc.scope === c.scope)
-        if (!matchingScope) {
-          throw new Error('Matching scope for user custom claim could not be found!')
-        }
-        const matchingClaim = customClaims.find(cc => cc.scopeId === matchingScope.id && cc.claim === c.claim)
+        const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
         if (!matchingClaim) {
           throw new Error('Matching claim for user custom claim could not be found!')
         }

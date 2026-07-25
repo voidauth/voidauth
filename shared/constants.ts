@@ -2,7 +2,6 @@ export const ADMIN_GROUP = 'auth_admins' as const
 export const ADMIN_USER = 'auth_admin' as const
 
 export const USERNAME_REGEX = /^[A-Za-z0-9_]{1,32}$/
-export const CUSTOM_CLAIM_SCOPE_REGEX = /^[A-Za-z0-9._:~-]+$/
 export const CUSTOM_CLAIM_CLAIM_REGEX = /^[a-zA-Z0-9_]+$/
 
 // Paths that the server might redirect the frontend toward

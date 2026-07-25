@@ -15,7 +15,8 @@ import zod from 'zod'
 import { createPasswordReset, getPasswordResetURL } from './passwordReset'
 import { humanDuration } from '@shared/utils'
 import { TABLES } from '@shared/db'
-import { getProviderScopeClaimCache, getUserCustomClaims } from './claims'
+import { getUserCustomClaims } from './claims'
+import { getCurrentProviderConfig } from '../oidc/configuration'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -166,13 +167,10 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
       } = { sub: id }
       const scopes = new Set(scope.split(/\s+/).filter(Boolean))
 
-      // Do custom scope processing
-      const providerScopeClaims = getProviderScopeClaimCache()
-      const customClaims = user.customClaims.filter((c) => {
-        return providerScopeClaims.scopes.has(c.scope) && providerScopeClaims.claims[c.scope]?.includes(c.claim)
-      })
-      for (const s of scopes) {
-        const claims = customClaims.filter(c => c.scope === s)
+      if (scopes.has('openid')) {
+        // Do custom claims
+        // Only use custom claims that are in the provider config, prevents errors
+        const claims = user.customClaims.filter(c => (getCurrentProviderConfig()?.claims?.['openid'] ?? []).includes(c.claim))
         for (const c of claims) {
           try {
             accountClaims[c.claim] = JSON.parse(c.value)

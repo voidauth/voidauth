@@ -250,66 +250,6 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-list
-        [ngClass]="{ invalid: form.controls.scopes.errors, disabled: form.controls.scopes.disabled }"
-        [disabled]="form.controls.scopes.disabled"
-      >
-        <mat-form-field>
-          <mat-label>{{ "admin.client.labels.add-scope" | translate }}</mat-label>
-          <input
-            #scopes_input
-            type="text"
-            placeholder="Add one"
-            matInput
-            [formControl]="scopeInput"
-            [matAutocomplete]="scopeAuto"
-            (input)="scopeAutoFilter(scopes_input.value)"
-            (focus)="scopeAutoFilter(scopes_input.value)"
-            (keydown.enter)="addScope(scopes_input.value); $event.preventDefault()"
-          />
-          <button
-            class="field-suffix"
-            type="button"
-            mat-icon-button
-            matSuffix
-            [disabled]="scopeInput.invalid || !scopeInput.value"
-            (click)="addScope(scopes_input.value)"
-          >
-            <mat-icon fontSet="material-icons-round" matSuffix>add_circle</mat-icon>
-          </button>
-          <mat-autocomplete #scopeAuto="matAutocomplete" (optionSelected)="addScope($event.option.value); scopes_input.value = ''">
-            @for (option of selectableScopes; track option) {
-              <mat-option [value]="option">{{ option }}</mat-option>
-            }
-          </mat-autocomplete>
-          @if (scopeInput.errors) {
-            <mat-error>{{ scopeInput.errors | validationError: "Allowed: A-Z, a-z, 0-9, ., _, :, ~, -" | async }}</mat-error>
-          }
-        </mat-form-field>
-
-        <div mat-subheader>{{ "admin.client.labels.allowed-scopes" | translate }}</div>
-        @for (scope of form.value.scopes; track scope) {
-          <mat-list-item>
-            <mat-icon
-              fontSet="material-icons-round"
-              matListItemIcon
-              [ngClass]="{
-                clickable: !form.controls.scopes.disabled && scope !== 'openid',
-                disabled: !(!form.controls.scopes.disabled && scope !== 'openid'),
-              }"
-              (click)="!form.controls.scopes.disabled && scope !== 'openid' && removeScope(scope)"
-              >cancel</mat-icon
-            >
-            <div matListItemTitle>{{ scope }}</div>
-          </mat-list-item>
-        }
-      </mat-list>
-      @if (form.controls.scopes.errors) {
-        <mat-error style="margin-top: 4px; align-self: start; margin-left: 16px">
-          {{ form.controls.scopes.errors | validationError | async }}
-        </mat-error>
-      }
-
       <mat-form-field>
         <mat-label>{{ "admin.client.labels.postlogout-url" | translate }}</mat-label>
         <input matInput type="text" formControlName="post_logout_redirect_uri" />
