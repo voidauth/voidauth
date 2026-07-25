@@ -56,7 +56,7 @@ export class CustomClaimsComponent {
     }
   }
 
-  delete(id: string) {
+  onDelete(id: string) {
     const customClaim = this.dataSource.data.find(i => i.id === id)
     if (!customClaim) {
       return
