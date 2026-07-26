@@ -20,6 +20,7 @@ import type { SortDirection } from '@angular/material/sort'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { CustomClaim } from '@shared/db/CustomClaim'
+import type { CustomClaimUpsert } from '@shared/api-request/admin/CustomClaimUpsert'
 
 @Injectable({
   providedIn: 'root',
@@ -43,6 +44,18 @@ export class AdminService {
 
   async customClaims() {
     return firstValueFrom(this.http.get<CustomClaim[]>('/api/admin/custom_claims'))
+  }
+
+  async customClaim(id: string) {
+    return firstValueFrom(this.http.get<CustomClaim>(`/api/admin/custom_claim/${encodeURIComponent(id)}`))
+  }
+
+  async upsertCustomClaim(customClaim: CustomClaimUpsert) {
+    return firstValueFrom(this.http.post<{ id: string }>('/api/admin/custom_claim', customClaim))
+  }
+
+  async deleteCustomClaim(id: string) {
+    return firstValueFrom(this.http.delete<null>(`/api/admin/custom_claim/${encodeURIComponent(id)}`))
   }
 
   async clients() {

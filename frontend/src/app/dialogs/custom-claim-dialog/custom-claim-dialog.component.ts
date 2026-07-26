@@ -9,6 +9,7 @@ import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { CUSTOM_CLAIM_CLAIM_REGEX, PROTECTED_CLAIMS_SET } from '@shared/constants'
 import { stringCompare, type ItemIn } from '@shared/utils'
 import type { CustomClaim } from '@shared/db/CustomClaim'
+import { TranslatePipe } from '@ngx-translate/core'
 
 type CustomClaimEntry = ItemIn<UserUpdate['customClaims']>
 
@@ -25,6 +26,7 @@ interface CustomClaimDialogData {
     ReactiveFormsModule,
     ValidationErrorPipe,
     AsyncPipe,
+    TranslatePipe,
   ],
   templateUrl: './custom-claim-dialog.component.html',
   styleUrls: ['./custom-claim-dialog.component.scss'],
@@ -35,8 +37,6 @@ export class CustomClaimDialogComponent implements OnInit {
 
   public availableClaims: string[] = []
   public filteredClaims: string[] = []
-  private customClaims: CustomClaim[] = []
-  public isEditMode = false
 
   readonly form = new FormGroup({
     claim: new FormControl<string | null>(null, [
@@ -60,8 +60,7 @@ export class CustomClaimDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.isEditMode = !!this.data.editClaim
-    if (this.isEditMode && this.data.editClaim) {
+    if (this.data.editClaim) {
       this.claim.setValue(this.data.editClaim.claim)
       this.value.setValue(this.data.editClaim.value)
       this.claim.disable({ emitEvent: false })
@@ -93,7 +92,6 @@ export class CustomClaimDialogComponent implements OnInit {
   private async loadCustomClaimOptions(): Promise<void> {
     try {
       const claims: CustomClaim[] = await this.adminService.customClaims()
-      this.customClaims = claims
 
       this.availableClaims = claims.map(c => c.claim)
         .filter(claim => !this.claimAlreadyExists(claim) && !this.isProtectedClaim(claim)).sort(stringCompare)

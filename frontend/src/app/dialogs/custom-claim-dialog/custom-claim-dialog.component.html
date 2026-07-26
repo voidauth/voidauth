@@ -1,8 +1,16 @@
-<h2 mat-dialog-title>{{ data.header ?? (isEditMode ? "Edit Custom Claim" : "Add Custom Claim") }}</h2>
+<h2 mat-dialog-title>
+  @if (data.header) {
+    {{ data.header }}
+  } @else if (data.editClaim) {
+    {{ "components.custom-claim-dialog.title.edit" | translate }}
+  } @else {
+    {{ "components.custom-claim-dialog.title.create" | translate }}
+  }
+</h2>
 <form [formGroup]="form">
   <mat-dialog-content>
     <mat-form-field style="width: 100%">
-      <mat-label>Claim</mat-label>
+      <mat-label>{{ "components.custom-claim-dialog.labels.claim" | translate }}</mat-label>
       <input
         matInput
         type="text"
@@ -22,7 +30,7 @@
     </mat-form-field>
 
     <mat-form-field style="width: 100%">
-      <mat-label>Value</mat-label>
+      <mat-label>{{ "components.custom-claim-dialog.labels.value" | translate }}</mat-label>
       <textarea matInput type="text" formControlName="value"></textarea>
       @if (value.errors) {
         <mat-error>{{ value.errors | validationError: "Value is required" | async }}</mat-error>
@@ -37,9 +45,13 @@
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
-    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-button type="button" mat-dialog-close>{{ "components.custom-claim-dialog.actions.cancel.label" | translate }}</button>
     <button mat-flat-button type="submit" [mat-dialog-close]="claimValue" [disabled]="form.invalid">
-      {{ isEditMode ? "Save" : "Add" }}
+      @if (data.editClaim) {
+        {{ "components.custom-claim-dialog.actions.save.label" | translate }}
+      } @else {
+        {{ "components.custom-claim-dialog.actions.create.label" | translate }}
+      }
     </button>
   </mat-dialog-actions>
 </form>

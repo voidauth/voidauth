@@ -476,6 +476,12 @@
         "create": "Create Claim"
       },
       "empty-state": "No Custom Claims."
+    },
+    "claim": {
+      "title": "Custom Claim",
+      "labels": {
+        "name": "Name"
+      }
     }
   },
   "components": {
@@ -578,6 +584,27 @@
         },
         "confirm": {
           "label": "Confirm"
+        }
+      }
+    },
+    "custom-claim-dialog": {
+      "title": {
+        "edit": "Edit Custom Claim",
+        "create": "Add Custom Claim"
+      },
+      "labels": {
+        "claim": "Claim",
+        "value": "Value"
+      },
+      "actions": {
+        "cancel": {
+          "label": "Cancel"
+        },
+        "save": {
+          "label": "Save"
+        },
+        "create": {
+          "label": "Add"
         }
       }
     }

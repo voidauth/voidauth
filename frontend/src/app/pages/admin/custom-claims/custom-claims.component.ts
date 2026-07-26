@@ -76,19 +76,9 @@ export class CustomClaimsComponent {
 
       try {
         this.spinnerService.show()
-        // TODO: Implement delete custom claim API call
-        console.error('Not Implemented: delete custom claim')
-        console.error(`claimId: ${id}`)
-        this.snackbarService.error('Not Implemented: delete custom claim')
-        // await this.adminService.deleteCustomClaim(id)
-        // this.snackbarService.message('Custom claim was deleted.')
-        // Refresh the data from the server.
-        try {
-          this.spinnerService.show()
-          this.dataSource.data = await this.adminService.customClaims()
-        } finally {
-          this.spinnerService.hide()
-        }
+        await this.adminService.deleteCustomClaim(id)
+        this.snackbarService.message('Custom claim was deleted.')
+        this.dataSource.data = await this.adminService.customClaims()
       } catch (_e) {
         this.snackbarService.error('Could not delete custom claim.')
       } finally {

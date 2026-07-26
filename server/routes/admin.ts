@@ -7,6 +7,7 @@ import { randomBytes, randomUUID } from 'crypto'
 import { getClient, getClients } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
 import { groupUpsertValidator } from '@shared/api-request/admin/GroupUpsert'
+import { customClaimUpsertValidator } from '@shared/api-request/admin/CustomClaimUpsert'
 import { ADMIN_GROUP, PROTECTED_CLAIMS_SET, TTLs } from '@shared/constants'
 import { userUpdateValidator } from '@shared/api-request/admin/UserUpdate'
 import { endSessions, getUserById, getUsers } from '../db/user'
@@ -175,6 +176,76 @@ adminRouter.get('/custom_claims', async (_req, res) => {
   const claims = await getCustomClaimsRecords()
   res.send(claims satisfies CustomClaim[])
 })
+
+adminRouter.get('/custom_claim/:id',
+  zodValidate({
+    params: { id: zod.uuidv4() },
+  }),
+  async (req, res) => {
+    const { id } = req.params
+    const customClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).first()
+    if (!customClaim) {
+      res.sendStatus(404)
+      return
+    }
+
+    res.send(customClaim satisfies CustomClaim)
+  })
+
+adminRouter.post('/custom_claim',
+  zodValidate({ body: customClaimUpsertValidator }),
+  async (req, res) => {
+    const { id, claim } = req.body
+
+    if (PROTECTED_CLAIMS_SET.has(claim)) {
+      res.status(400).send({ message: 'A custom claim is reserved.' })
+      return
+    }
+
+    let existingClaim = id
+      ? await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).first()
+      : undefined
+
+    if (!existingClaim) {
+      existingClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ claim }).first()
+    }
+
+    const claimId = existingClaim?.id ?? randomUUID()
+
+    if (existingClaim) {
+      await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM)
+        .where({ id: claimId })
+        .update({ claim, updatedAt: new Date() })
+    } else {
+      await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert({
+        id: claimId,
+        claim,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    }
+
+    if (await isProviderClaimsDesynced()) {
+      await resetProvider()
+    }
+
+    res.send({ id: claimId })
+  })
+
+adminRouter.delete('/custom_claim/:id',
+  zodValidate({
+    params: { id: zod.uuidv4() },
+  }),
+  async (req, res) => {
+    const { id } = req.params
+    const customClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).first()
+    if (!customClaim) {
+      res.sendStatus(404)
+      return
+    }
+    await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).delete()
+    res.send()
+  })
 
 adminRouter.delete('/claim/:claimId',
   zodValidate({
@@ -608,10 +679,10 @@ adminRouter.get('/group/:id',
       users: await db().select('id', 'username')
         .table<User>(TABLES.USER)
         .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.userId', 'user.id')
-        .where({ groupId: group.id }).orderBy(db().ref('name').withSchema(TABLES.USER), 'asc'),
+        .where({ groupId: group.id }).orderBy(db().ref('username').withSchema(TABLES.USER), 'asc'),
     }
 
-    res.send(groupWithUsers)
+    res.send(groupWithUsers satisfies GroupUsers)
   })
 
 adminRouter.post('/group',

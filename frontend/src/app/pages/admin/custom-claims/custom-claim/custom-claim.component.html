@@ -1,0 +1,36 @@
+<h1>
+  @if (id) {
+    {{ "admin.common.actions.update" | translate }}
+  } @else {
+    {{ "admin.common.actions.create" | translate }}
+  }
+  {{ "admin.claim.title" | translate }}
+</h1>
+<mat-card class="form-card">
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field>
+        <mat-label>{{ "admin.claim.labels.name" | translate }}</mat-label>
+        <input matInput type="text" formControlName="claim" />
+        @if (form.controls.claim.errors) {
+          <mat-error>{{ form.controls.claim.errors | validationError | async }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-card-actions>
+        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">
+          @if (id) {
+            {{ "admin.common.actions.update" | translate }}
+          } @else {
+            {{ "admin.common.actions.create" | translate }}
+          }
+        </button>
+        @if (id) {
+          <button mat-flat-button class="danger-button" type="button" (click)="remove()">
+            {{ "admin.common.actions.delete" | translate }}
+          </button>
+        }
+      </mat-card-actions>
+    </form>
+  </mat-card-content>
+</mat-card>
