@@ -1,4 +1,4 @@
-# ProxyAuth
+# Proxies and ProxyAuth
 
 ProxyAuth Domains are protected through a collaboration between your reverse-proxy and VoidAuth. When a user navigates to a protected domain, your reverse-proxy will check with VoidAuth to ensure the user is logged in and should have access. 
 
@@ -49,7 +49,12 @@ If a request is allowed, the following headers will be set on the response. This
 * `Remote-Name` = `name`
 * `Remote-Groups` = `groups` in a comma separated list, ex. `users,admins,owners`
 
-## Reverse-Proxy ProxyAuth Setup
+## Proxy Setup
+
+> [!CAUTION]
+> To determine client IP addresses for rate limiting and logging, VoidAuth relies on standard X-Forwarded-* HTTP headers passed by your reverse proxy (e.g., Caddy, NGINX, Traefik). By default, the TRUSTED_PROXIES environment variable is pre-configured to trust all private IP ranges. You should change TRUSTED_PROXIES from its default to a comma-separated list of the exact internal IP addresses or CIDRs of your upstream reverse proxy. It is also vital that you configure your reverse proxy to completely strip or overwrite incoming X-Forwarded-* headers from untrusted public clients before forwarding the request to VoidAuth. Never expose the application's listening port directly to the public internet, and when possible make your VoidAuth instance reachable only by your reverse proxy.
+
+This section will show how to set up example proxies securely, and assumes you are intending to use ProxyAuth for some services. Even if you do not intend to use ProxyAuth, the guides below will show how to securely route to a VoidAuth instance.
 
 VoidAuth exposes two proxy auth endpoints, which one you use will depend on your reverse-proxy.
 
@@ -61,11 +66,11 @@ VoidAuth exposes two proxy auth endpoints, which one you use will depend on your
 These endpoints are mostly the same, but limitations in NGINX make a separate endpoint necessary.
 
 > [!WARNING]
-> You must set up your reverse-proxy **AND** VoidAuth correctly to protect a domain! This will usually involve modifying your reverse-proxy config to put the domain 'behind' VoidAuth, and then adding that domain to the VoidAuth ProxyAuth Domain list with an access group(s). Instructions below assume that the *internal* address of your VoidAuth instance, reachable by the reverse proxy, is `http://voidauth:3000`.
+> You must set up your reverse-proxy **AND** VoidAuth correctly to protect a domain! This will involve modifying your reverse-proxy config to put the domain 'behind' VoidAuth, and then adding that domain to the VoidAuth ProxyAuth Domain list with an access group(s). Instructions below assume that the *internal* address of your VoidAuth instance, reachable by the reverse proxy, is `http://voidauth:3000`.
 
 ### Caddy
 
-You can setup ProxyAuth using [Caddy](https://caddyserver.com) as a reverse-proxy with the following CaddyFile which protects domain **app.example.com** using VoidAuth hosted on **auth.example.com**
+Caddy handles X-Forwarded-* HTTP headers automatically. You can setup ProxyAuth using [Caddy](https://caddyserver.com) as a reverse-proxy with the following CaddyFile which protects domain **app.example.com** using VoidAuth hosted on **auth.example.com**
 ``` Caddy
 # Serve VoidAuth
 auth.example.com {
@@ -94,7 +99,7 @@ app.example.com {
 
 ### NGINX Snippets
 
-In order to use NGINX or NGINX Proxy Manager, you will need to make a `snippets/` directory available to their configuration. In all examples, this will be mounted/available at `/config/nginx/snippets/`.
+In order to use NGINX or NGINX Proxy Manager, you should make a `snippets/` directory available to their configuration. In all examples, this will be mounted/available at `/config/nginx/snippets/`.
 
 `proxy.conf`
 ``` conf
@@ -151,6 +156,8 @@ error_page 407 =302 $redirection_url;
 ```
 
 ### NGINX
+
+NGINX does **not** handle the security or setting of X-Forwarded-* headers automatically. In the example below this is handled by placing the `proxy.conf` snippet in the VoidAuth configuration block.
 
 NGINX is configured with a `nginx.conf` file mounted at `/etc/nginx/nginx.conf`. In this example, we will also be mounting config snippets at `/config/nginx/snippets/` that will be used in the configuration.
 
