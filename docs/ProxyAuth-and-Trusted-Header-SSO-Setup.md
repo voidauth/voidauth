@@ -1,58 +1,9 @@
 # Proxies and ProxyAuth
 
-ProxyAuth Domains are protected through a collaboration between your reverse-proxy and VoidAuth. When a user navigates to a protected domain, your reverse-proxy will check with VoidAuth to ensure the user is logged in and should have access. 
-
-You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains page.
-
-<p align=center>
-<img align=center src="/public/screenshots/proxy_auth_domain.png" width="300" />
-</p>
-
-## Identifying Users
-
-ProxyAuth can identify a user attempting a request to a protected domain using the three following methods, tried in order.
-
-1. Check for a valid user Session cookie in `x-voidauth-session`. This is the common way that a user is identified when making the request through the browser.
-2. Check for `Proxy-Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 407 status code and the Proxy-Authenticate response Header set.
-3. Check for `Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 401 status code and the WWW-Authenticate response Header set.
-
-## Authorization
-
-> [!CAUTION]
-> If no group is assigned to a ProxyAuth Domain, then **any signed in user** will have access to that domain.
-
-When a user navigates to a protected domain their access will be checked against the first matching ProxyAuth Domain, from **most specific** to **least specific**. This is the same order that the ProxyAuth Domains are displayed by default on the Admin ProxyAuth Domain page. In the example below, a user with only the group **[users]** would **not** have access to `app.example.com/admin/user_accounts` but would have access to `app.example.com/home`. They would likewise not have access to `secret.example.com`, which would be matched by `*.example.com/*` and is only allowed to a user with the `admin` group.
-
-<p align=center>
-<img align=center src="/public/screenshots/3f0b0afc-5bcf-436c-8def-f45e68adb019.png" width="800" />
-</p>
-
-When creating ProxyAuth Domains, the trailing `/` and separators like `.` **ARE CHECKED**. Access to `*.example.com` does not give access to `example.com`, they must be added separately.
-
-> [!IMPORTANT]
-> You can set up a wildcard ProxyAuth Domain `*/*` which will cover any domain not matched by other entries in your ProxyAuth Domain settings.
-
-## Responses
-
-When a user is identified and confirmed to have access to the requested resource, a `200` Success response is sent.
-
-In all denied requests, a `Location` Header containing the location of the VoidAuth login or forbidden page is added to the response.
-
-* When a user is not identified, either a `401`, `407`, or `302` response code will be sent depending on the authorization endpoint and identification method used.
-* When a user is found but **denied** access, a redirect to the forbidden page which returns a `403` Forbidden response code will be sent.
-
-## Trusted Header SSO
-
-If a request is allowed, the following headers will be set on the response. This enables Trusted Header SSO on certain self-hosted applications:
-* `Remote-User` = `username`
-* `Remote-Email` = `email`
-* `Remote-Name` = `name`
-* `Remote-Groups` = `groups` in a comma separated list, ex. `users,admins,owners`
-
 ## Proxy Setup
 
 > [!CAUTION]
-> To determine client IP addresses for rate limiting and logging, VoidAuth relies on standard X-Forwarded-* HTTP headers passed by your reverse proxy (e.g., Caddy, NGINX, Traefik). By default, the TRUSTED_PROXIES environment variable is pre-configured to trust all private IP ranges. You should change TRUSTED_PROXIES from its default to a comma-separated list of the exact internal IP addresses or CIDRs of your upstream reverse proxy. It is also vital that you configure your reverse proxy to completely strip or overwrite incoming X-Forwarded-* headers from untrusted public clients before forwarding the request to VoidAuth. Never expose the application's listening port directly to the public internet, and when possible make your VoidAuth instance reachable only by your reverse proxy.
+> To determine real client IP addresses for rate limiting and logging, VoidAuth relies on standard X-Forwarded-* HTTP headers passed by your reverse proxy (e.g., Caddy, NGINX, Traefik). By default, TRUSTED_PROXIES is pre-configured to trust all private IP ranges, which works for most deployments. For additional security, you *may* restrict TRUSTED_PROXIES to the exact IP address or CIDR range of your upstream reverse proxy.. It is vital that you configure your reverse proxy to completely strip or overwrite incoming X-Forwarded-* headers from untrusted public clients before forwarding the request to VoidAuth. Never expose the application's listening port directly to the public internet, and when possible make your VoidAuth instance reachable only by your reverse proxy.
 
 This section will show how to set up example proxies securely, and assumes you are intending to use ProxyAuth for some services. Even if you do not intend to use ProxyAuth, the guides below will show how to securely route to a VoidAuth instance.
 
@@ -363,3 +314,53 @@ services:
 > [!NOTE]
 > The `traefik.http.middlewares.voidauth.forwardAuth.address` label on the VoidAuth service must use the *internal* forward-auth endpoint reachable by Traefik. When VoidAuth is hosted under a base path (for example `APP_URL=https://example.com/auth`), include that path in the address: `http://voidauth:3000/auth/api/authz/forward-auth`.
 
+## ProxyAuth
+
+ProxyAuth Domains are protected through a collaboration between your reverse-proxy and VoidAuth. When a user navigates to a protected domain, your reverse-proxy will check with VoidAuth to ensure the user is logged in and should have access. 
+
+You can set up ProxyAuth secured domains on the VoidAuth Admin ProxyAuth Domains page.
+
+<p align=center>
+<img align=center src="/public/screenshots/proxy_auth_domain.png" width="300" />
+</p>
+
+### Identifying Users
+
+ProxyAuth can identify a user attempting a request to a protected domain using the three following methods, tried in order.
+
+1. Check for a valid user Session cookie in `x-voidauth-session`. This is the common way that a user is identified when making the request through the browser.
+2. Check for `Proxy-Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 407 status code and the Proxy-Authenticate response Header set.
+3. Check for `Authorization` Header using Basic Auth, and if so identify the user by username and password in the Header. If the Header is set but the user is not found respond with a 401 status code and the WWW-Authenticate response Header set.
+
+### Authorization
+
+> [!CAUTION]
+> If no group is assigned to a ProxyAuth Domain, then **any signed in user** will have access to that domain.
+
+When a user navigates to a protected domain their access will be checked against the first matching ProxyAuth Domain, from **most specific** to **least specific**. This is the same order that the ProxyAuth Domains are displayed by default on the Admin ProxyAuth Domain page. In the example below, a user with only the group **[users]** would **not** have access to `app.example.com/admin/user_accounts` but would have access to `app.example.com/home`. They would likewise not have access to `secret.example.com`, which would be matched by `*.example.com/*` and is only allowed to a user with the `admin` group.
+
+<p align=center>
+<img align=center src="/public/screenshots/3f0b0afc-5bcf-436c-8def-f45e68adb019.png" width="800" />
+</p>
+
+When creating ProxyAuth Domains, the trailing `/` and separators like `.` **ARE CHECKED**. Access to `*.example.com` does not give access to `example.com`, they must be added separately.
+
+> [!IMPORTANT]
+> You can set up a wildcard ProxyAuth Domain `*/*` which will cover any domain not matched by other entries in your ProxyAuth Domain settings.
+
+### Responses
+
+When a user is identified and confirmed to have access to the requested resource, a `200` Success response is sent.
+
+In all denied requests, a `Location` Header containing the location of the VoidAuth login or forbidden page is added to the response.
+
+* When a user is not identified, either a `401`, `407`, or `302` response code will be sent depending on the authorization endpoint and identification method used.
+* When a user is found but **denied** access, a redirect to the forbidden page which returns a `403` Forbidden response code will be sent.
+
+### Trusted Header SSO
+
+If a request is allowed, the following headers will be set on the response. This enables Trusted Header SSO on certain self-hosted applications:
+* `Remote-User` = `username`
+* `Remote-Email` = `email`
+* `Remote-Name` = `name`
+* `Remote-Groups` = `groups` in a comma separated list, ex. `users,admins,owners`

@@ -111,7 +111,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
 
     case 'TRUSTED_PROXIES':
       // Can be a boolean or a string of comma-separated IPs/CIDRs/special values (loopback, linklocal, uniquelocal)
-      appConfig[key] = (booleanString(value) ?? value) || appConfig[key]
+      appConfig[key] = booleanString(value) ?? (value || null) ?? appConfig[key]
       break
 
     // booleans
@@ -500,7 +500,7 @@ if (calculatedSessionDomain) {
 }
 
 // check that TRUSTED_PROXIES is valid
-if (typeof appConfig.TRUSTED_PROXIES !== 'boolean') {
+if (typeof appConfig.TRUSTED_PROXIES === 'string') {
   // TRUSTED_PROXIES is a string, check that it is a comma-separated list of valid IPs/CIDRs/special values
   const trustedProxies = appConfig.TRUSTED_PROXIES.split(',').map(s => s.trim())
   const parsedProxies = zod.array(
@@ -514,6 +514,16 @@ if (typeof appConfig.TRUSTED_PROXIES !== 'boolean') {
     })
     exit(1)
   }
+} else if (appConfig.TRUSTED_PROXIES) {
+  logger({
+    level: 'info',
+    message: `TRUSTED_PROXIES is 'true', which may not be secure. Please set to the IP address or CIDR range of your proxy instead.`,
+  })
+} else {
+  logger({
+    level: 'info',
+    message: `TRUSTED_PROXIES is 'false'. Rate limiting will be applied per-proxy IP address, which may cause denial of service to valid requests.`,
+  })
 }
 
 // check DEFAULT_REDIRECT is valid if set
