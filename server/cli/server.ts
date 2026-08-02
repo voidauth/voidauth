@@ -19,6 +19,16 @@ import { logger, purgeAsyncLog } from '../util/logger'
 import { sensitiveRateLimit, standardRateLimit } from '../util/rateLimit'
 import { FORBIDDEN_PATHS, NOT_FOUND_PATHS } from '@shared/constants'
 import { startLDAPServer } from '../ldap/server'
+import * as proxyAddr from 'proxy-addr'
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      trusted: boolean | undefined // http headers trusted
+    }
+  }
+}
 
 const PROCESS_ROOT = path.dirname(process.argv[1] ?? '.')
 const FE_ROOT = path.join(PROCESS_ROOT, '../frontend/dist/browser')
@@ -32,9 +42,30 @@ export async function serve() {
 
   const app = express()
 
-  // MUST be hosted behind ssl terminating proxy
-  app.enable('trust proxy')
+  function proxyTrust(ip?: string) {
+    if (ip == null) {
+      return true
+    }
+
+    const val = appConfig.TRUSTED_PROXIES
+    if (typeof val === 'boolean') {
+      const b = val
+      return b
+    }
+
+    const trust = proxyAddr.compile(val.split(',').map(v => v.trim())) as (addr: string) => boolean
+    const trusted = trust(ip)
+    return trusted
+  }
+
+  app.set('trust proxy', proxyTrust)
   provider.proxy = true
+  // determine whether the request remote address was trusted, using same function as 'trust proxy'
+  app.use((req, _res, next) => {
+    // headers were trusted, use same trust fn as 'trust proxy'
+    req.trusted = proxyTrust(req.socket.remoteAddress)
+    next()
+  })
 
   app.use(helmet({
     crossOriginOpenerPolicy: false,
@@ -103,6 +134,8 @@ export async function serve() {
           method: req.method,
           // show only original path without query to avoid logging sensitive info
           path: req.baseUrl + req.path,
+          // http headers were trusted
+          trusted: !!req.trusted,
         },
       })
       res.on('finish', async () => {

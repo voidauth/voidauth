@@ -7,7 +7,6 @@ const rateWindowS = 10 * 60 // 10 minutes
 export const standardRateLimit = rateLimit({
   windowMs: rateWindowS * 1000,
   max: rateWindowS * 100, // max 100 requests per second
-  validate: { trustProxy: false },
   legacyHeaders: false,
 })
 
@@ -18,6 +17,5 @@ const sensitiveRateWindowS = 1 * 60 // 1 minute
 export const sensitiveRateLimit = rateLimit({
   windowMs: sensitiveRateWindowS * 1000,
   max: appConfig.API_RATELIMIT,
-  validate: { trustProxy: false },
   legacyHeaders: true,
 })

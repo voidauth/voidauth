@@ -11,6 +11,7 @@ export type LogShape = {
     ip?: string
     method: string
     path: string
+    trusted: boolean
   }
   response?: {
     statusCode: number
