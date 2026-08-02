@@ -31,7 +31,7 @@ Security Groups are used in ProxyAuth Domains for:
 * ProxyAuth Domain authorization
 * Trusted Header SSO, a users groups are added to the 'Remote-Groups' header
 
-For information on ProxyAuth setup visit the [ProxyAuth Setup Guide](ProxyAuth-and-Trusted-Header-SSO-Setup.md).
+For information on ProxyAuth setup visit the [Proxies and ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) page.
 
 ### OIDC
 Security Groups are used in OIDC Apps for:

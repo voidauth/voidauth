@@ -17,6 +17,7 @@ class Config {
   APP_TITLE = 'VoidAuth'
   APP_URL = ''
   APP_PORT: number | string = 3000
+  TRUSTED_PROXIES: string | boolean = 'loopback, linklocal, uniquelocal'
 
   SESSION_DOMAIN?: string
 
@@ -107,6 +108,11 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
 
     case 'DEFAULT_USER_EXPIRES_IN':
       appConfig[key] = stringDuration(value) ?? posInt(value) ?? appConfig[key]
+      break
+
+    case 'TRUSTED_PROXIES':
+      // Can be a boolean or a string of comma-separated IPs/CIDRs/special values (loopback, linklocal, uniquelocal)
+      appConfig[key] = booleanString(value) ?? (value || null) ?? appConfig[key]
       break
 
     // booleans
@@ -490,6 +496,33 @@ if (calculatedSessionDomain) {
     })
     exit(1)
   }
+}
+
+// check that TRUSTED_PROXIES is valid
+if (typeof appConfig.TRUSTED_PROXIES === 'string') {
+  // TRUSTED_PROXIES is a string, check that it is a comma-separated list of valid IPs/CIDRs/special values
+  const trustedProxies = appConfig.TRUSTED_PROXIES.split(',').map(s => s.trim())
+  const parsedProxies = zod.array(
+    zod.union([zod.ipv4(), zod.ipv6(), zod.cidrv4(), zod.cidrv6(), zod.enum(['loopback', 'linklocal', 'uniquelocal'])]),
+  ).safeParse(trustedProxies)
+
+  if (!parsedProxies.success) {
+    logger({
+      level: 'error',
+      message: `TRUSTED_PROXIES must be a boolean or a string of comma-separated IPs/CIDRs/special values (loopback, linklocal, uniquelocal).`,
+    })
+    exit(1)
+  }
+} else if (appConfig.TRUSTED_PROXIES) {
+  logger({
+    level: 'info',
+    message: `TRUSTED_PROXIES is 'true', which may not be secure. Please set to the IP address or CIDR range of your proxy instead.`,
+  })
+} else {
+  logger({
+    level: 'info',
+    message: `TRUSTED_PROXIES is 'false'. Rate limiting will be applied per-proxy IP address, which may cause denial of service to valid requests.`,
+  })
 }
 
 // check DEFAULT_REDIRECT is valid if set
