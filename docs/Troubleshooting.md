@@ -40,13 +40,13 @@ If you are redirected to the **Cannot Be Found** page while attempting to authen
 
 ### Not Redirected After Login
 
-If you are attempting to authenticate to a ProxyAuth Domain and are not redirected after successful VoidAuth login, it may be caused by incorrect `X-Forwarded-*` headers reaching VoidAuth from a reverse proxy. These headers tell VoidAuth where you are trying to authenticate and where you will be redirected, please view the [ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) page and make sure the reverse proxy is set up correctly.
+If you are attempting to authenticate to a ProxyAuth Domain and are not redirected after successful VoidAuth login, it may be caused by incorrect `X-Forwarded-*` headers reaching VoidAuth from a reverse proxy. These headers tell VoidAuth where you are trying to authenticate and where you will be redirected, please view the [Proxies and ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) page and make sure the reverse proxy is set up correctly.
 
 ### Logging
 
 #### IP Address Incorrect or Missing
 
-If the Request IP Address in logs is incorrect or invalid, it may be caused by a misconfiguration in your reverse proxy. Check documentation for your reverse proxy or proxy provider related to trusted IP addresses.
+If the Request IP Address in logs is incorrect or invalid, it may be caused by a misconfiguration in your reverse proxy. Check documentation for your reverse proxy or proxy provider related to trusted IP addresses. You can see some examples and setup guides on the [Proxies and ProxyAuth](ProxyAuth-and-Trusted-Header-SSO-Setup.md) page.
 
 ### OIDC Information List
 
