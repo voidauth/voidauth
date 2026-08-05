@@ -1,1 +1,594 @@
-{}
+{
+  "login": {
+    "password": {
+      "label": "Пароль"
+    },
+    "username": {
+      "label": "Имя пользователя или адрес почты"
+    },
+    "forgot-password": "Забыли пароль?",
+    "remember-me": "Запомнить меня",
+    "actions": {
+      "login": "Войти",
+      "sign-up": "Зарегистрироваться"
+    },
+    "title": "Войти"
+  },
+  "contact-us": {
+    "actions": {
+      "label": "Контакты"
+    }
+  },
+  "app": {
+    "loading": "Загрузка...",
+    "navigation": {
+      "profile": "Профиль",
+      "admin": {
+        "title": "Администратор",
+        "oidc-apps": "Приложения OIDC",
+        "proxyauth-domains": "Домены ProxyAuth",
+        "users": "Пользователи",
+        "groups": "Группы",
+        "invitations": "Приглашения",
+        "password-resets": "Сброс пароля",
+        "sent-mail": "Исходящие письма"
+      },
+      "logout": "Выйти"
+    }
+  },
+  "passkey-title": "Ключ безопасности",
+  "passkey-dialog": {
+    "title": "Включить {{platformName}}?",
+    "actions": {
+      "passkey": "Включить {{platformName}}"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "Использовать {{platformName}}",
+      "register-passkey": "Зарегистрировать ключ безопасности",
+      "back": "Назад"
+    },
+    "title": "Требуется мультифакторная аутентификация"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "Зарегистрироваться через {{platformName}}",
+      "sign-up": "Зарегистрироваться",
+      "login": "Войти"
+    },
+    "title": {
+      "accept-invitation": "Принять приглашение",
+      "sign-up": "Зарегистрироваться"
+    },
+    "username": {
+      "label": "Имя пользователя"
+    },
+    "email": {
+      "label": "Адрес почты"
+    },
+    "name": {
+      "label": "Имя"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "Включить {{platformName}}",
+      "reset-password": "Сбросить пароль"
+    },
+    "title": "Сбросить пароль"
+  },
+  "approval-required": {
+    "content": "Требуется одобрение вашего аккаунта модератором. Подождите или свяжитесь с администрацией.",
+    "title": "Требуется одобрение",
+    "actions": {
+      "login": "Войти",
+      "try-again": "Попробовать снова"
+    }
+  },
+  "forbidden": {
+    "title": "Доступ запрещён",
+    "content": "Доступ к этому ресурсу ограничен.",
+    "actions": {
+      "back": "Назад"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "Войти"
+    },
+    "info": {
+      "sign-into-question": "Вы хотите войти в <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "После входа, вы будете перенаправлены на <b>{{redirect}}</b>"
+    },
+    "title": "Согласен"
+  },
+  "forgot-password": {
+    "username": {
+      "label": "Имя пользователя или адрес почты"
+    },
+    "actions": {
+      "send": "Отправить",
+      "send-again": "Повторить отправку",
+      "create-again": "Создать заново",
+      "create": "Создать"
+    },
+    "title": "Забыли пароль"
+  },
+  "form-errors": {
+    "required": "Обязательно.",
+    "min": "Нужно хотя бы {{min}}.",
+    "max": "Не может быть больше {{max}}.",
+    "minLength": "Нужно хотя бы {{requiredLength}} символов.",
+    "maxLength": "Нужно не больше {{requiredLength}} символов.",
+    "email": "Недействительный почтовый адрес.",
+    "default": "Недействительное значение.",
+    "alpha-num-underscore-only": "Разрешены только символы A-Z,0-9,и _"
+  },
+  "logout": {
+    "title": "Выйти",
+    "info": {
+      "logout-question": "Вы точно хотите выйти?"
+    },
+    "actions": {
+      "yes": "Да",
+      "back": "Назад",
+      "no": "Нет"
+    }
+  },
+  "page-not-found": {
+    "title": "Этой страницы не существует",
+    "actions": {
+      "go-home": "Домой"
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "Подтверждение почты...",
+        "email-could-not-be-verified": "Почта не подтверждены",
+        "sending-new-verification": "Отправка письма для подтверждения...",
+        "email-verification-could-not-be-sent": "Отправка письма не удалась"
+      },
+      "actions": {
+        "send-again": "Повторить отправку"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "Письмо для подтверждения отправлено",
+        "email-verification-required": "Требуется подтверждение почты"
+      },
+      "actions": {
+        "logout": "Выйти",
+        "send-again": "Повторить отправку",
+        "send-verification": "Отправить письмо для подтверждения"
+      },
+      "email": {
+        "label": "Адрес почты"
+      }
+    }
+  },
+  "settings": {
+    "title": "Настройки",
+    "sections": {
+      "profile": {
+        "title": "Профиль",
+        "username": {
+          "label": "Имя пользователя"
+        },
+        "name": {
+          "label": "Имя"
+        },
+        "actions": {
+          "submit": {
+            "label": "Изменить имя"
+          }
+        },
+        "email": {
+          "label": "Адрес почты",
+          "actions": {
+            "submit": {
+              "label": "Изменить адрес почты"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "Безопасность",
+        "password": {
+          "set": {
+            "label": "Установить пароль"
+          },
+          "change": {
+            "label": "Изменить пароль"
+          }
+        },
+        "passkeys": {
+          "title": "Ключи безопасности",
+          "noPasskeys": "У вас нет установленных ключей безопасности.",
+          "register": {
+            "label": "Установить ключ безопасности."
+          },
+          "manage": {
+            "title": "Управление ключами безопасности."
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "Изменить"
+            },
+            "delete": {
+              "tooltip": "Удалить"
+            }
+          }
+        },
+        "mfa": {
+          "title": "Мультифакторная аутентификация",
+          "status": {
+            "enabled": "Мультифакторная аутентификация включена.",
+            "disabled": "Мультифакторная аутентификация не включена."
+          },
+          "authenticators": {
+            "has": "У вас есть хотя бы один зарегистрированный аутентификатор.",
+            "none": "У вас нет зарегистрированных аутентификаторов."
+          },
+          "add": {
+            "label": "Добавить аутентификатор"
+          },
+          "enable": {
+            "label": "Включить мультифакторную аутентификацию"
+          }
+        }
+      },
+      "account": {
+        "title": "Аккаунт",
+        "removePassword": {
+          "label": "Удалить пароль",
+          "tooltip": {
+            "noPassword": "У вас нет пароля для удаления",
+            "noPasskeys": "У вас нет установленных ключей безопасности"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "Удалить все ключи безопасности",
+          "tooltip": {
+            "noPasskeys": "У вас нет установленных ключей безопасности",
+            "noPassword": "Пароль не установлен"
+          }
+        },
+        "disableMfa": {
+          "label": "Отключить мультифакторную аутентификацию"
+        },
+        "removeAuthenticators": {
+          "label": "Удалить аутентификаторы"
+        },
+        "deleteAccount": {
+          "label": "Удалить аккаунт"
+        }
+      }
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "Изменить",
+        "delete": "Удалить",
+        "update": "Применить изменения",
+        "create": "Создать",
+        "view": "Просмотреть",
+        "open": "Открыть",
+        "remove": "Убрать"
+      },
+      "labels": {
+        "mfa-required": "Мультифакторная аутентификация обязательна",
+        "email-verified": "Подтвердить почтовый адрес",
+        "approved": "Одобрено модератором"
+      },
+      "messages": {
+        "all-users-have-access": "Доступ разрешён ВСЕМ пользователям из любых групп."
+      }
+    },
+    "users": {
+      "empty-state": "Нет пользователей.",
+      "actions": {
+        "select": "Выбрать",
+        "approve": "Одобрить"
+      },
+      "labels": {
+        "search": "Поиск"
+      }
+    },
+    "user": {
+      "title": "Изменить пользователя",
+      "labels": {
+        "username": "Имя пользователя",
+        "name": "Имя",
+        "email": "Адрес почты",
+        "add-group": "Добавить группу",
+        "security-groups": "Группы:",
+        "user-expiration-date": "Дата приостановки доступа",
+        "user-expiration-time": "Время приостановки доступа"
+      },
+      "actions": {
+        "sign-out": "Выйти"
+      },
+      "tooltips": {
+        "remove": "Убрать",
+        "open": "Открыть"
+      }
+    },
+    "clients": {
+      "empty-state": "Нет приложений OIDC.",
+      "actions": {
+        "create": "Создать приложение OIDC"
+      }
+    },
+    "client": {
+      "title": "Приложение OIDC",
+      "labels": {
+        "name": "Название",
+        "home-page-url": "Адрес заглавной страницы",
+        "logo-url": "Ссылка на изображение логотипа",
+        "add-group": "Добавить группу",
+        "client-id": "Client ID",
+        "auth-method": "Auth Method",
+        "client-secret": "Client Secret",
+        "redirect-url": "New Redirect URL",
+        "response-types": "Response Types",
+        "grant-types": "Grant Types",
+        "postlogout-url": "PostLogout URL",
+        "allowed-groups": "Allowed Groups:",
+        "redirect-urls": "Redirect URLs:"
+      },
+      "hints": {
+        "pkce-required": "PKCE обязателен для выбранного Auth Method.",
+        "not-required": "Не обязателен для выбранного Auth Method.",
+        "postlogout-redirect": "Доступные адреса перенаправления при выходе из системы по запросу пользователя."
+      },
+      "checkboxes": {
+        "skip-consent": "Скрыть запрос подтверждения",
+        "mfa-required": "Мультифакторная аутентификация обязательна"
+      },
+      "tooltips": {
+        "skip-consent": "Не показывать запрос подтверждения для этого приложения.",
+        "mfa-required": "Мультифакторная аутентификация обязательна.",
+        "copy-client-id": "Скопировать Client ID",
+        "copy-secret": "Скопировать Secret"
+      },
+      "messages": {
+        "client-id-copied": "Client ID скопирован в буфер обмена.",
+        "secret-copied": "Secret скопирован в буфер обмена."
+      }
+    },
+    "domains": {
+      "empty-state": "Нет доменов.",
+      "actions": {
+        "create": "Создать домен ProxyAuth"
+      }
+    },
+    "domain": {
+      "title": "Домен ProxyAuth",
+      "labels": {
+        "domain": "Домен",
+        "max-session-length": "Максимальная длительность сессии (в минутах)",
+        "add-group": "Добавить группу",
+        "allowed-groups": "Разрешённые группы:"
+      },
+      "placeholders": {
+        "domain": "ex. *.your.domain.com/path/"
+      },
+      "sections": {
+        "domain-help": "Справка"
+      },
+      "hints": {
+        "no-re-auth": "Пустое поле означает, что повторный вход не требуется."
+      },
+      "help-text": {
+        "0": "Имя домена не должно включать протокол, может включать путь и порт, а также поддерживает подстановку (*) в любом месте.",
+        "1": "<b>example.domain.com/api/alive</b> ограничивает только доступ по конкретному пути.",
+        "2": "<b>example.domain.com/api/*</b> ограничивает доступ ко всем путям, начинающимся с /api."
+      }
+    },
+    "password-resets": {
+      "empty-state": "Нет активных сбросов пароля.",
+      "labels": {
+        "create-link": "Создать ссылку сброса пароля"
+      },
+      "tooltips": {
+        "send-email": "Отправить письмо на {{email}}",
+        "copy-link": "Скопировать ссылку",
+        "delete": "Удалить"
+      },
+      "messages": {
+        "link-copied": "Ссылка сброса пароля скопирована в буфер обмена."
+      }
+    },
+    "emails": {
+      "empty-state": "Нет исходящих писем.",
+      "actions": {
+        "send-test": "Отправить тестовое письмо"
+      },
+      "tooltips": {
+        "preview": "Предпросмотр",
+        "view-user": "Показать пользователя"
+      }
+    },
+    "groups": {
+      "empty-state": "Нет групп.",
+      "actions": {
+        "create": "Создать группу"
+      }
+    },
+    "group": {
+      "title": "Группа",
+      "labels": {
+        "name": "Имя группы",
+        "add-user": "Добавить пользователя",
+        "users": "Пользователи:"
+      },
+      "checkboxes": {
+        "mfa-required": "Мультифакторная аутентификация обязательна",
+        "auto-assign": "Автоназначение"
+      }
+    },
+    "invitations": {
+      "empty-state": "Нет приглашений.",
+      "actions": {
+        "create": "Создать приглашение"
+      }
+    },
+    "invitation": {
+      "title": "Приглашение",
+      "labels": {
+        "invite-link": "Ссылка-приглашение",
+        "username": "Имя пользователя",
+        "email": "Адрес почты",
+        "name": "Имя",
+        "add-group": "Добавить группу",
+        "security-groups": "Группы:",
+        "user-expiration-date": "Дата истечения приглашения",
+        "user-expiration-time": "Время истечения приглашения"
+      },
+      "tooltips": {
+        "copy-invite-link": "Скопировать ссылку-приглашение",
+        "unsaved-changes": "Есть несохранённые изменения.",
+        "send-to": "Отправить приглашение на {{email}}"
+      },
+      "messages": {
+        "link-copied": "Ссылка-приглашение скопирована в буфер обмена.",
+        "email-not-verified": "Не удалось отправить письмо-приглашение, почтовый сервис не активирован.",
+        "no-email": "Не удалось отправить письмо-приглашение, адресат не указан."
+      },
+      "actions": {
+        "send": "Отправить приглашение"
+      },
+      "checkboxes": {
+        "email-verified": "Почта подтверждена"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "Войти"
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": "{{label}} скопирован в буфер обмена."
+      }
+    },
+    "oidc-info": {
+      "title": "Справка по OIDC",
+      "labels": {
+        "issuer": "OIDC Issuer Endpoint",
+        "well-known": "Well-Known Endpoint",
+        "authorization": "Authorization Endpoint",
+        "token": "Token Endpoint",
+        "userinfo": "UserInfo Endpoint",
+        "logout": "Logout Endpoint",
+        "jwks": "JWKs Endpoint"
+      },
+      "actions": {
+        "all-info": "All Info"
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "Новый пароль",
+        "old-password": "Старый пароль",
+        "confirm-password": "Повторите новый пароль"
+      }
+    },
+    "totp-input": {
+      "title": "Это включит мультифакторную аутентификацию на вашем аккаунте.",
+      "labels": {
+        "secret": "Секретный код:"
+      },
+      "text": {
+        "qrcode-instruction": "Отсканируйте QR-код или введите секретный код в приложении-аутентификаторе",
+        "then": "затем",
+        "enter-token": "Введите токен из приложения-аутентификатора"
+      },
+      "tooltips": {
+        "copy-secret": "Скопировать секретный код."
+      },
+      "messages": {
+        "copied-secret": "Секретный код скопирован в буфер обмена."
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "Системная",
+        "light": "Тёмная",
+        "dark": "Светлая"
+      }
+    },
+    "email-input": {
+      "message": {
+        "default": "Введите почтовый адрес."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Отмена"
+        },
+        "confirm": {
+          "label": "Подтвердить"
+        }
+      }
+    },
+    "totp-register": {
+      "title": "Добавить аутентификатор",
+      "actions": {
+        "cancel": {
+          "label": "Отмена"
+        }
+      }
+    },
+    "passkey-edit": {
+      "title": "Добавить имя ключа безопасности",
+      "message": {
+        "default": "Введите имя для ключа безопасности."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Отмена"
+        },
+        "save": {
+          "label": "Сохранить"
+        }
+      }
+    },
+    "confirm": {
+      "instructions": "Для подтверждения, введите <b>{{requiredText}}</b> ниже.",
+      "actions": {
+        "cancel": {
+          "label": "Отмена"
+        },
+        "confirm": {
+          "label": "Подтвердить"
+        }
+      }
+    }
+  },
+  "user-expired": {
+    "title": "Доступ истёк",
+    "content": "Доступ к вашему аккаунту истёк, обратитесь к администратору для продления.",
+    "actions": {
+      "login": "Войти",
+      "try-again": "Попробовать снова"
+    }
+  },
+  "passkey-name": {
+    "title": "Имя ключа безопасности",
+    "prompt": "Задать имя новому ключу безопасности?",
+    "actions": {
+      "skip": {
+        "label": "Пропустить"
+      },
+      "save": {
+        "label": "Сохранить"
+      }
+    }
+  }
+}
