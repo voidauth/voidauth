@@ -23,10 +23,34 @@ export async function up(knex: Knex): Promise<void> {
       table.timestamp('updatedAt', { useTz: true }).notNullable()
       table.unique(['userId', 'claimId'])
     })
+
+  await knex.schema
+    .createTable('group_custom_claim', (table) => {
+      table.uuid('id').primary().notNullable()
+      table.uuid('groupId').notNullable().references('id').inTable('group').onDelete('CASCADE')
+      table.uuid('claimId').notNullable().references('id').inTable('custom_claim').onDelete('CASCADE')
+      table.string('value').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('updatedAt', { useTz: true }).notNullable()
+      table.unique(['groupId', 'claimId'])
+    })
+
+  await knex.schema
+    .createTable('invitation_custom_claim', (table) => {
+      table.uuid('id').primary().notNullable()
+      table.uuid('invitationId').notNullable().references('id').inTable('invitation').onDelete('CASCADE')
+      table.uuid('claimId').notNullable().references('id').inTable('custom_claim').onDelete('CASCADE')
+      table.string('value').notNullable()
+      table.timestamp('createdAt', { useTz: true }).notNullable()
+      table.timestamp('updatedAt', { useTz: true }).notNullable()
+      table.unique(['invitationId', 'claimId'])
+    })
 }
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema
+    .dropTable('invitation_custom_claim')
+    .dropTable('group_custom_claim')
     .dropTable('user_custom_claim')
     .dropTable('custom_claim')
 }

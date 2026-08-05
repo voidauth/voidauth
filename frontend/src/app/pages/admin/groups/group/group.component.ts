@@ -10,13 +10,14 @@ import type { TypedControls } from '../../clients/upsert-client/upsert-client.co
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
-import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
+import type { GroupDetails } from '@shared/api-response/admin/GroupUsers'
 import { ADMIN_GROUP } from '@shared/constants'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { TranslatePipe } from '@ngx-translate/core'
-import type { Nullable } from '@shared/utils'
+import { stringCompare, type ItemIn, type Nullable } from '@shared/utils'
+import { CustomClaimDialogComponent } from '../../../../dialogs/custom-claim-dialog/custom-claim-dialog.component'
 
 @Component({
   selector: 'app-group',
@@ -38,10 +39,13 @@ export class GroupComponent {
   public form = new FormGroup({
     // only alphanumeric, underscore, and hyphen
     name: new FormControl<string | null>(null, [Validators.required, Validators.pattern('^[A-Za-z0-9_-]+$')]),
-    users: new FormControl<GroupUsers['users']>([], { nonNullable: true }),
+    users: new FormControl<GroupDetails['users']>([], { nonNullable: true }),
     mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
     autoAssign: new FormControl<boolean>(false, { nonNullable: true }),
+    customClaims: new FormControl<GroupUpsert['customClaims']>([], { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<GroupUpsert, 'id' | 'name'> & Nullable<Pick<GroupUpsert, 'name'>>>>
+
+  public customClaimColumns = ['claim', 'value', 'actions']
 
   private adminService = inject(AdminService)
   private route = inject(ActivatedRoute)
@@ -63,9 +67,8 @@ export class GroupComponent {
             name: group.name,
             mfaRequired: !!group.mfaRequired,
             autoAssign: !!group.autoAssign,
-            users: group.users.map((u) => {
-              return { id: u.id, username: u.username }
-            }),
+            users: group.users,
+            customClaims: group.customClaims,
           })
         }
 
@@ -125,6 +128,60 @@ export class GroupComponent {
     this.form.controls.users.setValue(this.form.controls.users.value.filter(u => u.id !== value))
     this.form.controls.users.markAsDirty()
     this.userAutoFilter()
+  }
+
+  addCustomClaim() {
+    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+      data: {
+        header: 'Add Custom Claim',
+        existingClaims: this.form.controls.customClaims.value,
+      },
+      disableClose: true,
+    })
+
+    dialogRef.afterClosed().subscribe((result: ItemIn<GroupUpsert['customClaims']> | null) => {
+      if (!result) {
+        return
+      }
+
+      this.form.controls.customClaims.setValue([
+        ...this.form.controls.customClaims.value,
+        result,
+      ].sort((a, b) => {
+        return stringCompare(a.claim, b.claim)
+      }))
+      this.form.controls.customClaims.markAsDirty()
+    })
+  }
+
+  editCustomClaim(claimToEdit: ItemIn<GroupUpsert['customClaims']>) {
+    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+      data: {
+        header: 'Edit Custom Claim',
+        existingClaims: this.form.controls.customClaims.value,
+        editClaim: claimToEdit,
+      },
+      disableClose: true,
+    })
+
+    dialogRef.afterClosed().subscribe((result: ItemIn<GroupUpsert['customClaims']> | null) => {
+      if (!result) {
+        return
+      }
+
+      this.form.controls.customClaims.setValue(
+        this.form.controls.customClaims.value.map((claim) => {
+          return claim === claimToEdit ? result : claim
+        }),
+      )
+      this.form.controls.customClaims.markAsDirty()
+    })
+  }
+
+  removeCustomClaim(removed: ItemIn<GroupUpsert['customClaims']>) {
+    const updated = this.form.controls.customClaims.value.filter(c => c !== removed)
+    this.form.controls.customClaims.setValue(updated)
+    this.form.controls.customClaims.markAsDirty()
   }
 
   async submit() {

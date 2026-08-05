@@ -12,7 +12,14 @@ export type UserWithAdminIndicator = UserWithoutPassword & {
 }
 
 export type UserDetails = UserWithAdminIndicator & {
-  groups: Pick<Group, 'id' | 'name'>[]
+  groups: {
+    id: Group['id']
+    name: Group['name']
+    customClaims: {
+      claim: string
+      value: string
+    }[]
+  }[]
   customClaims: {
     claim: string
     value: string

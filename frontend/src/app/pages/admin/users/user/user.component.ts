@@ -9,7 +9,7 @@ import { SnackbarService } from '../../../../services/snackbar.service'
 import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { USERNAME_REGEX } from '@shared/constants'
-import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../../../services/user.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
@@ -30,9 +30,9 @@ export class UserComponent implements OnInit {
   public me?: CurrentUserDetails
   public id: string | null = null
 
-  public availableGroups: ItemIn<UserDetails['groups']>[] = []
-  public unselectedGroups: ItemIn<UserDetails['groups']>[] = []
-  public selectableGroups: ItemIn<UserDetails['groups']>[] = []
+  public availableGroups: ItemIn<UserUpdate['groups']>[] = []
+  public unselectedGroups: ItemIn<UserUpdate['groups']>[] = []
+  public selectableGroups: ItemIn<UserUpdate['groups']>[] = []
   groupSelect = new FormControl<string>(
     {
       value: '',
@@ -51,7 +51,7 @@ export class UserComponent implements OnInit {
     emailVerified: new FormControl<boolean>(false, { nonNullable: true }),
     approved: new FormControl<boolean>(false, { nonNullable: true }),
     mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
-    groups: new FormControl<UserDetails['groups']>([], { nonNullable: true }),
+    groups: new FormControl<UserUpdate['groups']>([], { nonNullable: true }),
     customClaims: new FormControl<UserUpdate['customClaims']>([], { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<UserUpdate, 'id' | 'username'> & Nullable<Pick<UserUpdate, 'username'>>>>
 
@@ -122,7 +122,7 @@ export class UserComponent implements OnInit {
     }
   }
 
-  addGroup(value: ItemIn<UserDetails['groups']>) {
+  addGroup(value: ItemIn<UserUpdate['groups']>) {
     this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort((a, b) => stringCompare(a.name, b.name)))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)

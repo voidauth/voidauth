@@ -17,6 +17,7 @@ import { humanDuration } from '@shared/utils'
 import { TABLES } from '@shared/db'
 import { getUserCustomClaims } from './claims'
 import { getCurrentProviderConfig } from '../oidc/configuration'
+import type { CustomClaim, GroupCustomClaim } from '@shared/db/CustomClaim'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -98,18 +99,34 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.groupId', 'group.id').where({ userId: user.id })
     .orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc'))
 
-  const customClaims = await getUserCustomClaims(user.id)
-
   const hasMfaGroup = groups.some(g => g.mfaRequired)
+  const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
+
+  const groupsWithClaims = (await db().select(
+    db().ref('id').withSchema(TABLES.GROUP),
+    db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM),
+    db().ref('value').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
+  )
+    .table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM)
+    .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, 'group_custom_claim.claimId', 'custom_claim.id')
+    .whereIn('groupId', groups.map(g => g.id)))
+    .reduce((acc, gc) => {
+      const group = acc.find(g => g.id === gc.id)
+      if (group) {
+        group.customClaims.push({ claim: gc.claim, value: gc.value })
+      }
+      return acc
+    }, groups.map(g => ({ id: g.id, name: g.name })).map(g => ({ ...g, customClaims: [] as { claim: string, value: string }[] })))
+
+  const customClaims = await getUserCustomClaims(user.id)
 
   const hasTotp = await hasTOTP(id)
   const hasPasskeys = !!(await getUserPasskeys(user.id)).length
-  const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
   const { passwordHash, ...userWithoutPassword } = user
   return {
     ...userWithoutPassword,
-    groups: groups.map(g => ({ id: g.id, name: g.name })),
+    groups: groupsWithClaims,
     customClaims,
     hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
 }
@@ -171,7 +188,9 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
         // Do custom claims
         // Only use custom claims that are in the provider config, prevents errors
         const claims = user.customClaims.filter(c => (getCurrentProviderConfig()?.claims?.['openid'] ?? []).includes(c.claim))
-        for (const c of claims) {
+        const groupClaims = user.groups.flatMap(g =>
+          g.customClaims.filter(c => (getCurrentProviderConfig()?.claims?.['openid'] ?? []).includes(c.claim)))
+        for (const c of groupClaims.concat(claims)) {
           try {
             accountClaims[c.claim] = JSON.parse(c.value)
           } catch (_e) {

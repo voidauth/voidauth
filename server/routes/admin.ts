@@ -17,7 +17,7 @@ import { getInvitation, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import { invitationUpsertValidator } from '@shared/api-request/admin/InvitationUpsert'
 import { sendApproved, sendInvitation, sendPasswordReset, sendTestNotification, SMTP_VERIFIED } from '../util/email'
-import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
+import type { GroupDetails } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
 import { urlFromWildcardHref } from '@shared/url'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
@@ -39,7 +39,7 @@ import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
-import type { CustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
+import type { CustomClaim, GroupCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
 import { getCustomClaimsRecords } from '../db/claims'
 import type { ClientMetadata } from 'oidc-provider'
 
@@ -674,15 +674,19 @@ adminRouter.get('/group/:id',
       return
     }
 
-    const groupWithUsers: GroupUsers = {
+    const groupWithMeta: GroupDetails = {
       ...group,
       users: await db().select('id', 'username')
         .table<User>(TABLES.USER)
         .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.userId', 'user.id')
         .where({ groupId: group.id }).orderBy(db().ref('username').withSchema(TABLES.USER), 'asc'),
+      customClaims: await db().select()
+        .table<CustomClaim>(TABLES.CUSTOM_CLAIM)
+        .innerJoin<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM, 'group_custom_claim.claimId', 'custom_claim.id')
+        .where({ groupId: group.id }).orderBy(db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM), 'asc'),
     }
 
-    res.send(groupWithUsers satisfies GroupUsers)
+    res.send(groupWithMeta satisfies GroupDetails)
   })
 
 adminRouter.post('/group',

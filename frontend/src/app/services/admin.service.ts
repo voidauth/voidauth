@@ -10,7 +10,7 @@ import { type InvitationDetails } from '@shared/api-response/InvitationDetails'
 import type { Group } from '@shared/db/Group'
 import type { Invitation } from '@shared/db/Invitation'
 import { REDIRECT_PATHS } from '@shared/constants'
-import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
+import type { GroupDetails } from '@shared/api-response/admin/GroupUsers'
 import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
@@ -99,7 +99,7 @@ export class AdminService {
   }
 
   async group(id: string) {
-    return firstValueFrom(this.http.get<GroupUsers>(`/api/admin/group/${id}`))
+    return firstValueFrom(this.http.get<GroupDetails>(`/api/admin/group/${id}`))
   }
 
   async upsertGroup(group: GroupUpsert) {

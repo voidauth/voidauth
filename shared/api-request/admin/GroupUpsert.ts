@@ -1,3 +1,4 @@
+import { CUSTOM_CLAIM_CLAIM_REGEX } from '@shared/constants'
 import type { SchemaInfer } from '@shared/utils'
 import zod from 'zod'
 
@@ -9,6 +10,10 @@ export const groupUpsertValidator = {
   users: zod.array(zod.object({
     id: zod.uuidv4(),
     username: zod.string().trim(),
+  })),
+  customClaims: zod.array(zod.object({
+    claim: zod.string().trim().regex(CUSTOM_CLAIM_CLAIM_REGEX),
+    value: zod.string().trim().min(1),
   })),
 } as const
 
