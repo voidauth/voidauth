@@ -697,7 +697,7 @@ adminRouter.post('/group',
       return
     }
 
-    const { id, name, mfaRequired, autoAssign, users } = req.body
+    const { id, name, mfaRequired, autoAssign, users, customClaims: groupCustomClaims } = req.body
 
     // Check for name conflict
     const conflictingGroup = await db().select()
@@ -706,6 +706,21 @@ adminRouter.post('/group',
       .first()
     if (conflictingGroup && conflictingGroup.id !== id) {
       res.sendStatus(409)
+      return
+    }
+
+    // Validate group custom claims
+    // check if any claims are protected
+    if (groupCustomClaims.some(c => PROTECTED_CLAIMS_SET.has(c.claim))) {
+      res.status(400).send({ message: 'A custom claim is reserved.' })
+      return
+    }
+
+    const uniqueCustomClaims = new Set(groupCustomClaims.map(c => c.claim))
+
+    // make sure no duplicate claims
+    if (uniqueCustomClaims.values().toArray().length !== groupCustomClaims.length) {
+      res.status(400).send({ message: 'Duplicate custom claims are not allowed.' })
       return
     }
 
@@ -758,6 +773,56 @@ adminRouter.post('/group',
     await db().table<UserGroup>(TABLES.USER_GROUP).delete()
       .where({ groupId: groupId }).and
       .whereNotIn('userId', userGroups.map(g => g.userId))
+
+    // Sync Group Custom Claims. This is similar to the user custom claims sync above, but for groups instead of users
+    if (!groupCustomClaims.length) {
+      // remove all group custom claims
+      await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).delete().where({ groupId: groupId })
+    } else {
+      // Make sure all the custom claims the group wants exist
+      let customClaims: CustomClaim[] = groupCustomClaims.map((c) => {
+        return {
+          id: randomUUID(),
+          claim: c.claim,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
+      if (customClaims[0]) {
+        customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
+          .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+      }
+
+      // Delete any group custom claims not present in new custom claims payload
+      await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).delete()
+        .where({ groupId: groupId }).and
+        .whereNotIn('claimId', customClaims.map(c => c.id))
+
+      // Upsert provided group custom claims into group custom claims table
+      const upsertGroupCustomClaims: GroupCustomClaim[] = groupCustomClaims.map((c) => {
+        const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
+        if (!matchingClaim) {
+          throw new Error('Matching claim for group custom claim could not be found!')
+        }
+        return {
+          id: randomUUID(),
+          groupId: groupId,
+          claimId: matchingClaim.id,
+          value: c.value,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
+      if (upsertGroupCustomClaims[0]) {
+        await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).insert(upsertGroupCustomClaims)
+          .onConflict(['claimId', 'groupId']).merge(mergeKeys(upsertGroupCustomClaims[0]))
+      }
+    }
+
+    // Check if all custom claims matches current provider claims, update if not
+    if (await isProviderClaimsDesynced()) {
+      await resetProvider()
+    }
 
     res.send({ id: groupId })
   })

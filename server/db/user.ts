@@ -103,7 +103,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
   const groupsWithClaims = (await db().select(
-    db().ref('id').withSchema(TABLES.GROUP),
+    db().ref('groupId').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
     db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM),
     db().ref('value').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
   )
@@ -111,7 +111,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, 'group_custom_claim.claimId', 'custom_claim.id')
     .whereIn('groupId', groups.map(g => g.id)))
     .reduce((acc, gc) => {
-      const group = acc.find(g => g.id === gc.id)
+      const group = acc.find(g => g.id === gc.groupId)
       if (group) {
         group.customClaims.push({ claim: gc.claim, value: gc.value })
       }
@@ -190,6 +190,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
         const claims = user.customClaims.filter(c => (getCurrentProviderConfig()?.claims?.['openid'] ?? []).includes(c.claim))
         const groupClaims = user.groups.flatMap(g =>
           g.customClaims.filter(c => (getCurrentProviderConfig()?.claims?.['openid'] ?? []).includes(c.claim)))
+        // Do group claims first so that they can be overridden by user claims if they exist
         for (const c of groupClaims.concat(claims)) {
           try {
             accountClaims[c.claim] = JSON.parse(c.value)
