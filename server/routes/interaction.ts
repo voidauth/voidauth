@@ -17,7 +17,7 @@ import { REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { type Interaction } from 'oidc-provider'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { createExpiration } from '../db/util'
-import { getInvitation } from '../db/invitations'
+import { getInvitationDetails } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
 import { getClient } from '../db/client'
@@ -57,6 +57,7 @@ import { passkeyRegistrationValidator } from '../../shared/validators'
 import { passwordStrength } from '../util/zxcvbn'
 import { checkPrivileged, checkPrivilegedForTotpCreate, checkPrivilegedForTotpValidate } from '../util/authMiddleware'
 import { TABLES } from '@shared/db'
+import type { InvitationCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
 
 export const router = Router()
 
@@ -349,7 +350,7 @@ router.post('/register',
       return
     }
 
-    const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
+    const invitation = registration.inviteId ? await getInvitationDetails(registration.inviteId) : null
     const invitationValid = invitation && invitation.challenge === registration.challenge
 
     if (!invitationValid && !appConfig.SIGNUP) {
@@ -391,10 +392,13 @@ router.post('/register',
     await db().table<User>(TABLES.USER).insert(user)
 
     const assignedGroupIds: Pick<Group, 'id' | 'createdBy' | 'updatedBy'>[] = []
-
+    const assignedCustomClaims: InvitationCustomClaim[] = []
     if (invitationValid) {
       const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP).where({ invitationId: invitation.id })
       assignedGroupIds.push(...inviteGroups.map(g => ({ id: g.groupId, createdBy: g.createdBy, updatedBy: g.updatedBy })))
+      const inviteCustomClaims = await db().select()
+        .table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).where({ invitationId: invitation.id })
+      assignedCustomClaims.push(...inviteCustomClaims)
     } else {
       // If no invitation, get the default groups for new users
       const defaultGroups = await db().select().table<Group>(TABLES.GROUP).where({ autoAssign: true })
@@ -414,6 +418,17 @@ router.post('/register',
       })
       await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
     }
+    if (assignedCustomClaims.length) {
+      const userCustomClaims: UserCustomClaim[] = assignedCustomClaims.map(c => ({
+        id: randomUUID(),
+        userId: user.id,
+        claimId: c.claimId,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }))
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(userCustomClaims)
+    }
 
     if (invitationValid) {
       await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
@@ -426,8 +441,8 @@ router.post('/register',
 
     // See where we need to redirect the user to, depending on config
     const redir = await loginResult(req, res, {
-      username: user.username,
       userId: user.id,
+      username: user.username,
       amr: ['pwd'],
     })
 
@@ -457,7 +472,7 @@ router.post('/register/passkey/start',
 
     // check open signup or valid invitation
     // Make sure that if invitation, it is valid
-    const invitation = invite.inviteId ? await getInvitation(invite.inviteId) : null
+    const invitation = invite.inviteId ? await getInvitationDetails(invite.inviteId) : null
     const invitationValid = invitation && invitation.challenge === invite.challenge
     if (!invitationValid && !appConfig.SIGNUP) {
       res.sendStatus(400)
@@ -490,14 +505,14 @@ router.post('/register/passkey/end',
 
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
+      const action = registration.inviteId ? 'Invite' : 'Registration'
       res.status(419).send({
-        message: `Page too old, refresh the page.`,
+        message: `${action} page too old, refresh the page.`,
       })
       return
     }
 
-    // Make sure that if invitation, it is valid
-    const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
+    const invitation = registration.inviteId ? await getInvitationDetails(registration.inviteId) : null
     const invitationValid = invitation && invitation.challenge === registration.challenge
 
     if (!invitationValid && !appConfig.SIGNUP) {
@@ -544,10 +559,13 @@ router.post('/register/passkey/end',
     await db().table<User>(TABLES.USER).insert(user)
 
     const assignedGroupIds: Pick<Group, 'id' | 'createdBy' | 'updatedBy'>[] = []
-
+    const assignedCustomClaims: InvitationCustomClaim[] = []
     if (invitationValid) {
       const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP).where({ invitationId: invitation.id })
       assignedGroupIds.push(...inviteGroups.map(g => ({ id: g.groupId, createdBy: g.createdBy, updatedBy: g.updatedBy })))
+      const inviteCustomClaims = await db().select()
+        .table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).where({ invitationId: invitation.id })
+      assignedCustomClaims.push(...inviteCustomClaims)
     } else {
       // If no invitation, get the default groups for new users
       const defaultGroups = await db().select().table<Group>(TABLES.GROUP).where({ autoAssign: true })
@@ -566,6 +584,17 @@ router.post('/register/passkey/end',
         }
       })
       await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
+    }
+    if (assignedCustomClaims.length) {
+      const userCustomClaims: UserCustomClaim[] = assignedCustomClaims.map(c => ({
+        id: randomUUID(),
+        userId: user.id,
+        claimId: c.claimId,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }))
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(userCustomClaims)
     }
 
     if (invitationValid) {

@@ -9,7 +9,6 @@ import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import { ConfigService } from '../../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { SpinnerService } from '../../../../services/spinner.service'
@@ -18,7 +17,9 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
-import { stringCompare } from '@shared/utils'
+import { stringCompare, type ItemIn } from '@shared/utils'
+import type { InvitationDetails } from '@shared/api-response/admin/InvitationDetails'
+import { CustomClaimDialogComponent } from '../../../../dialogs/custom-claim-dialog/custom-claim-dialog.component'
 
 @Component({
   selector: 'app-invitation',
@@ -54,6 +55,7 @@ export class InvitationComponent {
       userExpiresAt: new FormControl<Date | null>(null, []),
       emailVerified: new FormControl<boolean>({ value: true, disabled: true }, { nonNullable: true }),
       groups: new FormControl<string[]>([], { nonNullable: true }),
+      customClaims: new FormControl<InvitationUpsert['customClaims']>([], { nonNullable: true }),
     },
     [
       (c) => {
@@ -65,6 +67,8 @@ export class InvitationComponent {
       },
     ],
   ) satisfies FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
+
+  public customClaimColumns = ['claim', 'value', 'actions']
 
   private adminService = inject(AdminService)
   private configService = inject(ConfigService)
@@ -130,6 +134,7 @@ export class InvitationComponent {
       name: invitation.name ?? null,
       email: invitation.email ?? null,
       groups: invitation.groups,
+      customClaims: invitation.customClaims,
       emailVerified: !!invitation.emailVerified,
       userExpiresAt: invitation.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
     })
@@ -173,6 +178,60 @@ export class InvitationComponent {
     this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
+  }
+
+  addCustomClaim() {
+    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+      data: {
+        header: 'Add Custom Claim',
+        existingClaims: this.form.controls.customClaims.value,
+      },
+      disableClose: true,
+    })
+
+    dialogRef.afterClosed().subscribe((result: ItemIn<InvitationUpsert['customClaims']> | null) => {
+      if (!result) {
+        return
+      }
+
+      this.form.controls.customClaims.setValue([
+        ...this.form.controls.customClaims.value,
+        result,
+      ].sort((a, b) => {
+        return stringCompare(a.claim, b.claim)
+      }))
+      this.form.controls.customClaims.markAsDirty()
+    })
+  }
+
+  editCustomClaim(claimToEdit: ItemIn<InvitationUpsert['customClaims']>) {
+    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+      data: {
+        header: 'Edit Custom Claim',
+        existingClaims: this.form.controls.customClaims.value,
+        editClaim: claimToEdit,
+      },
+      disableClose: true,
+    })
+
+    dialogRef.afterClosed().subscribe((result: ItemIn<InvitationUpsert['customClaims']> | null) => {
+      if (!result) {
+        return
+      }
+
+      this.form.controls.customClaims.setValue(
+        this.form.controls.customClaims.value.map((claim) => {
+          return claim === claimToEdit ? result : claim
+        }),
+      )
+      this.form.controls.customClaims.markAsDirty()
+    })
+  }
+
+  removeCustomClaim(removed: ItemIn<InvitationUpsert['customClaims']>) {
+    const updated = this.form.controls.customClaims.value.filter(c => c !== removed)
+    this.form.controls.customClaims.setValue(updated)
+    this.form.controls.customClaims.markAsDirty()
   }
 
   setEmailVerifiedState() {

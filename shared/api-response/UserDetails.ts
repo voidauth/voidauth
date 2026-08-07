@@ -1,11 +1,11 @@
-import type { RemoveKeys } from '@shared/utils'
+import type { OptionalOrUndefined, RemoveKeys } from '@shared/utils'
 import type { Group } from '../db/Group.js'
 import type { User } from '../db/User.js'
 
 export type UserWithoutPassword = RemoveKeys<User, 'passwordHash'> & {
   hasPassword: boolean
   hasEmail: boolean
-}
+} & OptionalOrUndefined<Pick<User, 'passwordHash'>>
 
 export type UserWithAdminIndicator = UserWithoutPassword & {
   isAdmin: boolean
@@ -45,9 +45,6 @@ export type CurrentUserPrivateDetails = UserDetails & UserSessionInfo
 export type CurrentUserDetails = Pick<
   UserDetails,
   'id' | 'isAdmin' | 'hasTotp' | 'hasPasskeys' | 'hasEmail' | 'emailVerified' | 'expiresAt' | 'approved'>
-  & UserSessionInfo & {
-    // Guard, these fields should not be sent to an unprivileged frontend
-    username?: undefined
-    email?: undefined
-    customClaims?: undefined
-  }
+  & UserSessionInfo
+  // Guard, these fields should not be sent to an unprivileged frontend
+  & OptionalOrUndefined<Pick<UserDetails, 'username' | 'email' | 'customClaims' | 'groups'>>

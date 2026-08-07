@@ -8,6 +8,12 @@ export type RequireKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
 
 export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefined }
 
+// reconstructs a types keys as optional or undefined, scrubbing their original type
+export type OptionalOrUndefined<T> = {
+  [K in keyof T]?: undefined
+}
+
+// makes all properties of a type nullable
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 
 // Returns input type but all properties that are nullable are now optional and not nullable

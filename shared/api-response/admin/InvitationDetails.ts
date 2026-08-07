@@ -3,4 +3,8 @@ import type { Invitation } from '@shared/db/Invitation'
 
 export type InvitationDetails = Invitation & {
   groups: Group['name'][]
+  customClaims: {
+    claim: string
+    value: string
+  }[]
 }

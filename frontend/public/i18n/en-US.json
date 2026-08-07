@@ -429,11 +429,19 @@
       "labels": {
         "name": "Name",
         "add-user": "Add User",
-        "users": "Users:"
+        "users": "Users:",
+        "custom-claims": "Custom Claims",
+        "claim": "Claim",
+        "value": "Value",
+        "no-custom-claims": "No custom claims configured."
       },
       "checkboxes": {
         "mfa-required": "MFA Required",
         "auto-assign": "Auto Assign"
+      },
+      "tooltips": {
+        "edit": "Edit",
+        "remove": "Remove"
       }
     },
     "invitations": {
@@ -452,12 +460,18 @@
         "add-group": "Add Group",
         "security-groups": "Security Groups:",
         "user-expiration-date": "Access Expiration Date",
-        "user-expiration-time": "Access Expiration Time"
+        "user-expiration-time": "Access Expiration Time",
+        "custom-claims": "Custom Claims",
+        "claim": "Claim",
+        "value": "Value",
+        "no-custom-claims": "No custom claims configured."
       },
       "tooltips": {
         "copy-invite-link": "Copy Invite Link",
         "unsaved-changes": "You have unsaved changes.",
-        "send-to": "Send invite to: {{email}}"
+        "send-to": "Send invite to: {{email}}",
+        "edit": "Edit",
+        "remove": "Remove"
       },
       "messages": {
         "link-copied": "Invite link copied to clipboard.",

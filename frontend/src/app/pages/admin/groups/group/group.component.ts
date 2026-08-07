@@ -10,7 +10,7 @@ import type { TypedControls } from '../../clients/upsert-client/upsert-client.co
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
-import type { GroupDetails } from '@shared/api-response/admin/GroupUsers'
+import type { GroupDetails } from '@shared/api-response/admin/GroupDetails'
 import { ADMIN_GROUP } from '@shared/constants'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'

@@ -13,11 +13,11 @@ import { userUpdateValidator } from '@shared/api-request/admin/UserUpdate'
 import { endSessions, getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
 import type { UserWithAdminIndicator } from '@shared/api-response/UserDetails'
-import { getInvitation, getInvitations } from '../db/invitations'
+import { getInvitationDetails, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import { invitationUpsertValidator } from '@shared/api-request/admin/InvitationUpsert'
 import { sendApproved, sendInvitation, sendPasswordReset, sendTestNotification, SMTP_VERIFIED } from '../util/email'
-import type { GroupDetails } from '@shared/api-response/admin/GroupUsers'
+import type { GroupDetails } from '@shared/api-response/admin/GroupDetails'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
 import { urlFromWildcardHref } from '@shared/url'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
@@ -39,7 +39,7 @@ import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
-import type { CustomClaim, GroupCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
+import type { CustomClaim, GroupCustomClaim, InvitationCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
 import { getCustomClaimsRecords } from '../db/claims'
 import type { ClientMetadata } from 'oidc-provider'
 
@@ -857,7 +857,7 @@ adminRouter.get('/invitation/:id',
     params: { id: zod.uuidv4() },
   }), async (req, res) => {
     const { id } = req.params
-    const invitation = await getInvitation(id)
+    const invitation = await getInvitationDetails(id)
     if (!invitation) {
       res.sendStatus(404)
       return
@@ -874,7 +874,7 @@ adminRouter.post('/invitation',
     }
 
     const invitationUpsert = req.body
-    const { groups: groupNames, ...invitationData } = invitationUpsert
+    const { groups: groupNames, customClaims: invitationCustomClaims, ...invitationData } = invitationUpsert
 
     const id = invitationData.id ?? randomUUID()
 
@@ -920,7 +920,57 @@ adminRouter.post('/invitation',
       .where({ invitationId: id }).and
       .whereNotIn('groupId', invitationGroups.map(g => g.groupId))
 
-    const invitation = await getInvitation(id)
+    // Sync Invitation Custom Claims. This is similar to the user custom claims sync above, but for invitations instead of users
+    if (!invitationCustomClaims.length) {
+      // remove all invitation custom claims
+      await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).delete().where({ invitationId: id })
+    } else {
+      // Make sure all the custom claims the invitation wants exist
+      let customClaims: CustomClaim[] = invitationCustomClaims.map((c) => {
+        return {
+          id: randomUUID(),
+          claim: c.claim,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
+      if (customClaims[0]) {
+        customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
+          .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+      }
+
+      // Delete any invitation custom claims not present in new custom claims payload
+      await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).delete()
+        .where({ invitationId: id }).and
+        .whereNotIn('claimId', customClaims.map(c => c.id))
+
+      // Upsert provided invitation custom claims into invitation custom claims table
+      const upsertInvitationCustomClaims: InvitationCustomClaim[] = invitationCustomClaims.map((c) => {
+        const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
+        if (!matchingClaim) {
+          throw new Error('Matching claim for invitation custom claim could not be found!')
+        }
+        return {
+          id: randomUUID(),
+          invitationId: id,
+          claimId: matchingClaim.id,
+          value: c.value,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
+      if (upsertInvitationCustomClaims[0]) {
+        await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).insert(upsertInvitationCustomClaims)
+          .onConflict(['claimId', 'invitationId']).merge(mergeKeys(upsertInvitationCustomClaims[0]))
+      }
+    }
+
+    // Check if all custom claims matches current provider claims, update if not
+    if (await isProviderClaimsDesynced()) {
+      await resetProvider()
+    }
+
+    const invitation = await getInvitationDetails(id)
     res.send(invitation)
   })
 
@@ -949,7 +999,7 @@ adminRouter.post('/send_invitation/:id',
     },
   }), async (req, res) => {
     const { id } = req.params
-    const invitation = await getInvitation(id)
+    const invitation = await getInvitationDetails(id)
 
     if (!invitation) {
       res.sendStatus(404)
