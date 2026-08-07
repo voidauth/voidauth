@@ -6,12 +6,11 @@ export type ItemIn<T extends readonly unknown[] | unknown[]> = T[number]
 
 export type RequireKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
 
+// makes the specified keys optional or undefined, while keeping the rest of the type intact
 export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefined }
 
-// reconstructs a types keys as optional or undefined, scrubbing their original type
-export type OptionalOrUndefined<T> = {
-  [K in keyof T]?: undefined
-}
+// makes all keys of a type that are NOT specified optional or undefined
+export type OnlyKeys<T, K extends keyof T> = RemoveKeys<T, Exclude<keyof T, K>>
 
 // makes all properties of a type nullable
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
