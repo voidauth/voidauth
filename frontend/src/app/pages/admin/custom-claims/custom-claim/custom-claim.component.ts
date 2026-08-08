@@ -11,8 +11,7 @@ import { SnackbarService } from '../../../../services/snackbar.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { CUSTOM_CLAIM_CLAIM_REGEX } from '@shared/constants'
-import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
-import type { CustomClaimUpsert } from '@shared/api-request/admin/CustomClaimUpsert'
+import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
 
 @Component({
   selector: 'app-custom-claim',
@@ -29,7 +28,10 @@ export class CustomClaimComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.pattern(CUSTOM_CLAIM_CLAIM_REGEX)],
     }),
-  }) satisfies FormGroup<TypedControls<Omit<CustomClaimUpsert, 'id'>>>
+    users: new FormControl<CustomClaimDetails['users']>([], { nonNullable: true }),
+    groups: new FormControl<CustomClaimDetails['groups']>([], { nonNullable: true }),
+    invitations: new FormControl<CustomClaimDetails['invitations']>([], { nonNullable: true }),
+  })
 
   private adminService = inject(AdminService)
   private route = inject(ActivatedRoute)

@@ -21,6 +21,7 @@ import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { CustomClaim } from '@shared/db/CustomClaim'
 import type { CustomClaimUpsert } from '@shared/api-request/admin/CustomClaimUpsert'
+import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
 
 @Injectable({
   providedIn: 'root',
@@ -47,7 +48,7 @@ export class AdminService {
   }
 
   async customClaim(id: string) {
-    return firstValueFrom(this.http.get<CustomClaim>(`/api/admin/custom_claim/${encodeURIComponent(id)}`))
+    return firstValueFrom(this.http.get<CustomClaimDetails>(`/api/admin/custom_claim/${encodeURIComponent(id)}`))
   }
 
   async upsertCustomClaim(customClaim: CustomClaimUpsert) {

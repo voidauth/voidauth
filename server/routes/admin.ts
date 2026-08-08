@@ -40,8 +40,9 @@ import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
 import type { CustomClaim, GroupCustomClaim, InvitationCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
-import { getCustomClaimsRecords } from '../db/claims'
+import { getCustomClaimDetails, getCustomClaimsRecords } from '../db/claims'
 import type { ClientMetadata } from 'oidc-provider'
+import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
 
 export const adminRouter = Router()
 
@@ -183,13 +184,13 @@ adminRouter.get('/custom_claim/:id',
   }),
   async (req, res) => {
     const { id } = req.params
-    const customClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).first()
+    const customClaim = await getCustomClaimDetails(id)
     if (!customClaim) {
       res.sendStatus(404)
       return
     }
 
-    res.send(customClaim satisfies CustomClaim)
+    res.send(customClaim satisfies CustomClaimDetails)
   })
 
 adminRouter.post('/custom_claim',
@@ -680,7 +681,7 @@ adminRouter.get('/group/:id',
         .table<User>(TABLES.USER)
         .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.userId', 'user.id')
         .where({ groupId: group.id }).orderBy(db().ref('username').withSchema(TABLES.USER), 'asc'),
-      customClaims: await db().select()
+      customClaims: await db().select('claim', 'value')
         .table<CustomClaim>(TABLES.CUSTOM_CLAIM)
         .innerJoin<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM, 'group_custom_claim.claimId', 'custom_claim.id')
         .where({ groupId: group.id }).orderBy(db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM), 'asc'),
