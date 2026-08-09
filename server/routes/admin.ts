@@ -196,7 +196,7 @@ adminRouter.get('/custom_claim/:id',
 adminRouter.post('/custom_claim',
   zodValidate({ body: customClaimUpsertValidator }),
   async (req, res) => {
-    const { id, claim } = req.body
+    const { id, claim, users, groups, invitations } = req.body
 
     if (PROTECTED_CLAIMS_SET.has(claim)) {
       res.status(400).send({ message: 'A custom claim is reserved.' })
@@ -226,6 +226,58 @@ adminRouter.post('/custom_claim',
       })
     }
 
+    // Update related records for users, groups, and invitations
+    const userCustomClaims: UserCustomClaim[] = users.map((u) => {
+      return {
+        id: randomUUID(),
+        claimId,
+        userId: u.id,
+        value: u.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (userCustomClaims[0]) {
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(userCustomClaims)
+        .onConflict(['claimId', 'userId']).merge(mergeKeys(userCustomClaims[0]))
+    }
+    await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete()
+      .where({ claimId }).and.whereNotIn('userId', users.map(u => u.id))
+
+    const groupCustomClaims: GroupCustomClaim[] = groups.map((g) => {
+      return {
+        id: randomUUID(),
+        claimId,
+        groupId: g.id,
+        value: g.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (groupCustomClaims[0]) {
+      await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).insert(groupCustomClaims)
+        .onConflict(['claimId', 'groupId']).merge(mergeKeys(groupCustomClaims[0]))
+    }
+    await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).delete()
+      .where({ claimId }).and.whereNotIn('groupId', groups.map(g => g.id))
+
+    const invitationCustomClaims: InvitationCustomClaim[] = invitations.map((i) => {
+      return {
+        id: randomUUID(),
+        claimId,
+        invitationId: i.id,
+        value: i.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (invitationCustomClaims[0]) {
+      await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).insert(invitationCustomClaims)
+        .onConflict(['claimId', 'invitationId']).merge(mergeKeys(invitationCustomClaims[0]))
+    }
+    await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).delete()
+      .where({ claimId }).and.whereNotIn('invitationId', invitations.map(i => i.id))
+
     if (await isProviderClaimsDesynced()) {
       await resetProvider()
     }
@@ -250,7 +302,7 @@ adminRouter.delete('/custom_claim/:id',
 
 adminRouter.delete('/claim/:claimId',
   zodValidate({
-    params: { claimId: zod.uuid() },
+    params: { claimId: zod.uuidv4() },
   }),
   async (req, res) => {
     const { claimId } = req.params

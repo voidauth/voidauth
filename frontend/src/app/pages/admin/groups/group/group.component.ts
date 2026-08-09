@@ -11,13 +11,14 @@ import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
 import type { GroupDetails } from '@shared/api-response/admin/GroupDetails'
-import { ADMIN_GROUP } from '@shared/constants'
+import { ADMIN_GROUP, CUSTOM_CLAIM_REGEX, PROTECTED_CLAIMS } from '@shared/constants'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { TranslatePipe } from '@ngx-translate/core'
 import { stringCompare, type ItemIn, type Nullable } from '@shared/utils'
-import { CustomClaimDialogComponent } from '../../../../dialogs/custom-claim-dialog/custom-claim-dialog.component'
+import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValueResult }
+  from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
 
 @Component({
   selector: 'app-group',
@@ -130,23 +131,30 @@ export class GroupComponent {
     this.userAutoFilter()
   }
 
-  addCustomClaim() {
-    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+  async addCustomClaim() {
+    const availableCustomClaims = (await this.adminService.customClaims())
+      .filter(c => !this.form.controls.customClaims.value.some(cc => cc.claim === c.claim)).map(c => c.claim)
+
+    const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
         header: 'Add Custom Claim',
-        existingClaims: this.form.controls.customClaims.value,
-      },
+        availableOptions: availableCustomClaims,
+        allowNew: true,
+        newRegex: CUSTOM_CLAIM_REGEX,
+        newForbidden: [...PROTECTED_CLAIMS],
+        optionLabel: 'Custom Claim',
+      } satisfies OptionValueDialogData,
       disableClose: true,
     })
 
-    dialogRef.afterClosed().subscribe((result: ItemIn<GroupUpsert['customClaims']> | null) => {
+    dialogRef.afterClosed().subscribe((result: OptionValueResult) => {
       if (!result) {
         return
       }
 
       this.form.controls.customClaims.setValue([
         ...this.form.controls.customClaims.value,
-        result,
+        { claim: result.option, value: result.value },
       ].sort((a, b) => {
         return stringCompare(a.claim, b.claim)
       }))
@@ -154,24 +162,32 @@ export class GroupComponent {
     })
   }
 
-  editCustomClaim(claimToEdit: ItemIn<GroupUpsert['customClaims']>) {
-    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+  async editCustomClaim(claimToEdit: ItemIn<GroupUpsert['customClaims']>) {
+    const availableCustomClaims = (await this.adminService.customClaims())
+      .filter(c => !this.form.controls.customClaims.value.some(cc => cc.claim === c.claim)).map(c => c.claim)
+
+    const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
         header: 'Edit Custom Claim',
-        existingClaims: this.form.controls.customClaims.value,
-        editClaim: claimToEdit,
-      },
+        availableOptions: availableCustomClaims,
+        allowNew: true,
+        newRegex: CUSTOM_CLAIM_REGEX,
+        newForbidden: [...PROTECTED_CLAIMS],
+        optionLabel: 'Custom Claim',
+        currentOption: claimToEdit.claim,
+        currentValue: claimToEdit.value,
+      } satisfies OptionValueDialogData,
       disableClose: true,
     })
 
-    dialogRef.afterClosed().subscribe((result: ItemIn<GroupUpsert['customClaims']> | null) => {
+    dialogRef.afterClosed().subscribe((result: OptionValueResult) => {
       if (!result) {
         return
       }
 
       this.form.controls.customClaims.setValue(
         this.form.controls.customClaims.value.map((claim) => {
-          return claim === claimToEdit ? result : claim
+          return claim === claimToEdit ? { claim: result.option, value: result.value } : claim
         }),
       )
       this.form.controls.customClaims.markAsDirty()

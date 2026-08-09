@@ -601,25 +601,17 @@
         }
       }
     },
-    "custom-claim-dialog": {
-      "title": {
-        "edit": "Edit Custom Claim",
-        "create": "Add Custom Claim"
-      },
-      "labels": {
-        "claim": "Claim",
-        "value": "Value"
-      },
+    "option-value-dialog": {
       "actions": {
         "cancel": {
           "label": "Cancel"
         },
         "save": {
           "label": "Save"
-        },
-        "create": {
-          "label": "Add"
         }
+      },
+      "labels": {
+        "value": "Value"
       }
     }
   },

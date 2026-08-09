@@ -2,7 +2,7 @@ import { AsyncPipe, CommonModule } from '@angular/common'
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
-import { USERNAME_REGEX } from '@shared/constants'
+import { CUSTOM_CLAIM_REGEX, PROTECTED_CLAIMS, USERNAME_REGEX } from '@shared/constants'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { AdminService } from '../../../../services/admin.service'
@@ -19,7 +19,8 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import { stringCompare, type ItemIn } from '@shared/utils'
 import type { InvitationDetails } from '@shared/api-response/admin/InvitationDetails'
-import { CustomClaimDialogComponent } from '../../../../dialogs/custom-claim-dialog/custom-claim-dialog.component'
+import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValueResult }
+  from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
 
 @Component({
   selector: 'app-invitation',
@@ -180,23 +181,30 @@ export class InvitationComponent {
     this.groupAutoFilter()
   }
 
-  addCustomClaim() {
-    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+  async addCustomClaim() {
+    const availableCustomClaims = (await this.adminService.customClaims())
+      .filter(c => !this.form.controls.customClaims.value.some(cc => cc.claim === c.claim)).map(c => c.claim)
+
+    const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
         header: 'Add Custom Claim',
-        existingClaims: this.form.controls.customClaims.value,
-      },
+        availableOptions: availableCustomClaims,
+        allowNew: true,
+        newRegex: CUSTOM_CLAIM_REGEX,
+        newForbidden: [...PROTECTED_CLAIMS],
+        optionLabel: 'Custom Claim',
+      } satisfies OptionValueDialogData,
       disableClose: true,
     })
 
-    dialogRef.afterClosed().subscribe((result: ItemIn<InvitationUpsert['customClaims']> | null) => {
+    dialogRef.afterClosed().subscribe((result: OptionValueResult) => {
       if (!result) {
         return
       }
 
       this.form.controls.customClaims.setValue([
         ...this.form.controls.customClaims.value,
-        result,
+        { claim: result.option, value: result.value },
       ].sort((a, b) => {
         return stringCompare(a.claim, b.claim)
       }))
@@ -204,24 +212,32 @@ export class InvitationComponent {
     })
   }
 
-  editCustomClaim(claimToEdit: ItemIn<InvitationUpsert['customClaims']>) {
-    const dialogRef = this.dialog.open(CustomClaimDialogComponent, {
+  async editCustomClaim(claimToEdit: ItemIn<InvitationUpsert['customClaims']>) {
+    const availableCustomClaims = (await this.adminService.customClaims())
+      .filter(c => !this.form.controls.customClaims.value.some(cc => cc.claim === c.claim)).map(c => c.claim)
+
+    const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
         header: 'Edit Custom Claim',
-        existingClaims: this.form.controls.customClaims.value,
-        editClaim: claimToEdit,
-      },
+        availableOptions: availableCustomClaims,
+        allowNew: true,
+        newRegex: CUSTOM_CLAIM_REGEX,
+        newForbidden: [...PROTECTED_CLAIMS],
+        optionLabel: 'Custom Claim',
+        currentOption: claimToEdit.claim,
+        currentValue: claimToEdit.value,
+      } satisfies OptionValueDialogData,
       disableClose: true,
     })
 
-    dialogRef.afterClosed().subscribe((result: ItemIn<InvitationUpsert['customClaims']> | null) => {
+    dialogRef.afterClosed().subscribe((result: OptionValueResult) => {
       if (!result) {
         return
       }
 
       this.form.controls.customClaims.setValue(
         this.form.controls.customClaims.value.map((claim) => {
-          return claim === claimToEdit ? result : claim
+          return claim === claimToEdit ? { claim: result.option, value: result.value } : claim
         }),
       )
       this.form.controls.customClaims.markAsDirty()

@@ -1,0 +1,51 @@
+<h2 mat-dialog-title>
+  @if (data.header) {
+    {{ data.header }}
+  }
+</h2>
+<form [formGroup]="form">
+  <mat-dialog-content>
+    <mat-form-field style="width: 100%">
+      <mat-label>{{ data.optionLabel }}</mat-label>
+      <input
+        matInput
+        #input
+        type="text"
+        [placeholder]="data.allowNew ? '' : 'Pick one'"
+        formControlName="option"
+        [matAutocomplete]="optionAuto"
+        (input)="updateFilteredOptions(input.value)"
+        (focus)="updateFilteredOptions(input.value)"
+      />
+      <mat-autocomplete #optionAuto="matAutocomplete" [requireSelection]="!data.allowNew">
+        @for (option of filteredOptions; track option) {
+          <mat-option [value]="option">{{ option }}</mat-option>
+        }
+      </mat-autocomplete>
+      @if (option.errors) {
+        <mat-error>{{ option.errors | validationError | async }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field style="width: 100%">
+      <mat-label>{{ "components.option-value-dialog.labels.value" | translate }}</mat-label>
+      <textarea matInput type="text" formControlName="value"></textarea>
+      @if (value.errors) {
+        <mat-error>{{ value.errors | validationError | async }}</mat-error>
+      }
+    </mat-form-field>
+
+    @if (form.errors) {
+      <div style="color: var(--mat-sys-error)">
+        {{ form.errors | validationError: "Form is invalid." | async }}
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>{{ "components.option-value-dialog.actions.cancel.label" | translate }}</button>
+    <button mat-flat-button type="submit" [mat-dialog-close]="optionValue" [disabled]="form.invalid">
+      {{ "components.option-value-dialog.actions.save.label" | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

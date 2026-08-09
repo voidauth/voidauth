@@ -10,7 +10,7 @@ import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
-import { CUSTOM_CLAIM_CLAIM_REGEX } from '@shared/constants'
+import { CUSTOM_CLAIM_REGEX } from '@shared/constants'
 import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
 
 @Component({
@@ -26,7 +26,7 @@ export class CustomClaimComponent {
   public form = new FormGroup({
     claim: new FormControl<string>('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.pattern(CUSTOM_CLAIM_CLAIM_REGEX)],
+      validators: [Validators.required, Validators.pattern(CUSTOM_CLAIM_REGEX)],
     }),
     users: new FormControl<CustomClaimDetails['users']>([], { nonNullable: true }),
     groups: new FormControl<CustomClaimDetails['groups']>([], { nonNullable: true }),
