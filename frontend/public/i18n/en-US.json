@@ -494,7 +494,21 @@
     "claim": {
       "title": "Custom Claim",
       "labels": {
-        "name": "Name"
+        "name": "Name",
+        "user-claims": "Users",
+        "username": "Username",
+        "value": "Value",
+        "no-user-claims": "No User Claims",
+        "no-group-claims": "No Group Claims",
+        "group-name": "Group",
+        "group-claims": "Groups",
+        "invitation-claims": "Invitations",
+        "invitation": "Invite",
+        "no-invitation-claims": "No Invitation Claims"
+      },
+      "tooltips": {
+        "edit": "Edit",
+        "remove": "Remove"
       }
     }
   },

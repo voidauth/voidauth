@@ -84,7 +84,7 @@ export class OptionValueDialogComponent implements OnInit {
       options = options.filter(option => option.toLowerCase().includes(filterValue))
     }
 
-    this.filteredOptions = options.slice(0, 10)
+    this.filteredOptions = options.slice(0, 5)
   }
 
   private forbiddenOptionValidator(): ValidatorFn {
