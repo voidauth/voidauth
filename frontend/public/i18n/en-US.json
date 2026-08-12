@@ -312,7 +312,9 @@
         "custom-claims": "Custom Claims",
         "claim": "Claim",
         "value": "Value",
-        "no-custom-claims": "No custom claims configured."
+        "no-custom-claims": "No custom claims configured.",
+        "group": "Group",
+        "active": "Active"
       },
       "actions": {
         "sign-out": "Sign Out"

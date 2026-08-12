@@ -28,7 +28,7 @@
         <table mat-table [dataSource]="form.controls.users.value" style="width: 100%">
           <ng-container matColumnDef="username">
             <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.username" | translate }}</th>
-            <td mat-cell *matCellDef="let user" style="white-space: normal; word-break: break-word">{{ user.username }}</td>
+            <td mat-cell *matCellDef="let user" style="white-space: normal">{{ user.username }}</td>
           </ng-container>
 
           <ng-container matColumnDef="value">
@@ -81,7 +81,7 @@
         <table mat-table [dataSource]="form.controls.groups.value" style="width: 100%">
           <ng-container matColumnDef="group">
             <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.group-name" | translate }}</th>
-            <td mat-cell *matCellDef="let group" style="white-space: normal; word-break: break-word">{{ group.name }}</td>
+            <td mat-cell *matCellDef="let group" style="white-space: normal">{{ group.name }}</td>
           </ng-container>
 
           <ng-container matColumnDef="value">
@@ -139,7 +139,7 @@
         <table mat-table [dataSource]="form.controls.invitations.value" style="width: 100%">
           <ng-container matColumnDef="invitation">
             <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.invitation" | translate }}</th>
-            <td mat-cell *matCellDef="let invitation" style="white-space: normal; word-break: break-word">
+            <td mat-cell *matCellDef="let invitation" style="white-space: normal">
               {{ inviteDisplay(invitation) }}
             </td>
           </ng-container>

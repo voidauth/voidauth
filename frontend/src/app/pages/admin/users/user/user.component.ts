@@ -18,6 +18,7 @@ import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValu
 import { stringCompare, type Convert, type ItemIn } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe } from '@ngx-translate/core'
+import { calculateCustomClaims } from '@shared/user'
 
 @Component({
   selector: 'app-user',
@@ -40,8 +41,6 @@ export class UserComponent implements OnInit {
     },
     [],
   )
-
-  public customClaimColumns = ['claim', 'value', 'actions']
 
   public form = new FormGroup({
     username: new FormControl<string | null>(null, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
@@ -150,6 +149,23 @@ export class UserComponent implements OnInit {
     this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g.name !== value))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
+  }
+
+  // TODO: memoize this so it doesn't recalculate every time. Probably need signal forms first
+  groupClaimsList() {
+    const calcUserClaims = calculateCustomClaims({
+      customClaims: this.form.controls.customClaims.value,
+      groups: this.form.controls.groups.value,
+    })
+    type GroupClaimsInfo = { groupId: string, group: string, active: boolean, claim: string, value: string }
+    const gc = this.form.controls.groups.value.reduce<GroupClaimsInfo[]>((acc, g) => {
+      return acc.concat(
+        g.customClaims.flatMap(c => ({
+          groupId: g.id, group: g.name, active: calcUserClaims.some(cc => cc.claim === c.claim && cc.groupId === g.id), ...c,
+        })))
+    }, [])
+    // active claims first, then by claim name
+    return gc.sort((a, b) => a.active === b.active ? stringCompare(a.claim, b.claim) : a.active ? -1 : 1)
   }
 
   async addCustomClaim() {

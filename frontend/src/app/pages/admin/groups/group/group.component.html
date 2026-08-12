@@ -85,7 +85,7 @@
         <table mat-table [dataSource]="form.controls.customClaims.value" style="width: 100%">
           <ng-container matColumnDef="claim">
             <th mat-header-cell *matHeaderCellDef>{{ "admin.group.labels.claim" | translate }}</th>
-            <td mat-cell *matCellDef="let claim" style="white-space: normal; word-break: break-word">{{ claim.claim }}</td>
+            <td mat-cell *matCellDef="let claim" style="white-space: normal">{{ claim.claim }}</td>
           </ng-container>
 
           <ng-container matColumnDef="value">

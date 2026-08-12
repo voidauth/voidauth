@@ -16,8 +16,8 @@ import { createPasswordReset, getPasswordResetURL } from './passwordReset'
 import { humanDuration } from '@shared/utils'
 import { TABLES } from '@shared/db'
 import { getUserCustomClaims } from './claims'
-import { getCurrentProviderConfig } from '../oidc/configuration'
 import type { CustomClaim, GroupCustomClaim } from '@shared/db/CustomClaim'
+import { calculateCustomClaims } from '@shared/user'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -186,12 +186,8 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
 
       if (scopes.has('openid')) {
         // Do custom claims
-        // Only use custom claims that are in the provider config, prevents errors
-        const claims = user.customClaims.filter(c => (getCurrentProviderConfig()?.claims?.['openid'] ?? []).includes(c.claim))
-        const groupClaims = user.groups.flatMap(g =>
-          g.customClaims.filter(c => (getCurrentProviderConfig()?.claims?.['openid'] ?? []).includes(c.claim)))
-        // Do group claims first so that they can be overridden by user claims if they exist
-        for (const c of groupClaims.concat(claims)) {
+        const claims = calculateCustomClaims(user)
+        for (const c of claims) {
           try {
             accountClaims[c.claim] = JSON.parse(c.value)
           } catch (_e) {
