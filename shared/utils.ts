@@ -12,6 +12,10 @@ export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefin
 // makes all keys of a type that are NOT specified optional or undefined
 export type OnlyKeys<T, K extends keyof T> = RemoveKeys<T, Exclude<keyof T, K>>
 
+// Converts a type Source to a type Target, keeping only the keys that exist in both Source and Target, and merging with Target
+// Enables exact conversion between Source and Target types
+export type Convert<Source extends Target, Target> = OnlyKeys<Source, Extract<keyof Target, keyof Source>> & Target
+
 // makes all properties of a type nullable
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 

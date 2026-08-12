@@ -6,17 +6,16 @@ import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
 import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
-import type { TypedControls } from '../../clients/upsert-client/upsert-client.component'
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import { CUSTOM_CLAIM_REGEX, PROTECTED_CLAIMS, USERNAME_REGEX } from '@shared/constants'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, UserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../../../services/user.service'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValueResult }
   from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
-import { stringCompare, type ItemIn, type Nullable } from '@shared/utils'
+import { stringCompare, type Convert, type ItemIn } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe } from '@ngx-translate/core'
 
@@ -52,9 +51,9 @@ export class UserComponent implements OnInit {
     emailVerified: new FormControl<boolean>(false, { nonNullable: true }),
     approved: new FormControl<boolean>(false, { nonNullable: true }),
     mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
-    groups: new FormControl<UserUpdate['groups']>([], { nonNullable: true }),
+    groups: new FormControl<UserDetails['groups']>([], { nonNullable: true }),
     customClaims: new FormControl<UserUpdate['customClaims']>([], { nonNullable: true }),
-  }) satisfies FormGroup<TypedControls<Omit<UserUpdate, 'id' | 'username'> & Nullable<Pick<UserUpdate, 'username'>>>>
+  })
 
   private adminService = inject(AdminService)
   private userService = inject(UserService)
@@ -123,13 +122,28 @@ export class UserComponent implements OnInit {
     }
   }
 
-  addGroup(value: ItemIn<UserUpdate['groups']>) {
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort((a, b) => stringCompare(a.name, b.name)))
-    this.form.controls.groups.markAsDirty()
-    this.groupSelect.setValue(null)
-    this.groupSelect.markAsUntouched()
-    this.groupSelect.updateValueAndValidity()
-    this.groupAutoFilter()
+  async addGroup(value: ItemIn<UserUpdate['groups']>) {
+    // Get the group details first
+    try {
+      this.spinnerService.show()
+      const groupDetails = (await this.adminService.group(value.id))
+      const group = {
+        id: groupDetails.id,
+        name: groupDetails.name,
+        customClaims: groupDetails.customClaims,
+      } satisfies Convert<typeof groupDetails, ItemIn<typeof this.form.controls.groups.value>>
+      this.form.controls.groups.setValue([group].concat(this.form.controls.groups.value).sort((a, b) => stringCompare(a.name, b.name)))
+      this.form.controls.groups.markAsDirty()
+      this.groupSelect.setValue(null)
+      this.groupSelect.markAsUntouched()
+      this.groupSelect.updateValueAndValidity()
+      this.groupAutoFilter()
+    } catch (e) {
+      console.error(e)
+      this.snackbarService.error('Error adding group.')
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   removeGroup(value: string) {
