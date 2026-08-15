@@ -17,10 +17,11 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
-import { stringCompare, type ItemIn } from '@shared/utils'
+import { stringCompare, type Convert, type ItemIn } from '@shared/utils'
 import type { InvitationDetails } from '@shared/api-response/admin/InvitationDetails'
 import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValueResult }
   from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
+import { calculateCustomClaims } from '@shared/user'
 
 @Component({
   selector: 'app-invitation',
@@ -34,9 +35,9 @@ export class InvitationComponent {
   public config?: ConfigResponse
   public adminConfig?: AdminConfig
 
-  public availableGroups: string[] = []
-  public unselectedGroups: string[] = []
-  public selectableGroups: string[] = []
+  public availableGroups: ItemIn<InvitationUpsert['groups']>[] = []
+  public unselectedGroups: ItemIn<InvitationUpsert['groups']>[] = []
+  public selectableGroups: ItemIn<InvitationUpsert['groups']>[] = []
   groupSelect = new FormControl<string>(
     {
       value: '',
@@ -55,7 +56,7 @@ export class InvitationComponent {
       name: new FormControl<string | null>(null, [Validators.minLength(1)]),
       userExpiresAt: new FormControl<Date | null>(null, []),
       emailVerified: new FormControl<boolean>({ value: true, disabled: true }, { nonNullable: true }),
-      groups: new FormControl<string[]>([], { nonNullable: true }),
+      groups: new FormControl<InvitationDetails['groups']>([], { nonNullable: true }),
       customClaims: new FormControl<InvitationUpsert['customClaims']>([], { nonNullable: true }),
     },
     [
@@ -67,9 +68,7 @@ export class InvitationComponent {
         return null
       },
     ],
-  ) satisfies FormGroup<TypedControls<Omit<InvitationUpsert, 'id'>>>
-
-  public customClaimColumns = ['claim', 'value', 'actions']
+  )
 
   private adminService = inject(AdminService)
   private configService = inject(ConfigService)
@@ -89,7 +88,7 @@ export class InvitationComponent {
 
         this.config = await this.configService.getConfig()
         this.adminConfig = await this.adminService.config()
-        this.availableGroups = (await this.adminService.groups()).map(g => g.name)
+        this.availableGroups = (await this.adminService.groups())
 
         if (id) {
           // We are updating an invite
@@ -105,7 +104,7 @@ export class InvitationComponent {
           }
 
           if (this.adminConfig.defaultGroups.length) {
-            this.form.controls.groups.setValue(this.adminConfig.defaultGroups.sort(stringCompare))
+            this.form.controls.groups.setValue(this.adminConfig.defaultGroups)
             this.form.controls.groups.markAsDirty()
           }
         }
@@ -148,11 +147,11 @@ export class InvitationComponent {
 
   groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.availableGroups.filter((g) => {
-      return !this.form.controls.groups.value.includes(g)
+      return !this.form.controls.groups.value.some(f => f.name === g.name)
     })
     this.selectableGroups = this.unselectedGroups
       .filter((g) => {
-        return g.toLowerCase().includes(value.toLowerCase())
+        return g.name.toLowerCase().includes(value.toLowerCase())
       })
       .slice(0, 5)
     if (this.unselectedGroups.length) {
@@ -162,21 +161,32 @@ export class InvitationComponent {
     }
   }
 
-  addGroup(value: string) {
-    value = value.trim()
-    if (!value) {
-      return
+  async addGroup(value: ItemIn<InvitationDetails['groups']>) {
+    // Get the group details first
+    try {
+      this.spinnerService.show()
+      const groupDetails = (await this.adminService.group(value.id))
+      const group = {
+        id: groupDetails.id,
+        name: groupDetails.name,
+        customClaims: groupDetails.customClaims,
+      } satisfies Convert<typeof groupDetails, ItemIn<typeof this.form.controls.groups.value>>
+      this.form.controls.groups.setValue([group].concat(this.form.controls.groups.value).sort((a, b) => stringCompare(a.name, b.name)))
+      this.form.controls.groups.markAsDirty()
+      this.groupSelect.setValue(null)
+      this.groupSelect.markAsUntouched()
+      this.groupSelect.updateValueAndValidity()
+      this.groupAutoFilter()
+    } catch (e) {
+      console.error(e)
+      this.snackbarService.error('Error adding group.')
+    } finally {
+      this.spinnerService.hide()
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort(stringCompare))
-    this.form.controls.groups.markAsDirty()
-    this.groupSelect.setValue(null)
-    this.groupSelect.markAsUntouched()
-    this.groupSelect.updateValueAndValidity()
-    this.groupAutoFilter()
   }
 
-  removeGroup(value: string) {
-    this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g !== value))
+  removeGroup(name: string) {
+    this.form.controls.groups.setValue(this.form.controls.groups.value.filter(g => g.name !== name))
     this.form.controls.groups.markAsDirty()
     this.groupAutoFilter()
   }
@@ -248,6 +258,23 @@ export class InvitationComponent {
     const updated = this.form.controls.customClaims.value.filter(c => c !== removed)
     this.form.controls.customClaims.setValue(updated)
     this.form.controls.customClaims.markAsDirty()
+  }
+
+  // TODO: memoize this so it doesn't recalculate every time. Probably need signal forms first
+  groupClaimsList() {
+    const calcUserClaims = calculateCustomClaims({
+      customClaims: this.form.controls.customClaims.value,
+      groups: this.form.controls.groups.value,
+    })
+    type GroupClaimsInfo = { groupId: string, group: string, active: boolean, claim: string, value: string }
+    const gc = this.form.controls.groups.value.reduce<GroupClaimsInfo[]>((acc, g) => {
+      return acc.concat(
+        g.customClaims.flatMap(c => ({
+          groupId: g.id, group: g.name, active: calcUserClaims.some(cc => cc.claim === c.claim && cc.groupId === g.id), ...c,
+        })))
+    }, [])
+    // active claims first, then by claim name
+    return gc.sort((a, b) => a.active === b.active ? stringCompare(a.claim, b.claim) : a.active ? -1 : 1)
   }
 
   setEmailVerifiedState() {

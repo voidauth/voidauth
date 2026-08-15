@@ -6,6 +6,8 @@ import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimD
 import type { User } from '@shared/db/User'
 import type { Group } from '@shared/db/Group'
 import type { Invitation } from '@shared/db/Invitation'
+import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
+import type { ItemIn } from '@shared/utils'
 
 const defaultClaims = {
   // OIDC 1.0 Standard
@@ -59,6 +61,28 @@ export async function getUserCustomClaims(userId: string) {
     .innerJoin<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM, `${TABLES.CUSTOM_CLAIM}.id`, `${TABLES.USER_CUSTOM_CLAIM}.claimId`)
     .where({ userId }).orderBy(db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM), 'asc'))
   return claims
+}
+
+export async function getGroupsCustomClaims(groups: Pick<Group, 'id' | 'name'>[]): Promise<AdminConfig['defaultGroups']> {
+  if (groups.length === 0) {
+    return []
+  }
+  const test = (await db().select(
+    db().ref('groupId').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
+    db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM),
+    db().ref('value').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
+  )
+    .table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM)
+    .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, 'group_custom_claim.claimId', 'custom_claim.id')
+    .whereIn('groupId', groups.map(g => g.id)))
+    .reduce((acc, gc) => {
+      const group = acc.find(g => g.id === gc.groupId)
+      if (group) {
+        group.customClaims.push({ claim: gc.claim, value: gc.value })
+      }
+      return acc
+    }, groups.map<ItemIn<AdminConfig['defaultGroups']>>(g => ({ id: g.id, name: g.name, customClaims: [] })))
+  return test
 }
 
 export async function getCustomClaimDetails(claimId: string): Promise<CustomClaimDetails | undefined> {

@@ -314,7 +314,7 @@
         "value": "Value",
         "no-custom-claims": "No custom claims configured.",
         "group": "Group",
-        "active": "Active"
+        "applied": "Applied"
       },
       "actions": {
         "sign-out": "Sign Out"
@@ -466,7 +466,9 @@
         "custom-claims": "Custom Claims",
         "claim": "Claim",
         "value": "Value",
-        "no-custom-claims": "No custom claims configured."
+        "no-custom-claims": "No custom claims configured.",
+        "applied": "Applied",
+        "group": "Groups"
       },
       "tooltips": {
         "copy-invite-link": "Copy Invite Link",

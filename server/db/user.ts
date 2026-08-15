@@ -15,8 +15,7 @@ import zod from 'zod'
 import { createPasswordReset, getPasswordResetURL } from './passwordReset'
 import { humanDuration } from '@shared/utils'
 import { TABLES } from '@shared/db'
-import { getUserCustomClaims } from './claims'
-import type { CustomClaim, GroupCustomClaim } from '@shared/db/CustomClaim'
+import { getGroupsCustomClaims, getUserCustomClaims } from './claims'
 import { calculateCustomClaims } from '@shared/user'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
@@ -102,22 +101,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const hasMfaGroup = groups.some(g => g.mfaRequired)
   const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
-  const groupsWithClaims = (await db().select(
-    db().ref('groupId').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
-    db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM),
-    db().ref('value').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
-  )
-    .table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM)
-    .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, 'group_custom_claim.claimId', 'custom_claim.id')
-    .whereIn('groupId', groups.map(g => g.id)))
-    .reduce((acc, gc) => {
-      const group = acc.find(g => g.id === gc.groupId)
-      if (group) {
-        group.customClaims.push({ claim: gc.claim, value: gc.value })
-      }
-      return acc
-    }, groups.map(g => ({ id: g.id, name: g.name })).map(g => ({ ...g, customClaims: [] as { claim: string, value: string }[] })))
-
+  const groupsWithClaims = await getGroupsCustomClaims(groups.map(g => ({ id: g.id, name: g.name })))
   const customClaims = await getUserCustomClaims(user.id)
 
   const hasTotp = await hasTOTP(id)

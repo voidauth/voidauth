@@ -4,6 +4,7 @@ import type { InvitationDetails } from '@shared/api-response/admin/InvitationDet
 import type { Group, InvitationGroup } from '@shared/db/Group'
 import { TABLES } from '@shared/db'
 import type { CustomClaim, InvitationCustomClaim } from '@shared/db/CustomClaim'
+import { getGroupsCustomClaims } from './claims'
 
 export async function getInvitations() {
   return await db().select().table<Invitation>(TABLES.INVITATION)
@@ -21,7 +22,7 @@ export async function getInvitationDetails(id: string) {
   if (!invitation) {
     return
   }
-  const groups = await db().select('name')
+  const groups = await db().select('id', 'name')
     .table<Group>(TABLES.GROUP)
     .innerJoin<InvitationGroup>(TABLES.INVITATION_GROUP, 'invitation_group.groupId', 'group.id')
     .where({ invitationId: id }).orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc')
@@ -29,6 +30,6 @@ export async function getInvitationDetails(id: string) {
     .table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM)
     .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, 'invitation_custom_claim.claimId', 'custom_claim.id')
     .where({ invitationId: id })
-  const invitationDetails: InvitationDetails = { ...invitation, groups: groups.map(g => g.name), customClaims }
+  const invitationDetails: InvitationDetails = { ...invitation, groups: await getGroupsCustomClaims(groups), customClaims }
   return invitationDetails
 }

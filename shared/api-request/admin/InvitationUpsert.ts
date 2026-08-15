@@ -10,7 +10,10 @@ export const invitationUpsertValidator = {
   email: coerceEmailOrNull.optional(),
   userExpiresAt: zod.iso.datetime().transform(val => val ? new Date(val) : null).nullable(),
   emailVerified: zod.boolean(),
-  groups: zod.array(zod.string().trim()),
+  groups: zod.array(zod.object({
+    id: zod.uuidv4(),
+    name: zod.string().trim(),
+  })),
   customClaims: zod.array(zod.object({
     claim: zod.string().trim().regex(CUSTOM_CLAIM_REGEX),
     value: zod.string().trim().min(1),

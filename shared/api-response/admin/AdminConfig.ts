@@ -1,4 +1,11 @@
 export type AdminConfig = {
   defaultUserExpireDuration?: number
-  defaultGroups: string[] // names of auto-assigned groups
+  defaultGroups: {
+    id: string
+    name: string
+    customClaims: {
+      claim: string
+      value: string
+    }[]
+  }[]
 }

@@ -40,7 +40,7 @@ import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
 import type { CustomClaim, GroupCustomClaim, InvitationCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
-import { getCustomClaimDetails, getCustomClaimsRecords } from '../db/claims'
+import { getCustomClaimDetails, getCustomClaimsRecords, getGroupsCustomClaims } from '../db/claims'
 import type { ClientMetadata } from 'oidc-provider'
 import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
 
@@ -49,9 +49,11 @@ export const adminRouter = Router()
 adminRouter.use(checkPrivileged, checkAdmin)
 
 adminRouter.get('/config', async (_req, res) => {
+  const g = (await db().table<Group>(TABLES.GROUP).select('id', 'name').where({ autoAssign: true }))
+  const defaultGroupsWithClaims = await getGroupsCustomClaims(g)
   res.send({
     defaultUserExpireDuration: appConfig.DEFAULT_USER_EXPIRES_IN,
-    defaultGroups: (await db().table<Group>(TABLES.GROUP).select('name').where({ autoAssign: true })).map(g => g.name),
+    defaultGroups: defaultGroupsWithClaims,
   } satisfies AdminConfig)
 })
 
@@ -927,7 +929,7 @@ adminRouter.post('/invitation',
     }
 
     const invitationUpsert = req.body
-    const { groups: groupNames, customClaims: invitationCustomClaims, ...invitationData } = invitationUpsert
+    const { groups, customClaims: invitationCustomClaims, ...invitationData } = invitationUpsert
 
     const id = invitationData.id ?? randomUUID()
 
@@ -952,17 +954,17 @@ adminRouter.post('/invitation',
       })
     }
 
-    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', groupNames)
-    const invitationGroups: InvitationGroup[] = groups.map((g) => {
-      return {
-        groupId: g.id,
-        invitationId: id,
-        createdBy: currentUser.id,
-        updatedBy: currentUser.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-    })
+    const invitationGroups: InvitationGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups.map(g => g.name)))
+      .map((g) => {
+        return {
+          groupId: g.id,
+          invitationId: id,
+          createdBy: currentUser.id,
+          updatedBy: currentUser.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
 
     if (invitationGroups[0]) {
       await db().table<InvitationGroup>(TABLES.INVITATION_GROUP).insert(invitationGroups)
