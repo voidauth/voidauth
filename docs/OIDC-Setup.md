@@ -72,3 +72,43 @@ All the configurable variables can be found below:
 | CLIENT_GRANT_TYPES      | authorization_code, refresh_token | authorization_code, implicit, refresh_token   |
 | CLIENT_POST_LOGOUT_URLS |                                   |                                               |
 | CLIENT_SKIP_CONSENT     | false                             | true, false                                   |
+
+## Custom Claims
+
+Custom claims let you add extra data to a user that is included in OIDC tokens and user-info responses. Some OIDC Apps allow or require custom claims to control aspects of an account, such as storage limits or roles.
+
+Custom claims can be set directly on a user or inherited from one or more groups. The effective set of applied claims for a user is calculated automatically and shown on the admin user page. Claims are name/value pairs that are attached to a user or a group. When a token is issued, the value is parsed with `JSON.parse(...)` to determine its type before it is sent. If parsing fails, the value is sent as a raw string.
+
+This means you can send simple strings, numbers, objects, or arrays as values of a custom claim.
+
+### Priority and merging
+
+Claims are applied in the following order:
+
+1. Claims assigned directly to the user.
+2. Claims from the user's groups, added only if the claim name is not already present from the user or a higher-priority group.
+
+If a user belongs to multiple groups that define the same claim name, the group that sorts earlier alphabetically by name is applied. Later groups are ignored for that claim name.
+
+You can see all of a user's custom claims on their admin user page. Claims that are overridden by a higher-priority source are shown greyed out and marked as not applied.
+
+### Value formats
+
+Custom claim values are stored as text and parsed when applied. Examples:
+
+```jsonc
+// Un-quoted value that fails `JSON.parse`, parsed as a raw string by default
+abc
+
+// A number
+123
+
+// A quoted value is always parsed as a raw string
+"123"
+
+// This value is parsed by `JSON.parse` as an `object`
+{"key": "value", "another_key": 1}
+
+// This value is parsed as an array of assorted items
+["abc", "xyz", 123, "-_-"]
+```
