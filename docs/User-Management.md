@@ -24,4 +24,4 @@ Once the invitation is created, the invitation link will be generated and displa
 <img width="500" alt="image" src="/public/screenshots/4122f143-e016-4dde-a6d2-4dbb5e3c9ef4.png" />
 </p>
 
-On the User page all of the users profile details and settings can be changed. The user's security groups, custom claims, email verification, and approval status can also be set.
+On the User page, all of the user's profile details and settings can be changed. The user's security groups, custom claims, email verification, and approval status can also be set.

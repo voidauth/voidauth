@@ -201,32 +201,24 @@ adminRouter.post('/custom_claim',
     const { id, claim, users, groups, invitations } = req.body
 
     if (PROTECTED_CLAIMS_SET.has(claim)) {
-      res.status(400).send({ message: 'A custom claim is reserved.' })
+      res.status(400).send({ message: 'Custom claim is reserved.' })
       return
     }
 
-    let existingClaim = id
-      ? await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).first()
-      : undefined
-
-    if (!existingClaim) {
-      existingClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ claim }).first()
+    const existingClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ claim }).first()
+    if (existingClaim && existingClaim.id !== id) {
+      res.status(409).send({ message: 'Custom claim already exists.' })
+      return
     }
 
-    const claimId = existingClaim?.id ?? randomUUID()
-
-    if (existingClaim) {
-      await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM)
-        .where({ id: claimId })
-        .update({ claim, updatedAt: new Date() })
-    } else {
-      await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert({
-        id: claimId,
-        claim,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
+    const claimId = id ?? randomUUID()
+    const customClaim: CustomClaim = {
+      id: claimId,
+      claim,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }
+    await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaim).onConflict(['claim']).merge(mergeKeys(customClaim))
 
     // Update related records for users, groups, and invitations
     const userCustomClaims: UserCustomClaim[] = users.map((u) => {
@@ -299,21 +291,6 @@ adminRouter.delete('/custom_claim/:id',
       return
     }
     await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).delete()
-    res.send()
-  })
-
-adminRouter.delete('/claim/:claimId',
-  zodValidate({
-    params: { claimId: zod.uuidv4() },
-  }),
-  async (req, res) => {
-    const { claimId } = req.params
-    const customClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id: claimId }).first()
-    if (!customClaim) {
-      res.sendStatus(404)
-      return
-    }
-    await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id: claimId }).delete()
     res.send()
   })
 
@@ -513,48 +490,43 @@ adminRouter.patch('/user',
     // Sync Custom Claims.
     // We are going to do some confusing stuff here so that custom claims do not have to be managed
     // manually in the webUI but just ***magically*** appear when they are added to a user
-    if (!userCustomClaims.length) {
-      // remove all user custom claims
-      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete().where({ userId: userUpdate.id })
-    } else {
-      // Make sure all the custom claims the user wants exist
-      let customClaims: CustomClaim[] = userCustomClaims.map((c) => {
-        return {
-          id: randomUUID(),
-          claim: c.claim,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
-      if (customClaims[0]) {
-        customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
-          .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    // Make sure all the custom claims the user wants exist
+    let customClaims: CustomClaim[] = userCustomClaims.map((c) => {
+      return {
+        id: randomUUID(),
+        claim: c.claim,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
+    })
+    if (customClaims[0]) {
+      customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
+        .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    }
 
-      // Delete any user custom claims not present in new custom claims payload
-      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete()
-        .where({ userId: userUpdate.id }).and
-        .whereNotIn('claimId', customClaims.map(c => c.id))
+    // Delete any user custom claims not present in new custom claims payload
+    await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete()
+      .where({ userId: userUpdate.id }).and
+      .whereNotIn('claimId', customClaims.map(c => c.id))
 
-      // Upsert provided user custom claims into user custom claims table
-      const upsertUserCustomClaims: UserCustomClaim[] = userCustomClaims.map((c) => {
-        const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
-        if (!matchingClaim) {
-          throw new Error('Matching claim for user custom claim could not be found!')
-        }
-        return {
-          id: randomUUID(),
-          userId: userUpdate.id,
-          claimId: matchingClaim.id,
-          value: c.value,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
-      if (upsertUserCustomClaims[0]) {
-        await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(upsertUserCustomClaims)
-          .onConflict(['claimId', 'userId']).merge(mergeKeys(upsertUserCustomClaims[0]))
+    // Upsert provided user custom claims into user custom claims table
+    const upsertUserCustomClaims: UserCustomClaim[] = userCustomClaims.map((c) => {
+      const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
+      if (!matchingClaim) {
+        throw new Error('Matching claim for user custom claim could not be found!')
       }
+      return {
+        id: randomUUID(),
+        userId: userUpdate.id,
+        claimId: matchingClaim.id,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (upsertUserCustomClaims[0]) {
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(upsertUserCustomClaims)
+        .onConflict(['claimId', 'userId']).merge(mergeKeys(upsertUserCustomClaims[0]))
     }
 
     // Check if all custom claims matches current provider claims, update if not
@@ -830,48 +802,43 @@ adminRouter.post('/group',
       .whereNotIn('userId', userGroups.map(g => g.userId))
 
     // Sync Group Custom Claims. This is similar to the user custom claims sync above, but for groups instead of users
-    if (!groupCustomClaims.length) {
-      // remove all group custom claims
-      await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).delete().where({ groupId: groupId })
-    } else {
-      // Make sure all the custom claims the group wants exist
-      let customClaims: CustomClaim[] = groupCustomClaims.map((c) => {
-        return {
-          id: randomUUID(),
-          claim: c.claim,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
-      if (customClaims[0]) {
-        customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
-          .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    // Make sure all the custom claims the group wants exist
+    let customClaims: CustomClaim[] = groupCustomClaims.map((c) => {
+      return {
+        id: randomUUID(),
+        claim: c.claim,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
+    })
+    if (customClaims[0]) {
+      customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
+        .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    }
 
-      // Delete any group custom claims not present in new custom claims payload
-      await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).delete()
-        .where({ groupId: groupId }).and
-        .whereNotIn('claimId', customClaims.map(c => c.id))
+    // Delete any group custom claims not present in new custom claims payload
+    await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).delete()
+      .where({ groupId: groupId }).and
+      .whereNotIn('claimId', customClaims.map(c => c.id))
 
-      // Upsert provided group custom claims into group custom claims table
-      const upsertGroupCustomClaims: GroupCustomClaim[] = groupCustomClaims.map((c) => {
-        const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
-        if (!matchingClaim) {
-          throw new Error('Matching claim for group custom claim could not be found!')
-        }
-        return {
-          id: randomUUID(),
-          groupId: groupId,
-          claimId: matchingClaim.id,
-          value: c.value,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
-      if (upsertGroupCustomClaims[0]) {
-        await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).insert(upsertGroupCustomClaims)
-          .onConflict(['claimId', 'groupId']).merge(mergeKeys(upsertGroupCustomClaims[0]))
+    // Upsert provided group custom claims into group custom claims table
+    const upsertGroupCustomClaims: GroupCustomClaim[] = groupCustomClaims.map((c) => {
+      const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
+      if (!matchingClaim) {
+        throw new Error('Matching claim for group custom claim could not be found!')
       }
+      return {
+        id: randomUUID(),
+        groupId: groupId,
+        claimId: matchingClaim.id,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (upsertGroupCustomClaims[0]) {
+      await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).insert(upsertGroupCustomClaims)
+        .onConflict(['claimId', 'groupId']).merge(mergeKeys(upsertGroupCustomClaims[0]))
     }
 
     // Check if all custom claims matches current provider claims, update if not
@@ -931,6 +898,13 @@ adminRouter.post('/invitation',
     const invitationUpsert = req.body
     const { groups, customClaims: invitationCustomClaims, ...invitationData } = invitationUpsert
 
+    // Validate custom claims
+    // check if any claims are protected
+    if (invitationCustomClaims.some(c => PROTECTED_CLAIMS_SET.has(c.claim))) {
+      res.status(400).send({ message: 'A custom claim is reserved.' })
+      return
+    }
+
     const id = invitationData.id ?? randomUUID()
 
     if (invitationData.id) {
@@ -970,54 +944,48 @@ adminRouter.post('/invitation',
       await db().table<InvitationGroup>(TABLES.INVITATION_GROUP).insert(invitationGroups)
         .onConflict(['groupId', 'invitationId']).merge(mergeKeys(invitationGroups[0]))
     }
-
     await db().table<InvitationGroup>(TABLES.INVITATION_GROUP).delete()
       .where({ invitationId: id }).and
       .whereNotIn('groupId', invitationGroups.map(g => g.groupId))
 
     // Sync Invitation Custom Claims. This is similar to the user custom claims sync above, but for invitations instead of users
-    if (!invitationCustomClaims.length) {
-      // remove all invitation custom claims
-      await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).delete().where({ invitationId: id })
-    } else {
-      // Make sure all the custom claims the invitation wants exist
-      let customClaims: CustomClaim[] = invitationCustomClaims.map((c) => {
-        return {
-          id: randomUUID(),
-          claim: c.claim,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
-      if (customClaims[0]) {
-        customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
-          .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    // Make sure all the custom claims the invitation wants exist
+    let customClaims: CustomClaim[] = invitationCustomClaims.map((c) => {
+      return {
+        id: randomUUID(),
+        claim: c.claim,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
+    })
+    if (customClaims[0]) {
+      customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
+        .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    }
 
-      // Delete any invitation custom claims not present in new custom claims payload
-      await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).delete()
-        .where({ invitationId: id }).and
-        .whereNotIn('claimId', customClaims.map(c => c.id))
+    // Delete any invitation custom claims not present in new custom claims payload
+    await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).delete()
+      .where({ invitationId: id }).and
+      .whereNotIn('claimId', customClaims.map(c => c.id))
 
-      // Upsert provided invitation custom claims into invitation custom claims table
-      const upsertInvitationCustomClaims: InvitationCustomClaim[] = invitationCustomClaims.map((c) => {
-        const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
-        if (!matchingClaim) {
-          throw new Error('Matching claim for invitation custom claim could not be found!')
-        }
-        return {
-          id: randomUUID(),
-          invitationId: id,
-          claimId: matchingClaim.id,
-          value: c.value,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
-      if (upsertInvitationCustomClaims[0]) {
-        await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).insert(upsertInvitationCustomClaims)
-          .onConflict(['claimId', 'invitationId']).merge(mergeKeys(upsertInvitationCustomClaims[0]))
+    // Upsert provided invitation custom claims into invitation custom claims table
+    const upsertInvitationCustomClaims: InvitationCustomClaim[] = invitationCustomClaims.map((c) => {
+      const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
+      if (!matchingClaim) {
+        throw new Error('Matching claim for invitation custom claim could not be found!')
       }
+      return {
+        id: randomUUID(),
+        invitationId: id,
+        claimId: matchingClaim.id,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (upsertInvitationCustomClaims[0]) {
+      await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).insert(upsertInvitationCustomClaims)
+        .onConflict(['claimId', 'invitationId']).merge(mergeKeys(upsertInvitationCustomClaims[0]))
     }
 
     // Check if all custom claims matches current provider claims, update if not
