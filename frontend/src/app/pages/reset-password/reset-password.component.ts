@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy, type OnInit } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { MaterialModule } from '../../material-module'
 import { AuthService } from '../../services/auth.service'
@@ -22,7 +22,7 @@ import { TranslatePipe } from '@ngx-translate/core'
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './reset-password.component.scss',
 })
-export class ResetPasswordComponent {
+export class ResetPasswordComponent implements OnInit {
   userid?: string
   challenge?: string
   config?: ConfigResponse

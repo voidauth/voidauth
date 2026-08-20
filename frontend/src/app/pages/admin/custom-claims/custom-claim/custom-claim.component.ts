@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
@@ -24,7 +24,7 @@ import { OptionValueDialogComponent,
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './custom-claim.component.scss',
 })
-export class CustomClaimComponent {
+export class CustomClaimComponent implements OnInit {
   public id: string | null = null
 
   public form = new FormGroup({
@@ -135,7 +135,7 @@ export class CustomClaimComponent {
   }
 
   removeUserClaim(removed: ItemIn<CustomClaimDetails['users']>) {
-    const updated = this.form.controls.users.value.filter(u => u !== removed)
+    const updated = this.form.controls.users.value.filter(u => u.id !== removed.id)
     this.form.controls.users.setValue(updated)
     this.form.controls.users.markAsDirty()
   }
@@ -206,7 +206,7 @@ export class CustomClaimComponent {
   }
 
   removeGroupClaim(removed: ItemIn<CustomClaimDetails['groups']>) {
-    const updated = this.form.controls.groups.value.filter(g => g !== removed)
+    const updated = this.form.controls.groups.value.filter(g => g.id !== removed.id)
     this.form.controls.groups.setValue(updated)
     this.form.controls.groups.markAsDirty()
   }
@@ -285,7 +285,7 @@ export class CustomClaimComponent {
   }
 
   removeInviteClaim(removed: ItemIn<CustomClaimDetails['invitations']>) {
-    const updated = this.form.controls.invitations.value.filter(n => n !== removed)
+    const updated = this.form.controls.invitations.value.filter(n => n.id !== removed.id)
     this.form.controls.invitations.setValue(updated)
     this.form.controls.invitations.markAsDirty()
   }

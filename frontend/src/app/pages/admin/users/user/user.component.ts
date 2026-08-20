@@ -121,7 +121,7 @@ export class UserComponent implements OnInit {
     }
   }
 
-  async addGroup(value: ItemIn<UserUpdate['groups']>) {
+  async addGroup(value: { id: string }) {
     // Get the group details first
     try {
       this.spinnerService.show()
@@ -224,7 +224,7 @@ export class UserComponent implements OnInit {
 
       this.form.controls.customClaims.setValue(
         this.form.controls.customClaims.value.map((claim) => {
-          return claim === claimToEdit ? { claim: result.option, value: result.value } : claim
+          return claim.claim === claimToEdit.claim ? { claim: result.option, value: result.value } : claim
         }),
       )
       this.form.controls.customClaims.markAsDirty()
@@ -232,7 +232,7 @@ export class UserComponent implements OnInit {
   }
 
   removeCustomClaim(removed: ItemIn<UserUpdate['customClaims']>) {
-    const updated = this.form.controls.customClaims.value.filter(c => c !== removed)
+    const updated = this.form.controls.customClaims.value.filter(c => c.claim !== removed.claim)
     this.form.controls.customClaims.setValue(updated)
     this.form.controls.customClaims.markAsDirty()
   }

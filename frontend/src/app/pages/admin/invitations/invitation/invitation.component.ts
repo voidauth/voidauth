@@ -1,5 +1,5 @@
 import { AsyncPipe, CommonModule } from '@angular/common'
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy, type OnInit } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CUSTOM_CLAIM_REGEX, PROTECTED_CLAIMS, USERNAME_REGEX } from '@shared/constants'
@@ -30,7 +30,7 @@ import { calculateCustomClaims } from '@shared/user'
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './invitation.component.scss',
 })
-export class InvitationComponent {
+export class InvitationComponent implements OnInit {
   public id: string | null = null
   public config?: ConfigResponse
   public adminConfig?: AdminConfig
@@ -104,7 +104,7 @@ export class InvitationComponent {
           }
 
           if (this.adminConfig.defaultGroups.length) {
-            this.form.controls.groups.setValue(this.adminConfig.defaultGroups)
+            this.form.controls.groups.setValue(this.adminConfig.defaultGroups.sort((a, b) => stringCompare(a.name, b.name)))
             this.form.controls.groups.markAsDirty()
           }
         }
@@ -161,7 +161,7 @@ export class InvitationComponent {
     }
   }
 
-  async addGroup(value: ItemIn<InvitationDetails['groups']>) {
+  async addGroup(value: { id: string }) {
     // Get the group details first
     try {
       this.spinnerService.show()
@@ -247,7 +247,7 @@ export class InvitationComponent {
 
       this.form.controls.customClaims.setValue(
         this.form.controls.customClaims.value.map((claim) => {
-          return claim === claimToEdit ? { claim: result.option, value: result.value } : claim
+          return claim.claim === claimToEdit.claim ? { claim: result.option, value: result.value } : claim
         }),
       )
       this.form.controls.customClaims.markAsDirty()
@@ -255,7 +255,7 @@ export class InvitationComponent {
   }
 
   removeCustomClaim(removed: ItemIn<InvitationUpsert['customClaims']>) {
-    const updated = this.form.controls.customClaims.value.filter(c => c !== removed)
+    const updated = this.form.controls.customClaims.value.filter(c => c.claim !== removed.claim)
     this.form.controls.customClaims.setValue(updated)
     this.form.controls.customClaims.markAsDirty()
   }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy, type OnInit } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
@@ -27,7 +27,7 @@ import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValu
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './group.component.scss',
 })
-export class GroupComponent {
+export class GroupComponent implements OnInit {
   ADMIN_GROUP = ADMIN_GROUP
 
   public id: string | null = null
@@ -187,7 +187,7 @@ export class GroupComponent {
 
       this.form.controls.customClaims.setValue(
         this.form.controls.customClaims.value.map((claim) => {
-          return claim === claimToEdit ? { claim: result.option, value: result.value } : claim
+          return claim.claim === claimToEdit.claim ? { claim: result.option, value: result.value } : claim
         }),
       )
       this.form.controls.customClaims.markAsDirty()
@@ -195,7 +195,7 @@ export class GroupComponent {
   }
 
   removeCustomClaim(removed: ItemIn<GroupUpsert['customClaims']>) {
-    const updated = this.form.controls.customClaims.value.filter(c => c !== removed)
+    const updated = this.form.controls.customClaims.value.filter(c => c.claim !== removed.claim)
     this.form.controls.customClaims.setValue(updated)
     this.form.controls.customClaims.markAsDirty()
   }

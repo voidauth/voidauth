@@ -66,10 +66,6 @@ export class OptionValueDialogComponent implements OnInit {
       this.value.setValue(this.data.currentValue ?? null)
       this.option.disable({ emitEvent: false })
     }
-
-    this.option.valueChanges.subscribe((value) => {
-      this.updateFilteredOptions(value)
-    })
   }
 
   get optionValue() {
@@ -93,7 +89,7 @@ export class OptionValueDialogComponent implements OnInit {
         return null
       }
       const value = (control.value as string | null)?.trim()
-      return value && this.data.newForbidden.includes(value)
+      return value && this.data.newForbidden.map(f => f.trim().toLowerCase()).includes(value.toLowerCase())
         ? { forbiddenOption: 'Reserved or Forbidden.' }
         : null
     }

@@ -67,13 +67,13 @@ export async function getGroupsCustomClaims(groups: Pick<Group, 'id' | 'name'>[]
   if (groups.length === 0) {
     return []
   }
-  const test = (await db().select(
+  const groupsWithCustomClaims = (await db().select(
     db().ref('groupId').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
     db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM),
     db().ref('value').withSchema(TABLES.GROUP_CUSTOM_CLAIM),
   )
     .table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM)
-    .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, 'group_custom_claim.claimId', 'custom_claim.id')
+    .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, `${TABLES.GROUP_CUSTOM_CLAIM}.claimId`, `${TABLES.CUSTOM_CLAIM}.id`)
     .whereIn('groupId', groups.map(g => g.id)))
     .reduce((acc, gc) => {
       const group = acc.find(g => g.id === gc.groupId)
@@ -82,7 +82,7 @@ export async function getGroupsCustomClaims(groups: Pick<Group, 'id' | 'name'>[]
       }
       return acc
     }, groups.map<ItemIn<AdminConfig['defaultGroups']>>(g => ({ id: g.id, name: g.name, customClaims: [] })))
-  return test
+  return groupsWithCustomClaims
 }
 
 export async function getCustomClaimDetails(claimId: string): Promise<CustomClaimDetails | undefined> {

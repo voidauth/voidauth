@@ -49,8 +49,8 @@ export const adminRouter = Router()
 adminRouter.use(checkPrivileged, checkAdmin)
 
 adminRouter.get('/config', async (_req, res) => {
-  const g = (await db().table<Group>(TABLES.GROUP).select('id', 'name').where({ autoAssign: true }))
-  const defaultGroupsWithClaims = await getGroupsCustomClaims(g)
+  const defaultGroupsWithClaims = await getGroupsCustomClaims(
+    await db().table<Group>(TABLES.GROUP).select('id', 'name').where({ autoAssign: true }))
   res.send({
     defaultUserExpireDuration: appConfig.DEFAULT_USER_EXPIRES_IN,
     defaultGroups: defaultGroupsWithClaims,
@@ -443,7 +443,7 @@ adminRouter.patch('/user',
     const uniqueCustomClaims = new Set(userCustomClaims.map(c => c.claim))
 
     // make sure no duplicate claims
-    if (uniqueCustomClaims.values().toArray().length !== userCustomClaims.length) {
+    if (uniqueCustomClaims.size !== userCustomClaims.length) {
       res.status(400).send({ message: 'Duplicate custom claims are not allowed.' })
       return
     }
@@ -746,7 +746,7 @@ adminRouter.post('/group',
     const uniqueCustomClaims = new Set(groupCustomClaims.map(c => c.claim))
 
     // make sure no duplicate claims
-    if (uniqueCustomClaims.values().toArray().length !== groupCustomClaims.length) {
+    if (uniqueCustomClaims.size !== groupCustomClaims.length) {
       res.status(400).send({ message: 'Duplicate custom claims are not allowed.' })
       return
     }

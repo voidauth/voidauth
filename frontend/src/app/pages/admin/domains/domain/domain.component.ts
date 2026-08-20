@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy, type OnInit } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { AdminService } from '../../../../services/admin.service'
@@ -23,7 +23,7 @@ import { TranslatePipe } from '@ngx-translate/core'
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './domain.component.scss',
 })
-export class DomainComponent {
+export class DomainComponent implements OnInit {
   public id: string | null = null
 
   public availableGroups: string[] = []

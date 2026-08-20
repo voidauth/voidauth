@@ -17,7 +17,7 @@ import { REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { type Interaction } from 'oidc-provider'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { createExpiration } from '../db/util'
-import { getInvitationDetails } from '../db/invitations'
+import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
 import { getClient } from '../db/client'
@@ -350,7 +350,7 @@ router.post('/register',
       return
     }
 
-    const invitation = registration.inviteId ? await getInvitationDetails(registration.inviteId) : null
+    const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
     const invitationValid = invitation && invitation.challenge === registration.challenge
 
     if (!invitationValid && !appConfig.SIGNUP) {
@@ -380,8 +380,8 @@ router.post('/register',
       || (user.email && await getUserByInput(user.email))
 
     if (conflictingUser) {
-      const message = conflictingUser.username === user.username
-        || conflictingUser.email === user.username
+      const message = (conflictingUser.username === user.username
+        || conflictingUser.email === user.username)
         ? 'Username taken.'
         : 'Email taken.'
       res.status(409).send({ message: message })
@@ -472,7 +472,7 @@ router.post('/register/passkey/start',
 
     // check open signup or valid invitation
     // Make sure that if invitation, it is valid
-    const invitation = invite.inviteId ? await getInvitationDetails(invite.inviteId) : null
+    const invitation = invite.inviteId ? await getInvitation(invite.inviteId) : null
     const invitationValid = invitation && invitation.challenge === invite.challenge
     if (!invitationValid && !appConfig.SIGNUP) {
       res.sendStatus(400)
@@ -512,7 +512,7 @@ router.post('/register/passkey/end',
       return
     }
 
-    const invitation = registration.inviteId ? await getInvitationDetails(registration.inviteId) : null
+    const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
     const invitationValid = invitation && invitation.challenge === registration.challenge
 
     if (!invitationValid && !appConfig.SIGNUP) {
@@ -547,8 +547,8 @@ router.post('/register/passkey/end',
       || (user.email && await getUserByInput(user.email))
 
     if (conflictingUser) {
-      const message = conflictingUser.username === user.username
-        || conflictingUser.email === user.username
+      const message = (conflictingUser.username === user.username
+        || conflictingUser.email === user.username)
         ? 'Username taken.'
         : 'Email taken.'
       res.status(409).send({ message: message })
