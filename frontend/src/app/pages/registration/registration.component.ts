@@ -7,7 +7,6 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
 import { USERNAME_REGEX } from '@shared/constants'
-import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import { ConfigService } from '../../services/config.service'
 import { NewPasswordInputComponent } from '../../components/new-password-input/new-password-input.component'
 import { SpinnerService } from '../../services/spinner.service'
@@ -18,6 +17,7 @@ import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
 import { isValidEmail } from '../../validators/validators'
 import { TranslatePipe } from '@ngx-translate/core'
 import { AsyncPipe } from '@angular/common'
+import type { InvitationBasic } from '@shared/api-response/InvitationBasic'
 
 @Component({
   selector: 'app-registration',
@@ -64,7 +64,7 @@ export class RegistrationComponent implements OnInit {
 
   passwordControl = new FormControl<string>('')
 
-  public invitation?: InvitationDetails
+  public invitation?: InvitationBasic
 
   public pwdShow: boolean = false
   config?: ConfigResponse

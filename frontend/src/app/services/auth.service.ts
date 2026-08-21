@@ -6,7 +6,6 @@ import type { LoginUser } from '@shared/api-request/LoginUser'
 import type { VerifyUserEmail } from '@shared/api-request/VerifyUserEmail'
 import type { Redirect } from '@shared/api-response/Redirect'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
-import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
 import type { ResetPassword } from '@shared/api-request/ResetPassword'
 import { type RegistrationResponseJSON, type PublicKeyCredentialCreationOptionsJSON, WebAuthnError } from '@simplewebauthn/browser'
@@ -15,6 +14,7 @@ import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 import { oidcLoginPath } from '@shared/oidc'
 import { getCurrentHost } from './config.service'
 import type { PasswordResetResponse } from '@shared/api-response/PasswordResetResponse'
+import type { InvitationBasic } from '@shared/api-response/InvitationBasic'
 
 @Injectable({
   providedIn: 'root',
@@ -95,7 +95,7 @@ export class AuthService {
   }
 
   async getInviteDetails(id: string, challenge: string) {
-    return firstValueFrom(this.http.get<InvitationDetails>(`/api/auth/invitation/${id}/${challenge}`))
+    return firstValueFrom(this.http.get<InvitationBasic>(`/api/auth/invitation/${id}/${challenge}`))
   }
 
   async sendPasswordReset(input: string) {

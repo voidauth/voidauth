@@ -18,17 +18,10 @@ Once the invitation is created, the invitation link will be generated and displa
 > [!IMPORTANT]
 > Invited users are always 'approved', and if an admin set their initial email address that email will be verified when they accept the invitation.
 
-## Registration
-
-`🚧 Under Construction 🚧`
-
-User self-registration is available if the **SIGNUP** environment variable is set to 'true'.
-
 ## Users
-The Users Update page.
 
 <p align=center>
 <img width="500" alt="image" src="/public/screenshots/4122f143-e016-4dde-a6d2-4dbb5e3c9ef4.png" />
 </p>
 
-On the User Update page all of the users profile settings and username can be changed. The user's security groups, email verification, and approval status can also be set.
+On the User page, all of the user's profile details and settings can be changed. The user's security groups, custom claims, email verification, and approval status can also be set.

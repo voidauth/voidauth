@@ -28,6 +28,10 @@ body {
   ));
 
   @include mat.list-overrides((active-indicator-shape: 14px));
+
+  @include mat.table-overrides((
+    background-color: #0000,
+  ));
 }
 
 body.dark {

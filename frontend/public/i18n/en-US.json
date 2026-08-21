@@ -31,7 +31,8 @@
         "groups": "Groups",
         "invitations": "Invitations",
         "password-resets": "Password Resets",
-        "sent-mail": "Sent Mail"
+        "sent-mail": "Sent Mail",
+        "claims": "Custom Claims"
       },
       "logout": "Logout"
     }
@@ -307,14 +308,21 @@
         "add-group": "Add Group",
         "security-groups": "Security Groups:",
         "user-expiration-date": "Access Expiration Date",
-        "user-expiration-time": "Access Expiration Time"
+        "user-expiration-time": "Access Expiration Time",
+        "custom-claims": "Custom Claims",
+        "claim": "Claim",
+        "value": "Value",
+        "no-custom-claims": "No custom claims configured.",
+        "group": "Group",
+        "applied": "Applied"
       },
       "actions": {
         "sign-out": "Sign Out"
       },
       "tooltips": {
         "remove": "Remove",
-        "open": "Open"
+        "open": "Open",
+        "edit": "Edit"
       }
     },
     "clients": {
@@ -423,11 +431,19 @@
       "labels": {
         "name": "Name",
         "add-user": "Add User",
-        "users": "Users:"
+        "users": "Users:",
+        "custom-claims": "Custom Claims",
+        "claim": "Claim",
+        "value": "Value",
+        "no-custom-claims": "No custom claims configured."
       },
       "checkboxes": {
         "mfa-required": "MFA Required",
         "auto-assign": "Auto Assign"
+      },
+      "tooltips": {
+        "edit": "Edit",
+        "remove": "Remove"
       }
     },
     "invitations": {
@@ -446,12 +462,20 @@
         "add-group": "Add Group",
         "security-groups": "Security Groups:",
         "user-expiration-date": "Access Expiration Date",
-        "user-expiration-time": "Access Expiration Time"
+        "user-expiration-time": "Access Expiration Time",
+        "custom-claims": "Custom Claims",
+        "claim": "Claim",
+        "value": "Value",
+        "no-custom-claims": "No custom claims configured.",
+        "applied": "Applied",
+        "group": "Groups"
       },
       "tooltips": {
         "copy-invite-link": "Copy Invite Link",
         "unsaved-changes": "You have unsaved changes.",
-        "send-to": "Send invite to: {{email}}"
+        "send-to": "Send invite to: {{email}}",
+        "edit": "Edit",
+        "remove": "Remove"
       },
       "messages": {
         "link-copied": "Invite link copied to clipboard.",
@@ -463,6 +487,32 @@
       },
       "checkboxes": {
         "email-verified": "Email Verified"
+      }
+    },
+    "claims": {
+      "actions": {
+        "create": "Create Claim"
+      },
+      "empty-state": "No Custom Claims."
+    },
+    "claim": {
+      "title": "Custom Claim",
+      "labels": {
+        "name": "Name",
+        "user-claims": "Users",
+        "username": "Username",
+        "value": "Value",
+        "no-user-claims": "No User Claims",
+        "no-group-claims": "No Group Claims",
+        "group-name": "Group",
+        "group-claims": "Groups",
+        "invitation-claims": "Invitations",
+        "invitation": "Invite",
+        "no-invitation-claims": "No Invitation Claims"
+      },
+      "tooltips": {
+        "edit": "Edit",
+        "remove": "Remove"
       }
     }
   },
@@ -567,6 +617,19 @@
         "confirm": {
           "label": "Confirm"
         }
+      }
+    },
+    "option-value-dialog": {
+      "actions": {
+        "cancel": {
+          "label": "Cancel"
+        },
+        "save": {
+          "label": "Save"
+        }
+      },
+      "labels": {
+        "value": "Value"
       }
     }
   },

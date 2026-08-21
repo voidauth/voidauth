@@ -36,8 +36,7 @@ export class ConsentComponent implements OnInit {
           throw new Error('UID param missing from page.')
         }
         this.details = await this.authService.getInteractionDetails(this.uid)
-        const url = URL.parse(this.details.redirectUri)
-        this.redirectHost = url?.host
+        this.redirectHost = this.details.redirectUri ? URL.parse(this.details.redirectUri)?.host : undefined
       } catch (e) {
         console.error(e)
         this.snackbarService.error('Confirmation details not valid.')
