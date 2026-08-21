@@ -1,0 +1,207 @@
+<h1>
+  @if (id) {
+    {{ "admin.common.actions.update" | translate }}
+  } @else {
+    {{ "admin.common.actions.create" | translate }}
+  }
+  {{ "admin.claim.title" | translate }}
+</h1>
+<mat-card class="form-card">
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field>
+        <mat-label>{{ "admin.claim.labels.name" | translate }}</mat-label>
+        <input matInput type="text" formControlName="claim" />
+        @if (form.controls.claim.errors) {
+          <mat-error>{{ form.controls.claim.errors | validationError | async }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-expansion-panel style="width: 100%">
+        <mat-expansion-panel-header>
+          <mat-panel-title
+            ><div [matBadge]="form.controls.users.value.length || ''" matBadgeOverlap="false">
+              {{ "admin.claim.labels.user-claims" | translate }}
+            </div></mat-panel-title
+          >
+        </mat-expansion-panel-header>
+        <table mat-table [dataSource]="form.controls.users.value" style="width: 100%">
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.username" | translate }}</th>
+            <td mat-cell *matCellDef="let user" style="white-space: normal">{{ user.username }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="value">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.value" | translate }}</th>
+            <td mat-cell *matCellDef="let user" style="white-space: normal; word-break: break-word">{{ user.value }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th style="text-align: right" mat-header-cell *matHeaderCellDef>
+              <button mat-icon-button type="button" (click)="addUserClaim()">
+                <mat-icon fontSet="material-icons-round" matSuffix>add</mat-icon>
+              </button>
+            </th>
+            <td mat-cell *matCellDef="let user" style="text-align: right">
+              <div>
+                <button mat-icon-button type="button" (click)="editUserClaim(user)" [matTooltip]="'admin.claim.tooltips.edit' | translate">
+                  <mat-icon fontSet="material-icons-round">edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="removeUserClaim(user)"
+                  [matTooltip]="'admin.claim.tooltips.remove' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['username', 'value', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['username', 'value', 'actions']"></tr>
+        </table>
+
+        @if (!form.controls.users.value.length) {
+          <div align="center" style="padding: 16px">
+            {{ "admin.claim.labels.no-user-claims" | translate }}
+          </div>
+        }
+      </mat-expansion-panel>
+
+      <mat-expansion-panel style="width: 100%">
+        <mat-expansion-panel-header>
+          <mat-panel-title
+            ><div [matBadge]="form.controls.groups.value.length || ''" matBadgeOverlap="false">
+              {{ "admin.claim.labels.group-claims" | translate }}
+            </div></mat-panel-title
+          >
+        </mat-expansion-panel-header>
+        <table mat-table [dataSource]="form.controls.groups.value" style="width: 100%">
+          <ng-container matColumnDef="group">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.group-name" | translate }}</th>
+            <td mat-cell *matCellDef="let group" style="white-space: normal">{{ group.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="value">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.value" | translate }}</th>
+            <td mat-cell *matCellDef="let group" style="white-space: normal; word-break: break-word">{{ group.value }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th style="text-align: right" mat-header-cell *matHeaderCellDef>
+              <button mat-icon-button type="button" (click)="addGroupClaim()">
+                <mat-icon fontSet="material-icons-round" matSuffix>add</mat-icon>
+              </button>
+            </th>
+            <td mat-cell *matCellDef="let group" style="text-align: right">
+              <div>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="editGroupClaim(group)"
+                  [matTooltip]="'admin.claim.tooltips.edit' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="removeGroupClaim(group)"
+                  [matTooltip]="'admin.claim.tooltips.remove' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['group', 'value', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['group', 'value', 'actions']"></tr>
+        </table>
+
+        @if (!form.controls.groups.value.length) {
+          <div align="center" style="padding: 16px">
+            {{ "admin.claim.labels.no-group-claims" | translate }}
+          </div>
+        }
+      </mat-expansion-panel>
+
+      <mat-expansion-panel style="width: 100%">
+        <mat-expansion-panel-header>
+          <mat-panel-title
+            ><div [matBadge]="form.controls.invitations.value.length || ''" matBadgeOverlap="false">
+              {{ "admin.claim.labels.invitation-claims" | translate }}
+            </div></mat-panel-title
+          >
+        </mat-expansion-panel-header>
+        <table mat-table [dataSource]="form.controls.invitations.value" style="width: 100%">
+          <ng-container matColumnDef="invitation">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.invitation" | translate }}</th>
+            <td mat-cell *matCellDef="let invitation" style="white-space: normal">
+              {{ inviteDisplay(invitation) }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="value">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.claim.labels.value" | translate }}</th>
+            <td mat-cell *matCellDef="let invitation" style="white-space: normal; word-break: break-word">{{ invitation.value }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th style="text-align: right" mat-header-cell *matHeaderCellDef>
+              <button mat-icon-button type="button" (click)="addInviteClaim()">
+                <mat-icon fontSet="material-icons-round" matSuffix>add</mat-icon>
+              </button>
+            </th>
+            <td mat-cell *matCellDef="let invitation" style="text-align: right">
+              <div>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="editInviteClaim(invitation)"
+                  [matTooltip]="'admin.claim.tooltips.edit' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="removeInviteClaim(invitation)"
+                  [matTooltip]="'admin.claim.tooltips.remove' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['invitation', 'value', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['invitation', 'value', 'actions']"></tr>
+        </table>
+
+        @if (!form.controls.invitations.value.length) {
+          <div align="center" style="padding: 16px">
+            {{ "admin.claim.labels.no-invitation-claims" | translate }}
+          </div>
+        }
+      </mat-expansion-panel>
+
+      <mat-card-actions>
+        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">
+          @if (id) {
+            {{ "admin.common.actions.update" | translate }}
+          } @else {
+            {{ "admin.common.actions.create" | translate }}
+          }
+        </button>
+        @if (id) {
+          <button mat-flat-button class="danger-button" type="button" (click)="remove()">
+            {{ "admin.common.actions.delete" | translate }}
+          </button>
+        }
+      </mat-card-actions>
+    </form>
+  </mat-card-content>
+</mat-card>

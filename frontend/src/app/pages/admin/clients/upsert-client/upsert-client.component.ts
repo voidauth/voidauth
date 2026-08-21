@@ -15,13 +15,12 @@ import {
   type ClientUpsertRequest,
 } from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
-import { type ItemIn, type Nullable, optionalizeNullable } from '@shared/utils'
+import { type ItemIn, type Nullable, optionalizeNullable, stringCompare } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { OidcInfoComponent } from '../../../../components/oidc-info/oidc-info.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
-import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { isValidWildcardRedirect, validateWildcardRedirects } from '@shared/url'
 import { TranslatePipe } from '@ngx-translate/core'
 import { TranslateService } from '@ngx-translate/core'
@@ -97,16 +96,10 @@ export class UpsertClientComponent implements OnInit {
     groups: new FormControl<string[]>([], { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<ClientUpsertRequest, 'client_id'> & Nullable<Pick<ClientUpsertRequest, 'client_id'>>>>
 
-  public groups: string[] = []
+  public availableGroups: string[] = []
   public unselectedGroups: string[] = []
   public selectableGroups: string[] = []
-  groupSelect = new FormControl<string>(
-    {
-      value: '',
-      disabled: false,
-    },
-    [],
-  )
+  groupSelect = new FormControl<string | null>(null)
 
   redirectUrlControl = new FormControl<string>(
     {
@@ -163,10 +156,15 @@ export class UpsertClientComponent implements OnInit {
         this.spinnerService.show()
         this.client_id = params.get('client_id')
 
-        this.groups = (await this.adminService.groups()).map(g => g.name)
-        this.groupAutoFilter()
-
         await this.getCurrentClientData()
+
+        try {
+          this.availableGroups = (await this.adminService.groups())
+            .map(g => g.name).sort(stringCompare)
+          this.groupAutoFilter()
+        } catch {
+          // do nothing
+        }
       } catch (e) {
         console.error(e)
         this.snackbarService.error('Error loading OIDC App Details.')
@@ -349,7 +347,7 @@ export class UpsertClientComponent implements OnInit {
   }
 
   groupAutoFilter(value: string = '') {
-    this.unselectedGroups = this.groups.filter((g) => {
+    this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.includes(g)
     })
     this.selectableGroups = this.unselectedGroups
@@ -364,14 +362,16 @@ export class UpsertClientComponent implements OnInit {
     }
   }
 
-  addGroup(event: MatAutocompleteSelectedEvent) {
-    const value = event.option.value as string
+  addGroup(value: string) {
+    value = value.trim()
     if (!value) {
       return
     }
-    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort())
+    this.form.controls.groups.setValue([value].concat(this.form.controls.groups.value).sort(stringCompare))
     this.form.controls.groups.markAsDirty()
     this.groupSelect.setValue(null)
+    this.groupSelect.markAsUntouched()
+    this.groupSelect.updateValueAndValidity()
     this.groupAutoFilter()
   }
 
@@ -385,7 +385,7 @@ export class UpsertClientComponent implements OnInit {
     if (this.form.controls.redirect_uris.value.includes(value)) {
       return
     }
-    this.form.controls.redirect_uris.setValue([value].concat(this.form.controls.redirect_uris.value).sort())
+    this.form.controls.redirect_uris.setValue([value].concat(this.form.controls.redirect_uris.value).sort(stringCompare))
     this.form.controls.redirect_uris.markAsDirty()
     this.form.controls.redirect_uris.updateValueAndValidity()
     this.form.controls.post_logout_redirect_uri.markAsTouched()

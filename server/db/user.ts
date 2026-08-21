@@ -15,6 +15,8 @@ import zod from 'zod'
 import { createPasswordReset, getPasswordResetURL } from './passwordReset'
 import { humanDuration } from '@shared/utils'
 import { TABLES } from '@shared/db'
+import { getGroupsCustomClaims, getUserCustomClaims } from './claims'
+import { calculateCustomClaims } from '@shared/user'
 
 export async function getUsers(searchTerm?: string): Promise<UserWithAdminIndicator[]> {
   return (await db().table<User>(TABLES.USER).select<(User & { isAdmin: number })[]>('user.*', db().raw(`
@@ -97,13 +99,20 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
     .orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc'))
 
   const hasMfaGroup = groups.some(g => g.mfaRequired)
+  const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
+
+  const groupsWithClaims = await getGroupsCustomClaims(groups.map(g => ({ id: g.id, name: g.name })))
+  const customClaims = await getUserCustomClaims(user.id)
 
   const hasTotp = await hasTOTP(id)
   const hasPasskeys = !!(await getUserPasskeys(user.id)).length
-  const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
   const { passwordHash, ...userWithoutPassword } = user
-  return { ...userWithoutPassword, groups, hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
+  return {
+    ...userWithoutPassword,
+    groups: groupsWithClaims,
+    customClaims,
+    hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
@@ -157,18 +166,31 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
         name?: string | null
         groups?: string[]
       } = { sub: id }
+      const scopes = new Set(scope.split(/\s+/).filter(Boolean))
 
-      if (scope.includes('email')) {
-        accountClaims.email = user.email ?? null
-        accountClaims.email_verified = !!user.emailVerified
+      if (scopes.has('openid')) {
+        // Do custom claims
+        const claims = calculateCustomClaims(user)
+        for (const c of claims) {
+          try {
+            accountClaims[c.claim] = JSON.parse(c.value)
+          } catch (_e) {
+            // for claims that aren't valid JSON, treat them as strings
+            accountClaims[c.claim] = c.value
+          }
+        }
       }
 
-      if (scope.includes('profile')) {
+      // Do defined scope processing
+      if (scopes.has('profile')) {
         accountClaims.preferred_username = user.username
         accountClaims.name = user.name
       }
-
-      if (scope.includes('groups')) {
+      if (scopes.has('email')) {
+        accountClaims.email = user.email ?? null
+        accountClaims.email_verified = !!user.emailVerified
+      }
+      if (scopes.has('groups')) {
         accountClaims.groups = user.groups.map(g => g.name)
       }
 

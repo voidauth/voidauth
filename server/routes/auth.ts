@@ -5,6 +5,7 @@ import { createEmailVerification } from './interaction'
 import { getInvitation } from '../db/invitations'
 import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
+import type { InvitationBasic } from '@shared/api-response/InvitationBasic'
 
 export const authRouter = Router()
 
@@ -51,5 +52,13 @@ authRouter.get('/invitation/:id/:challenge',
       return
     }
 
-    res.send(invite)
+    const inviteBasic: InvitationBasic = {
+      id: invite.id,
+      challenge: invite.challenge,
+      username: invite.username,
+      email: invite.email,
+      name: invite.name,
+    }
+
+    res.send(inviteBasic satisfies InvitationBasic)
   })

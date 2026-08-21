@@ -6,9 +6,3 @@ declare module 'oidc-provider/lib/helpers/add_client.js' {
       store: boolean,
     }): Promise<import('oidc-provider').Client>
 }
-
-declare module 'oidc-provider/lib/helpers/initialize_keystore.js' {
-  function initialize(jwks: import('oidc-provider').JWKS)
-
-  export default initialize
-}

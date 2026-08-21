@@ -3,7 +3,7 @@ import type { User } from '@shared/db/User'
 import type { Group, UserGroup } from '@shared/db/Group'
 import { TABLES } from '@shared/db'
 import appConfig from '../util/config'
-import type { Nullable } from '@shared/utils'
+import { stringCompare, type Nullable } from '@shared/utils'
 import { getLDAPVisibleUsers, getUserByUsername } from '../db/user'
 import { parseDN } from './util'
 
@@ -185,7 +185,7 @@ function organizationalUnitEntry(ou: string, dn: string) {
 function userEntry(
   user: UserLDAPAttributes,
   groupNames: string[]) {
-  const groupDNs = groupNames.map(name => ldapGroupDN({ name })).sort((a, b) => a.localeCompare(b))
+  const groupDNs = groupNames.map(name => ldapGroupDN({ name })).sort(stringCompare)
 
   return {
     dn: ldapUserDN(user),
@@ -203,7 +203,7 @@ function userEntry(
 }
 
 function groupEntry(group: Pick<Group, 'id' | 'name'>, users: UserLDAPAttributes[]) {
-  const members = users.map(user => ldapUserDN(user)).sort((a, b) => a.localeCompare(b))
+  const members = users.map(user => ldapUserDN(user)).sort(stringCompare)
 
   return {
     dn: ldapGroupDN(group),
@@ -213,7 +213,7 @@ function groupEntry(group: Pick<Group, 'id' | 'name'>, users: UserLDAPAttributes
       cn: group.name,
       member: members,
       uniqueMember: members,
-      memberUid: users.map(user => user.username).sort((a, b) => a.localeCompare(b)),
+      memberUid: users.map(user => user.username).sort(stringCompare),
     }),
   }
 }

@@ -57,6 +57,7 @@ import { passkeyRegistrationValidator } from '../../shared/validators'
 import { passwordStrength } from '../util/zxcvbn'
 import { checkPrivileged, checkPrivilegedForTotpCreate, checkPrivilegedForTotpValidate } from '../util/authMiddleware'
 import { TABLES } from '@shared/db'
+import type { InvitationCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
 
 export const router = Router()
 
@@ -132,10 +133,10 @@ router.get('/', async (req, res) => {
     // Check conditions to skip consent, after provider has already determined it is required
     const { redirect_uri, client_id, scope } = params
     if (typeof redirect_uri === 'string' && typeof client_id === 'string' && typeof scope === 'string') {
-      // Check if the client_id is auth_internal_client
+      // Check if the client_id is auth_internal_client or proxyauth_internal_client
       if (client_id === 'auth_internal_client' || client_id === 'proxyauth_internal_client') {
         const grantId = await applyConsent(interaction)
-        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+        const redir = await provider().interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
@@ -146,7 +147,7 @@ router.get('/', async (req, res) => {
       const client = await getClient(client_id)
       if (client?.skip_consent) {
         const grantId = await applyConsent(interaction)
-        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+        const redir = await provider().interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
@@ -157,7 +158,7 @@ router.get('/', async (req, res) => {
       const existingConsent = user?.id && await getExistingConsent(user.id, redirect_uri)
       if (existingConsent && !consentMissingScopes(existingConsent, scope).length) {
         const grantId = await applyConsent(interaction)
-        const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+        const redir = await provider().interactionResult(req, res, { consent: { grantId } }, {
           mergeWithLastSubmission: true,
         })
         res.redirect(redir)
@@ -169,7 +170,7 @@ router.get('/', async (req, res) => {
     return
   } else if (prompt.name === 'select_account') {
     // Handle select_account prompt
-    const redir = await provider.interactionResult(req, res, { select_account: true }, {
+    const redir = await provider().interactionResult(req, res, { select_account: true }, {
       mergeWithLastSubmission: true,
     })
     res.redirect(redir)
@@ -222,7 +223,7 @@ router.post('/try-again', async (req, res) => {
   }
 
   const redir: Redirect = {
-    location: await provider.interactionResult(req, res, interaction.lastSubmission, {
+    location: await provider().interactionResult(req, res, interaction.lastSubmission, {
       mergeWithLastSubmission: true,
     }),
   }
@@ -259,15 +260,15 @@ router.get('/:uid/detail',
       return
     }
     const { uid, params } = interaction
-    const scope = typeof params.scope === 'string' ? params.scope : ''
-    const client = await provider.Client.find(params.client_id as string)
+    const scope = typeof params.scope === 'string' ? params.scope : null
+    const client = typeof params.client_id === 'string' ? await provider().Client.find(params.client_id) : undefined
     const details: ConsentDetails = {
       uid: uid,
-      clientId: params.client_id as string,
+      clientId: typeof params.client_id === 'string' ? params.client_id : undefined,
       clientName: client?.clientName,
       logoUri: client?.logoUri,
-      redirectUri: params.redirect_uri as string,
-      scopes: scope.split(' '),
+      redirectUri: typeof params.redirect_uri === 'string' ? params.redirect_uri : undefined,
+      scopes: scope?.split(/\s+/).filter(Boolean),
     }
 
     res.send(details)
@@ -288,7 +289,7 @@ router.post('/:uid/confirm/',
       prompt,
       params,
       session,
-    } = await provider.interactionDetails(req, res)
+    } = await provider().interactionDetails(req, res)
     const { uid: uidParam } = req.params
 
     if (uid !== uidParam) {
@@ -301,11 +302,11 @@ router.post('/:uid/confirm/',
       return
     }
 
-    const grantId = await applyConsent(await provider.interactionDetails(req, res))
+    const grantId = await applyConsent(await provider().interactionDetails(req, res))
     if (typeof params.redirect_uri === 'string' && typeof params.scope === 'string' && session?.accountId) {
       await addConsent(params.redirect_uri, session.accountId, params.scope)
     }
-    const redir = await provider.interactionResult(req, res, { consent: { grantId } }, {
+    const redir = await provider().interactionResult(req, res, { consent: { grantId } }, {
       mergeWithLastSubmission: true,
     })
     res.redirect(redir)
@@ -379,8 +380,8 @@ router.post('/register',
       || (user.email && await getUserByInput(user.email))
 
     if (conflictingUser) {
-      const message = conflictingUser.username === user.username
-        || conflictingUser.email === user.username
+      const message = (conflictingUser.username === user.username
+        || conflictingUser.email === user.username)
         ? 'Username taken.'
         : 'Email taken.'
       res.status(409).send({ message: message })
@@ -391,10 +392,13 @@ router.post('/register',
     await db().table<User>(TABLES.USER).insert(user)
 
     const assignedGroupIds: Pick<Group, 'id' | 'createdBy' | 'updatedBy'>[] = []
-
+    const assignedCustomClaims: InvitationCustomClaim[] = []
     if (invitationValid) {
       const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP).where({ invitationId: invitation.id })
       assignedGroupIds.push(...inviteGroups.map(g => ({ id: g.groupId, createdBy: g.createdBy, updatedBy: g.updatedBy })))
+      const inviteCustomClaims = await db().select()
+        .table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).where({ invitationId: invitation.id })
+      assignedCustomClaims.push(...inviteCustomClaims)
     } else {
       // If no invitation, get the default groups for new users
       const defaultGroups = await db().select().table<Group>(TABLES.GROUP).where({ autoAssign: true })
@@ -414,6 +418,17 @@ router.post('/register',
       })
       await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
     }
+    if (assignedCustomClaims.length) {
+      const userCustomClaims: UserCustomClaim[] = assignedCustomClaims.map(c => ({
+        id: randomUUID(),
+        userId: user.id,
+        claimId: c.claimId,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }))
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(userCustomClaims)
+    }
 
     if (invitationValid) {
       await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
@@ -426,8 +441,8 @@ router.post('/register',
 
     // See where we need to redirect the user to, depending on config
     const redir = await loginResult(req, res, {
-      username: user.username,
       userId: user.id,
+      username: user.username,
       amr: ['pwd'],
     })
 
@@ -490,13 +505,13 @@ router.post('/register/passkey/end',
 
     const interaction = await getInteractionDetails(req, res)
     if (!interaction) {
+      const action = registration.inviteId ? 'Invite' : 'Registration'
       res.status(419).send({
-        message: `Page too old, refresh the page.`,
+        message: `${action} page too old, refresh the page.`,
       })
       return
     }
 
-    // Make sure that if invitation, it is valid
     const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
     const invitationValid = invitation && invitation.challenge === registration.challenge
 
@@ -532,8 +547,8 @@ router.post('/register/passkey/end',
       || (user.email && await getUserByInput(user.email))
 
     if (conflictingUser) {
-      const message = conflictingUser.username === user.username
-        || conflictingUser.email === user.username
+      const message = (conflictingUser.username === user.username
+        || conflictingUser.email === user.username)
         ? 'Username taken.'
         : 'Email taken.'
       res.status(409).send({ message: message })
@@ -544,10 +559,13 @@ router.post('/register/passkey/end',
     await db().table<User>(TABLES.USER).insert(user)
 
     const assignedGroupIds: Pick<Group, 'id' | 'createdBy' | 'updatedBy'>[] = []
-
+    const assignedCustomClaims: InvitationCustomClaim[] = []
     if (invitationValid) {
       const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP).where({ invitationId: invitation.id })
       assignedGroupIds.push(...inviteGroups.map(g => ({ id: g.groupId, createdBy: g.createdBy, updatedBy: g.updatedBy })))
+      const inviteCustomClaims = await db().select()
+        .table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).where({ invitationId: invitation.id })
+      assignedCustomClaims.push(...inviteCustomClaims)
     } else {
       // If no invitation, get the default groups for new users
       const defaultGroups = await db().select().table<Group>(TABLES.GROUP).where({ autoAssign: true })
@@ -566,6 +584,17 @@ router.post('/register/passkey/end',
         }
       })
       await db().table<UserGroup>(TABLES.USER_GROUP).insert(userGroups)
+    }
+    if (assignedCustomClaims.length) {
+      const userCustomClaims: UserCustomClaim[] = assignedCustomClaims.map(c => ({
+        id: randomUUID(),
+        userId: user.id,
+        claimId: c.claimId,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }))
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(userCustomClaims)
     }
 
     if (invitationValid) {
@@ -1046,7 +1075,7 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
 
       return {
         success: true,
-        location: await provider.interactionResult(req, res, {
+        location: await provider().interactionResult(req, res, {
           login: {
             accountId: userId,
             ...(remember ? { remember } : {}), // only include 'remember' in login options if it is true
@@ -1063,7 +1092,7 @@ async function loginResult(req: IncomingMessage, res: Response, options: {
 
 export async function getInteractionDetails(req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) {
   try {
-    return await provider.interactionDetails(req, res)
+    return await provider().interactionDetails(req, res)
   } catch (_e) {
     return null
   }
@@ -1087,10 +1116,10 @@ async function applyConsent(interactionDetails: Interaction) {
   const { details } = prompt
   const accountId = session?.accountId
 
-  let grant = !!interactionDetails.grantId && await provider.Grant.find(interactionDetails.grantId)
+  let grant = !!interactionDetails.grantId && await provider().Grant.find(interactionDetails.grantId)
 
   if (!grant) {
-    grant = new provider.Grant({
+    grant = new (provider()).Grant({
       accountId,
       clientId: params.client_id as string,
     })

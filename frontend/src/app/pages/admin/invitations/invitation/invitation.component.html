@@ -101,9 +101,9 @@
             (input)="groupAutoFilter(input.value)"
             (focus)="groupAutoFilter(input.value)"
           />
-          <mat-autocomplete (optionSelected)="addGroup($event); input.value = ''" requireSelection #auto="matAutocomplete">
+          <mat-autocomplete #auto="matAutocomplete" requireSelection (optionSelected)="addGroup($event.option.value); input.value = ''">
             @for (option of selectableGroups; track option) {
-              <mat-option [value]="option">{{ option }}</mat-option>
+              <mat-option [value]="option">{{ option.name }}</mat-option>
             }
           </mat-autocomplete>
           @if (groupSelect.errors) {
@@ -114,8 +114,8 @@
         <div mat-subheader>{{ "admin.invitation.labels.security-groups" | translate }}</div>
         @for (g of form.value.groups; track g) {
           <mat-list-item>
-            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g)">cancel</mat-icon>
-            <div matListItemTitle>{{ g }}</div>
+            <mat-icon fontSet="material-icons-round" matListItemIcon class="clickable" (click)="removeGroup(g.name)">cancel</mat-icon>
+            <div matListItemTitle>{{ g.name }}</div>
           </mat-list-item>
         }
         @if (!form.value.groups?.length) {
@@ -127,6 +127,90 @@
           {{ form.controls.groups.errors | validationError | async }}
         </mat-error>
       }
+
+      <mat-expansion-panel style="width: 100%">
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ "admin.invitation.labels.custom-claims" | translate }}</mat-panel-title>
+        </mat-expansion-panel-header>
+        <table mat-table [dataSource]="form.controls.customClaims.value" style="width: 100%">
+          <ng-container matColumnDef="claim">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.invitation.labels.claim" | translate }}</th>
+            <td mat-cell *matCellDef="let claim" style="white-space: normal">{{ claim.claim }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="value">
+            <th mat-header-cell *matHeaderCellDef>{{ "admin.invitation.labels.value" | translate }}</th>
+            <td mat-cell *matCellDef="let claim" style="white-space: normal; word-break: break-word">{{ claim.value }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th style="text-align: right" mat-header-cell *matHeaderCellDef>
+              <button mat-icon-button type="button" (click)="addCustomClaim()">
+                <mat-icon fontSet="material-icons-round" matSuffix>add</mat-icon>
+              </button>
+            </th>
+            <td mat-cell *matCellDef="let claim" style="text-align: right">
+              <div>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="editCustomClaim(claim)"
+                  [matTooltip]="'admin.invitation.tooltips.edit' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="removeCustomClaim(claim)"
+                  [matTooltip]="'admin.invitation.tooltips.remove' | translate"
+                >
+                  <mat-icon fontSet="material-icons-round">delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['claim', 'value', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['claim', 'value', 'actions']"></tr>
+        </table>
+
+        @if (!form.controls.customClaims.value.length) {
+          <div align="center" style="padding: 16px">
+            {{ "admin.invitation.labels.no-custom-claims" | translate }}
+          </div>
+        }
+
+        @if (groupClaimsList().length) {
+          <div style="padding: 16px; margin-top: 8px">Group Custom Claims</div>
+          <table mat-table [dataSource]="groupClaimsList()" style="width: 100%">
+            <ng-container matColumnDef="claim">
+              <th mat-header-cell *matHeaderCellDef>{{ "admin.invitation.labels.claim" | translate }}</th>
+              <td mat-cell *matCellDef="let row" style="white-space: normal">{{ row.claim }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="group">
+              <th mat-header-cell *matHeaderCellDef>{{ "admin.invitation.labels.group" | translate }}</th>
+              <td mat-cell *matCellDef="let row" style="white-space: normal">{{ row.group }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="value">
+              <th mat-header-cell *matHeaderCellDef>{{ "admin.invitation.labels.value" | translate }}</th>
+              <td mat-cell *matCellDef="let row" style="white-space: normal; word-break: break-word">{{ row.value }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="active">
+              <th mat-header-cell *matHeaderCellDef>{{ "admin.invitation.labels.applied" | translate }}</th>
+              <td mat-cell *matCellDef="let row" style="white-space: normal">
+                <mat-icon fontSet="material-icons-round">{{ row.active ? "done" : "not_interested" }}</mat-icon>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['claim', 'group', 'value', 'active']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['claim', 'group', 'value', 'active']" [class.disabled]="!row.active"></tr>
+          </table>
+        }
+      </mat-expansion-panel>
 
       <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; width: 100%">
         <mat-form-field style="flex: 1 1 260px">
@@ -148,6 +232,9 @@
       </div>
 
       <mat-card-actions>
+        @if (form.errors) {
+          <p style="color: var(--mat-form-field-error-text-color, var(--mat-sys-error))">{{ form.errors | validationError | async }}</p>
+        }
         <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">
           @if (id) {
             {{ "admin.common.actions.update" | translate }}

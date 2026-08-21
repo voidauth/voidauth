@@ -4,3 +4,7 @@ mat-divider {
   min-width: calc(var(--form-min-width) * 0.8);
   max-width: calc(var(--form-max-width) * 0.8);
 }
+
+tr.disabled {
+  opacity: 0.5;
+}

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy, type OnInit } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
@@ -10,13 +10,15 @@ import type { TypedControls } from '../../clients/upsert-client/upsert-client.co
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import type { UserWithoutPassword } from '@shared/api-response/UserDetails'
-import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
-import { ADMIN_GROUP } from '@shared/constants'
+import type { GroupDetails } from '@shared/api-response/admin/GroupDetails'
+import { ADMIN_GROUP, CUSTOM_CLAIM_REGEX, PROTECTED_CLAIMS } from '@shared/constants'
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { TranslatePipe } from '@ngx-translate/core'
-import type { Nullable } from '@shared/utils'
+import { stringCompare, type ItemIn, type Nullable } from '@shared/utils'
+import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValueResult }
+  from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
 
 @Component({
   selector: 'app-group',
@@ -25,7 +27,7 @@ import type { Nullable } from '@shared/utils'
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './group.component.scss',
 })
-export class GroupComponent {
+export class GroupComponent implements OnInit {
   ADMIN_GROUP = ADMIN_GROUP
 
   public id: string | null = null
@@ -38,10 +40,13 @@ export class GroupComponent {
   public form = new FormGroup({
     // only alphanumeric, underscore, and hyphen
     name: new FormControl<string | null>(null, [Validators.required, Validators.pattern('^[A-Za-z0-9_-]+$')]),
-    users: new FormControl<GroupUsers['users']>([], { nonNullable: true }),
+    users: new FormControl<GroupDetails['users']>([], { nonNullable: true }),
     mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
     autoAssign: new FormControl<boolean>(false, { nonNullable: true }),
+    customClaims: new FormControl<GroupUpsert['customClaims']>([], { nonNullable: true }),
   }) satisfies FormGroup<TypedControls<Omit<GroupUpsert, 'id' | 'name'> & Nullable<Pick<GroupUpsert, 'name'>>>>
+
+  public customClaimColumns = ['claim', 'value', 'actions']
 
   private adminService = inject(AdminService)
   private route = inject(ActivatedRoute)
@@ -63,9 +68,8 @@ export class GroupComponent {
             name: group.name,
             mfaRequired: !!group.mfaRequired,
             autoAssign: !!group.autoAssign,
-            users: group.users.map((u) => {
-              return { id: u.id, username: u.username }
-            }),
+            users: group.users,
+            customClaims: group.customClaims,
           })
         }
 
@@ -125,6 +129,75 @@ export class GroupComponent {
     this.form.controls.users.setValue(this.form.controls.users.value.filter(u => u.id !== value))
     this.form.controls.users.markAsDirty()
     this.userAutoFilter()
+  }
+
+  async addCustomClaim() {
+    const availableCustomClaims = (await this.adminService.customClaims())
+      .filter(c => !this.form.controls.customClaims.value.some(cc => cc.claim === c.claim)).map(c => c.claim)
+
+    const dialogRef = this.dialog.open(OptionValueDialogComponent, {
+      data: {
+        header: 'Add Custom Claim',
+        availableOptions: availableCustomClaims,
+        allowNew: true,
+        newRegex: CUSTOM_CLAIM_REGEX,
+        newForbidden: [...PROTECTED_CLAIMS],
+        optionLabel: 'Custom Claim',
+      } satisfies OptionValueDialogData,
+      disableClose: true,
+    })
+
+    dialogRef.afterClosed().subscribe((result: OptionValueResult) => {
+      if (!result) {
+        return
+      }
+
+      this.form.controls.customClaims.setValue([
+        ...this.form.controls.customClaims.value,
+        { claim: result.option, value: result.value },
+      ].sort((a, b) => {
+        return stringCompare(a.claim, b.claim)
+      }))
+      this.form.controls.customClaims.markAsDirty()
+    })
+  }
+
+  async editCustomClaim(claimToEdit: ItemIn<GroupUpsert['customClaims']>) {
+    const availableCustomClaims = (await this.adminService.customClaims())
+      .filter(c => !this.form.controls.customClaims.value.some(cc => cc.claim === c.claim)).map(c => c.claim)
+
+    const dialogRef = this.dialog.open(OptionValueDialogComponent, {
+      data: {
+        header: 'Edit Custom Claim',
+        availableOptions: availableCustomClaims,
+        allowNew: true,
+        newRegex: CUSTOM_CLAIM_REGEX,
+        newForbidden: [...PROTECTED_CLAIMS],
+        optionLabel: 'Custom Claim',
+        currentOption: claimToEdit.claim,
+        currentValue: claimToEdit.value,
+      } satisfies OptionValueDialogData,
+      disableClose: true,
+    })
+
+    dialogRef.afterClosed().subscribe((result: OptionValueResult) => {
+      if (!result) {
+        return
+      }
+
+      this.form.controls.customClaims.setValue(
+        this.form.controls.customClaims.value.map((claim) => {
+          return claim.claim === claimToEdit.claim ? { claim: result.option, value: result.value } : claim
+        }),
+      )
+      this.form.controls.customClaims.markAsDirty()
+    })
+  }
+
+  removeCustomClaim(removed: ItemIn<GroupUpsert['customClaims']>) {
+    const updated = this.form.controls.customClaims.value.filter(c => c.claim !== removed.claim)
+    this.form.controls.customClaims.setValue(updated)
+    this.form.controls.customClaims.markAsDirty()
   }
 
   async submit() {
