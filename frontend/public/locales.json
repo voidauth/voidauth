@@ -4,5 +4,6 @@
   { "code": "fr-FR", "display": "Français" },
   { "code": "et-EE", "display": "Eesti" },
   { "code": "de-DE", "display": "Deutsch" },
-  { "code": "nl-NL", "display": "Nederlands" }
+  { "code": "nl-NL", "display": "Nederlands" },
+  { "code": "ru-RU", "display": "Русский" }
 ]
