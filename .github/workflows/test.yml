@@ -12,18 +12,18 @@ jobs:
       
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
 
       - name: Docker QEMU
-        uses: docker/setup-qemu-action@v3
-        
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+
       - name: Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       # Login to dockerhub if not a fork PR
       - name: Login Dockerhub
         if: ${{ github.event.pull_request == null || !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           username: notquitenothing
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -31,7 +31,7 @@ jobs:
       # Login to docker hardened image registry if not a fork PR
       - name: Login Docker Hardened Images Registry
         if: ${{ github.event.pull_request == null || !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: dhi.io
           username: notquitenothing
@@ -40,7 +40,7 @@ jobs:
       # runs for PRs from forks (skip any registry-backed cache)
       - name: Build Push (fork - no remote cache)
         if: ${{ github.event.pull_request != null && github.event.pull_request.head.repo.fork }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         id: docker-build-fork
         with:
           context: .
@@ -57,7 +57,7 @@ jobs:
       # runs for PRs from the same repo (or non-PR runs) and uses registry cache
       - name: Build Push (with registry cache)
         if: ${{ github.event.pull_request == null || !github.event.pull_request.head.repo.fork }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         id: docker-build
         with:
           context: .
