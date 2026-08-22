@@ -1,22 +1,23 @@
 import { Router, type Response } from 'express'
 import { db, rollback } from '../db/db'
-import { isOIDCProviderError, provider, removeClient, upsertClient } from '../oidc/provider'
-import { clientUpsertValidator } from '@shared/api-request/admin/ClientUpsert'
+import { isProviderClaimsDesynced, isOIDCProviderError, provider, removeClient, resetProvider, upsertClient } from '../oidc/provider'
+import { clientUpsertValidator, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomBytes, randomUUID } from 'crypto'
 import { getClient, getClients } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
 import { groupUpsertValidator } from '@shared/api-request/admin/GroupUpsert'
-import { ADMIN_GROUP, TTLs } from '@shared/constants'
+import { customClaimUpsertValidator } from '@shared/api-request/admin/CustomClaimUpsert'
+import { ADMIN_GROUP, PROTECTED_CLAIMS_SET, TTLs } from '@shared/constants'
 import { userUpdateValidator } from '@shared/api-request/admin/UserUpdate'
 import { endSessions, getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
 import type { UserWithAdminIndicator } from '@shared/api-response/UserDetails'
-import { getInvitation, getInvitations } from '../db/invitations'
+import { getInvitationDetails, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import { invitationUpsertValidator } from '@shared/api-request/admin/InvitationUpsert'
 import { sendApproved, sendInvitation, sendPasswordReset, sendTestNotification, SMTP_VERIFIED } from '../util/email'
-import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
+import type { GroupDetails } from '@shared/api-response/admin/GroupDetails'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
 import { urlFromWildcardHref } from '@shared/url'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
@@ -38,15 +39,21 @@ import { checkAdmin, checkPrivileged } from '../util/authMiddleware'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { IncomingMessage } from 'http'
 import { TABLES } from '@shared/db'
+import type { CustomClaim, GroupCustomClaim, InvitationCustomClaim, UserCustomClaim } from '@shared/db/CustomClaim'
+import { getCustomClaimDetails, getCustomClaimsRecords, getGroupsCustomClaims } from '../db/claims'
+import type { ClientMetadata } from 'oidc-provider'
+import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
 
 export const adminRouter = Router()
 
 adminRouter.use(checkPrivileged, checkAdmin)
 
 adminRouter.get('/config', async (_req, res) => {
+  const defaultGroupsWithClaims = await getGroupsCustomClaims(
+    await db().table<Group>(TABLES.GROUP).select('id', 'name').where({ autoAssign: true }))
   res.send({
     defaultUserExpireDuration: appConfig.DEFAULT_USER_EXPIRES_IN,
-    defaultGroups: (await db().table<Group>(TABLES.GROUP).select('name').where({ autoAssign: true })).map(g => g.name),
+    defaultGroups: defaultGroupsWithClaims,
   } satisfies AdminConfig)
 })
 
@@ -74,20 +81,23 @@ adminRouter.get('/client/:client_id',
  */
 
 async function upsertClientController(isCreate: boolean,
-  req: IncomingMessage, res: Response, clientMetadata: ClientResponse, reqUser: Pick<User, 'id'>) {
-  if (clientMetadata.client_id === 'proxyauth_internal_client' || clientMetadata.client_id === 'auth_internal_client') {
+  req: IncomingMessage,
+  res: Response,
+  clientUpsert: ClientUpsert,
+  reqUser: Pick<User, 'id'>) {
+  if (clientUpsert.client_id === 'proxyauth_internal_client' || clientUpsert.client_id === 'auth_internal_client') {
     res.status(400).send({ message: 'client_id is reserved.' })
     return
   }
 
-  if (clientMetadata.client_secret == null && clientMetadata.token_endpoint_auth_method !== 'none') {
+  if (clientUpsert.client_secret == null && clientUpsert.token_endpoint_auth_method !== 'none') {
     res.status(400).send({ message: `client_secret is required when token_endpoint_auth_method is not 'None (Public)'.` })
     return
   }
 
   try {
     // check that existing client does not exist with client_id
-    const existingClient = await getClient(clientMetadata.client_id)
+    const existingClient = await getClient(clientUpsert.client_id)
     if (isCreate && existingClient) {
       res.sendStatus(409)
       return
@@ -96,10 +106,15 @@ async function upsertClientController(isCreate: boolean,
       return
     }
 
+    const { groups, post_logout_redirect_uri, ...rest } = clientUpsert
+    const clientMetadata: ClientMetadata & typeof rest = rest
+
+    clientMetadata.post_logout_redirect_uris = post_logout_redirect_uri ? [post_logout_redirect_uri] : []
+
     // determine proper Application Type
     let hasHttpProtocol = false
     let hasCustomProtocol = false
-    for (const uri of clientMetadata.redirect_uris ?? []) {
+    for (const uri of clientMetadata.redirect_uris) {
       const protocol = urlFromWildcardHref(uri)?.protocol
       hasHttpProtocol ||= protocol === 'http:'
       hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
@@ -110,7 +125,7 @@ async function upsertClientController(isCreate: boolean,
     }
     clientMetadata.application_type = hasCustomProtocol ? 'native' : 'web'
 
-    await upsertClient(provider, clientMetadata, reqUser, provider.createContext(req, res))
+    await upsertClient(clientMetadata, groups, reqUser, provider().createContext(req, res))
     res.send()
   } catch (e) {
     if (isOIDCProviderError(e)) {
@@ -131,13 +146,7 @@ adminRouter.post('/client',
       return
     }
 
-    const clientUpsert = req.body
-    const clientMetadata: ClientResponse = {
-      ...clientUpsert,
-      post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
-    }
-
-    await upsertClientController(true, req, res, clientMetadata, req.user)
+    await upsertClientController(true, req, res, req.body, req.user)
   })
 
 adminRouter.patch('/client',
@@ -149,13 +158,7 @@ adminRouter.patch('/client',
       return
     }
 
-    const clientUpsert = req.body
-    const clientMetadata: ClientResponse = {
-      ...clientUpsert,
-      post_logout_redirect_uris: clientUpsert.post_logout_redirect_uri ? [clientUpsert.post_logout_redirect_uri] : [],
-    }
-
-    await upsertClientController(false, req, res, clientMetadata, req.user)
+    await upsertClientController(false, req, res, req.body, req.user)
   })
 
 adminRouter.delete('/client/:client_id',
@@ -169,6 +172,125 @@ adminRouter.delete('/client/:client_id',
       return
     }
     await removeClient(client_id)
+    res.send()
+  })
+
+adminRouter.get('/custom_claims', async (_req, res) => {
+  const claims = await getCustomClaimsRecords()
+  res.send(claims satisfies CustomClaim[])
+})
+
+adminRouter.get('/custom_claim/:id',
+  zodValidate({
+    params: { id: zod.uuidv4() },
+  }),
+  async (req, res) => {
+    const { id } = req.params
+    const customClaim = await getCustomClaimDetails(id)
+    if (!customClaim) {
+      res.sendStatus(404)
+      return
+    }
+
+    res.send(customClaim satisfies CustomClaimDetails)
+  })
+
+adminRouter.post('/custom_claim',
+  zodValidate({ body: customClaimUpsertValidator }),
+  async (req, res) => {
+    const { id, claim, users, groups, invitations } = req.body
+
+    if (PROTECTED_CLAIMS_SET.has(claim)) {
+      res.status(400).send({ message: 'Custom claim is reserved.' })
+      return
+    }
+
+    const existingClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ claim }).first()
+    if (existingClaim && existingClaim.id !== id) {
+      res.status(409).send({ message: 'Custom claim already exists.' })
+      return
+    }
+
+    const claimId = id ?? randomUUID()
+    const customClaim: CustomClaim = {
+      id: claimId,
+      claim,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaim).onConflict(['claim']).merge(mergeKeys(customClaim))
+
+    // Update related records for users, groups, and invitations
+    const userCustomClaims: UserCustomClaim[] = users.map((u) => {
+      return {
+        id: randomUUID(),
+        claimId,
+        userId: u.id,
+        value: u.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (userCustomClaims[0]) {
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(userCustomClaims)
+        .onConflict(['claimId', 'userId']).merge(mergeKeys(userCustomClaims[0]))
+    }
+    await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete()
+      .where({ claimId }).and.whereNotIn('userId', users.map(u => u.id))
+
+    const groupCustomClaims: GroupCustomClaim[] = groups.map((g) => {
+      return {
+        id: randomUUID(),
+        claimId,
+        groupId: g.id,
+        value: g.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (groupCustomClaims[0]) {
+      await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).insert(groupCustomClaims)
+        .onConflict(['claimId', 'groupId']).merge(mergeKeys(groupCustomClaims[0]))
+    }
+    await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).delete()
+      .where({ claimId }).and.whereNotIn('groupId', groups.map(g => g.id))
+
+    const invitationCustomClaims: InvitationCustomClaim[] = invitations.map((i) => {
+      return {
+        id: randomUUID(),
+        claimId,
+        invitationId: i.id,
+        value: i.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (invitationCustomClaims[0]) {
+      await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).insert(invitationCustomClaims)
+        .onConflict(['claimId', 'invitationId']).merge(mergeKeys(invitationCustomClaims[0]))
+    }
+    await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).delete()
+      .where({ claimId }).and.whereNotIn('invitationId', invitations.map(i => i.id))
+
+    if (await isProviderClaimsDesynced()) {
+      await resetProvider()
+    }
+
+    res.send({ id: claimId })
+  })
+
+adminRouter.delete('/custom_claim/:id',
+  zodValidate({
+    params: { id: zod.uuidv4() },
+  }),
+  async (req, res) => {
+    const { id } = req.params
+    const customClaim = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).first()
+    if (!customClaim) {
+      res.sendStatus(404)
+      return
+    }
+    await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).where({ id }).delete()
     res.send()
   })
 
@@ -202,7 +324,7 @@ adminRouter.get('/proxyauth/:id',
     res.send(response)
   })
 
-adminRouter.post('/proxyAuth',
+adminRouter.post('/proxyauth',
   zodValidate({ body: proxyAuthUpsertValidator }), async (req, res) => {
     const user = req.user
     if (!user) {
@@ -309,16 +431,42 @@ adminRouter.patch('/user',
     }
 
     const userUpdate = req.body
+    const { groups: userGroupNames, customClaims: userCustomClaims, ...user } = userUpdate
+
+    // Validate user custom claims
+    // check if any claims are protected
+    if (userCustomClaims.some(c => PROTECTED_CLAIMS_SET.has(c.claim))) {
+      res.status(400).send({ message: 'A custom claim is reserved.' })
+      return
+    }
+
+    const uniqueCustomClaims = new Set(userCustomClaims.map(c => c.claim))
+
+    // make sure no duplicate claims
+    if (uniqueCustomClaims.size !== userCustomClaims.length) {
+      res.status(400).send({ message: 'Duplicate custom claims are not allowed.' })
+      return
+    }
 
     const existingUser = await db().table<User>(TABLES.USER).where({ id: userUpdate.id }).first()
     if (!existingUser) {
       res.sendStatus(404)
       return
     }
+    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userGroupNames.map(g => g.name))
+    if (groups.length !== userGroupNames.length) {
+      res.sendStatus(400)
+      return
+    }
 
-    const { groups: _, ...user } = userUpdate
     const ucount = await db().table<User>(TABLES.USER).update({ ...user, updatedAt: new Date() }).where({ id: userUpdate.id })
-    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', userUpdate.groups.map(g => g.name))
+
+    if (!ucount) {
+      res.sendStatus(404)
+      return
+    }
+
+    // Update groups
     const userGroups: UserGroup[] = groups.map((g) => {
       return {
         groupId: g.id,
@@ -339,9 +487,51 @@ adminRouter.patch('/user',
       .where({ userId: userUpdate.id }).and
       .whereNotIn('groupId', userGroups.map(g => g.groupId))
 
-    if (!ucount) {
-      res.sendStatus(404)
-      return
+    // Sync Custom Claims.
+    // We are going to do some confusing stuff here so that custom claims do not have to be managed
+    // manually in the webUI but just ***magically*** appear when they are added to a user
+    // Make sure all the custom claims the user wants exist
+    let customClaims: CustomClaim[] = userCustomClaims.map((c) => {
+      return {
+        id: randomUUID(),
+        claim: c.claim,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (customClaims[0]) {
+      customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
+        .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    }
+
+    // Delete any user custom claims not present in new custom claims payload
+    await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).delete()
+      .where({ userId: userUpdate.id }).and
+      .whereNotIn('claimId', customClaims.map(c => c.id))
+
+    // Upsert provided user custom claims into user custom claims table
+    const upsertUserCustomClaims: UserCustomClaim[] = userCustomClaims.map((c) => {
+      const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
+      if (!matchingClaim) {
+        throw new Error('Matching claim for user custom claim could not be found!')
+      }
+      return {
+        id: randomUUID(),
+        userId: userUpdate.id,
+        claimId: matchingClaim.id,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (upsertUserCustomClaims[0]) {
+      await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(upsertUserCustomClaims)
+        .onConflict(['claimId', 'userId']).merge(mergeKeys(upsertUserCustomClaims[0]))
+    }
+
+    // Check if all custom claims matches current provider claims, update if not
+    if (await isProviderClaimsDesynced()) {
+      await resetProvider()
     }
 
     if (SMTP_VERIFIED && appConfig.SIGNUP_REQUIRES_APPROVAL && !existingUser.approved && userUpdate.approved && userUpdate.email) {
@@ -511,15 +701,19 @@ adminRouter.get('/group/:id',
       return
     }
 
-    const groupWithUsers: GroupUsers = {
+    const groupWithMeta: GroupDetails = {
       ...group,
       users: await db().select('id', 'username')
         .table<User>(TABLES.USER)
         .innerJoin<UserGroup>(TABLES.USER_GROUP, 'user_group.userId', 'user.id')
-        .where({ groupId: group.id }).orderBy(db().ref('name').withSchema(TABLES.USER), 'asc'),
+        .where({ groupId: group.id }).orderBy(db().ref('username').withSchema(TABLES.USER), 'asc'),
+      customClaims: await db().select('claim', 'value')
+        .table<CustomClaim>(TABLES.CUSTOM_CLAIM)
+        .innerJoin<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM, 'group_custom_claim.claimId', 'custom_claim.id')
+        .where({ groupId: group.id }).orderBy(db().ref('claim').withSchema(TABLES.CUSTOM_CLAIM), 'asc'),
     }
 
-    res.send(groupWithUsers)
+    res.send(groupWithMeta satisfies GroupDetails)
   })
 
 adminRouter.post('/group',
@@ -530,7 +724,7 @@ adminRouter.post('/group',
       return
     }
 
-    const { id, name, mfaRequired, autoAssign, users } = req.body
+    const { id, name, mfaRequired, autoAssign, users, customClaims: groupCustomClaims } = req.body
 
     // Check for name conflict
     const conflictingGroup = await db().select()
@@ -539,6 +733,21 @@ adminRouter.post('/group',
       .first()
     if (conflictingGroup && conflictingGroup.id !== id) {
       res.sendStatus(409)
+      return
+    }
+
+    // Validate group custom claims
+    // check if any claims are protected
+    if (groupCustomClaims.some(c => PROTECTED_CLAIMS_SET.has(c.claim))) {
+      res.status(400).send({ message: 'A custom claim is reserved.' })
+      return
+    }
+
+    const uniqueCustomClaims = new Set(groupCustomClaims.map(c => c.claim))
+
+    // make sure no duplicate claims
+    if (uniqueCustomClaims.size !== groupCustomClaims.length) {
+      res.status(400).send({ message: 'Duplicate custom claims are not allowed.' })
       return
     }
 
@@ -592,6 +801,51 @@ adminRouter.post('/group',
       .where({ groupId: groupId }).and
       .whereNotIn('userId', userGroups.map(g => g.userId))
 
+    // Sync Group Custom Claims. This is similar to the user custom claims sync above, but for groups instead of users
+    // Make sure all the custom claims the group wants exist
+    let customClaims: CustomClaim[] = groupCustomClaims.map((c) => {
+      return {
+        id: randomUUID(),
+        claim: c.claim,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (customClaims[0]) {
+      customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
+        .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    }
+
+    // Delete any group custom claims not present in new custom claims payload
+    await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).delete()
+      .where({ groupId: groupId }).and
+      .whereNotIn('claimId', customClaims.map(c => c.id))
+
+    // Upsert provided group custom claims into group custom claims table
+    const upsertGroupCustomClaims: GroupCustomClaim[] = groupCustomClaims.map((c) => {
+      const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
+      if (!matchingClaim) {
+        throw new Error('Matching claim for group custom claim could not be found!')
+      }
+      return {
+        id: randomUUID(),
+        groupId: groupId,
+        claimId: matchingClaim.id,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (upsertGroupCustomClaims[0]) {
+      await db().table<GroupCustomClaim>(TABLES.GROUP_CUSTOM_CLAIM).insert(upsertGroupCustomClaims)
+        .onConflict(['claimId', 'groupId']).merge(mergeKeys(upsertGroupCustomClaims[0]))
+    }
+
+    // Check if all custom claims matches current provider claims, update if not
+    if (await isProviderClaimsDesynced()) {
+      await resetProvider()
+    }
+
     res.send({ id: groupId })
   })
 
@@ -625,7 +879,7 @@ adminRouter.get('/invitation/:id',
     params: { id: zod.uuidv4() },
   }), async (req, res) => {
     const { id } = req.params
-    const invitation = await getInvitation(id)
+    const invitation = await getInvitationDetails(id)
     if (!invitation) {
       res.sendStatus(404)
       return
@@ -642,7 +896,14 @@ adminRouter.post('/invitation',
     }
 
     const invitationUpsert = req.body
-    const { groups: groupNames, ...invitationData } = invitationUpsert
+    const { groups, customClaims: invitationCustomClaims, ...invitationData } = invitationUpsert
+
+    // Validate custom claims
+    // check if any claims are protected
+    if (invitationCustomClaims.some(c => PROTECTED_CLAIMS_SET.has(c.claim))) {
+      res.status(400).send({ message: 'A custom claim is reserved.' })
+      return
+    }
 
     const id = invitationData.id ?? randomUUID()
 
@@ -667,28 +928,72 @@ adminRouter.post('/invitation',
       })
     }
 
-    const groups: Group[] = await db().select().table<Group>(TABLES.GROUP).whereIn('name', groupNames)
-    const invitationGroups: InvitationGroup[] = groups.map((g) => {
-      return {
-        groupId: g.id,
-        invitationId: id,
-        createdBy: currentUser.id,
-        updatedBy: currentUser.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-    })
+    const invitationGroups: InvitationGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups.map(g => g.name)))
+      .map((g) => {
+        return {
+          groupId: g.id,
+          invitationId: id,
+          createdBy: currentUser.id,
+          updatedBy: currentUser.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
 
     if (invitationGroups[0]) {
       await db().table<InvitationGroup>(TABLES.INVITATION_GROUP).insert(invitationGroups)
         .onConflict(['groupId', 'invitationId']).merge(mergeKeys(invitationGroups[0]))
     }
-
     await db().table<InvitationGroup>(TABLES.INVITATION_GROUP).delete()
       .where({ invitationId: id }).and
       .whereNotIn('groupId', invitationGroups.map(g => g.groupId))
 
-    const invitation = await getInvitation(id)
+    // Sync Invitation Custom Claims. This is similar to the user custom claims sync above, but for invitations instead of users
+    // Make sure all the custom claims the invitation wants exist
+    let customClaims: CustomClaim[] = invitationCustomClaims.map((c) => {
+      return {
+        id: randomUUID(),
+        claim: c.claim,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (customClaims[0]) {
+      customClaims = await db().table<CustomClaim>(TABLES.CUSTOM_CLAIM).insert(customClaims)
+        .onConflict(['claim']).merge(mergeKeys(customClaims[0])).returning('*')
+    }
+
+    // Delete any invitation custom claims not present in new custom claims payload
+    await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).delete()
+      .where({ invitationId: id }).and
+      .whereNotIn('claimId', customClaims.map(c => c.id))
+
+    // Upsert provided invitation custom claims into invitation custom claims table
+    const upsertInvitationCustomClaims: InvitationCustomClaim[] = invitationCustomClaims.map((c) => {
+      const matchingClaim = customClaims.find(cc => cc.claim === c.claim)
+      if (!matchingClaim) {
+        throw new Error('Matching claim for invitation custom claim could not be found!')
+      }
+      return {
+        id: randomUUID(),
+        invitationId: id,
+        claimId: matchingClaim.id,
+        value: c.value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
+    if (upsertInvitationCustomClaims[0]) {
+      await db().table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM).insert(upsertInvitationCustomClaims)
+        .onConflict(['claimId', 'invitationId']).merge(mergeKeys(upsertInvitationCustomClaims[0]))
+    }
+
+    // Check if all custom claims matches current provider claims, update if not
+    if (await isProviderClaimsDesynced()) {
+      await resetProvider()
+    }
+
+    const invitation = await getInvitationDetails(id)
     res.send(invitation)
   })
 
@@ -717,7 +1022,7 @@ adminRouter.post('/send_invitation/:id',
     },
   }), async (req, res) => {
     const { id } = req.params
-    const invitation = await getInvitation(id)
+    const invitation = await getInvitationDetails(id)
 
     if (!invitation) {
       res.sendStatus(404)

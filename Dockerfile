@@ -1,7 +1,7 @@
 #
 # Builder
 #
-FROM node:24-alpine3.22 AS install
+FROM node:24-alpine3.22@sha256:191c9f0080fcbbc6547a85dc0ff7988072214a355aabdc1d2ec55a7dae5eea8a AS install
 
 WORKDIR /app
 
@@ -39,7 +39,7 @@ RUN cd ./dist && npm i
 # 
 # Compile all outputs into /app folder
 # 
-FROM node:24-alpine3.22 AS build
+FROM node:24-alpine3.22@sha256:191c9f0080fcbbc6547a85dc0ff7988072214a355aabdc1d2ec55a7dae5eea8a AS build
 
 WORKDIR /app
 

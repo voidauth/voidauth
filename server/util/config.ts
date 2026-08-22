@@ -10,6 +10,7 @@ import zod from 'zod'
 import type { SecureVersion } from 'node:tls'
 import { randomBytes } from 'node:crypto'
 import { parseDN } from '../ldap/util'
+import { CLIENT_DEFAULTS } from '@shared/constants'
 
 // basic config for app
 class Config {
@@ -263,9 +264,7 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
     if (!client) {
       client = {
         client_id: client_id,
-        token_endpoint_auth_method: 'client_secret_basic',
-        response_types: ['code'],
-        grant_types: ['authorization_code', 'refresh_token'],
+        ...CLIENT_DEFAULTS,
         groups: [],
         skip_consent: false,
         declared: source,
@@ -465,7 +464,7 @@ const pslParsedAppUrl = psl.parse(appUrl().hostname)
 if ('listed' in pslParsedAppUrl && !pslParsedAppUrl.listed) {
   logger({
     level: 'debug',
-    message: `APP_URL: '${appConfig.APP_URL}' appears to be a private DNS zone.`,
+    message: `APP_URL: '${appConfig.APP_URL}' appears to be in a private DNS zone.`,
   })
 } else {
   logger({

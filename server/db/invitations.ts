@@ -1,8 +1,10 @@
 import type { Invitation } from '@shared/db/Invitation'
 import { db } from './db'
-import type { InvitationDetails } from '@shared/api-response/InvitationDetails'
+import type { InvitationDetails } from '@shared/api-response/admin/InvitationDetails'
 import type { Group, InvitationGroup } from '@shared/db/Group'
 import { TABLES } from '@shared/db'
+import type { CustomClaim, InvitationCustomClaim } from '@shared/db/CustomClaim'
+import { getGroupsCustomClaims } from './claims'
 
 export async function getInvitations() {
   return await db().select().table<Invitation>(TABLES.INVITATION)
@@ -11,15 +13,23 @@ export async function getInvitations() {
 }
 
 export async function getInvitation(id: string) {
-  const invitation = await db().select().table<Invitation>(TABLES.INVITATION)
+  return await db().select().table<Invitation>(TABLES.INVITATION)
     .where({ id }).andWhere(db().ref('expiresAt').withSchema(TABLES.INVITATION), '>=', new Date()).first()
+}
+
+export async function getInvitationDetails(id: string) {
+  const invitation = await getInvitation(id)
   if (!invitation) {
     return
   }
-  const groups = await db().select('name')
+  const groups = await db().select('id', 'name')
     .table<Group>(TABLES.GROUP)
     .innerJoin<InvitationGroup>(TABLES.INVITATION_GROUP, 'invitation_group.groupId', 'group.id')
     .where({ invitationId: id }).orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc')
-  const invitationDetails: InvitationDetails = { ...invitation, groups: groups.map(g => g.name) }
+  const customClaims = await db().select('claim', 'value')
+    .table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM)
+    .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, 'invitation_custom_claim.claimId', 'custom_claim.id')
+    .where({ invitationId: id })
+  const invitationDetails: InvitationDetails = { ...invitation, groups: await getGroupsCustomClaims(groups), customClaims }
   return invitationDetails
 }

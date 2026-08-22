@@ -15,7 +15,7 @@ const circularDependencies = madgeResult.circular()
 
 if (circularDependencies.length > 0) {
   circularDependencies.forEach((cycle) => {
-    console.error('Circular dependency: ' + cycle.join(' → '))
+    console.error('Circular dependency: ' + cycle.join(' → ') + ` → ${String(cycle[0])}`)
   })
 
   process.exit(1)

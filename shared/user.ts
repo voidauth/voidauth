@@ -1,4 +1,5 @@
 import type { UserDetails } from './api-response/UserDetails'
+import { stringCompare } from './utils'
 
 export const amrFactors = {
   multiFactors: ['email'], // something that should already require mfa to access
@@ -39,4 +40,25 @@ export function isExpired(user: Pick<UserDetails, 'expiresAt' | 'isAdmin'>) {
 
 export function isUnverifiedEmail(user: Pick<UserDetails, 'hasEmail' | 'emailVerified' | 'isAdmin'>, EMAIL_VERIFICATION: boolean) {
   return !user.isAdmin && EMAIL_VERIFICATION && (!user.hasEmail || !user.emailVerified)
+}
+
+type TrackedCustomClaim = { claim: string, value: string, groupId?: string }
+export function calculateCustomClaims(user: Pick<UserDetails, 'customClaims' | 'groups'>): TrackedCustomClaim[] {
+  // Must get the list of all user claims, then group claims. There can be no duplicate claims,
+  // and group claims should be sorted by group name and keep track of which group they came from.
+  // User claims take priority over group claims, as they are more specific to the user.
+  const claims: TrackedCustomClaim[] = []
+  const groupClaims = user.groups.sort((a, b) => stringCompare(a.name, b.name)).flatMap(g =>
+    g.customClaims.map(c => ({ claim: c.claim, value: c.value, groupId: g.id })),
+  )
+  const userClaims = user.customClaims.map(c => ({ claim: c.claim, value: c.value }))
+  const allClaims = userClaims.concat(groupClaims)
+  const seen = new Set<string>()
+  for (const c of allClaims) {
+    if (!seen.has(c.claim)) {
+      claims.push(c)
+      seen.add(c.claim)
+    }
+  }
+  return claims
 }

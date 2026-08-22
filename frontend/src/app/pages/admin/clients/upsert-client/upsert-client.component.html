@@ -11,7 +11,7 @@
 <app-oidc-info style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
 <mat-card class="form-card">
   <mat-card-content>
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form">
       <mat-form-field>
         <mat-label>{{ "admin.client.labels.name" | translate }}</mat-label>
         <input matInput type="text" formControlName="client_name" />
@@ -43,16 +43,20 @@
         <mat-form-field>
           <mat-label>{{ "admin.client.labels.add-group" | translate }}</mat-label>
           <input
-            #input
+            #group_input
             type="text"
             placeholder="Pick one"
             matInput
             [formControl]="groupSelect"
-            [matAutocomplete]="auto"
-            (input)="groupAutoFilter(input.value)"
-            (focus)="groupAutoFilter(input.value)"
+            [matAutocomplete]="groupAuto"
+            (input)="groupAutoFilter(group_input.value)"
+            (focus)="groupAutoFilter(group_input.value)"
           />
-          <mat-autocomplete (optionSelected)="addGroup($event); input.value = ''" requireSelection #auto="matAutocomplete">
+          <mat-autocomplete
+            #groupAuto="matAutocomplete"
+            requireSelection
+            (optionSelected)="addGroup($event.option.value); group_input.value = ''"
+          >
             @for (option of selectableGroups; track option) {
               <mat-option [value]="option">{{ option }}</mat-option>
             }
@@ -256,7 +260,7 @@
       </mat-form-field>
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid || form.pristine || form.disabled" type="submit">
+        <button mat-flat-button [disabled]="form.invalid || form.pristine || form.disabled" type="button" (click)="submit()">
           @if (client_id) {
             {{ "admin.common.actions.update" | translate }}
           } @else {

@@ -22,7 +22,7 @@ export class TranslationService {
 
   public availableLangs = computed(() => {
     const currentLang = this._current()
-    return locales.sort((a, b) => a.display.localeCompare(b.display, currentLang))
+    return locales.sort((a, b) => a.display.localeCompare(b.display, currentLang, { sensitivity: 'base' }))
   })
 
   public currentLang = computed<LangInfo | null>(() => {

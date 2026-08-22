@@ -6,11 +6,11 @@ import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
 import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
-import { type InvitationDetails } from '@shared/api-response/InvitationDetails'
+import { type InvitationDetails } from '@shared/api-response/admin/InvitationDetails'
 import type { Group } from '@shared/db/Group'
 import type { Invitation } from '@shared/db/Invitation'
 import { REDIRECT_PATHS } from '@shared/constants'
-import type { GroupUsers } from '@shared/api-response/admin/GroupUsers'
+import type { GroupDetails } from '@shared/api-response/admin/GroupDetails'
 import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
@@ -19,6 +19,9 @@ import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import type { SortDirection } from '@angular/material/sort'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
+import type { CustomClaim } from '@shared/db/CustomClaim'
+import type { CustomClaimUpsert } from '@shared/api-request/admin/CustomClaimUpsert'
+import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +41,22 @@ export class AdminService {
 
   async config() {
     return firstValueFrom(this.http.get<AdminConfig>('/api/admin/config'))
+  }
+
+  async customClaims() {
+    return firstValueFrom(this.http.get<CustomClaim[]>('/api/admin/custom_claims'))
+  }
+
+  async customClaim(id: string) {
+    return firstValueFrom(this.http.get<CustomClaimDetails>(`/api/admin/custom_claim/${encodeURIComponent(id)}`))
+  }
+
+  async upsertCustomClaim(customClaim: CustomClaimUpsert) {
+    return firstValueFrom(this.http.post<{ id: string }>('/api/admin/custom_claim', customClaim))
+  }
+
+  async deleteCustomClaim(id: string) {
+    return firstValueFrom(this.http.delete<null>(`/api/admin/custom_claim/${encodeURIComponent(id)}`))
   }
 
   async clients() {
@@ -81,7 +100,7 @@ export class AdminService {
   }
 
   async group(id: string) {
-    return firstValueFrom(this.http.get<GroupUsers>(`/api/admin/group/${id}`))
+    return firstValueFrom(this.http.get<GroupDetails>(`/api/admin/group/${id}`))
   }
 
   async upsertGroup(group: GroupUpsert) {

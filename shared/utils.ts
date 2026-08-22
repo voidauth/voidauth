@@ -6,10 +6,20 @@ export type ItemIn<T extends readonly unknown[] | unknown[]> = T[number]
 
 export type RequireKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
 
+// makes the specified keys optional or undefined, while keeping the rest of the type intact
 export type RemoveKeys<T, K extends keyof T> = Omit<T, K> & { [k in K]?: undefined }
 
+// makes all keys of a type that are NOT specified optional or undefined
+export type OnlyKeys<T, K extends keyof T> = RemoveKeys<T, Exclude<keyof T, K>>
+
+// Converts a type Source to a type Target, keeping only the keys that exist in both Source and Target, and merging with Target
+// Enables exact conversion between Source and Target types
+export type Convert<Source extends Target, Target> = OnlyKeys<Source, Extract<keyof Target, keyof Source>> & Target
+
+// makes all properties of a type nullable
 export type Nullable<T> = { [K in keyof T]: T[K] | null }
 
+// Returns input type but all properties that are nullable are now optional and not nullable
 export type OptionalizedNullable<T> = {
   [K in keyof T]: null extends T[K] ? Exclude<T[K], null> | undefined : T[K]
 }
@@ -86,4 +96,8 @@ function humanDurationHelper(ms: number): string | null {
     return String(seconds) + ' second' + ((seconds > 1) ? 's' : '')
   }
   return null
+}
+
+export function stringCompare(a: string, b: string, options?: Intl.CollatorOptions): number {
+  return a.localeCompare(b, undefined, { sensitivity: 'base', ...options })
 }
