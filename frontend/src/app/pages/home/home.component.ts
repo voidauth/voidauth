@@ -145,7 +145,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     await this.loadUser()
 
-    this.passkeySupport = await this.passkeyService.getPasskeySupport()
+    this.passkeySupport = this.passkeyService.getPasskeySupport()
     this.config = await this.configService.getConfig()
   }
 

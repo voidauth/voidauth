@@ -101,7 +101,7 @@ export class RegistrationComponent implements OnInit {
       try {
         this.spinnerService.show()
         this.config = await this.configService.getConfig()
-        this.passkeySupport = await this.passkeyService.getPasskeySupport()
+        this.passkeySupport = this.passkeyService.getPasskeySupport()
         if (!this.passkeySupport.enabled) {
           this.passwordControl.addValidators(Validators.required)
           this.passwordControl.updateValueAndValidity()
@@ -175,7 +175,7 @@ export class RegistrationComponent implements OnInit {
       // See if we want to ask the user to register a passkey
       try {
         const user = (await this.authService.interactionExists()).user
-        if (user && (await this.passkeyService.shouldAskPasskey(user))) {
+        if (user && this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }

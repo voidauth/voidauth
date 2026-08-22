@@ -5,7 +5,6 @@ import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { TranslatePipe } from '@ngx-translate/core'
 import { UAParser } from 'ua-parser-js'
-import { PasskeyService } from '../../services/passkey.service'
 
 @Component({
   selector: 'app-passkey-name',
@@ -27,9 +26,11 @@ export class PasskeyNameDialog {
       const res = UAParser(navigator.userAgent)
       const os = res.os.name ?? ''
 
-      const passkeyPlatformName = PasskeyService.getPlatform(os)?.platformName ?? ''
+      // Date as year-month-day
+      const now = new Date()
+      const formattedDate = `${now.getFullYear().toString()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
 
-      const label = [os, passkeyPlatformName].filter(Boolean).join(' - ')
+      const label = [os, formattedDate].filter(Boolean).join(' - ')
 
       const suggested = label || null
       return suggested && suggested.length > 64 ? suggested.slice(0, 61) + '...' : suggested

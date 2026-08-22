@@ -3,7 +3,6 @@ import { Component, inject, Injectable, type OnInit, ChangeDetectionStrategy } f
 import { firstValueFrom } from 'rxjs'
 import {
   browserSupportsWebAuthn,
-  platformAuthenticatorIsAvailable,
   startAuthentication,
   startRegistration,
   WebAuthnError,
@@ -12,7 +11,6 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/browser'
 import type { Redirect } from '@shared/api-response/Redirect'
-import { UAParser } from 'ua-parser-js'
 import { MatDialog } from '@angular/material/dialog'
 import { SnackbarService } from './snackbar.service'
 import { SpinnerService } from './spinner.service'
@@ -57,39 +55,17 @@ export class PasskeyService {
     localStorage.removeItem('passkey_skipped')
   }
 
-  static getPlatform(osName: string): Pick<PasskeySupport, 'platformName' | 'platformIcon'> | null {
-    switch (osName) {
-      // case 'Windows':
-      //   return { platformName: 'Windows Hello', platformIcon: 'sentiment_satisfied' }
-      case 'iOS':
-        return { platformName: 'Face ID', platformIcon: 'face' }
-      case 'macOS':
-        return { platformName: 'Touch ID', platformIcon: 'fingerprint' }
-      default:
-        return null
-    }
-  }
-
-  async getPasskeySupport(): Promise<PasskeySupport> {
+  getPasskeySupport(): PasskeySupport {
     if (!browserSupportsWebAuthn()) {
       return {
         enabled: false,
       }
     }
 
-    let name: PasskeySupport['platformName']
-    let icon: string | undefined
-    if (await platformAuthenticatorIsAvailable()) {
-      const { os } = UAParser(navigator.userAgent)
-      const platformInfo = PasskeyService.getPlatform(os.name ?? '')
-      name = platformInfo?.platformName
-      icon = platformInfo?.platformIcon
-    }
-
     return {
       enabled: true,
-      platformName: name,
-      platformIcon: icon,
+      platformName: undefined,
+      platformIcon: undefined,
     }
   }
 
@@ -168,11 +144,11 @@ export class PasskeyService {
     })
   }
 
-  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged' | 'hasPasskeys'>>) {
+  shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'isPrivileged' | 'hasPasskeys'>>) {
     return (
       user.isPrivileged
       // && !user.hasPasskeys // Only ask to create a passkey if the user has none. Need to think about this.
-      && (await this.getPasskeySupport()).enabled
+      && this.getPasskeySupport().enabled
       && !this.localPasskeySeen()
       && !this.localPasskeySkipped()
     )
@@ -244,7 +220,7 @@ class PasskeyDialog implements OnInit {
   private passkeyService = inject(PasskeyService)
   passkeySupport?: PasskeySupport
 
-  async ngOnInit() {
-    this.passkeySupport = await this.passkeyService.getPasskeySupport()
+  ngOnInit() {
+    this.passkeySupport = this.passkeyService.getPasskeySupport()
   }
 }

@@ -84,7 +84,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       this.spinnerService.show()
 
-      this.passkeySupport = await this.passkeyService.getPasskeySupport()
+      this.passkeySupport = this.passkeyService.getPasskeySupport()
 
       // interaction needed, check if one exists
       try {
@@ -139,7 +139,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       // See if we want to ask the user to register a passkey
       try {
         const user = (await this.authService.interactionExists()).user
-        if (user && (await this.passkeyService.shouldAskPasskey(user))) {
+        if (user && this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }
