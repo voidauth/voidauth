@@ -42,6 +42,10 @@ body.light {
   color-scheme: light;
 }
 
+:root {
+  color-scheme: light dark;
+}
+
 .error-snackbar {
   @include mat.snack-bar-overrides((
     container-color: var(--mat-sys-error-container),
