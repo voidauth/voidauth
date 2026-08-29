@@ -8,5 +8,35 @@
   "i18n-ally.enabledFrameworks": [
     "ngx-translate"
   ],
-  "i18n-ally.translate.parallels": 1
+  "i18n-ally.translate.parallels": 1,
+  "i18n-ally.keysInUse": [
+    "duration.second.singular",
+    "duration.second.plural",
+    "duration.second.singular-ago",
+    "duration.second.plural-ago",
+    "duration.year.plural-ago",
+    "duration.year.singular-ago",
+    "duration.year.plural",
+    "duration.year.singular",
+    "duration.month.plural-ago",
+    "duration.month.singular-ago",
+    "duration.month.plural",
+    "duration.month.singular",
+    "duration.week.plural-ago",
+    "duration.week.singular-ago",
+    "duration.week.plural",
+    "duration.week.singular",
+    "duration.day.plural-ago",
+    "duration.day.singular-ago",
+    "duration.day.plural",
+    "duration.day.singular",
+    "duration.hour.plural-ago",
+    "duration.hour.singular-ago",
+    "duration.hour.plural",
+    "duration.hour.singular",
+    "duration.minute.plural-ago",
+    "duration.minute.singular-ago",
+    "duration.minute.plural",
+    "duration.minute.singular"
+  ]
 }

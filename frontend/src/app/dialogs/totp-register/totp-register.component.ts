@@ -22,6 +22,7 @@ export class TotpRegisterComponent implements OnInit {
   secret = signal<string | undefined>(undefined)
   uri = signal<string | undefined>(undefined)
   disabled = signal<boolean>(true)
+  lockedUntil = signal<Date | null>(null)
 
   private spinnerService = inject(SpinnerService)
   private snackbarService = inject(SnackbarService)
@@ -52,7 +53,16 @@ export class TotpRegisterComponent implements OnInit {
       this.dialogRef.close(true)
     } catch (e) {
       console.error(e)
-      if (e instanceof HttpErrorResponse && e.status === 401) {
+      if (e instanceof HttpErrorResponse && e.status === 423) {
+        const errorBody: unknown = e.error
+        if (typeof errorBody === 'object' && errorBody !== null && 'lockedUntil' in errorBody
+          && typeof errorBody.lockedUntil === 'string') {
+          const lockedUntil = new Date(errorBody.lockedUntil)
+          if (!Number.isNaN(lockedUntil.getTime())) {
+            this.lockedUntil.set(lockedUntil)
+          }
+        }
+      } else if (e instanceof HttpErrorResponse && e.status === 401) {
         this.snackbarService.error('Invalid code entered.')
       } else {
         this.snackbarService.error(this.data?.enableMfa ? 'Could not enable Multi-Factor Authentication.' : 'Could not add authenticator.')

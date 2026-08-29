@@ -12,6 +12,7 @@ import appConfig from '../util/config'
 import { getCookieKeys, getJWKs } from './key'
 import { decryptString, encryptString } from './util'
 import type { TOTP } from '@shared/db/TOTP'
+import type { TOTPFailedAttempt } from '@shared/db/TOTPFailedAttempt'
 import { logger } from '../util/logger'
 
 export async function clearAllExpiredEntries() {
@@ -24,6 +25,7 @@ export async function clearAllExpiredEntries() {
   await db().delete().table<PasskeyRegistration>(TABLES.PASSKEY_REGISTRATION).where('expiresAt', '<', new Date())
   await db().delete().table<PasskeyAuthentication>(TABLES.PASSKEY_AUTHENTICATION).where('expiresAt', '<', new Date())
   await db().delete().table<TOTP>(TABLES.TOTP).where('expiresAt', '<', new Date())
+  await db().delete().table<TOTPFailedAttempt>(TABLES.TOTP_FAILED_ATTEMPT).where('expiresAt', '<', new Date())
 }
 
 export type EncryptedTable = {

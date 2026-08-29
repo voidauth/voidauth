@@ -45,7 +45,7 @@ import type { UserDetails } from '@shared/api-response/UserDetails'
 import { getEmailVerification } from '../db/emailVerification'
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { createTOTP, validateTOTP } from '../db/totp'
+import { createTOTP, getTotpLockoutUntil, recordTotpFailure, validateTOTP } from '../db/totp'
 import type { RegisterTotpResponse } from '@shared/api-response/RegisterTotpResponse'
 import type { InteractionInfo } from '@shared/api-response/InteractionInfo'
 import { amrFactors, isExpired, isUnapproved } from '@shared/user'
@@ -950,9 +950,16 @@ router.post('/totp',
       return
     }
 
+    const lockedUntil = await getTotpLockoutUntil(user.id)
+    if (lockedUntil) {
+      res.status(423).json({ lockedUntil: new Date(lockedUntil) })
+      return
+    }
+
     const { token, enableMfa } = req.body
 
     if (!await validateTOTP(user.id, token)) {
+      await recordTotpFailure(user.id)
       res.sendStatus(401)
       return
     }

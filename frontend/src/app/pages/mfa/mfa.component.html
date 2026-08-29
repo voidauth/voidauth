@@ -6,6 +6,7 @@
         style="width: 100%"
         [uri]="uri()"
         [secret]="secret()"
+        [lockoutUntil]="lockedUntil()"
         [disabled]="disabled()"
         (codeFinished)="totpVerify($event)"
       ></app-totp-input>

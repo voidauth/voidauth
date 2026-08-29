@@ -31,6 +31,7 @@ export class MfaComponent implements OnInit {
   disabled = signal<boolean>(false)
   secret = signal<string | undefined>(undefined)
   uri = signal<string | undefined>(undefined)
+  lockedUntil = signal<Date | null>(null)
 
   private configService = inject(ConfigService)
   private passkeyService = inject(PasskeyService)
@@ -98,7 +99,18 @@ export class MfaComponent implements OnInit {
       }
     } catch (e) {
       console.error(e)
-      if (e instanceof HttpErrorResponse && e.status === 401) {
+      if (e instanceof HttpErrorResponse && e.status === 423) {
+        const errorBody: unknown = e.error
+        if (typeof errorBody === 'object' && errorBody !== null && 'lockedUntil' in errorBody
+          && typeof errorBody.lockedUntil === 'string') {
+          const lockedUntil = new Date(errorBody.lockedUntil)
+          if (Number.isNaN(lockedUntil.getTime())) {
+            return
+          }
+
+          this.lockedUntil.set(lockedUntil)
+        }
+      } else if (e instanceof HttpErrorResponse && e.status === 401) {
         this.snackbarService.error('Invalid code entered.')
       } else {
         this.snackbarService.error('Something went wrong.')

@@ -9,6 +9,12 @@
   > * {
     margin: 12px;
   }
+
+  p.bottom-instructions {
+    text-align: center;
+    margin: 0px 32px 12px 32px;
+    white-space: pre-line;
+  }
 }
 
 .totp-field {
