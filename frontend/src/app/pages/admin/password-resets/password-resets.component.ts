@@ -15,9 +15,11 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
-import { humanDuration, stringCompare } from '@shared/utils'
+import { stringCompare } from '@shared/utils'
 import { AsyncPipe } from '@angular/common'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
+import { HumanDurationPipe } from '../../../pipes/HumanDurationPipe'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 
 @Component({
   selector: 'app-password-resets',
@@ -26,6 +28,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
     ValidationErrorPipe,
     ReactiveFormsModule,
     AsyncPipe,
+    LooseAsyncPipe,
     TranslatePipe,
   ],
   templateUrl: './password-resets.component.html',
@@ -33,6 +36,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
   styleUrl: './password-resets.component.scss',
 })
 export class PasswordResetsComponent {
+  private translate = inject(TranslateService)
   dataSource: MatTableDataSource<PasswordResetUser> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -47,7 +51,7 @@ export class PasswordResetsComponent {
     {
       columnDef: 'expiresAt',
       header: 'Expires In',
-      cell: element => humanDuration(new Date(element.expiresAt).getTime() - new Date().getTime()),
+      cell: element => HumanDurationPipe.t(new Date(element.expiresAt).getTime() - new Date().getTime(), this.translate),
     },
   ]
 

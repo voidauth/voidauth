@@ -11,7 +11,7 @@
           @if (column.isIcon) {
             <mat-icon fontSet="material-icons-round">{{ column.cell(row) }}</mat-icon>
           } @else {
-            {{ column.cell(row) }}
+            {{ column.cell(row) | looseAsync }}
           }
         </td>
       </ng-container>
