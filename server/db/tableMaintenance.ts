@@ -14,6 +14,7 @@ import { decryptString, encryptString } from './util'
 import type { TOTP } from '@shared/db/TOTP'
 import type { TOTPFailedAttempt } from '@shared/db/TOTPFailedAttempt'
 import { logger } from '../util/logger'
+import type { DeepWritable } from '@shared/utils'
 
 export async function clearAllExpiredEntries() {
   await db().delete().table<Key>(TABLES.KEY).where('expiresAt', '<', new Date())
@@ -61,7 +62,7 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
   const { locked: lockedClients, decryptable: decryptableClients } = checkEncrypted(
     (await db().select().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).where({ type: 'Client' })).map((p) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const payload: ClientMetadata = JSON.parse(p.payload)
+      const payload: DeepWritable<ClientMetadata> = JSON.parse(p.payload)
       return {
         id: p.id,
         payload,

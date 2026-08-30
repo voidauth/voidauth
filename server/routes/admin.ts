@@ -43,6 +43,7 @@ import type { CustomClaim, GroupCustomClaim, InvitationCustomClaim, UserCustomCl
 import { getCustomClaimDetails, getCustomClaimsRecords, getGroupsCustomClaims } from '../db/claims'
 import type { ClientMetadata } from 'oidc-provider'
 import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
+import type { DeepWritable } from '@shared/utils'
 
 export const adminRouter = Router()
 
@@ -107,7 +108,7 @@ async function upsertClientController(isCreate: boolean,
     }
 
     const { groups, post_logout_redirect_uri, ...rest } = clientUpsert
-    const clientMetadata: ClientMetadata & typeof rest = rest
+    const clientMetadata: DeepWritable<ClientMetadata> & typeof rest = rest
 
     clientMetadata.post_logout_redirect_uris = post_logout_redirect_uri ? [post_logout_redirect_uri] : []
 

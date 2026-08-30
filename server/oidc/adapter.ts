@@ -6,6 +6,7 @@ import { TABLES } from '@shared/db'
 import { encryptString } from '../db/util'
 import { logger } from '../util/logger'
 import { parseClientPayload } from '../db/client'
+import type { DeepWritable } from '@shared/utils'
 
 function getExpireAt(expiresIn: number) {
   return expiresIn
@@ -54,7 +55,7 @@ export class KnexAdapter implements Adapter {
     if (obj.id != undefined && this.payloadType === 'Client') {
       const declaredClient = appConfig.DECLARED_CLIENTS.get(obj.id)
       if (declaredClient) {
-        return declaredClient satisfies ClientMetadata
+        return declaredClient satisfies DeepWritable<ClientMetadata>
       }
     }
 
@@ -136,6 +137,6 @@ export class KnexAdapter implements Adapter {
 };
 
 // type gates
-function isClientPayload(pt: PayloadType, _payload: unknown): _payload is ClientMetadata {
+function isClientPayload(pt: PayloadType, _payload: unknown): _payload is DeepWritable<ClientMetadata> {
   return pt === 'Client'
 }
