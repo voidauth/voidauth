@@ -1,7 +1,7 @@
 #
 # Builder
 #
-FROM node:24-alpine3.22@sha256:191c9f0080fcbbc6547a85dc0ff7988072214a355aabdc1d2ec55a7dae5eea8a AS install
+FROM node:26-alpine3.22@sha256:c7932b9e5e337b0e733d6e16abc1b0e104759e8b05e59ed56586cce967d26dfe AS install
 
 WORKDIR /app
 
@@ -39,7 +39,7 @@ RUN cd ./dist && npm i
 # 
 # Compile all outputs into /app folder
 # 
-FROM node:24-alpine3.22@sha256:191c9f0080fcbbc6547a85dc0ff7988072214a355aabdc1d2ec55a7dae5eea8a AS build
+FROM node:26-alpine3.22@sha256:c7932b9e5e337b0e733d6e16abc1b0e104759e8b05e59ed56586cce967d26dfe AS build
 
 WORKDIR /app
 
@@ -57,7 +57,7 @@ COPY --chmod=0777 ./migrations ./migrations
 # Serve files and api endpoints
 # Requires a login to dhi.io
 #
-FROM dhi.io/node:24-alpine3.22 AS serve
+FROM dhi.io/node:26-alpine3.22 AS serve
 
 WORKDIR /app
 
