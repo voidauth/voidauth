@@ -25,6 +25,7 @@ import { PayloadTypes } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
 import { getAllClaims, getCustomClaims } from '../db/claims'
 import { getCurrentProviderConfig, setCurrentProviderConfig } from './configuration'
+import type { DeepWritable } from '@shared/utils'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -540,7 +541,7 @@ async function createProvider(): Promise<Provider> {
   const { redirectUriAllowed, postLogoutRedirectUriAllowed } = nextProvider.Client.prototype
   nextProvider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
     if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
-    // auth_internal_client redirect_uri is allowed if hostname is reachable by session domain
+      // auth_internal_client redirect_uri is allowed if hostname is reachable by session domain
       const redirectURL = URL.parse(redirectUri)
       return !!redirectURL && sessionDomainReaches(redirectURL.hostname)
     }
@@ -569,7 +570,7 @@ async function createProvider(): Promise<Provider> {
     return redirectUriAllowed.call(this, redirectUri)
   }
   nextProvider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutRedirectUriAllowed(postLogoutRedirectUri: string) {
-  // Check if any client postLogoutRedirectUris are a wildcard match
+    // Check if any client postLogoutRedirectUris are a wildcard match
     if (this.postLogoutRedirectUris?.some((r: string) => {
       return r.includes('*') && isMatch(postLogoutRedirectUri, r)
     })) {
@@ -618,7 +619,7 @@ export async function isProviderClaimsDesynced() {
   return claimsDesynced
 }
 
-export async function upsertClient(metadata: ClientMetadata, groups: string[], user: Pick<User, 'id'>, ctx: unknown) {
+export async function upsertClient(metadata: DeepWritable<ClientMetadata>, groups: string[], user: Pick<User, 'id'>, ctx: unknown) {
   await provider().Client.validate(metadata)
   const client = await add(provider(), metadata, { ctx, store: true })
   await provider().Client.validate(client.metadata())

@@ -7,10 +7,11 @@ import type { Group, OIDCGroup } from '@shared/db/Group'
 import { decryptString } from './util'
 import { TABLES, type FoundOrNull } from '@shared/db'
 import { CLIENT_DEFAULTS } from '@shared/constants'
+import type { DeepWritable } from '@shared/utils'
 
-export function parseClientPayload(payload: string, options?: { strict: boolean }): ClientMetadata {
+export function parseClientPayload(payload: string, options?: { strict: boolean }): DeepWritable<ClientMetadata> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const client: ClientMetadata = JSON.parse(payload)
+  const client: DeepWritable<ClientMetadata> = JSON.parse(payload)
   // decrypt client_secret if it exists
   if (client.client_secret) {
     client.client_secret = decryptString(client.client_secret, [appConfig.STORAGE_KEY, appConfig.STORAGE_KEY_SECONDARY]) ?? undefined
@@ -73,7 +74,7 @@ export async function getClient(client_id: string): Promise<ClientResponse | und
     return
   }
 
-  const client: ClientMetadata = parseClientPayload(clientDB.payload, { strict: false })
+  const client: DeepWritable<ClientMetadata> = parseClientPayload(clientDB.payload, { strict: false })
 
   const groups = (await db().select('name').table<OIDCGroup>(TABLES.OIDC_GROUP)
     .innerJoin<Group>(TABLES.GROUP, 'oidc_group.groupId', 'group.id')

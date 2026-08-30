@@ -4,6 +4,11 @@ export type ValueOf<T extends object> = T[keyof T]
 
 export type ItemIn<T extends readonly unknown[] | unknown[]> = T[number]
 
+// utility type to remove readonly from properties of a type
+export type DeepWritable<T> = {
+  -readonly [K in keyof T]: DeepWritable<T[K]>;
+}
+
 export type RequireKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
 
 // makes the specified keys optional or undefined, while keeping the rest of the type intact
