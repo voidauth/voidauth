@@ -3,7 +3,7 @@
 In the guides below, there may be omitted options when those options are set to the default value.
 
 > [!TIP]
-> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `your-admin-role`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC App pages, and is the recommended source of OIDC related Endpoint URLs.
+> Placeholders are used for common settings, like `your-client-id`, `your-client-secret`, `your-admin-role`, `your-custom-claim`, `https://app-name.example.com`, and `Copy from VoidAuth OIDC Info`. OIDC (Endpoint) Info can be found in the dropdown tab on the admin OIDC and OIDC App pages, and is the recommended source of OIDC related Endpoint URLs.
 
 > [!CAUTION]
 > Client IDs **must** be unique between OIDC Apps. Client Secrets **must** be long and randomly generated. The Client Secret field on the OIDC App page can be randomly generated and copied to the clipboard for use within the OIDC App. Client Secrets are encrypted on disk.
@@ -322,7 +322,10 @@ Navigate to **Administration** > **Settings** > **OAuth Settings** in Immich. Se
 Issuer URL: Copy from VoidAuth OIDC Info (Well-Known Endpoint)
 Client ID: your-client-id
 Client Secret: your-client-secret
-Scope: openid profile email
+
+(Optional)
+Role Claim: your-custom-role-claim (value must be either `user` or `admin`)
+Storage Quota Claim: your-custom-storage-quota-claim (value must be a number of Gigabytes)
 ```
 
 **In VoidAuth OIDC App Page:**
@@ -817,7 +820,7 @@ auth:
       autoCreateUser: true       # Automatically creates local accounts on first OIDC sign-in
       # enablePasswordAuth: false  # Disables local login
       adminRoleOrGroup: # Set to OIDC Group you can assign to Sync-in admins
-      # storageQuotaClaim: 'sync_in_storage_quota'
+      storageQuotaClaim: 'your-custom-claim'
       # autoRedirect: true         # Automatically redirects users to the OIDC provider for authentication, skipping Sync-in login page
       buttonText: 'Continue with OpenID Connect'
 ```
