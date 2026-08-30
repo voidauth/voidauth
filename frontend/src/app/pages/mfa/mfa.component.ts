@@ -51,7 +51,7 @@ export class MfaComponent implements OnInit {
         // If user cannot be loaded, do nothing
       }
 
-      this.passkeySupport = await this.passkeyService.getPasskeySupport()
+      this.passkeySupport = this.passkeyService.getPasskeySupport()
       this.config = await this.configService.getConfig()
 
       // User does not have a totp, but should be able to register one
@@ -85,7 +85,7 @@ export class MfaComponent implements OnInit {
       // See if we want to ask the user to register a passkey
       try {
         const user = (await this.authService.interactionExists()).user
-        if (user && (await this.passkeyService.shouldAskPasskey(user))) {
+        if (user && this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }
