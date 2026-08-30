@@ -20,26 +20,26 @@ jobs:
       - name: Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
-      # Login to dockerhub if not a fork PR
+      # Login to dockerhub if not a fork PR and not dependabot
       - name: Login Dockerhub
-        if: ${{ github.event.pull_request == null || !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && (github.event.pull_request == null || !github.event.pull_request.head.repo.fork) }}
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           username: notquitenothing
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Login to docker hardened image registry if not a fork PR
+      # Login to docker hardened image registry if not a fork PR and not dependabot
       - name: Login Docker Hardened Images Registry
-        if: ${{ github.event.pull_request == null || !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && (github.event.pull_request == null || !github.event.pull_request.head.repo.fork) }}
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: dhi.io
           username: notquitenothing
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # runs for PRs from forks (skip any registry-backed cache)
-      - name: Build Push (fork - no remote cache)
-        if: ${{ github.event.pull_request != null && github.event.pull_request.head.repo.fork }}
+      # runs for PRs from forks or dependabot (skip any registry-backed cache)
+      - name: Build Push (fork/dependabot - no remote cache)
+        if: ${{ github.actor == 'dependabot[bot]' || (github.event.pull_request != null && github.event.pull_request.head.repo.fork) }}
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         id: docker-build-fork
         with:
@@ -56,7 +56,7 @@ jobs:
 
       # runs for PRs from the same repo (or non-PR runs) and uses registry cache
       - name: Build Push (with registry cache)
-        if: ${{ github.event.pull_request == null || !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && (github.event.pull_request == null || !github.event.pull_request.head.repo.fork) }}
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         id: docker-build
         with:
