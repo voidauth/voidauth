@@ -37,6 +37,51 @@
       "logout": "Logout"
     }
   },
+  "duration": {
+    "now": "now",
+    "second": {
+      "singular": "{{count}} second",
+      "plural": "{{count}} seconds",
+      "singular-ago": "{{count}} second ago",
+      "plural-ago": "{{count}} seconds ago"
+    },
+    "minute": {
+      "singular": "{{count}} minute",
+      "plural": "{{count}} minutes",
+      "singular-ago": "{{count}} minute ago",
+      "plural-ago": "{{count}} minutes ago"
+    },
+    "hour": {
+      "singular": "{{count}} hour",
+      "plural": "{{count}} hours",
+      "singular-ago": "{{count}} hour ago",
+      "plural-ago": "{{count}} hours ago"
+    },
+    "day": {
+      "singular": "{{count}} day",
+      "plural": "{{count}} days",
+      "singular-ago": "{{count}} day ago",
+      "plural-ago": "{{count}} days ago"
+    },
+    "week": {
+      "singular": "{{count}} week",
+      "plural": "{{count}} weeks",
+      "singular-ago": "{{count}} week ago",
+      "plural-ago": "{{count}} weeks ago"
+    },
+    "month": {
+      "singular": "{{count}} month",
+      "plural": "{{count}} months",
+      "singular-ago": "{{count}} month ago",
+      "plural-ago": "{{count}} months ago"
+    },
+    "year": {
+      "singular": "{{count}} year",
+      "plural": "{{count}} years",
+      "singular-ago": "{{count}} year ago",
+      "plural-ago": "{{count}} years ago"
+    }
+  },
   "passkey-title": "Passkey",
   "passkey-dialog": {
     "title": "Enable {{platformName}}?",
@@ -50,6 +95,7 @@
       "register-passkey": "Register Passkey",
       "back": "Back"
     },
+    "locked": "Too many incorrect codes. Try again in <b>{{duration}}</b>.",
     "title": "Multi-Factor Authentication Required"
   },
   "registration": {

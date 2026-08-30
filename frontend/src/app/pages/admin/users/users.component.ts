@@ -15,17 +15,19 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged } from 'rxjs'
-import { TranslatePipe } from '@ngx-translate/core'
-import { humanDuration } from '@shared/utils'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
+import { HumanDurationPipe } from '../../../pipes/HumanDurationPipe'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 
 @Component({
   selector: 'app-users',
-  imports: [MaterialModule, RouterLink, ReactiveFormsModule, TranslatePipe],
+  imports: [MaterialModule, RouterLink, ReactiveFormsModule, TranslatePipe, LooseAsyncPipe],
   templateUrl: './users.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './users.component.scss',
 })
 export class UsersComponent {
+  private translate = inject(TranslateService)
   public me?: CurrentUserDetails
 
   dataSource: MatTableDataSource<UserWithAdminIndicator> = new MatTableDataSource()
@@ -59,7 +61,9 @@ export class UsersComponent {
     {
       columnDef: 'expiresAt',
       header: 'Expires',
-      cell: element => (element.expiresAt ? humanDuration(new Date(element.expiresAt).getTime() - new Date().getTime()) : '-'),
+      cell: element => HumanDurationPipe.t(element.expiresAt == null
+        ? null
+        : new Date(element.expiresAt).getTime() - new Date().getTime(), this.translate),
     },
   ]
 

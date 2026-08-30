@@ -12,12 +12,13 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
 import { TranslatePipe } from '@ngx-translate/core'
+import type { Observable } from 'rxjs'
 
 export type TableColumn<T> = {
   columnDef: keyof T & string
   header: string
   isIcon?: boolean
-  cell: (element: T) => string
+  cell: (element: T) => string | Observable<unknown>
 }
 
 @Component({

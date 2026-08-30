@@ -31,10 +31,6 @@
         </div>
       }
     </div>
-
-    <p style="padding: 0px 16px; text-align: center">{{ "components.totp-input.text.qrcode-instruction" | translate }}</p>
-
-    <app-text-divider [text]="'components.totp-input.text.then' | translate"></app-text-divider>
   }
 
   <mat-form-field class="totp-field">
@@ -47,10 +43,14 @@
       autocomplete="one-time-code"
       maxlength="6"
       pattern="[0-9]*"
-      [disabled]="disabled()"
+      [disabled]="disabled() || lockedCountdown() > 0"
       (input)="onCodeInput($event)"
       class="totp-digit-input"
     />
   </mat-form-field>
-  <p style="text-align: center; margin-top: 0px">{{ "components.totp-input.text.enter-token" | translate }}</p>
+  @if (lockedCountdown() > 0) {
+    <p class="bottom-instructions" [innerHTML]="'mfa.locked' | translate: { duration: lockedCountdown() | humanDuration | async }"></p>
+  } @else {
+    <p class="bottom-instructions">{{ "components.totp-input.text.enter-token" | translate }}</p>
+  }
 </div>
