@@ -32,11 +32,11 @@ export const KEY_TYPES = {
 } as const
 
 // Time-to-Live(s) in seconds
-const MINUTE = 60
-const HOUR = MINUTE * 60
-const DAY = HOUR * 24
-const WEEK = DAY * 7
-const YEAR = DAY * 365
+export const MINUTE = 60
+export const HOUR = MINUTE * 60
+export const DAY = HOUR * 24
+export const WEEK = DAY * 7
+export const YEAR = DAY * 365
 export const TTLs = {
   VERIFICATION_EMAIL: 2 * HOUR,
   PASSWORD_RESET: 2 * HOUR,
@@ -45,6 +45,7 @@ export const TTLs = {
   PASSKEY_REGISTRATION: 10 * MINUTE,
   PASSKEY_AUTHN: 5 * MINUTE,
   TOTP_VERIFICATION: 10 * MINUTE,
+  TOTP_FAILED_ATTEMPT: 30 * MINUTE,
 
   // OIDC TTLs
   INTERACTION: 1 * HOUR,

@@ -42,62 +42,71 @@ export type SchemaInfer<T extends zod.ZodRawShape> = zod.infer<zod.ZodObject<T>>
 
 export type SchemaInferInput<T extends zod.ZodRawShape> = zod.input<zod.ZodObject<T>>
 
-export function humanDuration(ms: number): string {
-  const negative = ms < 0
-  ms = Math.abs(ms)
-  const result = humanDurationHelper(ms)
-  if (!result) {
-    return 'now'
-  }
-  return negative ? `${result} ago` : result
+export function stringCompare(a: string, b: string, options?: Intl.CollatorOptions): number {
+  return a.localeCompare(b, undefined, { sensitivity: 'base', ...options })
 }
 
-function humanDurationHelper(ms: number): string | null {
-  const MINUTE = 60
-  const HOUR = MINUTE * 60
-  const DAY = HOUR * 24
-  const WEEK = DAY * 7
-  const YEAR = DAY * 365.25
-  const MONTH = YEAR / 12
+type DurationUnit = 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year'
 
-  const seconds = Math.round(ms / 1000)
-  const years = Math.round(seconds / YEAR)
-  const months = Math.round(seconds / MONTH)
-  const weeks = Math.round(seconds / WEEK)
-  const days = Math.round(seconds / DAY)
-  const hours = Math.round(seconds / HOUR)
-  const minutes = Math.round(seconds / MINUTE)
+type DurationResult = {
+  unit: DurationUnit
+  count: number
+}
+
+export function getDurationResult(milliseconds: number): DurationResult | null {
+  const minute = 60
+  const hour = minute * 60
+  const day = hour * 24
+  const week = day * 7
+  const year = day * 365.25
+  const month = year / 12
+
+  const seconds = Math.round(milliseconds / 1000)
+  const years = Math.round(seconds / year)
+  const months = Math.round(seconds / month)
+  const weeks = Math.round(seconds / week)
+  const days = Math.round(seconds / day)
+  const hours = Math.round(seconds / hour)
+  const minutes = Math.round(seconds / minute)
 
   if (months > 11) {
-    return String(years) + ' year' + ((years > 1) ? 's' : '')
+    return { unit: 'year', count: years }
   }
 
   if (weeks > 4) {
-    return String(months) + ' month' + ((months > 1) ? 's' : '')
+    return { unit: 'month', count: months }
   }
 
   if (days > 6) {
-    return String(weeks) + ' week' + ((weeks > 1) ? 's' : '')
+    return { unit: 'week', count: weeks }
   }
 
   if (hours > 23) {
-    return String(days) + ' day' + ((days > 1) ? 's' : '')
+    return { unit: 'day', count: days }
   }
 
   if (minutes > 59) {
-    return String(hours) + ' hour' + ((hours > 1) ? 's' : '')
+    return { unit: 'hour', count: hours }
   }
 
   if (seconds > 59) {
-    return String(minutes) + ' minute' + ((minutes > 1) ? 's' : '')
+    return { unit: 'minute', count: minutes }
   }
 
-  if (ms > 999) {
-    return String(seconds) + ' second' + ((seconds > 1) ? 's' : '')
+  if (milliseconds > 999) {
+    return { unit: 'second', count: seconds }
   }
+
   return null
 }
 
-export function stringCompare(a: string, b: string, options?: Intl.CollatorOptions): number {
-  return a.localeCompare(b, undefined, { sensitivity: 'base', ...options })
+export function getEnglishDuration(milliseconds: number): string {
+  const result = getDurationResult(milliseconds)
+  if (!result) {
+    return 'now'
+  }
+
+  const { unit, count } = result
+  const plural = count > 1 ? 's' : ''
+  return `${String(count)} ${unit}${plural}`
 }
