@@ -83,7 +83,7 @@ export class ResetPasswordComponent implements OnInit {
     try {
       this.spinnerService.show()
       this.config = await this.configService.getConfig()
-      this.passkeySupport = await this.passkeyService.getPasskeySupport()
+      this.passkeySupport = this.passkeyService.getPasskeySupport()
     } finally {
       this.spinnerService.hide()
     }

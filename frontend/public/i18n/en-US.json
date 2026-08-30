@@ -408,7 +408,8 @@
       },
       "messages": {
         "link-copied": "Reset link copied to clipboard."
-      }
+      },
+      "empty-state": "No Password Resets."
     },
     "emails": {
       "empty-state": "No Sent Mail.",

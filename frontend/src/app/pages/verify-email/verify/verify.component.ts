@@ -73,7 +73,7 @@ export class VerifyComponent implements OnInit {
       // See if we want to ask the user to register a passkey
       try {
         const user = (await this.authService.interactionExists()).user
-        if (user && (await this.passkeyService.shouldAskPasskey(user))) {
+        if (user && this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
           await this.passkeyService.dialogRegistration()
         }
