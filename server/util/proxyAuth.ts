@@ -2,7 +2,7 @@ import { proxyAuthPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { formatProxyAuthDomain, getProxyAuthWithCache } from '../db/proxyAuth'
 import { checkPasswordHash, getUserByInput } from '../db/user'
-import appConfig, { getSessionDomain, sessionDomainReaches } from './config'
+import appConfig, { appUrl, getSessionDomain, sessionDomainReaches } from './config'
 import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
 import { loginFactors } from '@shared/user'
@@ -21,7 +21,11 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   let amr: string[]
 
   // should not block access to itself
-  if (url.href.startsWith(appConfig.APP_URL)) {
+  const appURL = appUrl()
+  const urlPath = url.pathname
+  const appPath = appURL.pathname // ex. / or /auth
+  const appRoot = appPath.endsWith('/') ? appPath : appPath + '/' // ex. / or /auth/
+  if (url.href.startsWith(appURL.href) && (urlPath === appPath || urlPath.startsWith(appRoot))) {
     logger({
       level: 'debug',
       message: `ProxyAuth access granted, request to self URL`,
