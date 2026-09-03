@@ -31,9 +31,55 @@
         "groups": "Groepen",
         "invitations": "Uitnodigingen",
         "password-resets": "Herstelde wachtwoorden",
-        "sent-mail": "Verzonden e-mail"
+        "sent-mail": "Verzonden e-mail",
+        "claims": "Aangepaste claims"
       },
       "logout": "Uitloggen"
+    }
+  },
+  "duration": {
+    "now": "nu",
+    "second": {
+      "singular": "{{count}} seconde",
+      "plural": "{{count}} seconden",
+      "singular-ago": "{{count}} seconde geleden",
+      "plural-ago": "{{count}} seconden geleden"
+    },
+    "minute": {
+      "singular": "{{count}} minuut",
+      "plural": "{{count}} minuten",
+      "singular-ago": "{{count}} minuut geleden",
+      "plural-ago": "{{count}} minuten geleden"
+    },
+    "hour": {
+      "singular": "{{count}} uur",
+      "plural": "{{count}} uren",
+      "singular-ago": "{{count}} uur geleden",
+      "plural-ago": "{{count}} uur geleden"
+    },
+    "day": {
+      "singular": "{{count}} dag",
+      "plural": "{{count}} dagen",
+      "singular-ago": "{{count}} dag geleden",
+      "plural-ago": "{{count}} dagen geleden"
+    },
+    "week": {
+      "singular": "{{count}} week",
+      "plural": "{{count}} weken",
+      "singular-ago": "{{count}} week geleden",
+      "plural-ago": "{{count}} weken geleden"
+    },
+    "month": {
+      "singular": "{{count}} maand",
+      "plural": "{{count}} maanden",
+      "singular-ago": "{{count}} maand geleden",
+      "plural-ago": "{{count}} maanden geleden"
+    },
+    "year": {
+      "singular": "{{count}} jaar",
+      "plural": "{{count}} jaar",
+      "singular-ago": "{{count}} jaar geleden",
+      "plural-ago": "{{count}} jaar geleden"
     }
   },
   "passkey-title": "Passkey",
@@ -49,6 +95,7 @@
       "register-passkey": "Passkey registreren",
       "back": "Terug"
     },
+    "locked": "Te veel incorrecte codes. Probeer het opnieuw over <b>{{duration}}</b>.",
     "title": "Multi-factor authenticatie vereist"
   },
   "registration": {
@@ -307,14 +354,21 @@
         "add-group": "Groep toevoegen",
         "security-groups": "Veiligheidsgroepen:",
         "user-expiration-date": "Toegang vervaldatum",
-        "user-expiration-time": "Toegang vervaltijd"
+        "user-expiration-time": "Toegang vervaltijd",
+        "custom-claims": "Aangepaste claims",
+        "claim": "Claim",
+        "value": "Waarde",
+        "no-custom-claims": "Geen aangepaste claims geconfigureerd.",
+        "group": "Groep",
+        "applied": "Toegepast"
       },
       "actions": {
         "sign-out": "Uitloggen"
       },
       "tooltips": {
         "remove": "Verwijderen",
-        "open": "Openen"
+        "open": "Openen",
+        "edit": "Bewerken"
       }
     },
     "clients": {
@@ -400,7 +454,8 @@
       },
       "messages": {
         "link-copied": "Herstellink naar klembord gekopieerd."
-      }
+      },
+      "empty-state": "Geen herstelde wachtwoorden."
     },
     "emails": {
       "empty-state": "Geen verzonden e-mail.",
@@ -423,11 +478,19 @@
       "labels": {
         "name": "Naam",
         "add-user": "Gebruiker toevoegen",
-        "users": "Gebruikers:"
+        "users": "Gebruikers:",
+        "custom-claims": "Aangepaste claims",
+        "claim": "Claim",
+        "value": "Waarde",
+        "no-custom-claims": "Geen aangepaste claims geconfigureerd."
       },
       "checkboxes": {
         "mfa-required": "MFA vereist",
         "auto-assign": "Automatisch toewijzen"
+      },
+      "tooltips": {
+        "edit": "Bewerken",
+        "remove": "Verwijderen"
       }
     },
     "invitations": {
@@ -446,12 +509,20 @@
         "add-group": "Groep toevoegen",
         "security-groups": "Veiligheidsgroepen:",
         "user-expiration-date": "Toegang vervaldatum",
-        "user-expiration-time": "Toegang vervaltijd"
+        "user-expiration-time": "Toegang vervaltijd",
+        "custom-claims": "Aangepaste claims",
+        "claim": "Claim",
+        "value": "Waarde",
+        "no-custom-claims": "Geen aangepaste claims geconfigureerd.",
+        "applied": "Toegepast",
+        "group": "Groepen"
       },
       "tooltips": {
         "copy-invite-link": "Uitnodigingslink kopiëren",
         "unsaved-changes": "U heeft niet-opgeslagen wijzigingen.",
-        "send-to": "Uitnodiging versturen naar: {{email}}"
+        "send-to": "Uitnodiging versturen naar: {{email}}",
+        "edit": "Bewerken",
+        "remove": "Verwijderen"
       },
       "messages": {
         "link-copied": "Uitnodigingslink gekopieerd naar klembord.",
@@ -463,6 +534,32 @@
       },
       "checkboxes": {
         "email-verified": "E-mailadres geverifieerd"
+      }
+    },
+    "claims": {
+      "actions": {
+        "create": "Claim aanmaken"
+      },
+      "empty-state": "Geen aangepaste claims."
+    },
+    "claim": {
+      "title": "Aangepaste claim",
+      "labels": {
+        "name": "Naam",
+        "user-claims": "Gebruikers",
+        "username": "Gebruikersnaam",
+        "value": "Waarde",
+        "no-user-claims": "Geen gebruikersclaims",
+        "no-group-claims": "Geen groepsclaims",
+        "group-name": "Groep",
+        "group-claims": "Groepen",
+        "invitation-claims": "Uitnodigingen",
+        "invitation": "Uitnodigen",
+        "no-invitation-claims": "Geen uitnodigingsclaims"
+      },
+      "tooltips": {
+        "edit": "Bewerken",
+        "remove": "Verwijderen"
       }
     }
   },
@@ -501,10 +598,19 @@
     },
     "totp-input": {
       "title": "Hierdoor wordt Multi-Factor Authenticatie op uw account ingeschakeld.",
+      "labels": {
+        "secret": "Geheim:"
+      },
       "text": {
         "qrcode-instruction": "Scan de QR-code of voer het geheim in uw Authenticator in",
         "then": "daarna",
         "enter-token": "Voer de token van de authenticator in om door te gaan"
+      },
+      "tooltips": {
+        "copy-secret": "Geheim kopiëren naar klembord."
+      },
+      "messages": {
+        "copied-secret": "Geheim gekopieerd naar klembord."
       }
     },
     "theme-toggle": {
@@ -558,6 +664,19 @@
         "confirm": {
           "label": "Bevestigen"
         }
+      }
+    },
+    "option-value-dialog": {
+      "actions": {
+        "cancel": {
+          "label": "Annuleren"
+        },
+        "save": {
+          "label": "Opslaan"
+        }
+      },
+      "labels": {
+        "value": "Waarde"
       }
     }
   },
