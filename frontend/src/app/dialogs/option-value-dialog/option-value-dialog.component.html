@@ -18,7 +18,7 @@
         (focus)="updateFilteredOptions(input.value)"
       />
       <mat-autocomplete #optionAuto="matAutocomplete" [requireSelection]="!data.allowNew">
-        @for (option of filteredOptions; track option) {
+        @for (option of filteredOptions(); track option) {
           <mat-option [value]="option">{{ option }}</mat-option>
         }
       </mat-autocomplete>

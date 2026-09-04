@@ -14,6 +14,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { TranslatePipe } from '@ngx-translate/core'
 import { stringCompare } from '@shared/utils'
+import { TableService } from '../../../services/table.service'
 
 @Component({
   selector: 'app-domains',
@@ -46,11 +47,19 @@ export class DomainsComponent {
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     try {
       // Assign the data to the data source for the table to render
       this.spinnerService.show()
+      const currentPageSize = this.tableService.currentPageSize
+      if (currentPageSize !== null) {
+        this.paginator().pageSize = currentPageSize
+      }
+      this.paginator().page.subscribe((event) => {
+        this.tableService.currentPageSize = event.pageSize
+      })
       this.dataSource.data = await this.adminService.proxyAuths()
       this.dataSource.paginator = this.paginator()
     } finally {

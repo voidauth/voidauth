@@ -5,7 +5,8 @@ import type { ClientUpsertRequest } from '@shared/api-request/admin/ClientUpsert
 import type { UserUpdate } from '@shared/api-request/admin/UserUpdate'
 import type { GroupUpsert } from '@shared/api-request/admin/GroupUpsert'
 import type { InvitationUpsert } from '@shared/api-request/admin/InvitationUpsert'
-import type { UserDetails, UserWithAdminIndicator } from '@shared/api-response/UserDetails'
+import type { UserDetails } from '@shared/api-response/UserDetails'
+import type { UsersResponse } from '@shared/api-response/admin/UsersResponse'
 import { type InvitationDetails } from '@shared/api-response/admin/InvitationDetails'
 import type { Group } from '@shared/db/Group'
 import type { Invitation } from '@shared/db/Invitation'
@@ -14,6 +15,7 @@ import type { GroupDetails } from '@shared/api-response/admin/GroupDetails'
 import type { ProxyAuthUpsert } from '@shared/api-request/admin/ProxyAuthUpsert'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
+import type { PasswordResetsResponse } from '@shared/api-response/admin/PasswordResetsResponse'
 import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import type { SortDirection } from '@angular/material/sort'
@@ -111,8 +113,18 @@ export class AdminService {
     return firstValueFrom(this.http.delete<null>(`/api/admin/group/${id}`))
   }
 
-  async users(searchTerm?: string | null) {
-    return firstValueFrom(this.http.get<UserWithAdminIndicator[]>(`/api/admin/users${searchTerm ? '/' + searchTerm : ''}`))
+  async users(page: number, pageSize: number, searchTerm?: string | null, sortActive?: string, sortDirection?: SortDirection) {
+    let query = `?page=${String(page)}&pageSize=${String(pageSize)}`
+    if (searchTerm) {
+      query += `&searchTerm=${encodeURIComponent(searchTerm)}`
+    }
+    if (sortActive) {
+      query += `&sortActive=${sortActive}`
+      if (sortDirection) {
+        query += `&sortDirection=${sortDirection}`
+      }
+    }
+    return firstValueFrom(this.http.get<UsersResponse>(`/api/admin/users${query}`))
   }
 
   async user(id: string) {
@@ -159,8 +171,15 @@ export class AdminService {
     return firstValueFrom(this.http.post<null>(`/api/admin/send_invitation/${id}`, null))
   }
 
-  async passwordResets() {
-    return firstValueFrom(this.http.get<PasswordResetUser[]>('/api/admin/passwordresets'))
+  async passwordResets(page: number, pageSize: number, sortActive?: string, sortDirection?: SortDirection) {
+    let query = `?page=${String(page)}&pageSize=${String(pageSize)}`
+    if (sortActive) {
+      query += `&sortActive=${sortActive}`
+      if (sortDirection) {
+        query += `&sortDirection=${sortDirection}`
+      }
+    }
+    return firstValueFrom(this.http.get<PasswordResetsResponse>(`/api/admin/passwordresets${query}`))
   }
 
   async createPasswordReset(passwordReset: PasswordResetCreate) {

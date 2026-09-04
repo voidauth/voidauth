@@ -31,7 +31,7 @@
             (focus)="userAutoFilter(input.value)"
           />
           <mat-autocomplete (optionSelected)="addUser($event); input.value = ''" requireSelection #auto="matAutocomplete">
-            @for (option of selectableUsers; track option) {
+            @for (option of selectableUsers(); track option) {
               <mat-option [value]="option">{{ option.username }}</mat-option>
             }
           </mat-autocomplete>

@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core'
+import { Component, inject, signal, type OnInit } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators, type ValidatorFn } from '@angular/forms'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { MaterialModule } from '../../material-module'
@@ -12,10 +12,12 @@ export type OptionValueDialogData = {
   newForbidden?: string[]
   header?: string
   optionLabel?: string
-  availableOptions: string[]
   currentOption?: string
   currentValue?: string
-}
+} & (
+  { availableOptions: string[], fetchOptions?: undefined }
+  | { availableOptions?: undefined, fetchOptions: (searchTerm: string) => Promise<string[]> }
+)
 
 export type OptionValueResult = {
   option: string
@@ -37,7 +39,7 @@ export type OptionValueResult = {
 export class OptionValueDialogComponent implements OnInit {
   readonly data = inject<OptionValueDialogData>(MAT_DIALOG_DATA)
 
-  public filteredOptions: string[] = []
+  public filteredOptions = signal<string[]>([])
 
   readonly form = new FormGroup({
     option: new FormControl<string | null>(null, [
@@ -60,12 +62,14 @@ export class OptionValueDialogComponent implements OnInit {
     return this.form.controls.value
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     if (this.data.currentOption) {
       this.option.setValue(this.data.currentOption)
       this.value.setValue(this.data.currentValue ?? null)
       this.option.disable({ emitEvent: false })
     }
+
+    await this.updateFilteredOptions(null)
   }
 
   get optionValue() {
@@ -73,14 +77,19 @@ export class OptionValueDialogComponent implements OnInit {
     return raw.option && raw.value ? raw : null
   }
 
-  public updateFilteredOptions(value: string | null) {
-    const filterValue = value?.trim().toLowerCase() ?? ''
-    let options = this.data.availableOptions
-    if (filterValue) {
-      options = options.filter(option => option.toLowerCase().includes(filterValue))
-    }
+  public async updateFilteredOptions(value: string | null) {
+    const filterValue = value?.trim() ?? ''
 
-    this.filteredOptions = options.slice(0, 5)
+    if (this.data.fetchOptions) {
+      this.filteredOptions.set(await this.data.fetchOptions(filterValue))
+    } else {
+      let options = this.data.availableOptions
+      if (filterValue) {
+        options = options.filter(option => option.toLowerCase().includes(filterValue.toLowerCase()))
+      }
+
+      this.filteredOptions.set(options.slice(0, 5))
+    }
   }
 
   private forbiddenOptionValidator(): ValidatorFn {

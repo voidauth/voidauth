@@ -13,6 +13,7 @@ import { SpinnerService } from '../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { TranslatePipe } from '@ngx-translate/core'
+import { TableService } from '../../../services/table.service'
 
 @Component({
   selector: 'app-groups',
@@ -43,11 +44,19 @@ export class GroupsComponent {
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     try {
       // Assign the data to the data source for the table to render
       this.spinnerService.show()
+      const currentPageSize = this.tableService.currentPageSize
+      if (currentPageSize !== null) {
+        this.paginator().pageSize = currentPageSize
+      }
+      this.paginator().page.subscribe((event) => {
+        this.tableService.currentPageSize = event.pageSize
+      })
       this.dataSource.data = await this.adminService.groups()
       this.dataSource.paginator = this.paginator()
       this.dataSource.sort = this.sort()

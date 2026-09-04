@@ -69,26 +69,30 @@ export class CustomClaimComponent implements OnInit {
     })
   }
 
-  async addUserClaim() {
-    const availableUsers = (await this.adminService.users())
-      .filter(u => !this.form.controls.users.value.some(ccu => ccu.username === u.username))
+  addUserClaim() {
+    const fetchUserOptions = async (searchTerm: string) => {
+      return (await this.adminService.users(0, 10, searchTerm)).users
+        .filter(u => !this.form.controls.users.value.some(ccu => ccu.username === u.username))
+        .map(u => u.username).slice(0, 5)
+    }
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
         header: 'Add User Claim',
-        availableOptions: availableUsers.map(u => u.username),
+        fetchOptions: fetchUserOptions,
         allowNew: false,
         optionLabel: 'User',
       } satisfies OptionValueDialogData,
       disableClose: true,
     })
 
-    dialogRef.afterClosed().subscribe((result: OptionValueResult) => {
+    dialogRef.afterClosed().subscribe(async (result: OptionValueResult) => {
       if (!result) {
         return
       }
 
-      const selectedUser = availableUsers.find(u => u.username === result.option)
+      const matchingUsers = (await this.adminService.users(0, 5, result.option)).users
+      const selectedUser = matchingUsers.find(u => u.username === result.option)
 
       if (!selectedUser) {
         return
@@ -104,14 +108,17 @@ export class CustomClaimComponent implements OnInit {
     })
   }
 
-  async editUserClaim(userToEdit: ItemIn<CustomClaimDetails['users']>) {
-    const availableUsers = (await this.adminService.users())
-      .filter(u => !this.form.controls.users.value.some(ccu => ccu.username === u.username))
+  editUserClaim(userToEdit: ItemIn<CustomClaimDetails['users']>) {
+    const fetchUserOptions = async (searchTerm: string) => {
+      return (await this.adminService.users(0, 5, searchTerm)).users
+        .filter(u => !this.form.controls.users.value.some(ccu => ccu.username === u.username))
+        .map(u => u.username)
+    }
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
         header: 'Edit User Claim',
-        availableOptions: availableUsers.map(u => u.username),
+        fetchOptions: fetchUserOptions,
         allowNew: false,
         optionLabel: 'User',
         currentOption: userToEdit.username,

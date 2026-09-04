@@ -12,10 +12,10 @@ import { ADMIN_GROUP, PROTECTED_CLAIMS_SET, TTLs } from '@shared/constants'
 import { userUpdateValidator } from '@shared/api-request/admin/UserUpdate'
 import { endSessions, getUserById, getUsers } from '../db/user'
 import { createExpiration, mergeKeys } from '../db/util'
-import type { UserWithAdminIndicator } from '@shared/api-response/UserDetails'
 import { getInvitationDetails, getInvitations } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import { invitationUpsertValidator } from '@shared/api-request/admin/InvitationUpsert'
+import type { UsersResponse } from '@shared/api-response/admin/UsersResponse'
 import { sendApproved, sendInvitation, sendPasswordReset, sendTestNotification, SMTP_VERIFIED } from '../util/email'
 import type { GroupDetails } from '@shared/api-response/admin/GroupDetails'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
@@ -24,6 +24,7 @@ import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResp
 import { proxyAuthUpsertValidator } from '@shared/api-request/admin/ProxyAuthUpsert'
 import { getProxyAuth, getProxyAuths } from '../db/proxyAuth'
 import type { PasswordResetUser } from '@shared/api-response/admin/PasswordResetUser'
+import type { PasswordResetsResponse } from '@shared/api-response/admin/PasswordResetsResponse'
 import type { PasswordReset } from '@shared/db/PasswordReset'
 import { passwordResetCreateValidator } from '@shared/api-request/admin/PasswordResetCreate'
 import type { EmailLog } from '@shared/db/EmailLog'
@@ -396,15 +397,26 @@ adminRouter.delete('/proxyauth/:id',
     res.send()
   })
 
-adminRouter.get('/users{/:searchTerm}',
+adminRouter.get('/users',
   zodValidate({
-    params: {
+    query: {
+      page: zod.coerce.number<string>().int().min(0),
+      pageSize: zod.coerce.number<string>().int().min(1),
       searchTerm: zod.string().trim().optional(),
+      sortActive: zod.enum(['username', 'email', 'emailVerified', 'approved', 'expiresAt', 'createdAt']).optional(),
+      sortDirection: zod.enum(['asc', 'desc', '']).optional(),
     },
   }), async (req, res) => {
-    const { searchTerm } = req.params
-    const users: UserWithAdminIndicator[] = await getUsers(searchTerm)
-    res.send(users)
+    const { page, pageSize, searchTerm, sortActive, sortDirection } = req.query
+
+    const result = await getUsers({
+      page,
+      pageSize,
+      searchTerm,
+      sortActive,
+      sortDirection,
+    })
+    res.send(result satisfies UsersResponse)
   })
 
 adminRouter.get('/user/:id',
@@ -1039,21 +1051,45 @@ adminRouter.post('/send_invitation/:id',
     res.send()
   })
 
-adminRouter.get('/passwordresets', async (_req, res) => {
-  const passwordResets: PasswordResetUser[] = await db().select(
-    db().ref('username').withSchema(TABLES.USER),
-    db().ref('email').withSchema(TABLES.USER),
-    db().ref('id').withSchema(TABLES.PASSWORD_RESET),
-    db().ref('userId').withSchema(TABLES.PASSWORD_RESET),
-    db().ref('challenge').withSchema(TABLES.PASSWORD_RESET),
-    db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET),
-    db().ref('createdAt').withSchema(TABLES.PASSWORD_RESET),
-  ).table<PasswordReset>(TABLES.PASSWORD_RESET)
-    .innerJoin<User>(TABLES.USER, 'user.id', 'password_reset.userId')
-    .where(db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET), '>=', new Date())
-    .orderBy(db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET), 'desc')
-  res.send(passwordResets)
-})
+adminRouter.get('/passwordresets',
+  zodValidate({
+    query: {
+      page: zod.coerce.number<string>().int().min(0),
+      pageSize: zod.coerce.number<string>().int().min(1),
+      sortActive: zod.enum(['username', 'expiresAt']).optional(),
+      sortDirection: zod.enum(['asc', 'desc', '']).optional(),
+    },
+  }), async (req, res) => {
+    const { page, pageSize, sortActive, sortDirection } = req.query
+
+    const passwordResetsModel = db().select(
+      db().ref('username').withSchema(TABLES.USER),
+      db().ref('email').withSchema(TABLES.USER),
+      db().ref('id').withSchema(TABLES.PASSWORD_RESET),
+      db().ref('userId').withSchema(TABLES.PASSWORD_RESET),
+      db().ref('challenge').withSchema(TABLES.PASSWORD_RESET),
+      db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET),
+      db().ref('createdAt').withSchema(TABLES.PASSWORD_RESET),
+    ).table<PasswordReset>(TABLES.PASSWORD_RESET)
+      .innerJoin<User>(TABLES.USER, 'user.id', 'password_reset.userId')
+      .where(db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET), '>=', new Date())
+
+    const count = +((await passwordResetsModel.clone().count({ count: '*' }).first())?.count ?? 0)
+
+    switch (sortActive) {
+      case 'username':
+        passwordResetsModel.orderBy(db().ref('username').withSchema(TABLES.USER), sortDirection || 'asc')
+        break
+      case 'expiresAt':
+      default:
+        passwordResetsModel.orderBy(db().ref('expiresAt').withSchema(TABLES.PASSWORD_RESET), sortDirection || 'desc')
+    }
+
+    const passwordResets = await passwordResetsModel.clone().offset(page * pageSize).limit(pageSize)
+    const result = { count, passwordResets }
+
+    res.send(result satisfies PasswordResetsResponse)
+  })
 
 adminRouter.post('/passwordreset',
   zodValidate({ body: passwordResetCreateValidator }), async (req, res) => {
@@ -1150,9 +1186,9 @@ adminRouter.get('/emails',
       }
     })
 
-    const result: EmailsResponse = { count, emails }
+    const result = { count, emails }
 
-    res.send(result)
+    res.send(result satisfies EmailsResponse)
   })
 
 adminRouter.post('/send_test_email',

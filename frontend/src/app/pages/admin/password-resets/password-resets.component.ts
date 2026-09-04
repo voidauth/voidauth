@@ -1,4 +1,4 @@
-import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, viewChild, ChangeDetectionStrategy, signal } from '@angular/core'
 import { MaterialModule } from '../../../material-module'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
@@ -20,6 +20,7 @@ import { AsyncPipe } from '@angular/common'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { HumanDurationPipe } from '../../../pipes/HumanDurationPipe'
 import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
+import { TableService } from '../../../services/table.service'
 
 @Component({
   selector: 'app-password-resets',
@@ -57,8 +58,7 @@ export class PasswordResetsComponent {
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
 
-  users: UserWithoutPassword[] = []
-  selectableUsers: UserWithoutPassword[] = []
+  selectableUsers = signal<UserWithoutPassword[]>([])
   userSelect = new FormControl<UserWithoutPassword | null>(null)
 
   config?: ConfigResponse
@@ -69,27 +69,48 @@ export class PasswordResetsComponent {
   private configService = inject(ConfigService)
   private dialog = inject(MatDialog)
   private translateService = inject(TranslateService)
+  readonly tableService = inject(TableService)
+
   async ngAfterViewInit() {
-    // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
+      const currentPageSize = this.tableService.currentPageSize
+      if (currentPageSize !== null) {
+        this.paginator().pageSize = currentPageSize
+      }
 
-      const [users, passwordResets, config] = await Promise.all([
-        this.adminService.users(),
-        this.adminService.passwordResets(),
+      const [config, _] = await Promise.all([
         this.configService.getConfig(),
+        this.setData(),
       ])
-
-      this.users = users.sort((a, b) => {
-        return stringCompare(a.username, b.username)
-      })
-      this.userAutoFilter()
 
       this.config = config
 
-      this.dataSource.data = passwordResets
-      this.dataSource.paginator = this.paginator()
-      this.dataSource.sort = this.sort()
+      this.paginator().page.subscribe(async (event) => {
+        this.tableService.currentPageSize = event.pageSize
+        await this.setData()
+      })
+
+      this.sort().sortChange.subscribe(async () => {
+        await this.setData()
+      })
+    } finally {
+      this.spinnerService.hide()
+    }
+  }
+
+  async setData() {
+    try {
+      this.spinnerService.show()
+      const pageIndex = this.paginator().pageIndex
+      const pageSize = this.paginator().pageSize
+      const sortActive = this.sort().active
+      const sortDirection = this.sort().direction
+      const data = await this.adminService.passwordResets(pageIndex, pageSize, sortActive, sortDirection)
+      this.dataSource.data = data.passwordResets
+      this.paginator().length = data.count
+    } catch (_e) {
+      this.snackbarService.error('Could not get password reset links.')
     } finally {
       this.spinnerService.hide()
     }
@@ -103,9 +124,9 @@ export class PasswordResetsComponent {
         throw new Error('User not selected.')
       }
 
-      const reset = await this.adminService.createPasswordReset({ userId: user.id })
-      const data = [reset].concat(this.dataSource.data)
-      this.dataSource.data = this.dataSource.sortData(data, this.sort())
+      await this.adminService.createPasswordReset({ userId: user.id })
+      this.userSelect.reset()
+      await this.setData()
       this.snackbarService.message('Password reset link was created.')
     } catch (_e) {
       this.snackbarService.error('Could not create password reset link.')
@@ -130,7 +151,7 @@ export class PasswordResetsComponent {
       try {
         this.spinnerService.show()
         await this.adminService.deletePasswordReset(id)
-        this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
+        await this.setData()
         this.snackbarService.message('Password reset link was deleted.')
       } catch (_e) {
         this.snackbarService.error('Could not delete password reset link.')
@@ -140,16 +161,10 @@ export class PasswordResetsComponent {
     })
   }
 
-  userAutoFilter(value: string = '') {
-    this.selectableUsers = this.users
-      .filter((u) => {
-        return (
-          u.username.toLowerCase().includes(value.toLowerCase())
-          || u.email?.toLowerCase().includes(value.toLowerCase())
-          || u.name?.toLowerCase().includes(value.toLowerCase())
-        )
-      })
-      .slice(0, 5)
+  async userAutoFilter(value: string = '') {
+    this.selectableUsers.set((await this.adminService.users(0, 5, value)).users.sort((a, b) => {
+      return stringCompare(a.username, b.username)
+    }))
   }
 
   displayUser(user?: UserWithoutPassword) {
