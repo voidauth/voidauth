@@ -21,7 +21,6 @@ import { ConfigService } from '../../services/config.service'
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { WebAuthnAbortService } from '@simplewebauthn/browser'
-import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { TranslatePipe } from '@ngx-translate/core'
 import { AsyncPipe } from '@angular/common'
 
@@ -30,7 +29,7 @@ import { AsyncPipe } from '@angular/common'
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [ReactiveFormsModule, MaterialModule, ValidationErrorPipe, RouterLink, TextDividerComponent, TranslatePipe, AsyncPipe],
+  imports: [ReactiveFormsModule, MaterialModule, ValidationErrorPipe, RouterLink, TranslatePipe, AsyncPipe],
 })
 export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   public config?: ConfigResponse

@@ -9,8 +9,7 @@
     "forgot-password": "Wachtwoord vergeten",
     "remember-me": "Mijn gegevens onthouden",
     "actions": {
-      "login": "Inloggen",
-      "sign-up": "Aanmelden"
+      "login": "Inloggen"
     },
     "title": "Inloggen"
   },
@@ -566,7 +565,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Inloggen"
+        "login": "Inloggen",
+        "sign-up": "Aanmelden"
       }
     },
     "copy-field": {

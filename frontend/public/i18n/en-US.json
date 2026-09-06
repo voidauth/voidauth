@@ -9,8 +9,7 @@
     "forgot-password": "Forgot Password",
     "remember-me": "Remember Me",
     "actions": {
-      "login": "Login",
-      "sign-up": "Sign Up"
+      "login": "Login"
     },
     "title": "Login"
   },
@@ -566,7 +565,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Login"
+        "login": "Login",
+        "sign-up": "Sign Up"
       }
     },
     "copy-field": {
@@ -602,8 +602,6 @@
         "secret": "Secret:"
       },
       "text": {
-        "qrcode-instruction": "Scan the QRCode or Enter the Secret in your Authenticator",
-        "then": "then",
         "enter-token": "Enter Token from Authenticator to Continue"
       },
       "tooltips": {

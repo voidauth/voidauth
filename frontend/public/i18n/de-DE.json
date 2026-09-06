@@ -9,8 +9,7 @@
     "forgot-password": "Passwort vergessen",
     "remember-me": "Angemeldet bleiben",
     "actions": {
-      "login": "Anmelden",
-      "sign-up": "Registrieren"
+      "login": "Anmelden"
     },
     "title": "Anmeldung"
   },
@@ -309,7 +308,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Anmelden"
+        "login": "Anmelden",
+        "sign-up": "Registrieren"
       }
     },
     "theme-toggle": {
