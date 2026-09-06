@@ -594,6 +594,15 @@ This setup supports:
 > [!NOTE]
 > This configuration uses separate OIDC client IDs for the Web, Desktop, Android, and iOS clients.
 
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://memos.example.com/auth/callback
+```
+
 **OpenCloud Configuration:**
 
 Add the following variables to your OpenCloud `.env` file.
@@ -725,8 +734,9 @@ Create separate OIDC applications for the OpenCloud clients.
 **OpenCloud Web:**
 
 ```text
-Client ID:
-web
+Client ID: web
+Auth Method: none
+Client Secret: not needed
 
 Redirect URIs:
 https://opencloud.example.com/
@@ -745,8 +755,9 @@ Replace `https://opencloud.example.com` with the URL of your OpenCloud instance.
 **OpenCloud Desktop:**
 
 ```text
-Client ID:
-OpenCloudDesktop
+Client ID: OpenCloudDesktop
+Auth Method: none
+Client Secret: not needed
 
 Redirect URIs:
 http://127.0.0.1:*
@@ -765,8 +776,9 @@ The Desktop client is a public/native OIDC client and should not require a clien
 **OpenCloud Android:**
 
 ```text
-Client ID:
-OpenCloudAndroid
+Client ID: OpenCloudAndroid
+Auth Method: none
+Client Secret: not needed
 
 Redirect URI:
 oc://android.opencloud.eu
@@ -784,8 +796,9 @@ The Android client is a public/native OIDC client and should not require a clien
 **OpenCloud iOS:**
 
 ```text
-Client ID:
-OpenCloudIOS
+Client ID: OpenCloudIOS
+Auth Method: none
+Client Secret: not needed
 
 Redirect URI:
 oc://ios.opencloud.eu
