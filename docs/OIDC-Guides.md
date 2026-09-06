@@ -577,6 +577,317 @@ Redirect URLs: https://memos.example.com/auth/callback
 
 <br>
 
+## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/opencloud.svg" width="28" /> OpenCloud
+
+OpenCloud can use VoidAuth as an external OpenID Connect (OIDC) identity provider.
+
+This setup supports:
+
+- Automatic user provisioning
+- Automatic group provisioning
+- Automatic OpenCloud role assignment from VoidAuth groups
+- OpenCloud Web
+- OpenCloud Desktop
+- OpenCloud Android
+- OpenCloud iOS
+
+> [!NOTE]
+> This configuration uses separate OIDC client IDs for the Web, Desktop, Android, and iOS clients.
+
+**In VoidAuth OIDC App Page:**
+
+```plaintext
+Client ID: your-client-id
+Auth Method: Client Secret Post
+Client Secret: your-client-secret
+Redirect URLs: https://memos.example.com/auth/callback
+```
+
+**OpenCloud Configuration:**
+
+Add the following variables to your OpenCloud `.env` file.
+
+Replace `https://auth.example.com` with the URL of your VoidAuth instance.
+
+```env
+# OIDC / VoidAuth
+OC_EXCLUDE_RUN_SERVICES=idp
+
+OC_OIDC_ISSUER=https://auth.example.com/oidc
+PROXY_OIDC_ISSUER=https://auth.example.com/oidc
+WEBFINGER_OIDC_ISSUER=https://auth.example.com/oidc
+
+PROXY_OIDC_INSECURE=false
+WEBFINGER_INSECURE=false
+
+
+# Web Client
+WEB_OIDC_CLIENT_ID=web
+WEB_OIDC_AUTHORITY=https://auth.example.com/oidc
+WEB_OIDC_METADATA_URL=https://auth.example.com/oidc/.well-known/openid-configuration
+WEB_OIDC_RESPONSE_TYPE=code
+WEB_OIDC_SCOPE=openid profile email groups
+
+WEBFINGER_WEB_OIDC_CLIENT_ID=web
+WEBFINGER_WEB_OIDC_CLIENT_SCOPES=openid profile email groups
+
+
+# Native Clients
+WEBFINGER_DESKTOP_OIDC_CLIENT_ID=OpenCloudDesktop
+WEBFINGER_DESKTOP_OIDC_CLIENT_SCOPES=openid profile email groups offline_access
+
+WEBFINGER_ANDROID_OIDC_CLIENT_ID=OpenCloudAndroid
+WEBFINGER_ANDROID_OIDC_CLIENT_SCOPES=openid profile email groups offline_access
+
+WEBFINGER_IOS_OIDC_CLIENT_ID=OpenCloudIOS
+WEBFINGER_IOS_OIDC_CLIENT_SCOPES=openid profile email groups offline_access
+
+
+# Token Processing
+PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD=none
+PROXY_OIDC_SKIP_USER_INFO=false
+PROXY_OIDC_REWRITE_WELLKNOWN=true
+
+
+# Automatic User and Group Provisioning
+PROXY_AUTOPROVISION_ACCOUNTS=true
+PROXY_AUTOPROVISION_CLAIM_USERNAME=preferred_username
+PROXY_AUTOPROVISION_CLAIM_EMAIL=email
+PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME=name
+PROXY_AUTOPROVISION_CLAIM_GROUPS=groups
+
+
+# Identity Mapping
+PROXY_USER_OIDC_CLAIM=preferred_username
+PROXY_USER_CS3_CLAIM=username
+GRAPH_USERNAME_MATCH=none
+
+
+# Automatic Role Assignment
+PROXY_ROLE_ASSIGNMENT_DRIVER=oidc
+PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM=groups
+GRAPH_ASSIGN_DEFAULT_USER_ROLE=false
+```
+
+**OpenCloud Role Mapping:**
+
+Configure the role mapping in OpenCloud's `proxy.yaml`:
+
+```yaml
+role_assignment:
+  driver: oidc
+  oidc_role_mapper:
+    role_claim: groups
+    role_mapping:
+      - role_name: admin
+        claim_value: admin
+      - role_name: spaceadmin
+        claim_value: spaceadmin
+      - role_name: user
+        claim_value: user
+      - role_name: user-light
+        claim_value: user-light
+```
+
+**VoidAuth Groups:**
+
+Create the following groups in VoidAuth:
+
+```text
+admin
+spaceadmin
+user
+user-light
+```
+
+Assign users to the appropriate group.
+
+The group names correspond directly to the OpenCloud roles configured in `proxy.yaml`.
+
+**Required Claims:**
+
+VoidAuth should provide the following claims:
+
+| Claim | Used for |
+| --- | --- |
+| `preferred_username` | OpenCloud username |
+| `email` | Email address |
+| `name` | Display name |
+| `groups` | OpenCloud groups and role assignment |
+
+The following scopes are used by the Web client:
+
+```text
+openid profile email groups
+```
+
+Native clients additionally request `offline_access`:
+
+```text
+openid profile email groups offline_access
+```
+
+**In VoidAuth OIDC App Page:**
+
+Create separate OIDC applications for the OpenCloud clients.
+
+**OpenCloud Web:**
+
+```text
+Client ID: web
+Auth Method: none
+Client Secret: not needed
+
+Redirect URIs:
+https://opencloud.example.com/
+https://opencloud.example.com/oidc-callback.html
+https://opencloud.example.com/oidc-silent-redirect.html
+
+Scopes:
+openid
+profile
+email
+groups
+```
+
+Replace `https://opencloud.example.com` with the URL of your OpenCloud instance.
+
+**OpenCloud Desktop:**
+
+```text
+Client ID: OpenCloudDesktop
+Auth Method: none
+Client Secret: not needed
+
+Redirect URIs:
+http://127.0.0.1:*
+http://localhost:*
+
+Scopes:
+openid
+profile
+email
+groups
+offline_access
+```
+
+The Desktop client is a public/native OIDC client and should not require a client secret.
+
+**OpenCloud Android:**
+
+```text
+Client ID: OpenCloudAndroid
+Auth Method: none
+Client Secret: not needed
+
+Redirect URI:
+oc://android.opencloud.eu
+
+Scopes:
+openid
+profile
+email
+groups
+offline_access
+```
+
+The Android client is a public/native OIDC client and should not require a client secret.
+
+**OpenCloud iOS:**
+
+```text
+Client ID: OpenCloudIOS
+Auth Method: none
+Client Secret: not needed
+
+Redirect URI:
+oc://ios.opencloud.eu
+
+Scopes:
+openid
+profile
+email
+groups
+offline_access
+```
+
+The iOS client is a public/native OIDC client and should not require a client secret.
+
+**Automatic Provisioning:**
+
+With the configuration above, users are automatically created in OpenCloud when they log in through VoidAuth.
+
+The `groups` claim is used for both:
+
+1. OpenCloud group provisioning
+2. OpenCloud role assignment
+
+For example, a VoidAuth user assigned to:
+
+```text
+user
+```
+
+receives the OpenCloud `user` role.
+
+A user assigned to:
+
+```text
+admin
+```
+
+receives the OpenCloud `admin` role.
+
+> [!IMPORTANT]
+> The role names in the VoidAuth `groups` claim must match the `claim_value` entries configured in OpenCloud's `proxy.yaml`.
+
+**Alternative: OpenCloud-Managed Roles:**
+
+If automatic role assignment through VoidAuth is not desired, OpenCloud can assign the default `user` role instead.
+
+Change the configuration to:
+
+```env
+PROXY_ROLE_ASSIGNMENT_DRIVER=default
+GRAPH_ASSIGN_DEFAULT_USER_ROLE=true
+```
+
+Remove:
+
+```env
+PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM=groups
+```
+
+and remove the `role_assignment` configuration from `proxy.yaml`.
+
+With this setup, newly provisioned users receive OpenCloud's default `user` role and roles must be managed directly in OpenCloud.
+
+**Desktop Client Note:**
+
+Older OpenCloud Desktop versions and some configurations had limitations around OIDC/WebFinger discovery with external identity providers.
+
+Current OpenCloud Desktop versions as of 4.0.0 can use the dedicated `OpenCloudDesktop` client configuration shown above when discovery works correctly.
+
+If Desktop authentication fails while Web authentication works, verify:
+
+```env
+WEBFINGER_OIDC_ISSUER=https://auth.example.com/oidc
+WEBFINGER_DESKTOP_OIDC_CLIENT_ID=OpenCloudDesktop
+WEBFINGER_DESKTOP_OIDC_CLIENT_SCOPES=openid profile email groups offline_access
+```
+
+and ensure the corresponding `OpenCloudDesktop` OIDC application exists in VoidAuth with these redirect URIs:
+
+```text
+http://127.0.0.1:*
+http://localhost:*
+```
+
+> [!NOTE]
+> Depending on your Browser restrictions, the redirect from the VoidAuth WebLogin back to the App does not work properly (e.g. Brave with default data protection settings). If so, just copy the auth link from the Opencloud Desktop app and paste it into e.g. Firefox (confirmed working).
+
+<br>
+
 ## <img src="https://cdn.jsdelivr.net/gh/selfhst/icons/svg/open-webui.svg" width="28" /> Open WebUI
 
 In the following example, only users in VoidAuth with the group `users` or `admins` will be able to log in. Adjust these group names as needed.
