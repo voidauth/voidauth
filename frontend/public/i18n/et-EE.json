@@ -9,8 +9,7 @@
     "forgot-password": "Unustasid parooli?",
     "remember-me": "Jäta mind meelde",
     "actions": {
-      "login": "Logi sisse",
-      "sign-up": "Registreeru"
+      "login": "Logi sisse"
     },
     "title": "Sisselogimine"
   },
@@ -469,7 +468,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Logi sisse"
+        "login": "Logi sisse",
+        "sign-up": "Registreeru"
       }
     },
     "copy-field": {

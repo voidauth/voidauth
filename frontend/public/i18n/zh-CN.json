@@ -9,8 +9,7 @@
     "forgot-password": "忘记密码",
     "remember-me": "记住我",
     "actions": {
-      "login": "登录",
-      "sign-up": "注册"
+      "login": "登录"
     },
     "title": "登录"
   },
@@ -468,7 +467,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "登录"
+        "login": "登录",
+        "sign-up": "注册"
       }
     },
     "copy-field": {

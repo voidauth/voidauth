@@ -9,8 +9,7 @@
     "forgot-password": "Забыли пароль?",
     "remember-me": "Запомнить меня",
     "actions": {
-      "login": "Войти",
-      "sign-up": "Зарегистрироваться"
+      "login": "Войти"
     },
     "title": "Войти"
   },
@@ -470,7 +469,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Войти"
+        "login": "Войти",
+        "sign-up": "Зарегистрироваться"
       }
     },
     "copy-field": {

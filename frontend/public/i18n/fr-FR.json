@@ -9,8 +9,7 @@
     "forgot-password": "Mot de passe oublié",
     "remember-me": "Se souvenir de moi",
     "actions": {
-      "login": "Connexion",
-      "sign-up": "Inscription"
+      "login": "Connexion"
     },
     "title": "Connexion"
   },
@@ -469,7 +468,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Connexion"
+        "login": "Connexion",
+        "sign-up": "Inscription"
       }
     },
     "copy-field": {
