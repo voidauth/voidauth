@@ -594,7 +594,7 @@ This setup supports:
 > [!NOTE]
 > This configuration uses separate OIDC client IDs for the Web, Desktop, Android, and iOS clients.
 
-### OpenCloud Configuration
+**OpenCloud Configuration:**
 
 Add the following variables to your OpenCloud `.env` file.
 
@@ -660,7 +660,7 @@ PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM=groups
 GRAPH_ASSIGN_DEFAULT_USER_ROLE=false
 ```
 
-### OpenCloud Role Mapping
+**OpenCloud Role Mapping:**
 
 Configure the role mapping in OpenCloud's `proxy.yaml`:
 
@@ -680,7 +680,7 @@ role_assignment:
         claim_value: user-light
 ```
 
-### VoidAuth Groups
+**VoidAuth Groups:**
 
 Create the following groups in VoidAuth:
 
@@ -695,7 +695,7 @@ Assign users to the appropriate group.
 
 The group names correspond directly to the OpenCloud roles configured in `proxy.yaml`.
 
-### Required Claims
+**Required Claims:**
 
 VoidAuth should provide the following claims:
 
@@ -718,13 +718,11 @@ Native clients additionally request `offline_access`:
 openid profile email groups offline_access
 ```
 
----
-
-## In VoidAuth OIDC App Page
+**In VoidAuth OIDC App Page:**
 
 Create separate OIDC applications for the OpenCloud clients.
 
-### OpenCloud Web
+**OpenCloud Web:**
 
 ```text
 Client ID:
@@ -744,7 +742,7 @@ groups
 
 Replace `https://opencloud.example.com` with the URL of your OpenCloud instance.
 
-### OpenCloud Desktop
+**OpenCloud Desktop:**
 
 ```text
 Client ID:
@@ -764,7 +762,7 @@ offline_access
 
 The Desktop client is a public/native OIDC client and should not require a client secret.
 
-### OpenCloud Android
+**OpenCloud Android:**
 
 ```text
 Client ID:
@@ -783,7 +781,7 @@ offline_access
 
 The Android client is a public/native OIDC client and should not require a client secret.
 
-### OpenCloud iOS
+**OpenCloud iOS:**
 
 ```text
 Client ID:
@@ -802,9 +800,7 @@ offline_access
 
 The iOS client is a public/native OIDC client and should not require a client secret.
 
----
-
-## Automatic Provisioning
+**Automatic Provisioning:**
 
 With the configuration above, users are automatically created in OpenCloud when they log in through VoidAuth.
 
@@ -832,9 +828,7 @@ receives the OpenCloud `admin` role.
 > [!IMPORTANT]
 > The role names in the VoidAuth `groups` claim must match the `claim_value` entries configured in OpenCloud's `proxy.yaml`.
 
----
-
-## Alternative: OpenCloud-Managed Roles
+**Alternative: OpenCloud-Managed Roles:**
 
 If automatic role assignment through VoidAuth is not desired, OpenCloud can assign the default `user` role instead.
 
@@ -855,9 +849,7 @@ and remove the `role_assignment` configuration from `proxy.yaml`.
 
 With this setup, newly provisioned users receive OpenCloud's default `user` role and roles must be managed directly in OpenCloud.
 
----
-
-## Desktop Client Note
+**Desktop Client Note:**
 
 Older OpenCloud Desktop versions and some configurations had limitations around OIDC/WebFinger discovery with external identity providers.
 
@@ -877,8 +869,9 @@ and ensure the corresponding `OpenCloudDesktop` OIDC application exists in VoidA
 http://127.0.0.1:*
 http://localhost:*
 ```
+
 > [!NOTE]
-> Depending on your Browser restrictions, the redirect from the VoidAuth WebLogin back to the App does not work prpperly (e.g. Brave with default data protection settings). If so, just use Firefox.
+> Depending on your Browser restrictions, the redirect from the VoidAuth WebLogin back to the App does not work properly (e.g. Brave with default data protection settings). If so, just copy the auth link from the Opencloud Desktop app and paste it into e.g. Firefox (confirmed working).
 
 <br>
 
