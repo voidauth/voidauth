@@ -18,6 +18,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { HumanDurationPipe } from '../../../pipes/HumanDurationPipe'
 import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
+import { TableService } from '../../../services/table.service'
 
 @Component({
   selector: 'app-users',
@@ -79,43 +80,61 @@ export class UsersComponent {
   private userService = inject(UserService)
   private spinnerService = inject(SpinnerService)
   readonly dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
-    // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
+      const currentPageSize = this.tableService.currentPageSize
+      if (currentPageSize !== null) {
+        this.paginator().pageSize = currentPageSize
+      }
 
-      const [me, users] = await Promise.all([this.userService.getMyUser(), this.adminService.users()])
-      this.me = me
-      this.dataSource.data = users
-
+      this.me = await this.userService.getMyUser()
       this.dataSource.paginator = this.paginator()
       this.dataSource.sort = this.sort()
 
-      this.paginator().page.subscribe((_p) => {
+      this.paginator().page.subscribe(async (event) => {
+        this.tableService.currentPageSize = event.pageSize
         this.selected.forEach(s => (s.source.checked = false))
         this.selected = []
+        await this.setData()
       })
+
+      this.sort().sortChange.subscribe(async () => {
+        this.paginator().pageIndex = 0
+        await this.setData()
+      })
+
+      this.search.valueChanges.pipe(debounceTime(500), distinctUntilChanged()).subscribe(async (searchTerm) => {
+        this.paginator().pageIndex = 0
+        await this.setData(searchTerm ?? undefined)
+      })
+
+      await this.setData()
     } finally {
       this.spinnerService.hide()
     }
+  }
 
-    this.search.valueChanges.pipe(debounceTime(500), distinctUntilChanged()).subscribe((searchTerm) => {
+  async setData(searchTerm = this.search.value ?? undefined) {
+    try {
       this.spinnerService.show()
-      this.adminService
-        .users(searchTerm)
-        .then((users) => {
-          this.dataSource.data = users
-          this.selected.forEach(s => (s.source.checked = false))
-          this.selected = []
-        })
-        .catch((e: unknown) => {
-          console.error(e)
-        })
-        .finally(() => {
-          this.spinnerService.hide()
-        })
-    })
+      const pageIndex = this.paginator().pageIndex
+      const pageSize = this.paginator().pageSize
+      const sortActive = this.sort().active
+      const sortDirection = this.sort().direction
+      const data = await this.adminService.users(pageIndex, pageSize, searchTerm, sortActive, sortDirection)
+      this.dataSource.data = data.users
+      this.paginator().length = data.count
+      this.selected.forEach(s => (s.source.checked = false))
+      this.selected = []
+    } catch (e) {
+      console.error(e)
+      this.snackbarService.error('Could not get users.')
+    } finally {
+      this.spinnerService.hide()
+    }
   }
 
   toggleSelectEnabled() {

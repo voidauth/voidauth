@@ -14,6 +14,7 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { HumanDurationPipe } from '../../../pipes/HumanDurationPipe'
 import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
+import { TableService } from '../../../services/table.service'
 
 @Component({
   selector: 'app-invitations',
@@ -61,11 +62,19 @@ export class InvitationsComponent {
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
+      const currentPageSize = this.tableService.currentPageSize
+      if (currentPageSize !== null) {
+        this.paginator().pageSize = currentPageSize
+      }
+      this.paginator().page.subscribe((event) => {
+        this.tableService.currentPageSize = event.pageSize
+      })
       this.dataSource.data = await this.adminService.invitations()
       this.dataSource.paginator = this.paginator()
       this.dataSource.sort = this.sort()

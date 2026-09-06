@@ -18,6 +18,7 @@ import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
 import { TranslatePipe } from '@ngx-translate/core'
+import { TableService } from '../../../services/table.service'
 
 @Component({
   selector: 'app-emails',
@@ -58,6 +59,7 @@ export class EmailsComponent {
   private dialog = inject(MatDialog)
   private userService = inject(UserService)
   private configService = inject(ConfigService)
+  readonly tableService = inject(TableService)
 
   me?: CurrentUserDetails
   public config?: ConfigResponse
@@ -66,12 +68,17 @@ export class EmailsComponent {
     // Assign the data to the data source for the table to render
     try {
       this.spinnerService.show()
+      const currentPageSize = this.tableService.currentPageSize
+      if (currentPageSize !== null) {
+        this.paginator().pageSize = currentPageSize
+      }
 
       const [me, config, _] = await Promise.all([this.userService.getMyUser(), this.configService.getConfig(), this.setData()])
       this.me = me
       this.config = config
 
-      this.paginator().page.subscribe(async () => {
+      this.paginator().page.subscribe(async (event) => {
+        this.tableService.currentPageSize = event.pageSize
         await this.setData()
       })
 

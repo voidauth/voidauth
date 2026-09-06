@@ -118,7 +118,7 @@ Documentation, especially app setup guides, are largely community driven and so 
 
 ### Features and Fixes
 
-Please read the CONTRIBUTING.md to see setup guide. Collaboration in an issue or discussion before opening a Pull Request will improve chances of merging, but is not required.
+Please read the CONTRIBUTING.md to see setup guide. Collaboration in an issue or discussion before opening a Pull Request will improve chances of changes being accepted, but is not required.
 
 ## Disclaimer
 
