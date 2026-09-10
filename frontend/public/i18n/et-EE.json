@@ -9,8 +9,7 @@
     "forgot-password": "Unustasid parooli?",
     "remember-me": "Jäta mind meelde",
     "actions": {
-      "login": "Logi sisse",
-      "sign-up": "Registreeru"
+      "login": "Logi sisse"
     },
     "title": "Sisselogimine"
   },
@@ -468,7 +467,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Logi sisse"
+        "login": "Logi sisse",
+        "sign-up": "Registreeru"
       }
     },
     "copy-field": {
@@ -501,8 +501,6 @@
     "totp-input": {
       "title": "See lubab sinu kontol mitmeastmelise autentimise.",
       "text": {
-        "qrcode-instruction": "Skanni QR-kood või sisesta salavõti oma autentimisrakendusse",
-        "then": "seejärel",
         "enter-token": "Jätkamiseks sisesta autentimisrakendusest kood"
       }
     },
