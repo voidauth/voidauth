@@ -95,6 +95,7 @@ publicRouter.post('/reset_password',
 
     if (passwordStrength(newPassword).score < appConfig.PASSWORD_STRENGTH) {
       res.status(422).send({ message: 'Password is not strong enough.' })
+      return
     }
 
     const user = await getUserById(userId)

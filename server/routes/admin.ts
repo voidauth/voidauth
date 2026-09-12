@@ -74,6 +74,7 @@ adminRouter.get('/client/:client_id',
       res.send(client satisfies ClientResponse)
     } else {
       res.sendStatus(404)
+      return
     }
   })
 
@@ -133,6 +134,7 @@ async function upsertClientController(isCreate: boolean,
     if (isOIDCProviderError(e)) {
       await rollback() // still rollback any db changes
       res.status(400).send({ message: e.error_description })
+      return
     } else {
       throw e
     }
