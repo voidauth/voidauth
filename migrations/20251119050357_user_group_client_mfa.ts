@@ -31,6 +31,9 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.table('proxy_auth', (table) => {
+    table.dropColumn('mfaRequired')
+  })
   await knex.schema.table('group', (table) => {
     table.dropColumn('mfaRequired')
   })
