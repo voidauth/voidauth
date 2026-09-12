@@ -728,6 +728,7 @@ Redirect URLs:
 Client ID: OpenCloudAndroid
 Auth Method: None (Public)
 Redirect URLs: oc://android.opencloud.eu
+```
 
 **OpenCloud iOS:**
 
