@@ -14,17 +14,24 @@
   <span class="right-actions">
     <app-lang-switcher></app-lang-switcher>
     <app-theme-toggle></app-theme-toggle>
-    <!-- These pages include a specific 'login' button as an action -->
-    @if (
-      userNotFound() &&
-      !location.pathname.endsWith("/login") &&
-      !location.pathname.endsWith("/register") &&
-      !location.pathname.endsWith("/approval_required") &&
-      !location.pathname.endsWith("/user_expired")
-    ) {
-      <span>
-        <a mat-flat-button routerLink="/login">{{ "components.header.actions.login" | translate }}</a>
-      </span>
+    @if (userNotFound()) {
+      <!-- When a user is not found -->
+      @if (
+        !location.pathname.endsWith("/login") &&
+        !location.pathname.endsWith("/register") &&
+        !location.pathname.endsWith("/approval_required") &&
+        !location.pathname.endsWith("/user_expired")
+      ) {
+        <!-- Most pages include a 'login' button as an action -->
+        <span>
+          <a mat-flat-button routerLink="/login">{{ "components.header.actions.login" | translate }}</a>
+        </span>
+      } @else if (location.pathname.endsWith("/login") && config?.registration) {
+        <!-- If on the login page, show a signup option if signup is enabled -->
+        <span>
+          <a mat-flat-button routerLink="/register">{{ "components.header.actions.sign-up" | translate }}</a>
+        </span>
+      }
     }
     @if (user) {
       <button mat-icon-button (click)="toggleSidenav.emit()">

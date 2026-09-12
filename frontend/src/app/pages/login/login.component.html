@@ -39,11 +39,6 @@
             <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport.platformIcon ?? "key" }}</mat-icon>
           </button>
         }
-
-        @if (config?.registration) {
-          <app-text-divider text="or" disabled style="margin-top: 16px"></app-text-divider>
-          <a routerLink="/register" mat-button type="button">{{ "login.actions.sign-up" | translate }}</a>
-        }
       </mat-card-actions>
     </form>
   </mat-card-content>
