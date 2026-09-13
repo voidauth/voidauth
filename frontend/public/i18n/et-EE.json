@@ -501,8 +501,6 @@
     "totp-input": {
       "title": "See lubab sinu kontol mitmeastmelise autentimise.",
       "text": {
-        "qrcode-instruction": "Skanni QR-kood või sisesta salavõti oma autentimisrakendusse",
-        "then": "seejärel",
         "enter-token": "Jätkamiseks sisesta autentimisrakendusest kood"
       }
     },

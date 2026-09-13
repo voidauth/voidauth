@@ -601,8 +601,6 @@
         "secret": "Geheim:"
       },
       "text": {
-        "qrcode-instruction": "Scan de QR-code of voer het geheim in uw Authenticator in",
-        "then": "daarna",
         "enter-token": "Voer de token van de authenticator in om door te gaan"
       },
       "tooltips": {
