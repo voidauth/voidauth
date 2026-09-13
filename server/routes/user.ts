@@ -159,6 +159,7 @@ userRouter.patch('/password',
 
     if (passwordStrength(newPassword).score < appConfig.PASSWORD_STRENGTH) {
       res.status(422).send({ message: 'Password is not strong enough.' })
+      return
     }
 
     if (user.hasPassword && (!oldPassword || !await checkPasswordHash(user.id, oldPassword))) {

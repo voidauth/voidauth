@@ -9,8 +9,7 @@
     "forgot-password": "Mot de passe oublié",
     "remember-me": "Se souvenir de moi",
     "actions": {
-      "login": "Connexion",
-      "sign-up": "Inscription"
+      "login": "Connexion"
     },
     "title": "Connexion"
   },
@@ -24,7 +23,6 @@
     "navigation": {
       "profile": "Profil",
       "admin": {
-        "title": "Administration",
         "oidc-apps": "Applications OIDC",
         "proxyauth-domains": "Domaines ProxyAuth",
         "users": "Utilisateurs",
@@ -469,7 +467,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Connexion"
+        "login": "Connexion",
+        "sign-up": "Inscription"
       }
     },
     "copy-field": {
@@ -502,8 +501,6 @@
     "totp-input": {
       "title": "Cela activera l'authentification multifactorielle sur votre compte.",
       "text": {
-        "qrcode-instruction": "Scannez le QR code ou saisissez le secret dans votre authentificateur",
-        "then": "puis",
         "enter-token": "Saisissez le jeton de l'authentificateur pour continuer"
       }
     },

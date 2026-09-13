@@ -9,8 +9,7 @@
     "forgot-password": "Забыли пароль?",
     "remember-me": "Запомнить меня",
     "actions": {
-      "login": "Войти",
-      "sign-up": "Зарегистрироваться"
+      "login": "Войти"
     },
     "title": "Войти"
   },
@@ -24,7 +23,6 @@
     "navigation": {
       "profile": "Профиль",
       "admin": {
-        "title": "Администратор",
         "oidc-apps": "Приложения OIDC",
         "proxyauth-domains": "Домены ProxyAuth",
         "users": "Пользователи",
@@ -470,7 +468,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Войти"
+        "login": "Войти",
+        "sign-up": "Зарегистрироваться"
       }
     },
     "copy-field": {
@@ -506,8 +505,6 @@
         "secret": "Секретный код:"
       },
       "text": {
-        "qrcode-instruction": "Отсканируйте QR-код или введите секретный код в приложении-аутентификаторе",
-        "then": "затем",
         "enter-token": "Введите токен из приложения-аутентификатора"
       },
       "tooltips": {

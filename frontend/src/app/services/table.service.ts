@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 
-const MIN_PAGE_SIZE = 10
+const MIN_PAGE_SIZE = 5
 const MAX_PAGE_SIZE = 1000
 
 @Injectable({

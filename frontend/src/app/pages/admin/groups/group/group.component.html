@@ -27,8 +27,8 @@
             matInput
             [formControl]="userSelect"
             [matAutocomplete]="auto"
-            (input)="userAutoFilter(input.value)"
-            (focus)="userAutoFilter(input.value)"
+            (input)="userSelectInputSubject.next(input.value)"
+            (focus)="userSelectInputSubject.next(input.value)"
           />
           <mat-autocomplete (optionSelected)="addUser($event); input.value = ''" requireSelection #auto="matAutocomplete">
             @for (option of selectableUsers(); track option) {

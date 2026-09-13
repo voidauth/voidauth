@@ -21,6 +21,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { HumanDurationPipe } from '../../../pipes/HumanDurationPipe'
 import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 import { TableService } from '../../../services/table.service'
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs'
 
 @Component({
   selector: 'app-password-resets',
@@ -60,6 +61,7 @@ export class PasswordResetsComponent {
 
   selectableUsers = signal<UserWithoutPassword[]>([])
   userSelect = new FormControl<UserWithoutPassword | null>(null)
+  userSelectInputSubject = new Subject<string>()
 
   config?: ConfigResponse
 
@@ -93,6 +95,13 @@ export class PasswordResetsComponent {
 
       this.sort().sortChange.subscribe(async () => {
         await this.setData()
+      })
+
+      this.userSelectInputSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+      ).subscribe(async (value) => {
+        await this.userAutoFilter(value)
       })
     } finally {
       this.spinnerService.hide()

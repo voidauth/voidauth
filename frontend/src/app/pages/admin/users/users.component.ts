@@ -91,8 +91,6 @@ export class UsersComponent {
       }
 
       this.me = await this.userService.getMyUser()
-      this.dataSource.paginator = this.paginator()
-      this.dataSource.sort = this.sort()
 
       this.paginator().page.subscribe(async (event) => {
         this.tableService.currentPageSize = event.pageSize

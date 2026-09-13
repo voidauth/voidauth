@@ -9,8 +9,7 @@
     "forgot-password": "忘记密码",
     "remember-me": "记住我",
     "actions": {
-      "login": "登录",
-      "sign-up": "注册"
+      "login": "登录"
     },
     "title": "登录"
   },
@@ -24,7 +23,6 @@
     "navigation": {
       "profile": "个人资料",
       "admin": {
-        "title": "管理",
         "oidc-apps": "OIDC 应用",
         "proxyauth-domains": "代理认证域",
         "users": "用户",
@@ -468,7 +466,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "登录"
+        "login": "登录",
+        "sign-up": "注册"
       }
     },
     "copy-field": {
@@ -501,8 +500,6 @@
     "totp-input": {
       "title": "这将为您的账户启用多因素认证。",
       "text": {
-        "qrcode-instruction": "扫描二维码或在您的身份验证器中输入密钥",
-        "then": "然后",
         "enter-token": "输入身份验证器中的令牌以继续"
       }
     },

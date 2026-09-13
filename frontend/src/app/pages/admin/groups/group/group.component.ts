@@ -19,6 +19,7 @@ import { TranslatePipe } from '@ngx-translate/core'
 import { stringCompare, type ItemIn, type Nullable } from '@shared/utils'
 import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValueResult }
   from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
+import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs'
 
 @Component({
   selector: 'app-group',
@@ -34,6 +35,7 @@ export class GroupComponent implements OnInit {
 
   public selectableUsers = signal<UserWithoutPassword[]>([])
   userSelect = new FormControl<UserWithoutPassword | null>(null)
+  userSelectInputSubject = new Subject<string>()
 
   public form = new FormGroup({
     // only alphanumeric, underscore, and hyphen
@@ -54,6 +56,7 @@ export class GroupComponent implements OnInit {
   private dialog = inject(MatDialog)
 
   ngOnInit() {
+    let userSelectInputSub: Subscription | null = null
     this.route.paramMap.subscribe(async (params) => {
       try {
         this.spinnerService.show()
@@ -72,6 +75,16 @@ export class GroupComponent implements OnInit {
         }
 
         await this.userAutoFilter()
+
+        if (userSelectInputSub) {
+          userSelectInputSub.unsubscribe()
+        }
+        userSelectInputSub = this.userSelectInputSubject.pipe(
+          debounceTime(300),
+          distinctUntilChanged(),
+        ).subscribe(async (value) => {
+          await this.userAutoFilter(value)
+        })
 
         if (this.form.controls.name.value?.toLowerCase() === ADMIN_GROUP.toLowerCase()) {
           this.form.controls.name.disable()

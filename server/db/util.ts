@@ -3,6 +3,10 @@ import appConfig from '../util/config'
 import crypto from 'node:crypto'
 import { logger } from '../util/logger'
 
+export function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, '\\$&')
+}
+
 /**
  * Encrypt a string
  */

@@ -9,8 +9,7 @@
     "forgot-password": "Passwort vergessen",
     "remember-me": "Angemeldet bleiben",
     "actions": {
-      "login": "Anmelden",
-      "sign-up": "Registrieren"
+      "login": "Anmelden"
     },
     "title": "Anmeldung"
   },
@@ -24,7 +23,6 @@
     "navigation": {
       "profile": "Profil",
       "admin": {
-        "title": "Administration",
         "oidc-apps": "OIDC-Anwendungen",
         "proxyauth-domains": "ProxyAuth-Domänen",
         "users": "Benutzer",
@@ -309,7 +307,8 @@
   "components": {
     "header": {
       "actions": {
-        "login": "Anmelden"
+        "login": "Anmelden",
+        "sign-up": "Registrieren"
       }
     },
     "theme-toggle": {
