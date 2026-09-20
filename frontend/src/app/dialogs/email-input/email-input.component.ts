@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
-import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { MaterialModule } from '../../material-module'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
@@ -18,4 +18,5 @@ export class EmailInputComponent {
   readonly dialogRef = inject(MatDialogRef<EmailInputComponent>)
   readonly data = inject<{ message?: string, header?: string, initial?: string }>(MAT_DIALOG_DATA)
   emailControl = new FormControl<string | null>(this.data.initial ?? null, [isValidEmail])
+  readonly form = new FormGroup({ email: this.emailControl })
 }

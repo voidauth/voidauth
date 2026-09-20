@@ -1,13 +1,13 @@
 @if (data.header) {
   <h2 mat-dialog-title>{{ data.header }}</h2>
 }
-<form>
+<form [formGroup]="form">
   <mat-dialog-content>
     <p>
       {{ data.message ?? ("components.email-input.message.default" | translate) }}
     </p>
     <mat-form-field style="width: 100%">
-      <input matInput type="text" [formControl]="emailControl" />
+      <input matInput type="text" formControlName="email" />
       @if (emailControl.errors) {
         <mat-error>{{ emailControl.errors | validationError | async }}</mat-error>
       }
