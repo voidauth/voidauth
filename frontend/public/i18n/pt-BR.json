@@ -1,1 +1,700 @@
-{}
+{
+  "login": {
+    "password": {
+      "label": "Senha"
+    },
+    "username": {
+      "label": "Nome de usuário ou e-mail"
+    },
+    "forgot-password": "Esqueci a senha",
+    "remember-me": "Permanecer conectado",
+    "actions": {
+      "login": "Entrar"
+    },
+    "title": "Entrar"
+  },
+  "contact-us": {
+    "actions": {
+      "label": "Entre em contato"
+    }
+  },
+  "app": {
+    "loading": "Carregando...",
+    "navigation": {
+      "profile": "Perfil",
+      "admin": {
+        "oidc-apps": "Aplicativos OIDC",
+        "proxyauth-domains": "Domínios ProxyAuth",
+        "users": "Usuários",
+        "groups": "Grupos",
+        "invitations": "Convites",
+        "password-resets": "Redefinições de senha",
+        "sent-mail": "E-mails enviados",
+        "claims": "Declarações personalizadas"
+      },
+      "logout": "Sair"
+    }
+  },
+  "duration": {
+    "now": "agora",
+    "second": {
+      "singular": "{{count}} segundo",
+      "plural": "{{count}} segundos",
+      "singular-ago": "há {{count}} segundo",
+      "plural-ago": "há {{count}} segundos"
+    },
+    "minute": {
+      "singular": "{{count}} minuto",
+      "plural": "{{count}} minutos",
+      "singular-ago": "há {{count}} minuto",
+      "plural-ago": "há {{count}} minutos"
+    },
+    "hour": {
+      "singular": "{{count}} hora",
+      "plural": "{{count}} horas",
+      "singular-ago": "há {{count}} hora",
+      "plural-ago": "há {{count}} horas"
+    },
+    "day": {
+      "singular": "{{count}} dia",
+      "plural": "{{count}} dias",
+      "singular-ago": "há {{count}} dia",
+      "plural-ago": "há {{count}} dias"
+    },
+    "week": {
+      "singular": "{{count}} semana",
+      "plural": "{{count}} semanas",
+      "singular-ago": "há {{count}} semana",
+      "plural-ago": "há {{count}} semanas"
+    },
+    "month": {
+      "singular": "{{count}} mês",
+      "plural": "{{count}} meses",
+      "singular-ago": "há {{count}} mês",
+      "plural-ago": "há {{count}} meses"
+    },
+    "year": {
+      "singular": "{{count}} ano",
+      "plural": "{{count}} anos",
+      "singular-ago": "há {{count}} ano",
+      "plural-ago": "há {{count}} anos"
+    }
+  },
+  "passkey-title": "Chave de acesso",
+  "passkey-dialog": {
+    "title": "Habilitar {{platformName}}?",
+    "actions": {
+      "passkey": "Habilitar {{platformName}}"
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "Usar {{platformName}}",
+      "register-passkey": "Registrar chave de acesso",
+      "back": "Voltar"
+    },
+    "locked": "Muitos códigos incorretos. Tente novamente em <b>{{duration}}</b>.",
+    "title": "Autenticação multifator obrigatória"
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "Criar conta com {{platformName}}",
+      "sign-up": "Criar conta",
+      "login": "Entrar"
+    },
+    "title": {
+      "accept-invitation": "Aceitar convite",
+      "sign-up": "Criar conta"
+    },
+    "username": {
+      "label": "Nome de usuário"
+    },
+    "email": {
+      "label": "E-mail"
+    },
+    "name": {
+      "label": "Nome"
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "Habilitar {{platformName}}",
+      "reset-password": "Redefinir senha"
+    },
+    "title": "Redefinir senha"
+  },
+  "approval-required": {
+    "content": "Sua conta precisa da aprovação antes de você entrar. Aguarde ou entre em contato com um administrador para obter ajuda.",
+    "title": "Aprovação necessária",
+    "actions": {
+      "login": "Entrar",
+      "try-again": "Tentar novamente"
+    }
+  },
+  "forbidden": {
+    "title": "Acesso proibido",
+    "content": "Você não tem permissão para acessar este recurso.",
+    "actions": {
+      "back": "Voltar"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "Entrar"
+    },
+    "info": {
+      "sign-into-question": "Você deseja entrar em <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "Depois de entrar, você será redirecionado para <b>{{redirect}}</b>"
+    },
+    "title": "Confirmar"
+  },
+  "forgot-password": {
+    "username": {
+      "label": "E-mail ou nome de usuário"
+    },
+    "actions": {
+      "send": "Enviar",
+      "send-again": "Enviar novamente",
+      "create-again": "Criar novamente",
+      "create": "Criar"
+    },
+    "title": "Esqueci a senha"
+  },
+  "form-errors": {
+    "required": "Obrigatório.",
+    "min": "Deve ser no mínimo {{min}}.",
+    "max": "Não pode ser maior que {{max}}.",
+    "minLength": "Deve ter pelo menos {{requiredLength}} caractere(s).",
+    "maxLength": "Deve ter no máximo {{requiredLength}} caracteres.",
+    "email": "E-mail inválido.",
+    "default": "Valor inválido.",
+    "alpha-num-underscore-only": "Somente A-Z, 0-9 e _ são permitidos"
+  },
+  "logout": {
+    "title": "Sair",
+    "info": {
+      "logout-question": "Deseja sair?"
+    },
+    "actions": {
+      "yes": "Sim",
+      "back": "Voltar",
+      "no": "Não"
+    }
+  },
+  "page-not-found": {
+    "title": "Página não encontrada",
+    "actions": {
+      "go-home": "Ir para o início"
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "Verificando e-mail...",
+        "email-could-not-be-verified": "Falha ao verificar o e-mail",
+        "sending-new-verification": "Enviando nova verificação...",
+        "email-verification-could-not-be-sent": "Falha ao enviar o e-mail de verificação"
+      },
+      "actions": {
+        "send-again": "Enviar novamente"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "E-mail de verificação enviado",
+        "email-verification-required": "Verificação de e-mail necessária"
+      },
+      "actions": {
+        "logout": "Sair",
+        "send-again": "Enviar novamente",
+        "send-verification": "Enviar verificação"
+      },
+      "email": {
+        "label": "E-mail"
+      }
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "sections": {
+      "profile": {
+        "title": "Perfil",
+        "username": {
+          "label": "Nome de usuário"
+        },
+        "name": {
+          "label": "Nome"
+        },
+        "actions": {
+          "submit": {
+            "label": "Atualizar perfil"
+          }
+        },
+        "email": {
+          "label": "E-mail",
+          "actions": {
+            "submit": {
+              "label": "Atualizar e-mail"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "Segurança",
+        "password": {
+          "set": {
+            "label": "Definir senha"
+          },
+          "change": {
+            "label": "Alterar senha"
+          }
+        },
+        "passkeys": {
+          "title": "Chaves de acesso",
+          "noPasskeys": "Você não tem chaves de acesso registradas.",
+          "register": {
+            "label": "Registrar chave de acesso"
+          },
+          "manage": {
+            "title": "Gerenciar chaves de acesso"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "Editar"
+            },
+            "delete": {
+              "tooltip": "Apagar"
+            }
+          }
+        },
+        "mfa": {
+          "title": "Autenticação multifator",
+          "status": {
+            "enabled": "A autenticação multifator está ativada.",
+            "disabled": "A autenticação multifator não está ativada."
+          },
+          "authenticators": {
+            "has": "Você tem pelo menos um autenticador registrado.",
+            "none": "Você não tem autenticadores registrados."
+          },
+          "add": {
+            "label": "Adicionar autenticador"
+          },
+          "enable": {
+            "label": "Habilitar MFA"
+          }
+        }
+      },
+      "account": {
+        "title": "Conta",
+        "removePassword": {
+          "label": "Remover senha",
+          "tooltip": {
+            "noPassword": "Você não tem uma senha para remover",
+            "noPasskeys": "Você não tem nenhuma chave de acesso"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "Remover todas as chaves de acesso",
+          "tooltip": {
+            "noPasskeys": "Você não tem chaves de acesso para remover",
+            "noPassword": "Você não tem uma senha"
+          }
+        },
+        "disableMfa": {
+          "label": "Desativar MFA"
+        },
+        "removeAuthenticators": {
+          "label": "Remover autenticadores"
+        },
+        "deleteAccount": {
+          "label": "Apagar conta"
+        }
+      }
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "Editar",
+        "delete": "Apagar",
+        "update": "Atualizar",
+        "create": "Criar",
+        "view": "Ver",
+        "open": "Abrir",
+        "remove": "Remover"
+      },
+      "labels": {
+        "mfa-required": "MFA obrigatória",
+        "email-verified": "E-mail verificado",
+        "approved": "Aprovado"
+      },
+      "messages": {
+        "all-users-have-access": "Nenhum grupo selecionado. TODOS os usuários terão acesso."
+      }
+    },
+    "users": {
+      "empty-state": "Nenhum usuário.",
+      "actions": {
+        "select": "Selecionar",
+        "approve": "Aprovar"
+      },
+      "labels": {
+        "search": "Pesquisar"
+      }
+    },
+    "user": {
+      "title": "Atualizar usuário",
+      "labels": {
+        "username": "Nome de usuário",
+        "name": "Nome",
+        "email": "E-mail",
+        "add-group": "Adicionar grupo",
+        "security-groups": "Grupos de segurança:",
+        "user-expiration-date": "Data de expiração do acesso",
+        "user-expiration-time": "Hora de expiração do acesso",
+        "custom-claims": "Declarações personalizadas",
+        "claim": "Declaração",
+        "value": "Valor",
+        "no-custom-claims": "Nenhuma declaração personalizada configurada.",
+        "group": "Grupo",
+        "applied": "Aplicada"
+      },
+      "actions": {
+        "sign-out": "Sair"
+      },
+      "tooltips": {
+        "remove": "Remover",
+        "open": "Abrir",
+        "edit": "Editar"
+      }
+    },
+    "clients": {
+      "empty-state": "Nenhum aplicativo OIDC.",
+      "actions": {
+        "create": "Criar aplicativo OIDC"
+      }
+    },
+    "client": {
+      "title": "Aplicativo OIDC",
+      "labels": {
+        "name": "Nome",
+        "home-page-url": "URL da página inicial",
+        "logo-url": "URL da logo",
+        "add-group": "Adicionar grupo",
+        "client-id": "ID do cliente",
+        "auth-method": "Método de autenticação",
+        "client-secret": "Segredo do cliente",
+        "redirect-url": "Nova URL de redirecionamento",
+        "response-types": "Tipos de resposta",
+        "grant-types": "Tipos de concessão",
+        "postlogout-url": "URL pós-logout",
+        "allowed-groups": "Grupos permitidos:",
+        "redirect-urls": "URLs de redirecionamento:"
+      },
+      "hints": {
+        "pkce-required": "PKCE obrigatório com este método de autenticação.",
+        "not-required": "Não é necessário para o método de autenticação atual.",
+        "postlogout-redirect": "URL de redirecionamento pós-logout permitida no logout iniciado pelo cliente."
+      },
+      "checkboxes": {
+        "skip-consent": "Pular consentimento",
+        "mfa-required": "MFA obrigatória"
+      },
+      "tooltips": {
+        "skip-consent": "Pular a confirmação do usuário para este aplicativo.",
+        "mfa-required": "Os usuários deverão usar MFA para acessar este aplicativo.",
+        "copy-client-id": "Copiar ID do cliente",
+        "copy-secret": "Copiar segredo"
+      },
+      "messages": {
+        "client-id-copied": "ID do cliente copiado para a área de transferência.",
+        "secret-copied": "Segredo copiado para a área de transferência."
+      }
+    },
+    "domains": {
+      "empty-state": "Nenhum domínio.",
+      "actions": {
+        "create": "Criar domínio ProxyAuth"
+      }
+    },
+    "domain": {
+      "title": "Domínio ProxyAuth",
+      "labels": {
+        "domain": "Domínio",
+        "max-session-length": "Duração máxima da sessão (minutos)",
+        "add-group": "Adicionar grupo",
+        "allowed-groups": "Grupos permitidos:"
+      },
+      "placeholders": {
+        "domain": "ex. *.seudominio.com/caminho/"
+      },
+      "sections": {
+        "domain-help": "Ajuda com domínios"
+      },
+      "hints": {
+        "no-re-auth": "Deixe em branco para tornar reautenticação opcional."
+      },
+      "help-text": {
+        "0": "O domínio não deve incluir o protocolo, pode incluir um caminho e a porta, além de aceitar caracteres curinga (*) em qualquer posição.",
+        "1": "<b>example.domain.com/api/alive</b> só verificará o acesso a um único endpoint.",
+        "2": "<b>example.domain.com/api/*</b> verificará o acesso a todos os endpoints em /api."
+      }
+    },
+    "password-resets": {
+      "labels": {
+        "create-link": "Criar link de redefinição de senha"
+      },
+      "tooltips": {
+        "send-email": "Enviar e-mail para {{email}}",
+        "copy-link": "Copiar link",
+        "delete": "Apagar"
+      },
+      "messages": {
+        "link-copied": "Link de redefinição copiado para a área de transferência."
+      },
+      "empty-state": "Nenhuma redefinição de senha."
+    },
+    "emails": {
+      "empty-state": "Nenhum e-mail enviado.",
+      "actions": {
+        "send-test": "Enviar e-mail de teste"
+      },
+      "tooltips": {
+        "preview": "Visualizar",
+        "view-user": "Ver usuário"
+      }
+    },
+    "groups": {
+      "empty-state": "Nenhum grupo.",
+      "actions": {
+        "create": "Criar grupo"
+      }
+    },
+    "group": {
+      "title": "Grupo",
+      "labels": {
+        "name": "Nome",
+        "add-user": "Adicionar usuário",
+        "users": "Usuários:",
+        "custom-claims": "Declarações personalizadas",
+        "claim": "Declaração",
+        "value": "Valor",
+        "no-custom-claims": "Nenhuma declaração personalizada configurada."
+      },
+      "checkboxes": {
+        "mfa-required": "MFA obrigatória",
+        "auto-assign": "Atribuição automática"
+      },
+      "tooltips": {
+        "edit": "Editar",
+        "remove": "Remover"
+      }
+    },
+    "invitations": {
+      "empty-state": "Nenhum convite.",
+      "actions": {
+        "create": "Criar convite"
+      }
+    },
+    "invitation": {
+      "title": "Convite",
+      "labels": {
+        "invite-link": "Link do convite",
+        "username": "Nome de usuário",
+        "email": "E-mail",
+        "name": "Nome",
+        "add-group": "Adicionar grupo",
+        "security-groups": "Grupos de segurança:",
+        "user-expiration-date": "Data de expiração do acesso",
+        "user-expiration-time": "Hora de expiração do acesso",
+        "custom-claims": "Declarações personalizadas",
+        "claim": "Declaração",
+        "value": "Valor",
+        "no-custom-claims": "Nenhuma declaração personalizada configurada.",
+        "applied": "Aplicada",
+        "group": "Grupos"
+      },
+      "tooltips": {
+        "copy-invite-link": "Copiar link do convite",
+        "unsaved-changes": "Você tem alterações não salvas.",
+        "send-to": "Enviar convite para: {{email}}",
+        "edit": "Editar",
+        "remove": "Remover"
+      },
+      "messages": {
+        "link-copied": "Link do convite copiado para a área de transferência.",
+        "email-not-verified": "Não é possível enviar o link do convite por e-mail; a conexão de e-mail não foi verificada.",
+        "no-email": "Não é possível enviar o link do convite por e-mail; o convite não inclui um endereço de e-mail."
+      },
+      "actions": {
+        "send": "Enviar convite"
+      },
+      "checkboxes": {
+        "email-verified": "E-mail verificado"
+      }
+    },
+    "claims": {
+      "actions": {
+        "create": "Criar declaração"
+      },
+      "empty-state": "Nenhuma declaração personalizada."
+    },
+    "claim": {
+      "title": "Declaração personalizada",
+      "labels": {
+        "name": "Nome",
+        "user-claims": "Usuários",
+        "username": "Nome de usuário",
+        "value": "Valor",
+        "no-user-claims": "Nenhuma declaração de usuário",
+        "no-group-claims": "Nenhuma declaração de grupo",
+        "group-name": "Grupo",
+        "group-claims": "Grupos",
+        "invitation-claims": "Convites",
+        "invitation": "Convite",
+        "no-invitation-claims": "Nenhuma declaração de convite"
+      },
+      "tooltips": {
+        "edit": "Editar",
+        "remove": "Remover"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "Entrar",
+        "sign-up": "Criar conta"
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": "{{label}} copiado para a área de transferência."
+      }
+    },
+    "oidc-info": {
+      "title": "Informações de OIDC",
+      "labels": {
+        "issuer": "Endpoint do emissor OIDC",
+        "well-known": "Endpoint Well-Known",
+        "authorization": "Endpoint de autorização",
+        "token": "Endpoint de token",
+        "userinfo": "Endpoint UserInfo",
+        "logout": "Endpoint de logout",
+        "jwks": "Endpoint JWKS"
+      },
+      "actions": {
+        "all-info": "Todas as informações"
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "Nova senha",
+        "old-password": "Senha antiga",
+        "confirm-password": "Confirmar senha"
+      }
+    },
+    "totp-input": {
+      "title": "Isso ativará a autenticação multifator na sua conta.",
+      "labels": {
+        "secret": "Segredo:"
+      },
+      "text": {
+        "enter-token": "Digite o token do autenticador para continuar"
+      },
+      "tooltips": {
+        "copy-secret": "Copiar segredo para a área de transferência."
+      },
+      "messages": {
+        "copied-secret": "Segredo copiado para a área de transferência."
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "Sistema",
+        "light": "Claro",
+        "dark": "Escuro"
+      }
+    },
+    "email-input": {
+      "message": {
+        "default": "Digite um endereço de e-mail abaixo."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Cancelar"
+        },
+        "confirm": {
+          "label": "Confirmar"
+        }
+      }
+    },
+    "totp-register": {
+      "title": "Adicionar autenticador",
+      "actions": {
+        "cancel": {
+          "label": "Cancelar"
+        }
+      }
+    },
+    "passkey-edit": {
+      "title": "Editar nome da chave de acesso",
+      "message": {
+        "default": "Digite um nome para esta chave de acesso."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Cancelar"
+        },
+        "save": {
+          "label": "Salvar"
+        }
+      }
+    },
+    "confirm": {
+      "instructions": "Para confirmar, digite <b>{{requiredText}}</b> no campo abaixo.",
+      "actions": {
+        "cancel": {
+          "label": "Cancelar"
+        },
+        "confirm": {
+          "label": "Confirmar"
+        }
+      }
+    },
+    "option-value-dialog": {
+      "actions": {
+        "cancel": {
+          "label": "Cancelar"
+        },
+        "save": {
+          "label": "Salvar"
+        }
+      },
+      "labels": {
+        "value": "Valor"
+      }
+    }
+  },
+  "user-expired": {
+    "title": "Acesso à conta expirado",
+    "content": "O acesso à sua conta expirou. Entre em contato com um administrador para estender o acesso.",
+    "actions": {
+      "login": "Entrar",
+      "try-again": "Tentar novamente"
+    }
+  },
+  "passkey-name": {
+    "title": "Nome da chave de acesso",
+    "prompt": "Definir um nome para a nova chave de acesso?",
+    "actions": {
+      "skip": {
+        "label": "Pular"
+      },
+      "save": {
+        "label": "Salvar"
+      }
+    }
+  }
+}
