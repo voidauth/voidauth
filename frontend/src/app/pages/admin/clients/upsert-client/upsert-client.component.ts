@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, type OnInit, ChangeDetectionStrategy, signal } from '@angular/core'
 import { AdminService } from '../../../../services/admin.service'
 import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
@@ -15,6 +15,7 @@ import {
   type ClientUpsertRequest,
 } from '@shared/api-request/admin/ClientUpsert'
 import type { ResponseType } from 'oidc-provider'
+import type { ClientLogoResponse } from '@shared/api-response/ClientResponse'
 import { type ItemIn, type Nullable, optionalizeNullable, stringCompare } from '@shared/utils'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../../../services/spinner.service'
@@ -57,6 +58,11 @@ export class UpsertClientComponent implements OnInit {
   public grantTypes = GRANT_TYPES
 
   public client_id: string | null = null
+
+  public uploadedLogo = signal<ClientLogoResponse | null>(null)
+  public selectedLogo = signal<File | null>(null)
+  public selectedLogoPreview = signal<string | null>(null)
+  public removeUploadedLogo = signal<boolean>(false)
 
   form = new FormGroup({
     client_id: new FormControl<string | null>(null, [Validators.required]),
@@ -199,6 +205,10 @@ export class UpsertClientComponent implements OnInit {
   async getCurrentClientData() {
     if (this.client_id) {
       const client = await this.adminService.client(this.client_id)
+      this.form.controls.logo_uri.enable()
+      this.selectedLogo.set(null)
+      this.selectedLogoPreview.set(null)
+      this.removeUploadedLogo.set(false)
       this.form.reset({
         client_id: client.client_id,
         client_name: client.client_name ?? null,
@@ -235,6 +245,13 @@ export class UpsertClientComponent implements OnInit {
         this.disable(false)
       }
 
+      try {
+        this.uploadedLogo.set(await this.adminService.getClientLogo(this.client_id))
+        this.form.controls.logo_uri.disable()
+      } catch {
+        // there is no uploaded logo
+      }
+
       this.form.controls.client_id.disable()
     }
   }
@@ -254,6 +271,8 @@ export class UpsertClientComponent implements OnInit {
   }
 
   async submit() {
+    let clientFieldsSaved = false
+    const hasLogoAction = !!this.selectedLogo() || this.removeUploadedLogo()
     try {
       this.spinnerService.show()
 
@@ -272,12 +291,21 @@ export class UpsertClientComponent implements OnInit {
       } else {
         await this.adminService.addClient(submitValues)
       }
+      clientFieldsSaved = true
 
-      this.snackbarService.message(`Client ${this.client_id ? 'updated' : 'created'}.`)
       this.client_id = submitValues.client_id
       if (!this.client_id) {
         throw new Error()
       }
+
+      const selectedLogo = this.selectedLogo()
+      if (selectedLogo) {
+        await this.adminService.uploadClientLogo(this.client_id, selectedLogo)
+      } else if (this.removeUploadedLogo()) {
+        await this.adminService.deleteClientLogo(this.client_id)
+      }
+
+      this.snackbarService.message(`Client ${this.client_id ? 'updated' : 'created'}.`)
       await this.getCurrentClientData()
       await this.router.navigate(['/admin/client', this.client_id], {
         replaceUrl: true,
@@ -287,16 +315,76 @@ export class UpsertClientComponent implements OnInit {
 
       let shownError: string | null = null
       if (e instanceof HttpErrorResponse) {
-        shownError ??= e.error?.message
+        const errorBody: unknown = e.error
+        if (errorBody && typeof errorBody === 'object' && 'message' in errorBody && typeof errorBody.message === 'string') {
+          shownError = errorBody.message
+        }
       } else {
         shownError ??= (e as Error).message
       }
 
+      if (clientFieldsSaved && hasLogoAction) {
+        shownError = String(this.translateService.instant('admin.client.messages.logo-save-failed'))
+      }
       shownError ??= `Could not ${this.client_id ? 'update' : 'create'} app.`
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
     }
+  }
+
+  selectLogo(event: Event) {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    input.value = ''
+    if (!file) {
+      return
+    }
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      this.snackbarService.error(String(this.translateService.instant('admin.client.messages.logo-invalid-file')))
+      return
+    }
+
+    this.selectedLogo.set(file)
+    this.removeUploadedLogo.set(false)
+    this.form.controls.logo_uri.disable()
+    this.form.markAsDirty()
+    const reader = new FileReader()
+    reader.onload = () => {
+      this.selectedLogoPreview.set(typeof reader.result === 'string' ? reader.result : null)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  resizeLogo(event: Event) {
+    const image = event.currentTarget
+    if (!(image instanceof HTMLImageElement)) {
+      return
+    }
+    const scale = 128 / Math.max(image.naturalWidth, image.naturalHeight)
+    image.style.width = `${String(Math.ceil(image.naturalWidth * scale))}px`
+    image.style.height = `${String(Math.ceil(image.naturalHeight * scale))}px`
+  }
+
+  clearSelectedLogo() {
+    this.selectedLogo.set(null)
+    this.selectedLogoPreview.set(null)
+    if (this.uploadedLogo() && !this.removeUploadedLogo()) {
+      this.form.controls.logo_uri.disable()
+    } else {
+      this.form.controls.logo_uri.enable()
+    }
+    this.form.markAsDirty()
+  }
+
+  removeCurrentLogo() {
+    this.removeUploadedLogo.set(true)
+    this.uploadedLogo.set(null)
+    this.selectedLogo.set(null)
+    this.selectedLogoPreview.set(null)
+    this.form.controls.logo_uri.enable()
+    this.form.controls.logo_uri.setValue(null)
+    this.form.markAsDirty()
   }
 
   deleteClient() {

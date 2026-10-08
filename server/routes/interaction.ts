@@ -20,7 +20,7 @@ import { createExpiration } from '../db/util'
 import { getInvitation } from '../db/invitations'
 import type { Invitation } from '@shared/db/Invitation'
 import type { Consent } from '@shared/db/Consent'
-import { getClient } from '../db/client'
+import { getClient } from '../db/client_get'
 import type { Group, InvitationGroup, UserGroup } from '@shared/db/Group'
 import {
   generateAuthenticationOptions,

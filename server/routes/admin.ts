@@ -1,12 +1,12 @@
-import { Router, type Response } from 'express'
+import { Router, type Request, type Response } from 'express'
 import { db, rollback } from '../db/db'
 import {
-  endUserSessions, isProviderClaimsDesynced, isOIDCProviderError, provider, removeClient, resetProvider, upsertClient,
+  endUserSessions, isProviderClaimsDesynced, isOIDCProviderError, provider, resetProvider,
 } from '../oidc/provider'
 import { clientUpsertValidator, type ClientUpsert } from '@shared/api-request/admin/ClientUpsert'
 import type { User } from '@shared/db/User'
 import { randomBytes, randomUUID } from 'crypto'
-import { getClient, getClients } from '../db/client'
+import { removeClient, upsertClient } from '../db/client'
 import type { UserGroup, Group, InvitationGroup, ProxyAuthGroup } from '@shared/db/Group'
 import { groupUpsertValidator } from '@shared/api-request/admin/GroupUpsert'
 import { customClaimUpsertValidator } from '@shared/api-request/admin/CustomClaimUpsert'
@@ -33,7 +33,7 @@ import type { EmailLog } from '@shared/db/EmailLog'
 import appConfig from '../util/config'
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
-import type { ClientResponse } from '@shared/api-response/ClientResponse'
+import type { ClientResponse, ClientLogoResponse } from '@shared/api-response/ClientResponse'
 import { logger } from '../util/logger'
 import { createPasswordReset } from '../db/passwordReset'
 import { zodValidate } from '../util/zodValidate'
@@ -48,10 +48,99 @@ import { getCustomClaimDetails, getCustomClaimsRecords, getGroupsCustomClaims } 
 import type { ClientMetadata } from 'oidc-provider'
 import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
 import type { DeepWritable } from '@shared/utils'
+import multer from 'multer'
+import sharp from 'sharp'
+import { deleteClientLogo, replaceClientLogo } from '../db/client'
+import { getUploadedAssetWebUrl } from '../db/uploaded'
+import { getClientLogoUploadedAsset, getClient, getClients } from '../db/client_get'
+
+async function normalizeLogo(buffer: Buffer): Promise<{ buffer: Buffer, extension: string }> {
+  const image = sharp(buffer, { limitInputPixels: 12000000 })
+  const metadata = await image.metadata()
+  const expectedFormats = ['png', 'jpeg', 'webp']
+  if (typeof metadata.format !== 'string' || !expectedFormats.includes(metadata.format)
+    || !metadata.width || !metadata.height
+    || (metadata.width * metadata.height) > 12000000) {
+    throw new Error('Unsupported or excessive image dimensions.')
+  }
+
+  const data = await image
+    .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
+    .toBuffer()
+  if (data.byteLength > (4 * 1024 * 1024)) {
+    throw new Error('Normalized image exceeds the output limit of 4 MB.')
+  }
+  return { buffer: data, extension: metadata.format }
+}
 
 export const adminRouter = Router()
 
 adminRouter.use(checkCanLogin, checkAdmin)
+
+adminRouter.get('/client/:client_id/logo',
+  zodValidate({ params: { client_id: zod.string() } }),
+  async (req, res) => {
+    const logo = await getClientLogoUploadedAsset(req.params.client_id)
+    if (!logo) {
+      res.sendStatus(404)
+      return
+    }
+    res.send({
+      url: getUploadedAssetWebUrl(logo.filePath),
+      uploadedHash: logo.contentHash,
+    } satisfies ClientLogoResponse)
+  },
+)
+
+adminRouter.post('/client/:client_id/logo',
+  zodValidate({ params: { client_id: zod.string() } }),
+  (req, res, next) => {
+    multer({
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 0, parts: 1, headerPairs: 32 },
+    }).single('logo')(req as unknown as Request, res, (error) => {
+      if (error) {
+        const isTooLarge = error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE'
+        res.status(isTooLarge ? 413 : 400).send({ message: isTooLarge ? 'Logo file exceeds 2 MB.' : 'Invalid logo upload.' })
+        return
+      }
+      next()
+    })
+  },
+  async (req, res) => {
+    const client = await getClient(req.params.client_id)
+    if (!client || client.declared) {
+      res.sendStatus(client ? 400 : 404)
+      return
+    }
+    if (!req.file) {
+      res.status(400).send({ message: 'Logo file is required.' })
+      return
+    }
+
+    let normalizedLogo: { buffer: Buffer, extension: string }
+    try {
+      normalizedLogo = await normalizeLogo(req.file.buffer)
+    } catch {
+      res.status(400).send({ message: 'Logo must be a valid, single-frame PNG, JPEG, or WebP image within the supported dimensions.' })
+      return
+    }
+    await replaceClientLogo(client.client_id, normalizedLogo.buffer, normalizedLogo.extension)
+    res.send()
+  })
+
+adminRouter.delete('/client/:client_id/logo',
+  zodValidate({ params: { client_id: zod.string() } }),
+  async (req, res) => {
+    const client = await getClient(req.params.client_id)
+    if (!client || client.declared) {
+      res.sendStatus(client ? 400 : 404)
+      return
+    }
+    await deleteClientLogo(client.client_id)
+    const fallbackLogoUrl = client.external_logo_uri ?? client.logo_uri ?? null
+    res.send({ logo_uri: fallbackLogoUrl, external_logo_uri: fallbackLogoUrl, uploaded_logo: null })
+  })
 
 adminRouter.get('/config', async (_req, res) => {
   const defaultGroupsWithClaims = await getGroupsCustomClaims(

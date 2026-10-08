@@ -8,3 +8,8 @@ export type ClientResponse = DeepWritable<ClientMetadata> & {
   declared?: 'env' | 'label' | false
   groups: Group['name'][]
 }
+
+export type ClientLogoResponse = {
+  url: string
+  uploadedHash: string
+}

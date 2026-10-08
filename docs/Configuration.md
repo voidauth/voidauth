@@ -133,6 +133,10 @@ For information on how to change the email templates used for invitations, passw
 
 You may also add/modify the `custom.css` file located in the **/app/config/branding** directory to add your own styling to the web interface.
 
+## Uploaded Assets Directory
+
+Uploaded application assets are stored separately from other files in the **/app/uploaded_assets** directory, and contains any files uploaded by users.
+
 ## Customization
 
 > [!IMPORTANT]

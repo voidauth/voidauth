@@ -70,6 +70,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./voidauth/config:/app/config
+      - ./voidauth/uploaded_assets:/app/uploaded_assets
     environment:
       # Required environment variables
       # More environment variable options can be found 

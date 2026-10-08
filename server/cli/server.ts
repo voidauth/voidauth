@@ -231,6 +231,21 @@ export async function serve() {
     index: false,
   }))
 
+  // uploaded assets folder static assets. Do not fallthrough
+  if (!fs.existsSync(path.join('./uploaded_assets'))) {
+    fs.mkdirSync(path.join('./uploaded_assets'), {
+      recursive: true,
+    })
+  }
+  app.use(`${basePath()}/assets/uploaded/`, express.static('./uploaded_assets', {
+    index: false,
+  }), (_req, res, _next) => {
+    res.status(404).send({
+      message: 'Asset file not found.',
+    })
+    return
+  })
+
   // Do not fallthrough to index.html for missing i18n files
   app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
     index: false,
@@ -293,12 +308,12 @@ export async function serve() {
       message: 'Unhandled API error',
       errors: err instanceof Error ? [err] : [{ message: String(err) }],
     })
-    if (!res.statusCode || res.statusCode === 200) {
-      const errStatus = err && typeof err === 'object' && 'status' in err && typeof err.status === 'number' ? err.status : 500
-      res.status(errStatus)
-    }
     if (res.headersSent) {
       return
+    }
+    // Do not allow success codes on unhandled error
+    if (!res.statusCode || (res.statusCode >= 200 && res.statusCode < 300)) {
+      res.status(500)
     }
     res.sendStatus(res.statusCode)
     return
