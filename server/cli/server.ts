@@ -232,12 +232,12 @@ export async function serve() {
   }))
 
   // uploaded assets folder static assets. Do not fallthrough
-  if (!fs.existsSync(path.join('./uploaded_assets'))) {
-    fs.mkdirSync(path.join('./uploaded_assets'), {
+  if (!fs.existsSync(path.join('./user_assets'))) {
+    fs.mkdirSync(path.join('./user_assets'), {
       recursive: true,
     })
   }
-  app.use(`${basePath()}/assets/uploaded/`, express.static('./uploaded_assets', {
+  app.use(`${basePath()}/assets/uploaded/`, express.static('./user_assets', {
     index: false,
   }), (_req, res, _next) => {
     res.status(404).send({

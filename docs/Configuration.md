@@ -135,7 +135,7 @@ You may also add/modify the `custom.css` file located in the **/app/config/brand
 
 ## Uploaded Assets Directory
 
-Uploaded application assets are stored separately from other files in the **/app/uploaded_assets** directory, and contains any files uploaded by users.
+Uploaded application assets are stored separately from other files in the **/app/user_assets** directory, and contains any files uploaded by users.
 
 ## Customization
 

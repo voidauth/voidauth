@@ -272,7 +272,7 @@ services:
     image: voidauth/voidauth:latest
     volumes:
       - ./voidauth/config:/app/config
-      - ./voidauth/uploaded_assets:/app/uploaded_assets
+      - ./voidauth/user_assets:/app/user_assets
     environment:
       # Required environment variables
       APP_URL: # required

@@ -136,4 +136,4 @@ dist
 /db
 *.sqlite
 /dev
-/uploaded_assets
+/user_assets

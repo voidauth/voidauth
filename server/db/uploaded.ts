@@ -6,10 +6,10 @@ import { db } from './db'
 import type { ClientLogoAsset, UploadedAsset } from '@shared/db/Asset'
 import { appUrl } from '../util/config'
 
-const uploadedRoot = path.join('./uploaded_assets')
+const uploadedRoot = path.join('./user_assets')
 // ensure uploaded assets folder exists
-if (!fs.existsSync(path.join('./uploaded_assets'))) {
-  fs.mkdirSync(path.join('./uploaded_assets'), {
+if (!fs.existsSync(path.join('./user_assets'))) {
+  fs.mkdirSync(path.join('./user_assets'), {
     recursive: true,
   })
 }

@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./voidauth/config:/app/config
-      - ./voidauth/uploaded_assets:/app/uploaded_assets
+      - ./voidauth/user_assets:/app/user_assets
       # Only required for declaring OIDC Apps via docker labels (see OIDC-Setup documentation)
       # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
@@ -55,7 +55,7 @@ services:
     volumes:
       - ./voidauth/config:/app/config
       - ./voidauth/db:/app/db
-      - ./voidauth/uploaded_assets:/app/uploaded_assets
+      - ./voidauth/user_assets:/app/user_assets
       # Only required for declaring OIDC Apps via docker labels (see OIDC-Setup documentation)
       # - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
