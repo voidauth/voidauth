@@ -72,7 +72,6 @@ USER 0:0
 
 VOLUME ["/app/config"]
 VOLUME ["/app/db"]
-VOLUME ["/app/user_assets"]
 EXPOSE 3000
 EXPOSE 3890
 ENTRYPOINT [ "node", "./dist/index.mjs" ]

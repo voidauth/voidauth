@@ -93,6 +93,13 @@ adminRouter.get('/client/:client_id/logo',
 )
 
 adminRouter.post('/client/:client_id/logo',
+  (_req: unknown, res, next) => {
+    if (appConfig.DISABLE_FILE_UPLOADS) {
+      res.sendStatus(404)
+      return
+    }
+    next()
+  },
   zodValidate({ params: { client_id: zod.string() } }),
   (req, res, next) => {
     multer({

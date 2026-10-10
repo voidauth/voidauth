@@ -59,14 +59,16 @@
         (change)="selectLogo($event)"
       />
       <div style="display: flex; gap: 12px">
-        <button mat-stroked-button type="button" [disabled]="form.disabled" (click)="logoFile.click()">
-          <mat-icon fontSet="material-icons-round">upload</mat-icon>
-          @if (uploadedLogo() && !removeUploadedLogo()) {
-            {{ "admin.client.actions.replace-logo" | translate }}
-          } @else {
-            {{ "admin.client.actions.choose-logo" | translate }}
-          }
-        </button>
+        @if (!config?.disableFileUploads) {
+          <button mat-stroked-button type="button" [disabled]="form.disabled" (click)="logoFile.click()">
+            <mat-icon fontSet="material-icons-round">upload</mat-icon>
+            @if (uploadedLogo() && !removeUploadedLogo()) {
+              {{ "admin.client.actions.replace-logo" | translate }}
+            } @else {
+              {{ "admin.client.actions.choose-logo" | translate }}
+            }
+          </button>
+        }
         @if (selectedLogo()) {
           <button mat-button type="button" [disabled]="form.disabled" (click)="clearSelectedLogo()">
             {{ "admin.client.actions.cancel-logo" | translate }}

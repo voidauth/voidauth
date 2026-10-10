@@ -6,10 +6,9 @@ import { db } from './db'
 import type { ClientLogoAsset, UploadedAsset } from '@shared/db/Asset'
 import { appUrl } from '../util/config'
 
-const uploadedRoot = path.join('./user_assets')
-// ensure uploaded assets folder exists
-if (!fs.existsSync(path.join('./user_assets'))) {
-  fs.mkdirSync(path.join('./user_assets'), {
+const uploadsPath = path.resolve('./config/uploads')
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, {
     recursive: true,
   })
 }
@@ -24,7 +23,7 @@ function generateFilePath(contentHash: string, extension: string) {
 }
 
 function uploadAssetWebPath(filePath: string) {
-  return `/assets/uploaded/${filePath.replaceAll('\\', '/')}`
+  return `/assets/uploads/${filePath.replaceAll('\\', '/')}`
 }
 
 export function getUploadedAssetWebUrl(filePath: string) {
@@ -32,8 +31,8 @@ export function getUploadedAssetWebUrl(filePath: string) {
 }
 
 function uploadedStoragePath(filePath: string) {
-  const resolved = path.join(uploadedRoot, filePath)
-  if (resolved === uploadedRoot || !resolved.startsWith(`${uploadedRoot}${path.sep}`)) {
+  const resolved = path.join(uploadsPath, filePath)
+  if (resolved === uploadsPath || !resolved.startsWith(`${uploadsPath}${path.sep}`)) {
     throw new Error('Invalid uploaded asset file path.')
   }
   return resolved

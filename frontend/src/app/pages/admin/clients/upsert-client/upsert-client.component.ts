@@ -25,6 +25,8 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { isValidWildcardRedirect, validateWildcardRedirects } from '@shared/url'
 import { TranslatePipe } from '@ngx-translate/core'
 import { TranslateService } from '@ngx-translate/core'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
+import { ConfigService } from '../../../../services/config.service'
 
 export type TypedControls<T> = {
   [K in keyof T]-?: FormControl<Required<T>[K]>;
@@ -148,6 +150,7 @@ export class UpsertClientComponent implements OnInit {
   )
 
   pwdShow = false
+  config?: ConfigResponse
 
   private adminService = inject(AdminService)
   private route = inject(ActivatedRoute)
@@ -156,12 +159,15 @@ export class UpsertClientComponent implements OnInit {
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
   private translateService = inject(TranslateService)
+  private configService = inject(ConfigService)
 
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
       try {
         this.spinnerService.show()
         this.client_id = params.get('client_id')
+
+        this.config = await this.configService.getConfig()
 
         await this.getCurrentClientData()
 
