@@ -1,4 +1,4 @@
-import Provider, { type ClientMetadata, type Configuration } from 'oidc-provider'
+import Provider, { type Configuration } from 'oidc-provider'
 import { findAccount, getUserById } from '../db/user'
 import appConfig, { basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
 import { KnexAdapter } from './adapter'
@@ -15,17 +15,12 @@ import { getProxyAuthWithCache } from '../db/proxyAuth'
 import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
 import { randomBytes } from 'crypto'
 import { logger } from '../util/logger'
-import { getClient } from '../db/client'
-import type { OIDCGroup, Group } from '@shared/db/Group'
-import add from 'oidc-provider/lib/helpers/add_client.js'
 import { db } from '../db/db'
-import { mergeKeys } from '../db/util'
-import type { User } from '@shared/db/User'
 import { PayloadTypes, type OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
 import { getAllClaims, getCustomClaims } from '../db/claims'
 import { getCurrentProviderConfig, setCurrentProviderConfig } from './configuration'
-import type { DeepWritable } from '@shared/utils'
+import { getClient } from '../db/client_get'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -640,41 +635,6 @@ export async function isProviderClaimsDesynced() {
 
   const claimsDesynced = (new Set(currentClaims)).symmetricDifference(new Set(providerClaims)).size > 0
   return claimsDesynced
-}
-
-export async function upsertClient(metadata: DeepWritable<ClientMetadata>, groups: string[], user: Pick<User, 'id'>, ctx: unknown) {
-  await provider().Client.validate(metadata)
-  const client = await add(provider(), metadata, { ctx, store: true })
-  await provider().Client.validate(client.metadata())
-  const clientId = client.clientId
-
-  // Sync groups for the client
-  const clientGroups: OIDCGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups)).map((g) => {
-    return {
-      groupId: g.id,
-      oidcId: clientId,
-      oidcType: PayloadTypes.Client,
-      createdBy: user.id,
-      updatedBy: user.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-  })
-  if (clientGroups[0]) {
-    await db().table<OIDCGroup>(TABLES.OIDC_GROUP).insert(clientGroups)
-      .onConflict(['groupId', 'oidcId', 'oidcType']).merge(mergeKeys(clientGroups[0]))
-  }
-  await db().table<OIDCGroup>(TABLES.OIDC_GROUP).delete()
-    .where({ oidcId: clientId }).and
-    .whereNotIn('groupId', clientGroups.map(g => g.groupId))
-
-  return client
-}
-
-export async function removeClient(client_id: string) {
-  // @ts-expect-error client adapter actually does exist
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  await provider().Client.adapter.destroy(client_id)
 }
 
 export async function getSession(req: IncomingMessage, res: ServerResponse) {

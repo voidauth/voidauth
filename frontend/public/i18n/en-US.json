@@ -381,6 +381,8 @@
         "name": "Name",
         "home-page-url": "Home Page URL",
         "logo-url": "Logo URL",
+        "upload-logo": "Application logo",
+        "logo-preview": "OIDC App logo preview",
         "add-group": "Add Group",
         "client-id": "Client ID",
         "auth-method": "Auth Method",
@@ -392,6 +394,12 @@
         "backchannel-logout-url": "Backchannel Logout URL",
         "allowed-groups": "Allowed Groups:",
         "redirect-urls": "Redirect URLs:"
+      },
+      "actions": {
+        "choose-logo": "Upload logo",
+        "replace-logo": "Replace logo",
+        "cancel-logo": "Cancel upload",
+        "remove-logo": "Remove logo"
       },
       "hints": {
         "pkce-required": "PKCE Required with this Auth Method.",
@@ -411,7 +419,9 @@
       },
       "messages": {
         "client-id-copied": "Client ID copied to clipboard.",
-        "secret-copied": "Secret copied to clipboard."
+        "secret-copied": "Secret copied to clipboard.",
+        "logo-invalid-file": "Choose a PNG, JPEG, or WebP image no larger than 2 MB.",
+        "logo-save-failed": "Client fields were saved, but the logo change failed."
       }
     },
     "domains": {
