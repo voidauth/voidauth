@@ -39,6 +39,7 @@
     "jose": "^6.2.12",
     "knex": "^3.3.0",
     "matcher": "^6.0.0",
+    "multer": "^2.4.0",
     "nodemailer": "^9.1.1",
     "oidc-provider": "^9.12.2",
     "otpauth": "^9.5.2",
@@ -47,6 +48,7 @@
     "psl": "^1.15.0",
     "pug": "^3.0.4",
     "sass": "^1.104.1",
+    "sharp": "^0.35.4",
     "tsx": "^4.23.13",
     "yargs": "^18.1.0",
     "zod": "^4.6.5"
@@ -58,6 +60,7 @@
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.6",
     "@types/madge": "^5.0.3",
+    "@types/multer": "^2.2.0",
     "@types/node": "^24.13.4",
     "@types/nodemailer": "^8.0.1",
     "@types/oidc-provider": "^9.12.1",
