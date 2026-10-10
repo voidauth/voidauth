@@ -6,8 +6,9 @@ import { SnackbarService } from '../../services/snackbar.service'
 import { MaterialModule } from '../../material-module'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { SpinnerService } from '../../services/spinner.service'
-import { getBaseHrefPath } from '../../services/config.service'
+import { ConfigService, getBaseHrefPath } from '../../services/config.service'
 import { TranslatePipe } from '@ngx-translate/core'
+import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Component({
   selector: 'app-consent',
@@ -21,13 +22,15 @@ export class ConsentComponent implements OnInit {
   public details?: ConsentDetails
   public redirectHost?: string
   public basePath = getBaseHrefPath()
+  config?: ConfigResponse
 
   private authService = inject(AuthService)
   private route = inject(ActivatedRoute)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private configService = inject(ConfigService)
 
-  ngOnInit() {
+  async ngOnInit() {
     this.route.paramMap.subscribe(async (paramMap) => {
       try {
         this.spinnerService.show()
@@ -44,6 +47,17 @@ export class ConsentComponent implements OnInit {
         this.spinnerService.hide()
       }
     })
+    this.config = await this.configService.getConfig()
+  }
+
+  resizeLogo(event: Event) {
+    const image = event.currentTarget
+    if (!(image instanceof HTMLImageElement)) {
+      return
+    }
+    const scale = 128 / Math.max(image.naturalWidth, image.naturalHeight)
+    image.style.width = `${String(Math.ceil(image.naturalWidth * scale))}px`
+    image.style.height = `${String(Math.ceil(image.naturalHeight * scale))}px`
   }
 
   async submit() {
