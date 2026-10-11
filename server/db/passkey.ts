@@ -1,5 +1,6 @@
 import type { Passkey, PasskeyAuthentication, PasskeyRegistration } from '@shared/db/Passkey'
-import type { AuthenticatorTransportFuture } from '@simplewebauthn/server'
+import type { AuthenticatorTransport,
+  PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server'
 import { db } from './db'
 import { randomUUID } from 'crypto'
 import { createExpiration } from './util'
@@ -11,7 +12,7 @@ export async function getUserPasskeys(userId: string) {
     .orderBy(db().ref('createdAt').withSchema(TABLES.PASSKEY), 'desc')).map((p) => {
     return {
       ...p,
-      transports: p.transports?.split(',') as AuthenticatorTransportFuture[] | undefined,
+      transports: p.transports?.split(',') as AuthenticatorTransport[] | undefined,
     }
   })
 }
@@ -39,7 +40,7 @@ export async function getPasskey(id: string) {
   return (await db().select().table<Passkey>(TABLES.PASSKEY).where({ id })).map((p) => {
     return {
       ...p,
-      transports: p.transports?.split(',') as AuthenticatorTransportFuture[] | undefined,
+      transports: p.transports?.split(',') as AuthenticatorTransport[] | undefined,
     }
   })[0]
 }

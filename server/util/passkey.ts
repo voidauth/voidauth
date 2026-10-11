@@ -1,7 +1,7 @@
 import appConfig, { appUrl } from './config'
 import { generateRegistrationOptions,
   verifyRegistrationResponse,
-  type AuthenticatorTransportFuture,
+  type AuthenticatorTransport,
   type RegistrationResponseJSON,
   type VerifiedRegistrationResponse } from '@simplewebauthn/server'
 import { deleteRegistrationOptions, getRegistrationOptions, savePasskey, saveRegistrationOptions } from '../db/passkey'
@@ -18,7 +18,7 @@ export async function createPasskeyRegistrationOptions(opts: {
   requireVerified?: boolean
   excludeCredentials?: {
     id: Base64URLString
-    transports?: AuthenticatorTransportFuture[]
+    transports?: AuthenticatorTransport[]
   }[] }) {
   const options = await generateRegistrationOptions({
     rpName: passkeyRpName,

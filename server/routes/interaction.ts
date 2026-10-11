@@ -822,13 +822,13 @@ router.post('/passkey/start',
     const userId = interaction?.result?.login?.accountId || session?.accountId
     const passkeys = userId ? await getUserPasskeys(userId) : []
 
-    const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
+    const options = await generateAuthenticationOptions({
       rpID: passkeyRpId,
       allowCredentials: passkeys,
       userVerification: req.body.requireVerified ? 'required' : 'preferred',
     })
 
-    // (Pseudocode) Remember this challenge for this user
+    // Remember this challenge for this user
     await saveAuthenticationOptions((interaction?.uid ?? session?.uid) as string, options)
 
     res.send(options)
