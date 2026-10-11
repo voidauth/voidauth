@@ -1,5 +1,23 @@
 <h1>{{ "settings.title" | translate }}</h1>
 
+@if (apps.length) {
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title> {{ "settings.sections.apps.title" | translate }} </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="apps">
+      @for (app of apps; track app.url) {
+        <a mat-stroked-button [href]="app.url" target="_blank" rel="noopener">
+          <img [src]="app.logo" alt="" (error)="$any($event.target).hidden = true" />
+          {{ app.name }}
+        </a>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <mat-divider></mat-divider>
+}
+
 <!-- profile card -->
 <mat-card class="form-card">
   <mat-card-header>

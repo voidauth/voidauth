@@ -53,3 +53,15 @@ mat-expansion-panel.key-manage-panel {
     padding: 0 12px 8px
   }
 }
+.apps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.5rem;
+
+  img {
+    width: 1.5rem;
+    height: 1.5rem;
+    object-fit: contain;
+    vertical-align: middle;
+  }
+}

@@ -5,7 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
 import { UserService } from '../../services/user.service'
-import type { CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserPrivateDetails, UserApp } from '@shared/api-response/UserDetails'
 import { ConfigService } from '../../services/config.service'
 import { PasswordSetComponent } from '../../components/password-reset/password-set.component'
 import { SpinnerService } from '../../services/spinner.service'
@@ -136,6 +136,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ]
   displayedPasskeyColumns = ([] as string[]).concat(this.passkeyColumns.map(c => c.columnDef)).concat(['actions'])
   passkeys: MatTableDataSource<PasskeyResponse> = new MatTableDataSource()
+  apps: UserApp[] = []
   readonly passkeySort = viewChild.required(MatSort)
 
   private configService = inject(ConfigService)
@@ -153,6 +154,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.passkeySupport = this.passkeyService.getPasskeySupport()
     this.config = await this.configService.getConfig()
+    this.apps = await this.userService.getApps()
   }
 
   ngOnDestroy(): void {
