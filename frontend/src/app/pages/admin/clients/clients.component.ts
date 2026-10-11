@@ -19,6 +19,7 @@ export type TableColumn<T> = {
   columnDef: keyof T & string
   header: string
   isIcon?: boolean
+  isImage?: boolean
   cell: (element: T) => string | Observable<unknown>
 }
 
@@ -36,6 +37,12 @@ export class ClientsComponent implements AfterViewInit {
   readonly sort = viewChild.required(MatSort)
 
   columns: TableColumn<ClientResponse>[] = [
+    {
+      columnDef: 'logo_uri',
+      header: '',
+      isImage: true,
+      cell: element => element.logo_uri ?? '',
+    },
     {
       columnDef: 'client_name',
       header: 'Name',
@@ -78,6 +85,16 @@ export class ClientsComponent implements AfterViewInit {
     } finally {
       this.spinnerService.hide()
     }
+  }
+
+  resizeLogo(event: Event, targetSize: number) {
+    const image = event.currentTarget
+    if (!(image instanceof HTMLImageElement)) {
+      return
+    }
+    const scale = targetSize / Math.max(image.naturalWidth, image.naturalHeight)
+    image.style.width = `${String(Math.ceil(image.naturalWidth * scale))}px`
+    image.style.height = `${String(Math.ceil(image.naturalHeight * scale))}px`
   }
 
   onDelete(client_id: string) {
