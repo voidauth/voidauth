@@ -33,21 +33,21 @@
           class="client-logo"
           [src]="selectedLogoPreview()"
           [alt]="'admin.client.labels.logo-preview' | translate"
-          (load)="resizeLogo($event)"
+          (load)="resizeLogo($event, 128)"
         />
       } @else if (uploadedLogo() && !removeUploadedLogo()) {
         <img
           class="client-logo"
           [src]="uploadedLogo()?.url"
           [alt]="'admin.client.labels.logo-preview' | translate"
-          (load)="resizeLogo($event)"
+          (load)="resizeLogo($event, 128)"
         />
       } @else if (form.controls.logo_uri.value) {
         <img
           class="client-logo"
           [src]="form.controls.logo_uri.value"
           [alt]="'admin.client.labels.logo-preview' | translate"
-          (load)="resizeLogo($event)"
+          (load)="resizeLogo($event, 128)"
         />
       }
       <input

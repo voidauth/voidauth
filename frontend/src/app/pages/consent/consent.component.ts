@@ -50,12 +50,12 @@ export class ConsentComponent implements OnInit {
     this.config = await this.configService.getConfig()
   }
 
-  resizeLogo(event: Event) {
+  resizeLogo(event: Event, targetSize: number) {
     const image = event.currentTarget
     if (!(image instanceof HTMLImageElement)) {
       return
     }
-    const scale = 128 / Math.max(image.naturalWidth, image.naturalHeight)
+    const scale = targetSize / Math.max(image.naturalWidth, image.naturalHeight)
     image.style.width = `${String(Math.ceil(image.naturalWidth * scale))}px`
     image.style.height = `${String(Math.ceil(image.naturalHeight * scale))}px`
   }

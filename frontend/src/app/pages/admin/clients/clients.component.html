@@ -13,6 +13,14 @@
         <td mat-cell style="white-space: pre-line" *matCellDef="let row">
           @if (column.isIcon) {
             <mat-icon fontSet="material-icons-round">{{ column.cell(row) }}</mat-icon>
+          } @else if (column.isImage) {
+            <div style="display: flex">
+              <img
+                [src]="column.cell(row)"
+                (load)="resizeLogo($event, 42)"
+                style="max-width: 42px; max-height: 42px; object-fit: contain; border-radius: 4px"
+              />
+            </div>
           } @else {
             {{ column.cell(row) }}
           }
