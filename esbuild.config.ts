@@ -32,6 +32,7 @@ rmSync(outDir, {
 const externalDeps = [
   'better-sqlite3',
   '@angular/material',
+  'sharp',
 ]
 
 await esbuild.build({
