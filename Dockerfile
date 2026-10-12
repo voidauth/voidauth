@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Install BE dependencies
 COPY ./package*.json ./
-RUN npm i
+RUN npm i --include-optional
 
 # Install FE dependencies
 COPY ./frontend/package*.json ./frontend/
