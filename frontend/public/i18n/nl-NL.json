@@ -389,13 +389,15 @@
         "response-types": "Reactietypes",
         "grant-types": "Toekenningstypes",
         "postlogout-url": "PostLogout URL",
+        "backchannel-logout-url": "URL voor uitloggen backchannel",
         "allowed-groups": "Toegestane groepen:",
         "redirect-urls": "Omleidings-URLs:"
       },
       "hints": {
         "pkce-required": "PKCE vereist met deze authenticatiemethode.",
         "not-required": "Niet vereist voor huidige authenticatiemethode.",
-        "postlogout-redirect": "Toegestane omleidings-URL na uitloggen bij door de client geïnitieerd uitloggen."
+        "postlogout-redirect": "Toegestane omleidings-URL na uitloggen bij door de client geïnitieerd uitloggen.",
+        "backchannel-logout": "Client-eindpunt dat wordt geïnformeerd wanneer de gebruiker zich afmeldt."
       },
       "checkboxes": {
         "skip-consent": "Toestemming overslaan",
@@ -675,6 +677,9 @@
       "labels": {
         "value": "Waarde"
       }
+    },
+    "common": {
+      "or": "of"
     }
   },
   "user-expired": {
