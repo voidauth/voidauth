@@ -9,7 +9,7 @@ import { AdminService } from '../../../services/admin.service'
 import { SnackbarService } from '../../../services/snackbar.service'
 import { SpinnerService } from '../../../services/spinner.service'
 import type { TableColumn } from '../clients/clients.component'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { RouterLink } from '@angular/router'
 import type { CustomClaim } from '@shared/db/CustomClaim'
 import { TableService } from '../../../services/table.service'
@@ -41,6 +41,7 @@ export class CustomClaimsComponent {
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
 
   private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
@@ -71,11 +72,11 @@ export class CustomClaimsComponent {
       return
     }
 
-    const message = `Are you sure you want to remove custom claim '${customClaim.claim}'?`
+    const message = String(this.translateService.instant('admin.claims.dialogs.delete', { name: customClaim.claim }))
     const confirmDialog = this.dialog.open(ConfirmComponent, {
       data: {
         message: message,
-        header: 'Delete',
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
     confirmDialog.afterClosed().subscribe(async (result) => {
@@ -86,10 +87,10 @@ export class CustomClaimsComponent {
       try {
         this.spinnerService.show()
         await this.adminService.deleteCustomClaim(id)
-        this.snackbarService.message('Custom claim was deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.claims.messages.deleted')))
         this.dataSource.data = await this.adminService.customClaims()
       } catch (_e) {
-        this.snackbarService.error('Could not delete custom claim.')
+        this.snackbarService.error(String(this.translateService.instant('admin.claims.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }
