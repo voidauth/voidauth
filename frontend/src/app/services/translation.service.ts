@@ -60,7 +60,7 @@ export class TranslationService {
       }).catch((e: unknown) => {
         console.error(e)
         if (!autoSet) {
-          this.snackbarService.error('Cannot set language.')
+          this.snackbarService.error(String(this.translate.instant('app.messages.language-failed')))
         }
         resolve(false)
       }).finally(() => {

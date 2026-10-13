@@ -17,7 +17,7 @@ import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValu
   from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
 import { stringCompare, type Convert, type ItemIn } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { calculateCustomClaims } from '@shared/user'
 
 @Component({
@@ -55,6 +55,7 @@ export class UserComponent implements OnInit {
   })
 
   private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
   private userService = inject(UserService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
@@ -93,7 +94,7 @@ export class UserComponent implements OnInit {
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading user.')
+        this.snackbarService.error(String(this.translateService.instant('admin.user.messages.load-failed')))
       } finally {
         this.spinnerService.hide()
       }
@@ -139,7 +140,7 @@ export class UserComponent implements OnInit {
       this.groupAutoFilter()
     } catch (e) {
       console.error(e)
-      this.snackbarService.error('Error adding group.')
+      this.snackbarService.error(String(this.translateService.instant('admin.user.messages.group-add-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -174,7 +175,7 @@ export class UserComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Add Custom Claim',
+        header: String(this.translateService.instant('admin.common.dialogs.add-claim')),
         availableOptions: availableCustomClaims,
         allowNew: true,
         newRegex: CUSTOM_CLAIM_REGEX,
@@ -205,7 +206,7 @@ export class UserComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Edit Custom Claim',
+        header: String(this.translateService.instant('admin.common.dialogs.edit-claim')),
         availableOptions: availableCustomClaims,
         allowNew: true,
         newRegex: CUSTOM_CLAIM_REGEX,
@@ -249,9 +250,9 @@ export class UserComponent implements OnInit {
       this.spinnerService.show()
 
       await this.adminService.updateUser({ ...values, username, id: this.id })
-      this.snackbarService.message('User updated.')
+      this.snackbarService.message(String(this.translateService.instant('admin.user.messages.updated')))
     } catch (_e) {
-      this.snackbarService.error('Could not update user.')
+      this.snackbarService.error(String(this.translateService.instant('admin.user.messages.update-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -264,9 +265,9 @@ export class UserComponent implements OnInit {
         await this.adminService.signOutUser(this.id)
       }
 
-      this.snackbarService.message('User signed out.')
+      this.snackbarService.message(String(this.translateService.instant('admin.user.messages.signed-out')))
     } catch (_e) {
-      this.snackbarService.error('Could not sign out user.')
+      this.snackbarService.error(String(this.translateService.instant('admin.user.messages.sign-out-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -275,8 +276,8 @@ export class UserComponent implements OnInit {
   remove() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to delete this user?`,
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.user.dialogs.delete')),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -291,10 +292,10 @@ export class UserComponent implements OnInit {
           await this.adminService.deleteUser(this.id)
         }
 
-        this.snackbarService.message('User deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.user.messages.deleted')))
         await this.router.navigate(['/admin/users'])
       } catch (_e) {
-        this.snackbarService.error('Could not delete user.')
+        this.snackbarService.error(String(this.translateService.instant('admin.user.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

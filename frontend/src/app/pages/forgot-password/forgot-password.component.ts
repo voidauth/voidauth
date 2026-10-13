@@ -8,7 +8,7 @@ import { SnackbarService } from '../../services/snackbar.service'
 import { HttpErrorResponse } from '@angular/common/http'
 import { SpinnerService } from '../../services/spinner.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { AsyncPipe } from '@angular/common'
 
 @Component({
@@ -33,6 +33,7 @@ export class ForgotPasswordComponent implements OnInit {
   })
 
   configService = inject(ConfigService)
+  private translateService = inject(TranslateService)
   authService = inject(AuthService)
   snackbarService = inject(SnackbarService)
   spinnerService = inject(SpinnerService)
@@ -52,7 +53,11 @@ export class ForgotPasswordComponent implements OnInit {
       const result = await this.authService.sendPasswordReset(input)
       this.emailSent = result.emailSent
 
-      this.snackbarService.message(this.emailSent ? 'Password reset link sent.' : 'Password reset link created, but could not be sent.')
+      this.snackbarService.message(
+        this.emailSent
+          ? String(this.translateService.instant('forgot-password.messages.link-sent'))
+          : String(this.translateService.instant('forgot-password.messages.link-not-sent')),
+      )
     } catch (e) {
       let shownError: string | null = null
 
@@ -60,7 +65,7 @@ export class ForgotPasswordComponent implements OnInit {
         const status = e.status
 
         if (status === 404) {
-          shownError = 'User not found.'
+          shownError = String(this.translateService.instant('components.common.messages.user-not-found'))
         }
 
         shownError ??= e.error?.message
@@ -69,7 +74,7 @@ export class ForgotPasswordComponent implements OnInit {
       }
 
       console.error(e)
-      shownError ??= 'Something went wrong.'
+      shownError ??= String(this.translateService.instant('components.common.messages.something-went-wrong'))
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()

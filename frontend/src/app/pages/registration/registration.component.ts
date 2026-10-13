@@ -15,7 +15,7 @@ import { TextDividerComponent } from '../../components/text-divider/text-divider
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
 import { isValidEmail } from '../../validators/validators'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { AsyncPipe } from '@angular/common'
 import type { InvitationBasic } from '@shared/api-response/InvitationBasic'
 
@@ -71,6 +71,7 @@ export class RegistrationComponent implements OnInit {
   passkeySupport?: PasskeySupport
 
   private snackbarService = inject(SnackbarService)
+  private translateService = inject(TranslateService)
   private authService = inject(AuthService)
   private configService = inject(ConfigService)
   private passkeyService = inject(PasskeyService)
@@ -122,7 +123,7 @@ export class RegistrationComponent implements OnInit {
           this.spinnerService.show()
           this.invitation = await this.authService.getInviteDetails(inviteId, challenge)
         } catch (e) {
-          this.snackbarService.error('Invalid invite link.')
+          this.snackbarService.error(String(this.translateService.instant('registration.messages.invalid-invite')))
           console.error(e)
           return
         } finally {
@@ -194,7 +195,7 @@ export class RegistrationComponent implements OnInit {
         shownError ??= (e as Error).message
       }
 
-      shownError ??= 'Something went wrong.'
+      shownError ??= String(this.translateService.instant('components.common.messages.something-went-wrong'))
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
@@ -233,9 +234,9 @@ export class RegistrationComponent implements OnInit {
 
       let shownError: string | null = null
       if (e instanceof WebAuthnError && e.name === 'InvalidStateError') {
-        shownError ??= 'Passkey already registered.'
+        shownError ??= String(this.translateService.instant('components.common.messages.passkey-already-registered'))
       } else {
-        shownError ??= 'Could not register passkey.'
+        shownError ??= String(this.translateService.instant('components.common.messages.register-passkey-failed'))
       }
 
       if (e instanceof HttpErrorResponse) {
@@ -244,7 +245,7 @@ export class RegistrationComponent implements OnInit {
         shownError ??= (e as Error).message
       }
 
-      shownError ??= 'Something went wrong.'
+      shownError ??= String(this.translateService.instant('components.common.messages.something-went-wrong'))
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
