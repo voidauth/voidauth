@@ -45,17 +45,17 @@ export class ClientsComponent implements AfterViewInit {
     },
     {
       columnDef: 'client_name',
-      header: 'Name',
+      header: 'admin.clients.columns.name',
       cell: element => element.client_name ?? element.client_id,
     },
     {
       columnDef: 'redirect_uris',
-      header: 'Redirects',
+      header: 'admin.clients.columns.redirects',
       cell: element => element.redirect_uris?.join('\n') ?? '-',
     },
     {
       columnDef: 'groups',
-      header: 'Allowed Groups',
+      header: 'admin.clients.columns.allowed-groups',
       cell: element => (element.groups.length ? element.groups.join('\n') : '*'),
     },
   ]

@@ -38,7 +38,8 @@
   "passkey-dialog": {
     "title": "Включить {{platformName}}?",
     "actions": {
-      "passkey": "Включить {{platformName}}"
+      "passkey": "Включить {{platformName}}",
+      "skip": "Пропустить"
     }
   },
   "mfa": {
@@ -218,6 +219,11 @@
             "delete": {
               "tooltip": "Удалить"
             }
+          },
+          "columns": {
+            "name": "Название / ID",
+            "last-used": "Последнее использование",
+            "created-at": "Создан"
           }
         },
         "mfa": {
@@ -294,6 +300,13 @@
       },
       "labels": {
         "search": "Поиск"
+      },
+      "columns": {
+        "username": "Имя пользователя",
+        "email": "Почта",
+        "email-verified": "Почта подтверждена",
+        "approved": "Одобрен",
+        "expires": "Доступ до"
       }
     },
     "user": {
@@ -319,6 +332,11 @@
       "empty-state": "Нет приложений OIDC.",
       "actions": {
         "create": "Создать приложение OIDC"
+      },
+      "columns": {
+        "name": "Название",
+        "redirects": "Адреса перенаправления",
+        "allowed-groups": "Разрешённые группы"
       }
     },
     "client": {
@@ -362,6 +380,10 @@
       "empty-state": "Нет доменов.",
       "actions": {
         "create": "Создать домен ProxyAuth"
+      },
+      "columns": {
+        "domain": "Домены",
+        "allowed-groups": "Разрешённые группы"
       }
     },
     "domain": {
@@ -399,7 +421,11 @@
       "messages": {
         "link-copied": "Ссылка сброса пароля скопирована в буфер обмена."
       },
-      "empty-state": "Нет активных сбросов пароля."
+      "empty-state": "Нет активных сбросов пароля.",
+      "columns": {
+        "username": "Имя пользователя",
+        "expires-in": "Истекает через"
+      }
     },
     "emails": {
       "empty-state": "Нет исходящих писем.",
@@ -409,12 +435,20 @@
       "tooltips": {
         "preview": "Предпросмотр",
         "view-user": "Показать пользователя"
+      },
+      "columns": {
+        "sent": "Отправлено",
+        "to": "Кому",
+        "type": "Тип"
       }
     },
     "groups": {
       "empty-state": "Нет групп.",
       "actions": {
         "create": "Создать группу"
+      },
+      "columns": {
+        "name": "Название группы"
       }
     },
     "group": {
@@ -433,6 +467,12 @@
       "empty-state": "Нет приглашений.",
       "actions": {
         "create": "Создать приглашение"
+      },
+      "columns": {
+        "username": "Имя пользователя",
+        "email": "Почта",
+        "expires-in": "Истекает через",
+        "access-expires": "Доступ до"
       }
     },
     "invitation": {
@@ -462,6 +502,11 @@
       },
       "checkboxes": {
         "email-verified": "Почта подтверждена"
+      }
+    },
+    "claims": {
+      "columns": {
+        "claim": "Claim"
       }
     }
   },
@@ -566,6 +611,15 @@
           "label": "Подтвердить"
         }
       }
+    },
+    "paginator": {
+      "items-per-page": "На странице:",
+      "next-page": "Следующая страница",
+      "previous-page": "Предыдущая страница",
+      "first-page": "Первая страница",
+      "last-page": "Последняя страница",
+      "range": "{{start}}–{{end}} из {{length}}",
+      "range-empty": "0 из {{length}}"
     }
   },
   "user-expired": {

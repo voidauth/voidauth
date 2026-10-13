@@ -84,7 +84,8 @@
   "passkey-dialog": {
     "title": "Enable {{platformName}}?",
     "actions": {
-      "passkey": "Enable {{platformName}}"
+      "passkey": "Enable {{platformName}}",
+      "skip": "Skip"
     }
   },
   "mfa": {
@@ -265,6 +266,11 @@
             "delete": {
               "tooltip": "Delete"
             }
+          },
+          "columns": {
+            "name": "Name/ID",
+            "last-used": "Last Used",
+            "created-at": "Created At"
           }
         },
         "mfa": {
@@ -341,6 +347,13 @@
       },
       "labels": {
         "search": "Search"
+      },
+      "columns": {
+        "username": "Username",
+        "email": "Email",
+        "email-verified": "Email Verified",
+        "approved": "Approved",
+        "expires": "Expires"
       }
     },
     "user": {
@@ -373,6 +386,11 @@
       "empty-state": "No OIDC Apps.",
       "actions": {
         "create": "Create OIDC App"
+      },
+      "columns": {
+        "name": "Name",
+        "redirects": "Redirects",
+        "allowed-groups": "Allowed Groups"
       }
     },
     "client": {
@@ -428,6 +446,10 @@
       "empty-state": "No Domains.",
       "actions": {
         "create": "Create ProxyAuth Domain"
+      },
+      "columns": {
+        "domain": "Domains",
+        "allowed-groups": "Allowed Groups"
       }
     },
     "domain": {
@@ -465,7 +487,11 @@
       "messages": {
         "link-copied": "Reset link copied to clipboard."
       },
-      "empty-state": "No Password Resets."
+      "empty-state": "No Password Resets.",
+      "columns": {
+        "username": "Username",
+        "expires-in": "Expires In"
+      }
     },
     "emails": {
       "empty-state": "No Sent Mail.",
@@ -475,12 +501,20 @@
       "tooltips": {
         "preview": "Preview",
         "view-user": "View User"
+      },
+      "columns": {
+        "sent": "Sent",
+        "to": "To",
+        "type": "Type"
       }
     },
     "groups": {
       "empty-state": "No groups.",
       "actions": {
         "create": "Create Group"
+      },
+      "columns": {
+        "name": "Group Name"
       }
     },
     "group": {
@@ -507,6 +541,12 @@
       "empty-state": "No invitations.",
       "actions": {
         "create": "Create Invitation"
+      },
+      "columns": {
+        "username": "Username",
+        "email": "Email",
+        "expires-in": "Expires In",
+        "access-expires": "Access Expires"
       }
     },
     "invitation": {
@@ -550,7 +590,10 @@
       "actions": {
         "create": "Create Claim"
       },
-      "empty-state": "No Custom Claims."
+      "empty-state": "No Custom Claims.",
+      "columns": {
+        "claim": "Claim"
+      }
     },
     "claim": {
       "title": "Custom Claim",
@@ -690,6 +733,15 @@
     },
     "common": {
       "or": "or"
+    },
+    "paginator": {
+      "items-per-page": "Items per page:",
+      "next-page": "Next page",
+      "previous-page": "Previous page",
+      "first-page": "First page",
+      "last-page": "Last page",
+      "range": "{{start}} – {{end}} of {{length}}",
+      "range-empty": "0 of {{length}}"
     }
   },
   "user-expired": {

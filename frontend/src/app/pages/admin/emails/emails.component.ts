@@ -36,17 +36,17 @@ export class EmailsComponent {
   columns: TableColumn<EmailLog>[] = [
     {
       columnDef: 'createdAt',
-      header: 'Sent',
+      header: 'admin.emails.columns.sent',
       cell: element => new Date(element.createdAt).toDateString(),
     },
     {
       columnDef: 'to',
-      header: 'To',
+      header: 'admin.emails.columns.to',
       cell: element => element.to,
     },
     {
       columnDef: 'type',
-      header: 'Type',
+      header: 'admin.emails.columns.type',
       cell: element => element.type,
     },
   ]

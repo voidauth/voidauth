@@ -33,7 +33,7 @@ export class CustomClaimsComponent {
   columns: TableColumn<CustomClaim>[] = [
     {
       columnDef: 'claim',
-      header: 'Claim',
+      header: 'admin.claims.columns.claim',
       cell: element => element.claim || '-',
     },
   ]
