@@ -517,8 +517,8 @@
     "theme-toggle": {
       "options": {
         "system": "Системная",
-        "light": "Тёмная",
-        "dark": "Светлая"
+        "light": "Светлая",
+        "dark": "Тёмная"
       }
     },
     "email-input": {
