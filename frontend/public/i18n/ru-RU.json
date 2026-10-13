@@ -29,7 +29,8 @@
         "groups": "Группы",
         "invitations": "Приглашения",
         "password-resets": "Сброс пароля",
-        "sent-mail": "Исходящие письма"
+        "sent-mail": "Исходящие письма",
+        "claims": "Дополнительные claims"
       },
       "logout": "Выйти"
     }
@@ -47,7 +48,8 @@
       "register-passkey": "Зарегистрировать ключ безопасности",
       "back": "Назад"
     },
-    "title": "Требуется мультифакторная аутентификация"
+    "title": "Требуется мультифакторная аутентификация",
+    "locked": "Слишком много неверных кодов. Попробуйте снова через <b>{{duration}}</b>."
   },
   "registration": {
     "actions": {
@@ -279,7 +281,7 @@
       },
       "labels": {
         "mfa-required": "Мультифакторная аутентификация обязательна",
-        "email-verified": "Подтвердить почтовый адрес",
+        "email-verified": "Почта подтверждена",
         "approved": "Одобрено модератором"
       },
       "messages": {
@@ -305,14 +307,21 @@
         "add-group": "Добавить группу",
         "security-groups": "Группы:",
         "user-expiration-date": "Дата приостановки доступа",
-        "user-expiration-time": "Время приостановки доступа"
+        "user-expiration-time": "Время приостановки доступа",
+        "custom-claims": "Дополнительные claims",
+        "claim": "Claim",
+        "value": "Значение",
+        "no-custom-claims": "Дополнительные claims не настроены.",
+        "group": "Группа",
+        "applied": "Действует"
       },
       "actions": {
         "sign-out": "Выйти"
       },
       "tooltips": {
         "remove": "Убрать",
-        "open": "Открыть"
+        "open": "Открыть",
+        "edit": "Изменить"
       }
     },
     "clients": {
@@ -329,19 +338,23 @@
         "logo-url": "Ссылка на изображение логотипа",
         "add-group": "Добавить группу",
         "client-id": "Client ID",
-        "auth-method": "Auth Method",
+        "auth-method": "Способ аутентификации",
         "client-secret": "Client Secret",
         "redirect-url": "New Redirect URL",
         "response-types": "Response Types",
         "grant-types": "Grant Types",
         "postlogout-url": "PostLogout URL",
-        "allowed-groups": "Allowed Groups:",
-        "redirect-urls": "Redirect URLs:"
+        "allowed-groups": "Разрешённые группы:",
+        "redirect-urls": "Redirect URLs:",
+        "upload-logo": "Логотип приложения",
+        "logo-preview": "Предпросмотр логотипа приложения OIDC",
+        "backchannel-logout-url": "Backchannel Logout URL"
       },
       "hints": {
         "pkce-required": "PKCE обязателен для выбранного Auth Method.",
         "not-required": "Не обязателен для выбранного Auth Method.",
-        "postlogout-redirect": "Доступные адреса перенаправления при выходе из системы по запросу пользователя."
+        "postlogout-redirect": "Доступные адреса перенаправления при выходе из системы по запросу пользователя.",
+        "backchannel-logout": "Адрес приложения, на который придёт уведомление, когда пользователь выйдет."
       },
       "checkboxes": {
         "skip-consent": "Скрыть запрос подтверждения",
@@ -355,7 +368,15 @@
       },
       "messages": {
         "client-id-copied": "Client ID скопирован в буфер обмена.",
-        "secret-copied": "Secret скопирован в буфер обмена."
+        "secret-copied": "Secret скопирован в буфер обмена.",
+        "logo-invalid-file": "Выберите изображение PNG, JPEG или WebP размером до 2 МБ.",
+        "logo-save-failed": "Приложение сохранено, но логотип изменить не удалось."
+      },
+      "actions": {
+        "choose-logo": "Загрузить логотип",
+        "replace-logo": "Заменить логотип",
+        "cancel-logo": "Отменить загрузку",
+        "remove-logo": "Удалить логотип"
       }
     },
     "domains": {
@@ -373,7 +394,7 @@
         "allowed-groups": "Разрешённые группы:"
       },
       "placeholders": {
-        "domain": "ex. *.your.domain.com/path/"
+        "domain": "например, *.your.domain.com/path/"
       },
       "sections": {
         "domain-help": "Справка"
@@ -422,11 +443,19 @@
       "labels": {
         "name": "Имя группы",
         "add-user": "Добавить пользователя",
-        "users": "Пользователи:"
+        "users": "Пользователи:",
+        "custom-claims": "Дополнительные claims",
+        "claim": "Claim",
+        "value": "Значение",
+        "no-custom-claims": "Дополнительные claims не настроены."
       },
       "checkboxes": {
         "mfa-required": "Мультифакторная аутентификация обязательна",
         "auto-assign": "Автоназначение"
+      },
+      "tooltips": {
+        "edit": "Изменить",
+        "remove": "Убрать"
       }
     },
     "invitations": {
@@ -445,12 +474,20 @@
         "add-group": "Добавить группу",
         "security-groups": "Группы:",
         "user-expiration-date": "Дата истечения приглашения",
-        "user-expiration-time": "Время истечения приглашения"
+        "user-expiration-time": "Время истечения приглашения",
+        "custom-claims": "Дополнительные claims",
+        "claim": "Claim",
+        "value": "Значение",
+        "no-custom-claims": "Дополнительные claims не настроены.",
+        "applied": "Действует",
+        "group": "Группы"
       },
       "tooltips": {
         "copy-invite-link": "Скопировать ссылку-приглашение",
         "unsaved-changes": "Есть несохранённые изменения.",
-        "send-to": "Отправить приглашение на {{email}}"
+        "send-to": "Отправить приглашение на {{email}}",
+        "edit": "Изменить",
+        "remove": "Убрать"
       },
       "messages": {
         "link-copied": "Ссылка-приглашение скопирована в буфер обмена.",
@@ -462,6 +499,31 @@
       },
       "checkboxes": {
         "email-verified": "Почта подтверждена"
+      }
+    },
+    "claims": {
+      "actions": {
+        "create": "Новый claim"
+      },
+      "empty-state": "Дополнительных claims нет."
+    },
+    "claim": {
+      "labels": {
+        "name": "Название",
+        "user-claims": "Пользователи",
+        "username": "Имя пользователя",
+        "value": "Значение",
+        "no-user-claims": "Нет claims у пользователей",
+        "no-group-claims": "Нет claims у групп",
+        "group-name": "Группа",
+        "group-claims": "Группы",
+        "invitation-claims": "Приглашения",
+        "invitation": "Приглашение",
+        "no-invitation-claims": "Нет claims у приглашений"
+      },
+      "tooltips": {
+        "edit": "Изменить",
+        "remove": "Убрать"
       }
     }
   },
@@ -489,7 +551,7 @@
         "jwks": "JWKs Endpoint"
       },
       "actions": {
-        "all-info": "All Info"
+        "all-info": "Вся конфигурация"
       }
     },
     "password-input": {
@@ -566,6 +628,22 @@
           "label": "Подтвердить"
         }
       }
+    },
+    "option-value-dialog": {
+      "actions": {
+        "cancel": {
+          "label": "Отмена"
+        },
+        "save": {
+          "label": "Сохранить"
+        }
+      },
+      "labels": {
+        "value": "Значение"
+      }
+    },
+    "common": {
+      "or": "или"
     }
   },
   "user-expired": {
@@ -586,6 +664,51 @@
       "save": {
         "label": "Сохранить"
       }
+    }
+  },
+  "duration": {
+    "now": "сейчас",
+    "second": {
+      "singular": "{{count}} сек.",
+      "plural": "{{count}} сек.",
+      "singular-ago": "{{count}} сек. назад",
+      "plural-ago": "{{count}} сек. назад"
+    },
+    "minute": {
+      "singular": "{{count}} мин.",
+      "plural": "{{count}} мин.",
+      "singular-ago": "{{count}} мин. назад",
+      "plural-ago": "{{count}} мин. назад"
+    },
+    "hour": {
+      "singular": "{{count}} ч",
+      "plural": "{{count}} ч",
+      "singular-ago": "{{count}} ч назад",
+      "plural-ago": "{{count}} ч назад"
+    },
+    "day": {
+      "singular": "{{count}} дн.",
+      "plural": "{{count}} дн.",
+      "singular-ago": "{{count}} дн. назад",
+      "plural-ago": "{{count}} дн. назад"
+    },
+    "week": {
+      "singular": "{{count}} нед.",
+      "plural": "{{count}} нед.",
+      "singular-ago": "{{count}} нед. назад",
+      "plural-ago": "{{count}} нед. назад"
+    },
+    "month": {
+      "singular": "{{count}} мес.",
+      "plural": "{{count}} мес.",
+      "singular-ago": "{{count}} мес. назад",
+      "plural-ago": "{{count}} мес. назад"
+    },
+    "year": {
+      "singular": "{{count}} г.",
+      "plural": "{{count}} г.",
+      "singular-ago": "{{count}} г. назад",
+      "plural-ago": "{{count}} г. назад"
     }
   }
 }
