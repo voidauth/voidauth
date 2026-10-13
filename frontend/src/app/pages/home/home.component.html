@@ -5,13 +5,15 @@
     <mat-card-header>
       <mat-card-title> {{ "settings.sections.apps.title" | translate }} </mat-card-title>
     </mat-card-header>
-    <mat-card-content class="apps">
-      @for (app of apps; track app.url) {
-        <a mat-stroked-button [href]="app.url" target="_blank" rel="noopener">
-          <img [src]="app.logo" alt="" (error)="$any($event.target).hidden = true" />
-          {{ app.name }}
-        </a>
-      }
+    <mat-card-content>
+      <nav class="apps">
+        @for (app of apps; track app.url) {
+          <a [href]="app.url" [title]="app.name" target="_blank" rel="noopener">
+            <img [src]="app.logo" alt="" (error)="$any($event.target).hidden = true" />
+            <span>{{ app.name }}</span>
+          </a>
+        }
+      </nav>
     </mat-card-content>
   </mat-card>
 
