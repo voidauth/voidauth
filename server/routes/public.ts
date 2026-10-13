@@ -3,7 +3,8 @@ import { Router } from 'express'
 import appConfig from '../util/config'
 import { sendPasswordReset, SMTP_VERIFIED } from '../util/email'
 import type { PasswordReset } from '@shared/db/PasswordReset'
-import { endSessions, getUserById, getUserByInput } from '../db/user'
+import { getUserById, getUserByInput } from '../db/user'
+import { endUserSessions } from '../oidc/provider'
 import { db } from '../db/db'
 import { TABLES } from '@shared/db'
 import type { SendPasswordResetResponse } from '@shared/api-response/SendPasswordResetResponse'
@@ -35,9 +36,9 @@ publicRouter.get('/config', (_req, res) => {
     emailActive: SMTP_VERIFIED,
     emailVerification: !!appConfig.EMAIL_VERIFICATION,
     registration: appConfig.SIGNUP,
+    disableFileUploads: appConfig.DISABLE_FILE_UPLOADS,
     contactEmail: appConfig.CONTACT_EMAIL,
     defaultRedirect: appConfig.DEFAULT_REDIRECT,
-    mfaRequired: appConfig.MFA_REQUIRED,
   }
 
   res.send(configResponse)
@@ -109,7 +110,7 @@ publicRouter.post('/reset_password',
 
     await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
     await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id: passwordReset.id })
-    await endSessions(user.id)
+    await endUserSessions(user.id)
     res.send({ username: user.username } satisfies PasswordResetResponse)
   })
 

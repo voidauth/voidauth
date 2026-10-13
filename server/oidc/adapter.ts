@@ -5,8 +5,8 @@ import appConfig from '../util/config'
 import { TABLES } from '@shared/db'
 import { encryptString } from '../db/util'
 import { logger } from '../util/logger'
-import { parseClientPayload } from '../db/client'
 import type { DeepWritable } from '@shared/utils'
+import { getClientLogoUploadedAsset, parseClientPayload } from '../db/client_get'
 
 function getExpireAt(expiresIn: number) {
   return expiresIn
@@ -14,10 +14,12 @@ function getExpireAt(expiresIn: number) {
     : undefined
 }
 
-function parsePayload(payload: string, pt: PayloadType) {
+async function parsePayload(payload: string, pt: PayloadType, id: string) {
   switch (pt) {
-    case 'Client':
-      return parseClientPayload(payload, { strict: true })
+    case 'Client':{
+      const logo = await getClientLogoUploadedAsset(id)
+      return parseClientPayload(payload, { strict: true, logoPath: logo?.filePath })
+    }
     default:
       return JSON.parse(payload) as AdapterPayload
   }
@@ -59,13 +61,12 @@ export class KnexAdapter implements Adapter {
       }
     }
 
-    return this._rows(obj).then((r) => {
+    return this._rows(obj).first().then(async (r) => {
       try {
-        const first = r[0]
-        return first
+        return r
           ? {
-              ...parsePayload(first.payload, this.payloadType),
-              ...(first.consumedAt ? { consumed: true } : undefined),
+              ...await parsePayload(r.payload, this.payloadType, r.id),
+              ...(r.consumedAt ? { consumed: true } : undefined),
             }
           : undefined
       } catch (e) {

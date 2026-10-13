@@ -12,7 +12,7 @@ export const isAdminGuard: CanActivateFn = async (_route, _state) => {
   try {
     spinnerService.show()
     const user = await userService.getMyUser()
-    if (!user.isPrivileged || !user.isAdmin) {
+    if (!user.canLogin || !user.isAdmin) {
       // redirect back to home page
       await router.navigate(['/'], {
         replaceUrl: true,

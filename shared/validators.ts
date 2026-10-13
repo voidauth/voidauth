@@ -30,3 +30,25 @@ export const passkeyRegistrationValidator = {
   }),
   type: zod.literal('public-key'),
 } as const
+
+export const passkeyAuthenticationValidator = {
+  remember: zod.boolean().optional(),
+  enableMfa: zod.boolean().optional(),
+  id: zod.string(),
+  rawId: zod.string(),
+  response: zod.object({
+    clientDataJSON: zod.string(),
+    authenticatorData: zod.string(),
+    signature: zod.string(),
+    userHandle: zod.string().optional(),
+  }),
+  authenticatorAttachment: zod.enum(['cross-platform', 'platform']).optional(),
+  clientExtensionResults: zod.object({
+    appid: zod.boolean().optional(),
+    credProps: zod.object({
+      rk: zod.boolean().optional(),
+    }).optional(),
+    hmacCreateSecret: zod.boolean().optional(),
+  }),
+  type: zod.literal('public-key'),
+}

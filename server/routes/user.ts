@@ -8,6 +8,7 @@ import { createEmailVerification } from './interaction'
 import { updatePasswordValidator } from '@shared/api-request/UpdatePassword'
 import type { User } from '@shared/db/User'
 import { checkPasswordHash } from '../db/user'
+import { endUserSessions } from '../oidc/provider'
 import { deleteUserPasskey, deleteUserPasskeys, getUserPasskeys, getUserPasskeysResponse } from '../db/passkey'
 import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
@@ -15,7 +16,7 @@ import type { TOTP } from '@shared/db/TOTP'
 import { argon2 } from '../util/argon2id'
 import { zodValidate } from '../util/zodValidate'
 import { passwordStrength } from '../util/zxcvbn'
-import { checkPrivileged, checkPrivilegedForEmail, checkUserExists } from '../util/authMiddleware'
+import { checkCanLogin, checkPrivilegedForEmail, checkUserExists } from '../util/authMiddleware'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import zod from 'zod'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
@@ -37,16 +38,18 @@ userRouter.get('/me',
       id: user.id,
       isAdmin: user.isAdmin,
       emailVerified: user.emailVerified,
+      mfaRequired: user.mfaRequired,
       hasTotp: user.hasTotp,
       hasPasskeys: user.hasPasskeys,
+      hasVerifyPasskeys: user.hasVerifyPasskeys,
       expiresAt: user.expiresAt,
       approved: user.approved,
 
       amr: user.amr,
       canLogin: user.canLogin,
       isPrivilegedForTotpCreate: user.isPrivilegedForTotpCreate,
+      isPrivilegedForPasskeyCreate: user.isPrivilegedForPasskeyCreate,
       isPrivilegedForEmail: user.isPrivilegedForEmail,
-      isPrivileged: user.isPrivileged,
 
       hasEmail: user.hasEmail,
     }
@@ -114,7 +117,7 @@ userRouter.patch('/email',
     res.send({ sentVerification })
   })
 
-userRouter.use(checkPrivileged)
+userRouter.use(checkCanLogin)
 
 userRouter.get('/me/private',
   (req, res) => {
@@ -260,15 +263,15 @@ userRouter.delete('/password', async (req, res) => {
   res.send()
 })
 
-// Delete user authenticators
-userRouter.delete('/totp', async (req, res) => {
+// Disable user Mfa and remove any Totp
+userRouter.delete('/mfa', async (req, res) => {
   const user = req.user
   if (!user) {
     res.sendStatus(500)
     return
   }
 
-  if (!user.hasTotp) {
+  if (!user.mfaRequired && !user.hasTotp) {
     res.sendStatus(404)
     return
   }
@@ -287,6 +290,7 @@ userRouter.delete('/user', async (req, res) => {
     return
   }
 
+  await endUserSessions(user.id)
   await db().table<User>(TABLES.USER).delete().where({ id: user.id })
   await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).delete().where({ accountId: user.id })
   res.send()

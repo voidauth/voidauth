@@ -40,7 +40,7 @@ jobs:
       # runs for PRs from forks or dependabot (skip any registry-backed cache)
       - name: Build Push (fork/dependabot - no remote cache)
         if: ${{ github.actor == 'dependabot[bot]' || (github.event.pull_request != null && github.event.pull_request.head.repo.fork) }}
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         id: docker-build-fork
         with:
           context: .
@@ -57,7 +57,7 @@ jobs:
       # runs for PRs from the same repo (or non-PR runs) and uses registry cache
       - name: Build Push (with registry cache)
         if: ${{ github.actor != 'dependabot[bot]' && (github.event.pull_request == null || !github.event.pull_request.head.repo.fork) }}
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         id: docker-build
         with:
           context: .

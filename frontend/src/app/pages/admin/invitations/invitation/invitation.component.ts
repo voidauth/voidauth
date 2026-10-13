@@ -56,6 +56,7 @@ export class InvitationComponent implements OnInit {
       name: new FormControl<string | null>(null, [Validators.minLength(1)]),
       userExpiresAt: new FormControl<Date | null>(null, []),
       emailVerified: new FormControl<boolean>({ value: true, disabled: true }, { nonNullable: true }),
+      mfaRequired: new FormControl<boolean>(false, { nonNullable: true }),
       groups: new FormControl<InvitationDetails['groups']>([], { nonNullable: true }),
       customClaims: new FormControl<InvitationUpsert['customClaims']>([], { nonNullable: true }),
     },
@@ -136,6 +137,7 @@ export class InvitationComponent implements OnInit {
       groups: invitation.groups,
       customClaims: invitation.customClaims,
       emailVerified: !!invitation.emailVerified,
+      mfaRequired: !!invitation.mfaRequired,
       userExpiresAt: invitation.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
     })
     this.inviteEmail = invitation.email

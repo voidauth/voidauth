@@ -25,6 +25,7 @@ class Config {
   SIGNUP_REQUIRES_APPROVAL = true
   EMAIL_VERIFICATION: boolean | null = null
   MFA_REQUIRED: boolean = false
+  DISABLE_FILE_UPLOADS: boolean = false
 
   APP_COLOR = '#906bc7'
   APP_FONT = ''
@@ -122,6 +123,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SIGNUP':
     case 'SIGNUP_REQUIRES_APPROVAL':
     case 'MFA_REQUIRED':
+    case 'DISABLE_FILE_UPLOADS':
     case 'DB_SSL':
     case 'DB_SSL_VERIFICATION':
     case 'MIGRATE_TO_DB_SSL':
@@ -281,6 +283,9 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
         break
       case 'CLIENT_HOMEPAGE_URL':
         client.client_uri = validateClientVar(value, clientUpsertValidator.client_uri)
+        break
+      case 'CLIENT_BACKCHANNEL_LOGOUT_URI':
+        client.backchannel_logout_uri = validateClientVar(value, clientUpsertValidator.backchannel_logout_uri)
         break
       case 'CLIENT_LOGO_URL':
         client.logo_uri = validateClientVar(value, clientUpsertValidator.logo_uri)

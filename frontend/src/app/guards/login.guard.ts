@@ -6,7 +6,7 @@ import { REDIRECT_PATHS } from '@shared/constants'
 import { getBaseHrefPath, getCurrentHost } from '../services/config.service'
 import { oidcLoginPath } from '@shared/oidc'
 
-export const PrivilegedGuard: CanActivateFn = async (_route, _state) => {
+export const LoginGuard: CanActivateFn = async (_route, _state) => {
   const userService = inject(UserService)
   const spinnerService = inject(SpinnerService)
   const router = inject(Router)
@@ -14,7 +14,7 @@ export const PrivilegedGuard: CanActivateFn = async (_route, _state) => {
   try {
     spinnerService.show()
     const user = await userService.getMyUser()
-    if (!user.isPrivileged) {
+    if (!user.canLogin) {
       // let oidc redirect to correct entry
       spinnerService.show(true)
       window.location.assign(getBaseHrefPath() + oidcLoginPath(getCurrentHost()))

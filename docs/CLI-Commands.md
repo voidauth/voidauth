@@ -22,8 +22,16 @@ Migrates all data from the current database to the database specified by the `MI
 
 Generates a random hexadecimal value with 192-bits of entropy. Can be used to generate random values for [environment variables](Configuration.md#environment-variables).
 
-### Generate Password Reset
+## User
 
-`voidauth generate password-reset [username]`
+### Manage MFA (Multi-Factor Authentication)
 
-Generates a password reset link for an existing user. The `username` parameter can be supplied positionally `voidauth generate password-reset example_user` or by flag `voidauth generate password-reset --username example_user`.
+`voidauth user mfa <action> [username]`
+
+Enables or disables MFA for an existing user. The `action` can be `enable` or `disable`. The `username` parameter can be supplied positionally, for example `voidauth user mfa enable example_user`, or by flag, for example `voidauth user mfa enable --username example_user`. Enabling MFA for a user will require them to set up an MFA method the next time they use VoidAuth.
+
+### Password Reset
+
+`voidauth user password-reset [username]`
+
+Generates a password reset link for an existing user. The `username` parameter can be supplied positionally `voidauth user password-reset example_user` or by flag `voidauth user password-reset --username example_user`.

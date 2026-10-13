@@ -326,8 +326,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   addAuthenticator() {
     const hadTotp = this.user?.hasTotp
-    const dialogRef = this.dialog.open<TotpRegisterComponent, { enableMfa: boolean } | undefined>(TotpRegisterComponent, {
-      data: { enableMfa: true },
+    const dialogRef = this.dialog.open(TotpRegisterComponent, {
       panelClass: 'overflow-auto',
     })
 
@@ -393,7 +392,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     })
   }
 
-  removeAllAuthenticators() {
+  disabledMfa() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
         message: `Are you sure you want to disable Multi-Factor Authentication and remove any Authenticators on your account?`,
@@ -408,7 +407,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       try {
         this.spinnerService.show()
-        await this.userService.removeAllAuthenticators()
+        await this.userService.disabledMfa()
         this.snackbarService.message('Multi-Factor Authentication disabled and Authenticators removed.')
       } catch (_e) {
         this.snackbarService.error('Could not disable Multi-Factor Authentication or remove Authenticators.')

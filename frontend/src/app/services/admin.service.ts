@@ -19,7 +19,7 @@ import type { PasswordResetsResponse } from '@shared/api-response/admin/Password
 import type { PasswordResetCreate } from '@shared/api-request/admin/PasswordResetCreate'
 import type { EmailsResponse } from '@shared/api-response/admin/EmailsResponse'
 import type { SortDirection } from '@angular/material/sort'
-import type { ClientResponse } from '@shared/api-response/ClientResponse'
+import type { ClientLogoResponse, ClientResponse } from '@shared/api-response/ClientResponse'
 import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { CustomClaim } from '@shared/db/CustomClaim'
 import type { CustomClaimUpsert } from '@shared/api-request/admin/CustomClaimUpsert'
@@ -75,6 +75,22 @@ export class AdminService {
 
   async updateClient(client: ClientUpsertRequest) {
     return firstValueFrom(this.http.patch<null>('/api/admin/client', client))
+  }
+
+  async getClientLogo(client_id: string) {
+    return firstValueFrom(this.http.get<ClientLogoResponse>(`/api/admin/client/${encodeURIComponent(client_id)}/logo`))
+  }
+
+  async uploadClientLogo(client_id: string, file: File) {
+    const formData = new FormData()
+    formData.append('logo', file)
+    return firstValueFrom(this.http.post<{ logo_uri: string, uploaded_logo: ClientResponse['uploaded_logo'] }>(
+      `/api/admin/client/${encodeURIComponent(client_id)}/logo`, formData))
+  }
+
+  async deleteClientLogo(client_id: string) {
+    return firstValueFrom(this.http.delete<{ logo_uri: string | null, external_logo_uri: string | null, uploaded_logo: null }>(
+      `/api/admin/client/${encodeURIComponent(client_id)}/logo`))
   }
 
   async deleteClient(client_id: string) {

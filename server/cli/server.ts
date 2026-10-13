@@ -189,12 +189,12 @@ export async function serve() {
   app.use(`${basePath()}/api`, noCache, setAsyncLocalStorage, router)
 
   // branding folder static assets
-  if (!fs.existsSync(path.join('./config', 'branding'))) {
-    fs.mkdirSync(path.join('./config', 'branding'), {
+  if (!fs.existsSync(path.join('./config/branding'))) {
+    fs.mkdirSync(path.join('./config/branding'), {
       recursive: true,
     })
   }
-  fs.cpSync(path.join('./theme', 'custom.css'), path.join('./config', 'branding', 'custom.css'), {
+  fs.cpSync(path.join('./theme', 'custom.css'), path.join('./config/branding', 'custom.css'), {
     force: false,
   })
   // certain static assets should have Cross-Origin-Resource-Policy = cross-origin header
@@ -206,13 +206,13 @@ export async function serve() {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
     next()
   })
-  app.use(`${basePath()}/`, express.static(path.join('./config', 'branding'), {
+  app.use(`${basePath()}/`, express.static(path.join('./config/branding'), {
     index: false,
   }))
   // override favicon and logo requests
   // do not return VoidAuth branding if custom branding exists
   app.get(brandImgPathRegex, (_req, res, next) => {
-    const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
+    const brandingFiles = fs.readdirSync(path.join('./config/branding'))
     // if custom branding exists, do not allow defaults to be used
     if (brandingFiles.some(f => brandImgRegex.test(f))) {
       res.sendStatus(404)
@@ -230,6 +230,22 @@ export async function serve() {
   app.use(`${basePath()}/`, express.static('./theme', {
     index: false,
   }))
+
+  // uploads folder static assets. Do not fallthrough
+  const uploadsPath = path.resolve('./config/uploads')
+  if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, {
+      recursive: true,
+    })
+  }
+  app.use(`${basePath()}/assets/uploads/`, express.static(uploadsPath, {
+    index: false,
+  }), (_req, res, _next) => {
+    res.status(404).send({
+      message: 'Asset file not found.',
+    })
+    return
+  })
 
   // Do not fallthrough to index.html for missing i18n files
   app.use(`${basePath()}/i18n`, express.static(path.join(FE_ROOT, 'i18n'), {
@@ -293,12 +309,12 @@ export async function serve() {
       message: 'Unhandled API error',
       errors: err instanceof Error ? [err] : [{ message: String(err) }],
     })
-    if (!res.statusCode || res.statusCode === 200) {
-      const errStatus = err && typeof err === 'object' && 'status' in err && typeof err.status === 'number' ? err.status : 500
-      res.status(errStatus)
-    }
     if (res.headersSent) {
       return
+    }
+    // Do not allow success codes on unhandled error
+    if (!res.statusCode || (res.statusCode >= 200 && res.statusCode < 300)) {
+      res.status(500)
     }
     res.sendStatus(res.statusCode)
     return
@@ -319,7 +335,7 @@ export async function serve() {
     index = index.replace(/<base[^>]*href=[^>]*>/g, `<base href="${basePath()}/"/>`)
 
     // dynamically replace favicon and logo depending on whats available in config/branding
-    const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
+    const brandingFiles = fs.readdirSync(path.join('./config/branding'))
     const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
     const isBrandingFavicon = brandingFiles.includes('favicon.svg') || brandingFiles.includes('favicon.png')
     const isBrandingTouch = brandingFiles.includes('apple-touch-icon.png')
@@ -328,7 +344,7 @@ export async function serve() {
     // find a file to use as the favicon
     const faviconRegex = /<link[^>]*rel="icon"[^>]*>/g
     if (isBrandingImgs) {
-      const brandingFiles = fs.readdirSync(path.join('./config', 'branding'))
+      const brandingFiles = fs.readdirSync(path.join('./config/branding'))
       const faviconPreferenceOrder = ['favicon.svg', 'favicon.png', 'logo.svg', 'logo.png', 'apple-touch-icon.png']
       const firstFaviconFile = faviconPreferenceOrder.find(file => brandingFiles.includes(file))
 

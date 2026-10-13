@@ -10,6 +10,7 @@ export type Invitation = Audit & {
   userExpiresAt?: Date | number | null
   emailVerified: boolean | number
   expiresAt: Date | number
+  mfaRequired: boolean | number
 }
 
 const _typeCheck: DBColumnTypesCheck<Invitation> = true

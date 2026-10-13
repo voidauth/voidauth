@@ -12,15 +12,19 @@
       ></app-totp-input>
 
       @if (passkeySupport?.enabled) {
-        @if (user?.hasPasskeys) {
-          <app-text-divider text="or" disabled></app-text-divider>
+        <!-- Passkey option if user has passkeys that would help -->
+        @if (
+          (user?.hasPasskeys && (!user.mfaRequired || !user.amr.includes("webauthn"))) ||
+          (user?.hasVerifyPasskeys && !user.amr.includes("webauthn_v"))
+        ) {
+          <app-text-divider text="{{ 'components.common.or' | translate }}" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyLogin()">
             {{ "mfa.actions.use-passkey" | translate: { platformName: passkeySupport.platformName ?? ("passkey-title" | translate) } }}
             <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport.platformIcon ?? "key" }}</mat-icon>
           </button>
         }
-        @if (user?.isPrivileged) {
-          <app-text-divider text="or" disabled></app-text-divider>
+        @if (user?.isPrivilegedForPasskeyCreate) {
+          <app-text-divider text="{{ 'components.common.or' | translate }}" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyRegister()">
             {{ "mfa.actions.register-passkey" | translate }}
             <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
@@ -28,7 +32,7 @@
         }
       }
 
-      <app-text-divider text="or" disabled></app-text-divider>
+      <app-text-divider text="{{ 'components.common.or' | translate }}" disabled></app-text-divider>
 
       <button mat-button (click)="cancelMfa()" type="button">{{ "mfa.actions.back" | translate }}</button>
     </form>
@@ -38,5 +42,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a style="margin-top: 48px" mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
+  <a mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

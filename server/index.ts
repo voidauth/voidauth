@@ -115,4 +115,97 @@ export const argv = yargs(hideBin(process.argv))
       /* no top level command */
     },
   )
+  .command(
+    'user',
+    'Manage users.',
+    y => y
+      .strict()
+      .command(
+        'mfa <action> [username]',
+        'Enable or disable MFA for an existing user.',
+        yg => yg
+          .positional('action', {
+            type: 'string',
+            choices: ['enable', 'disable'] as const,
+            describe: 'MFA action to perform',
+          })
+          .positional('username', {
+            type: 'string',
+            describe: 'Existing user username',
+          })
+          .option('username', {
+            alias: 'u',
+            type: 'string',
+            describe: 'Existing user username',
+          }),
+        async (argv) => {
+          if (!argv.action) {
+            logger({
+              level: 'error',
+              message: 'MFA action must be specified',
+            })
+            exit(2)
+          }
+          if (!argv.username) {
+            logger({
+              level: 'error',
+              message: 'Username must be specified',
+            })
+            exit(2)
+          }
+          try {
+            const mm = await import('./cli/manageMfa.ts')
+            await mm.manageMfa(argv.username, argv.action === 'enable')
+            console.log(`\nMFA ${argv.action} successful for user ${argv.username}\n`)
+            exit(0)
+          } catch (e) {
+            logger({
+              level: 'error',
+              message: 'Failed to manage MFA',
+              errors: e instanceof Error ? [e] : [{ message: String(e) }],
+            })
+            exit(1)
+          }
+        },
+      )
+      .command(
+        'password-reset [username]',
+        'Generate a password reset link for an existing user.',
+        yg => yg
+          .positional('username', {
+            type: 'string', describe: 'Existing user username',
+          })
+          .option('username', {
+            alias: 'u',
+            type: 'string',
+            describe: 'Existing user username',
+          }),
+        async (argv) => {
+          try {
+            if (!argv.username) {
+              logger({
+                level: 'error',
+                message: 'Username must be specified',
+              })
+              exit(2)
+            }
+            const gpr = await import('./cli/generatePasswordReset.ts')
+            const result = await gpr.generatePasswordReset(argv.username)
+            console.log(`\nPassword Reset link created (valid for ${getEnglishDuration(TTLs.PASSWORD_RESET * 1000)}): \n\n${result}\n`)
+            exit(0)
+          } catch (e) {
+            logger({
+              level: 'error',
+              message: 'Failed to generate password reset link',
+              errors: e instanceof Error ? [e] : [{ message: String(e) }],
+            })
+            exit(1)
+          }
+        },
+      )
+      .demandCommand(1, 'Please specify a subcommand: mfa or password-reset'),
+    async () => {
+      /* no top level command */
+    },
+  )
   .parse()

@@ -2,6 +2,7 @@ import type { ValueOf } from '../utils'
 import { KEY_TYPES } from '../constants'
 import type { JWK } from 'oidc-provider'
 import type { DBColumnTypesCheck } from '@shared/db'
+import { logger } from '../../server/util/logger'
 
 export type Key = {
   id: string
@@ -20,11 +21,20 @@ export type EncryptionMetadata = {
 export type EncryptedData = { value: string, metadata: EncryptionMetadata }
 
 export function parseEncryptedData(data: string): EncryptedData | null {
-  const parsed: unknown = JSON.parse(data)
-  if (isEncryptedData(parsed)) {
-    return parsed
+  try {
+    const parsed: unknown = JSON.parse(data)
+    if (isEncryptedData(parsed)) {
+      return parsed
+    }
+    return null
+  } catch (e) {
+    logger({
+      level: 'error',
+      message: 'Failed to parse encrypted data',
+      errors: [e instanceof Error ? e : new Error('encrypted data parse error.')],
+    })
+    return null
   }
-  return null
 }
 
 function isEncryptionMetadata(metadata: unknown): metadata is EncryptionMetadata {

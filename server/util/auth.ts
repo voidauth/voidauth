@@ -1,24 +1,9 @@
 import type { UserDetails } from '@shared/api-response/UserDetails'
-import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
-import { userRequiresMfa } from '../db/user'
+import { availableLoginFactors, isExpired, isUnapproved, isUnverifiedEmail, loginFactors, type amrFactor } from '@shared/user'
 import appConfig from './config'
 
-function userMfaComplete(user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup'>, amr: string[]) {
-  const factors = loginFactors(amr)
-
-  if (factors === 0) {
-    return false
-  }
-
-  if (userRequiresMfa(user) && factors < 2) {
-    return false
-  }
-
-  return true
-}
-
-function usingMfaIfExists(user: UserDetails, amr: string[]) {
-  return !user.hasTotp || loginFactors(amr) > 1
+function userCanMfa(user: UserDetails) {
+  return loginFactors(availableLoginFactors(user)) > 1
 }
 
 /**
@@ -27,24 +12,38 @@ function usingMfaIfExists(user: UserDetails, amr: string[]) {
  */
 export function userCanLogin(
   user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup' | 'hasTotp' | 'hasEmail' | 'emailVerified' | 'approved' | 'isAdmin'> | undefined,
-  amr: string[],
+  amr: amrFactor[],
 ): user is UserDetails {
   if (!user) {
     return false
   }
 
-  if (!userMfaComplete(user, amr)) {
+  // If user has no factors, they cannot login
+  if (!loginFactors(amr)) {
     return false
   }
 
+  // If user has MFA enabled, they must have it completed
+  if (user.mfaRequired && loginFactors(amr) < 2) {
+    return false
+  }
+
+  // If user is required to have MFA, they must have it enabled
+  if ((user.hasMfaGroup || appConfig.MFA_REQUIRED) && !user.mfaRequired) {
+    return false
+  }
+
+  // Users must be approved to login if required by config
   if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
     return false
   }
 
+  // Users must not be expired to login
   if (isExpired(user)) {
     return false
   }
 
+  // Users must have a verified email to login if required by config
   if (isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
     return false
   }
@@ -52,43 +51,25 @@ export function userCanLogin(
   return true
 }
 
-// A privileged user can perform all account actions
-export function userIsPrivileged(user: UserDetails | undefined, amr: string[]): boolean {
-  if (!user) {
-    return false
-  }
-
-  if (!userMfaComplete(user, amr)) {
-    return false
-  }
-
-  if (isUnapproved(user, appConfig.SIGNUP_REQUIRES_APPROVAL)) {
-    return false
-  }
-
-  if (isExpired(user)) {
-    return false
-  }
-
-  if (isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
-    return false
-  }
-
-  if (!usingMfaIfExists(user, amr)) {
-    return false
-  }
-
-  return true
-}
-
-// A user is privileged for email actions with the same requirements as privileged
+// A user is privileged for email actions with the same requirements as login
 // but also allowing users without email to bypass verification requirement to set an email
-export function userIsPrivilegedForEmail(user: UserDetails | undefined, amr: string[]): boolean {
+export function userIsPrivilegedForEmail(user: UserDetails | undefined, amr: amrFactor[]): boolean {
   if (!user) {
     return false
   }
 
-  if (!userMfaComplete(user, amr)) {
+  // If user has no factors, they cannot login
+  if (!loginFactors(amr)) {
+    return false
+  }
+
+  // If user has MFA enabled, they must have it completed
+  if (user.mfaRequired && loginFactors(amr) < 2) {
+    return false
+  }
+
+  // If user is required to have MFA, they must have it enabled
+  if ((user.hasMfaGroup || appConfig.MFA_REQUIRED) && !user.mfaRequired) {
     return false
   }
 
@@ -105,15 +86,21 @@ export function userIsPrivilegedForEmail(user: UserDetails | undefined, amr: str
     return false
   }
 
-  if (!usingMfaIfExists(user, amr)) {
-    return false
-  }
-
   return true
 }
 
-export function userIsPrivilegedForTotpCreate(user: UserDetails | undefined, amr: string[]): boolean {
+export function userIsPrivilegedForPasskeyCreate(user: UserDetails | undefined, amr: amrFactor[]): boolean {
   if (!user) {
+    return false
+  }
+
+  // If user has no factors, they cannot login
+  if (!loginFactors(amr)) {
+    return false
+  }
+
+  // If user has MFA enabled, they must have it completed if they can
+  if (userCanMfa(user) && user.mfaRequired && loginFactors(amr) < 2) {
     return false
   }
 
@@ -130,18 +117,20 @@ export function userIsPrivilegedForTotpCreate(user: UserDetails | undefined, amr
     return false
   }
 
-  const firstTotpSetupAllowed = !user.hasTotp && !!loginFactors(amr)
-
-  // If they already have totp, require strict privilege to manage it. Otherwise allow set up without being privileged
-  if ((!userMfaComplete(user, amr) || !usingMfaIfExists(user, amr)) && !firstTotpSetupAllowed) {
-    return false
-  }
-
   return true
 }
 
-export function userIsPrivilegedForTotpValidate(user: UserDetails | undefined, amr: string[]): boolean {
+export function userIsPrivilegedForTotpCreate(user: UserDetails | undefined, amr: amrFactor[]): boolean {
+  return userIsPrivilegedForPasskeyCreate(user, amr)
+}
+
+export function userIsPrivilegedForTotpValidate(user: UserDetails | undefined, amr: amrFactor[]): boolean {
   if (!user) {
+    return false
+  }
+
+  // Users can only validate a totp if they are already at least partially logged in with a first factor
+  if (!loginFactors(amr)) {
     return false
   }
 
@@ -153,13 +142,8 @@ export function userIsPrivilegedForTotpValidate(user: UserDetails | undefined, a
     return false
   }
 
-  // Can still validate up totp if they don't have an email, even if it is required
+  // Can still set up totp if they don't have an email, even if it is required
   if (user.hasEmail && isUnverifiedEmail(user, !!appConfig.EMAIL_VERIFICATION)) {
-    return false
-  }
-
-  // Users can only validate a totp if they are already at least partially logged in with a first factor
-  if (!loginFactors(amr)) {
     return false
   }
 

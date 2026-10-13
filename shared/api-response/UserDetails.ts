@@ -1,6 +1,7 @@
 import type { OnlyKeys, RemoveKeys } from '@shared/utils'
 import type { Group } from '../db/Group.js'
 import type { User } from '../db/User.js'
+import type { amrFactor } from '@shared/user.js'
 
 export type UserWithoutPassword = RemoveKeys<User, 'passwordHash'> & {
   hasPassword: boolean
@@ -26,15 +27,16 @@ export type UserDetails = UserWithAdminIndicator & {
   }[]
   hasTotp: boolean
   hasPasskeys: boolean
+  hasVerifyPasskeys: boolean
   hasMfaGroup: boolean
 }
 
 type UserSessionInfo = {
-  amr: string[]
+  amr: amrFactor[]
   canLogin: boolean
-  isPrivilegedForTotpCreate: boolean // has all amr to make totp changes
+  isPrivilegedForTotpCreate: boolean // has all amr to create totp
+  isPrivilegedForPasskeyCreate: boolean // has all amr to create passkeys
   isPrivilegedForEmail: boolean // has all amr to make email changes
-  isPrivileged: boolean // has all amr to make account changes
 }
 
 export type CurrentUserPrivateDetails = UserDetails & UserSessionInfo
@@ -44,5 +46,6 @@ export type CurrentUserPrivateDetails = UserDetails & UserSessionInfo
 // so should not contain anything that could be used to elevate privileges or identify the user
 export type CurrentUserDetails = OnlyKeys<
   UserDetails,
-  'id' | 'isAdmin' | 'hasTotp' | 'hasPasskeys' | 'hasEmail' | 'emailVerified' | 'expiresAt' | 'approved'>
+  'id' | 'isAdmin' | 'mfaRequired' | 'hasTotp'
+  | 'hasPasskeys' | 'hasVerifyPasskeys' | 'hasEmail' | 'emailVerified' | 'expiresAt' | 'approved'>
   & UserSessionInfo

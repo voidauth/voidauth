@@ -228,7 +228,7 @@ Redirect URLs: https://dawarich.example.com/users/auth/openid_connect/callback
 
 <br>
 
-## <img src="https://dockhand.pro/images/logo-dark.webp" width="28" /> Dockhand
+## <img src="https://dockhand.pro/images/dockhand-logo.svg" width="28" /> Dockhand
 
 Navigate to **Settings** > **Authentication** > **SSO** in Dockhand. Click **Add provider**. See the [Dockhand OIDC Configuration Guide](https://dockhand.pro/manual/#appendix-oidc) for detailed setup instructions.
 
@@ -338,7 +338,11 @@ Redirect URLs:
   - https://immich.example.com/auth/login
   - https://immich.example.com/user-settings
   - app.immich:///oauth-callback
+Backchannel Logout URL: https://immich.example.com/api/oauth/backchannel-logout
 ```
+
+> [!NOTE]
+> The backchannel logout URL must be reachable from VoidAuth. If VoidAuth is running in the same Docker Compose project as Immich, use something like `http://immich:2283/api/oauth/backchannel-logout` instead.
 
 <br>
 

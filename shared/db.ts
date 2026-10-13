@@ -25,6 +25,8 @@ export const TABLES = {
   USER_CUSTOM_CLAIM: 'user_custom_claim',
   GROUP_CUSTOM_CLAIM: 'group_custom_claim',
   INVITATION_CUSTOM_CLAIM: 'invitation_custom_claim',
+  UPLOADED_ASSET: 'uploaded_asset',
+  CLIENT_LOGO_ASSET: 'client_logo_asset',
 } as const
 
 export const TABLES_ORDER: ValueOf<typeof TABLES>[] = [
@@ -52,13 +54,15 @@ export const TABLES_ORDER: ValueOf<typeof TABLES>[] = [
   TABLES.USER_CUSTOM_CLAIM,
   TABLES.GROUP_CUSTOM_CLAIM,
   TABLES.INVITATION_CUSTOM_CLAIM,
+  TABLES.UPLOADED_ASSET,
+  TABLES.CLIENT_LOGO_ASSET,
 ] as const
 
 if (!Object.values(TABLES).every(t => TABLES_ORDER.includes(t))) {
   throw new Error('Migration tables list is missing tables.')
 }
 
-export const BOOL_COLUMNS = ['emailVerified', 'approved', 'backedUp', 'mfaRequired', 'autoAssign'] as const
+export const BOOL_COLUMNS = ['emailVerified', 'approved', 'backedUp', 'mfaRequired', 'autoAssign', 'canVerify'] as const
 export const DATE_COLUMNS = ['createdAt', 'updatedAt', 'expiresAt', 'lastUsed', 'userExpiresAt', 'consumedAt'] as const
 
 // Helpers to make sure all boolean and date columns are included in BOOL_COLUMNS and DATE_COLUMNS

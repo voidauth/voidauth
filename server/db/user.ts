@@ -7,7 +7,6 @@ import { ADMIN_USER, ADMIN_GROUP, TTLs } from '@shared/constants'
 import { randomBytes, randomUUID } from 'crypto'
 import type { Flag } from '@shared/db/Flag'
 import appConfig from '../util/config'
-import type { OIDCPayload } from '@shared/db/OIDCPayload'
 import { hasTOTP } from './totp'
 import { getUserPasskeys } from './passkey'
 import { argon2 } from '../util/argon2id'
@@ -146,14 +145,16 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const customClaims = await getUserCustomClaims(user.id)
 
   const hasTotp = await hasTOTP(id)
-  const hasPasskeys = !!(await getUserPasskeys(user.id)).length
+  const passkeys = await getUserPasskeys(user.id)
+  const hasPasskeys = !!(passkeys.length)
+  const hasVerifyPasskeys = passkeys.some(p => p.canVerify)
 
   const { passwordHash, ...userWithoutPassword } = user
   return {
     ...userWithoutPassword,
     groups: groupsWithClaims,
     customClaims,
-    hasMfaGroup, hasPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
+    hasMfaGroup, hasPasskeys, hasVerifyPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
 }
 
 export async function getUserByInput(input: string): Promise<UserDetails | undefined> {
@@ -181,14 +182,6 @@ export async function getUserByUsername(username: string): Promise<UserDetails |
 export async function checkPasswordHash(userId: string, password: string): Promise<boolean> {
   const user = await db().select().table<User>(TABLES.USER).where({ id: userId }).first()
   return !!user && !!password && !!user.passwordHash && argon2.verify(user.passwordHash, password)
-}
-
-export function userRequiresMfa(user: Pick<UserDetails, 'mfaRequired' | 'hasMfaGroup'>) {
-  return appConfig.MFA_REQUIRED || !!user.mfaRequired || user.hasMfaGroup
-}
-
-export async function endSessions(userId: string) {
-  await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).delete().where({ type: 'Session', accountId: userId })
 }
 
 export async function findAccount(_: KoaContextWithOIDC | null, id: string): Promise<Account | undefined> {

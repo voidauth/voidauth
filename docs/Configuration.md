@@ -25,9 +25,10 @@ The available environment variables and their defaults are listed below:
 | SIGNUP | `false` | Whether the app allows new users to self-register themselves without invitation. | | |
 | SIGNUP_REQUIRES_APPROVAL | `true` | Whether new users who register themselves require approval by an admin. Setting this to `false` while `SIGNUP` is `true` enables open self-registration; use with caution! ⚠️ | | |
 | EMAIL_VERIFICATION | `true` if SMTP_HOST is set, otherwise `false` | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should probably be `true`. | | |
-| MFA_REQUIRED | `false` | If true, users must use a second security factor while logging in such as an Authenticator Token or Passkey | | |
+| MFA_REQUIRED | `false` | If set to `true`, users must use a second security factor while logging in such as an Authenticator Token or Passkey | | |
+| DISABLE_FILE_UPLOADS | `false` | If set to `true`, all file uploads will be disabled throughout the application. | | |
 | API_RATELIMIT  | `60` | Rate Limit for mutating (state-changing) requests per minute per IP address. Default is `60`, one per second. | | |
-| ENABLE_DEBUG  | `false` | Enables debug logging. ⚠️WARNING!⚠️ This will cause the activity of users to be printed in the logs.  | | |
+| ENABLE_DEBUG  | `false` | Enables debug logging. ⚠️WARNING!⚠️ Detailed user activity will be printed in the logs. | | |
 
 ### App Customization
 
@@ -132,6 +133,13 @@ The logo images of the web interface can be customized by placing your own image
 For information on how to change the email templates used for invitations, password resets, email verification, etc. see the documentation page for [Email Templates](Email-Templates.md).
 
 You may also add/modify the `custom.css` file located in the **/app/config/branding** directory to add your own styling to the web interface.
+
+## Uploaded Assets
+
+> [!WARNING]
+> For an application host, user uploaded files may require special care. Image uploads may need to be moderated by external tooling, or need privacy, compliance, or legal considerations. All file uploads can be disabled by setting the `DISABLE_FILE_UPLOADS=true` environment variable.
+
+Uploaded application assets are stored in the **/app/config/uploads** directory, which contains any files uploaded by users. The directory structure within is based on the `SHA-256` hash of the uploaded file, and files are de-duplicated by their hashes. File names are randomized to prevent enumeration or discovery by known-hash.
 
 ## Customization
 

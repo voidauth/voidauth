@@ -1,15 +1,22 @@
 import type { UserDetails } from './api-response/UserDetails'
 import { stringCompare } from './utils'
 
-export const amrFactors = {
+export type amrFactor = 'email' | 'pwd' | 'totp' | 'webauthn' | 'webauthn_v'
+
+export const amrFactors: {
+  multiFactors: amrFactor[]
+  firstFactors: amrFactor[]
+  secondFactors: amrFactor[]
+  eitherFactors: amrFactor[]
+} = {
   multiFactors: ['email'], // something that should already require mfa to access
   firstFactors: ['pwd'], // something you know (password, PIN)
   secondFactors: ['totp', 'webauthn_v'], // something you have or are (device, biometrics)
   eitherFactors: ['webauthn'], // something that can be either first or second factor depending on context
 }
 
-export function loginFactors(amr: string[]) {
-  // clone the amr so we don't modify the original by accident
+export function loginFactors(amr: amrFactor[]) {
+  // clone the amr so we don't modify the original
   amr = [...amr]
 
   // Multi-factor AMRs allow access always
@@ -28,6 +35,25 @@ export function loginFactors(amr: string[]) {
   }
 
   return 0
+}
+
+export function availableLoginFactors(user: UserDetails): amrFactor[] {
+  const factors: amrFactor[] = []
+  // List out the login factors the user has available
+  // Exclude email as a factor, since it cannot be directly used for login (yet)
+  if (user.hasPassword) {
+    factors.push('pwd')
+  }
+  if (user.hasTotp) {
+    factors.push('totp')
+  }
+  if (user.hasPasskeys) {
+    factors.push('webauthn')
+  }
+  if (user.hasVerifyPasskeys) {
+    factors.push('webauthn_v')
+  }
+  return factors
 }
 
 export function isUnapproved(user: Pick<UserDetails, 'approved' | 'isAdmin'>, SIGNUP_REQUIRES_APPROVAL: boolean) {

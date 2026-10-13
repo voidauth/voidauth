@@ -1,6 +1,6 @@
 <div class="totp-input-container">
   @if (qrcodeData) {
-    @if (enableMfa()) {
+    @if (user && !user.mfaRequired) {
       <p style="text-align: center; margin-top: -4px">
         <small>{{ "components.totp-input.title" | translate }}</small>
       </p>

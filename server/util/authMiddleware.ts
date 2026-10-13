@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express'
-import { userIsPrivilegedForEmail, userIsPrivilegedForTotpCreate, userIsPrivilegedForTotpValidate } from './auth'
+import { userIsPrivilegedForTotpValidate } from './auth'
 
 export function checkUserExists(req: Pick<Request, 'user'>, res: Response, next: NextFunction) {
   if (!req.user) {
@@ -9,12 +9,12 @@ export function checkUserExists(req: Pick<Request, 'user'>, res: Response, next:
   next()
 }
 
-export function checkPrivileged(req: Pick<Request, 'user'>, res: Response, next: NextFunction) {
+export function checkCanLogin(req: Pick<Request, 'user'>, res: Response, next: NextFunction) {
   if (!req.user) {
     res.sendStatus(401)
     return
   }
-  if (!req.user.isPrivileged) {
+  if (!req.user.canLogin) {
     res.sendStatus(403)
     return
   }
@@ -26,7 +26,7 @@ export function checkPrivilegedForEmail(req: Pick<Request, 'user'>, res: Respons
     res.sendStatus(401)
     return
   }
-  if (!userIsPrivilegedForEmail(req.user, req.user.amr)) {
+  if (!req.user.isPrivilegedForEmail) {
     res.sendStatus(403)
     return
   }
@@ -38,7 +38,7 @@ export function checkPrivilegedForTotpCreate(req: Pick<Request, 'user'>, res: Re
     res.sendStatus(401)
     return
   }
-  if (!userIsPrivilegedForTotpCreate(req.user, req.user.amr)) {
+  if (!req.user.isPrivilegedForTotpCreate) {
     res.sendStatus(403)
     return
   }
@@ -51,6 +51,18 @@ export function checkPrivilegedForTotpValidate(req: Pick<Request, 'user'>, res: 
     return
   }
   if (!userIsPrivilegedForTotpValidate(req.user, req.user.amr)) {
+    res.sendStatus(403)
+    return
+  }
+  next()
+}
+
+export function checkPrivilegedForPasskeyCreate(req: Pick<Request, 'user'>, res: Response, next: NextFunction) {
+  if (!req.user) {
+    res.sendStatus(401)
+    return
+  }
+  if (!req.user.isPrivilegedForPasskeyCreate) {
     res.sendStatus(403)
     return
   }

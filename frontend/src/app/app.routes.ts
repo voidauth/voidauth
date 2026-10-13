@@ -3,11 +3,11 @@ import { type Routes } from '@angular/router'
 
 import { REDIRECT_PATHS } from '@shared/constants'
 
-import { PrivilegedGuard } from './guards/privileged.guard'
+import { LoginGuard } from './guards/login.guard'
 import { isAdminGuard } from './guards/is-admin.guard'
 
 export const routes: Routes = [
-  { path: '', loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent), canActivate: [PrivilegedGuard] },
+  { path: '', loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent), canActivate: [LoginGuard] },
 
   { path: REDIRECT_PATHS.LOGIN, loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) },
 
@@ -30,7 +30,7 @@ export const routes: Routes = [
 
   { path: REDIRECT_PATHS.USER_EXPIRED, loadComponent: () => import('./pages/user-expired/user-expired.component').then(m => m.UserExpiredComponent) },
 
-  { path: 'consent/:uid', loadComponent: () => import('./pages/consent/consent.component').then(m => m.ConsentComponent), canActivate: [PrivilegedGuard] },
+  { path: 'consent/:uid', loadComponent: () => import('./pages/consent/consent.component').then(m => m.ConsentComponent), canActivate: [LoginGuard] },
 
   { path: REDIRECT_PATHS.REGISTER, loadComponent: () => import('./pages/registration/registration.component').then(m => m.RegistrationComponent) },
   { path: REDIRECT_PATHS.INVITE, loadComponent: () => import('./pages/registration/registration.component').then(m => m.RegistrationComponent) },

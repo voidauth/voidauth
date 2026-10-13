@@ -34,7 +34,7 @@ export class LogoutComponent implements OnInit {
     try {
       this.spinnerService.show()
       this.user = await this.userService.getMyUser()
-      if (this.user.isPrivileged) {
+      if (this.user.canLogin) {
         try {
           this.privUser = await this.userService.getMyPrivateUser()
         } catch (_e) {

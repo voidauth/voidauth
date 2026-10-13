@@ -39,6 +39,7 @@ function decryptTOTPs(totps: TOTP[]): TOTP[] {
   }, [])
 }
 
+// Get users TOTP secrets, optionally including expiring (unverified) ones when needed
 async function getUserTOTPs(userId: string, includeExpiring = false) {
   return decryptTOTPs(await db().table<TOTP>(TABLES.TOTP)
     .where({ userId })
@@ -74,7 +75,7 @@ export async function createTOTP(userId: string, label: string): Promise<Registe
 }
 
 export async function hasTOTP(userId: string) {
-  return !!(await getUserTOTPs(userId)).length
+  return !!((await getUserTOTPs(userId)).length)
 }
 
 export async function validateTOTP(userId: string, token: string) {

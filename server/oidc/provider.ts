@@ -1,12 +1,12 @@
-import Provider, { type ClientMetadata, type Configuration } from 'oidc-provider'
-import { findAccount, getUserById, userRequiresMfa } from '../db/user'
+import Provider, { type Configuration } from 'oidc-provider'
+import { findAccount, getUserById } from '../db/user'
 import appConfig, { basePath, getSessionDomain, sessionDomainReaches } from '../util/config'
 import { KnexAdapter } from './adapter'
 import { ADMIN_GROUP, CLIENT_DEFAULTS, REDIRECT_PATHS, TTLs } from '@shared/constants'
 import { errors } from 'oidc-provider'
 import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import { interactionPolicy } from 'oidc-provider'
-import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors } from '@shared/user'
+import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors, type amrFactor } from '@shared/user'
 import { isMatch } from 'matcher'
 import assert from 'assert'
 import { wildcardRedirect } from '@shared/url'
@@ -15,17 +15,12 @@ import { getProxyAuthWithCache } from '../db/proxyAuth'
 import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
 import { randomBytes } from 'crypto'
 import { logger } from '../util/logger'
-import { getClient } from '../db/client'
-import type { OIDCGroup, Group } from '@shared/db/Group'
-import add from 'oidc-provider/lib/helpers/add_client.js'
 import { db } from '../db/db'
-import { mergeKeys } from '../db/util'
-import type { User } from '@shared/db/User'
-import { PayloadTypes } from '@shared/db/OIDCPayload'
+import { PayloadTypes, type OIDCPayload } from '@shared/db/OIDCPayload'
 import { TABLES } from '@shared/db'
 import { getAllClaims, getCustomClaims } from '../db/claims'
 import { getCurrentProviderConfig, setCurrentProviderConfig } from './configuration'
-import type { DeepWritable } from '@shared/utils'
+import { getClient } from '../db/client_get'
 
 // Extend 'oidc-provider' where needed
 declare module 'oidc-provider' {
@@ -110,7 +105,7 @@ loginPromptPolicy.checks.add(new Check('user_login_required',
     if (oidc.account?.accountId) {
       const user = await getUserById(oidc.account.accountId)
       const amr = oidc.session?.amr ?? []
-      if (user && loginFactors(amr) === 0) {
+      if (user && loginFactors(amr as amrFactor[]) === 0) {
         return Check.REQUEST_PROMPT
       }
     }
@@ -124,9 +119,17 @@ loginPromptPolicy.checks.add(new Check('user_mfa_required',
     const { oidc } = ctx
     if (oidc.account?.accountId) {
       const user = await getUserById(oidc.account.accountId)
-      const amr = oidc.session?.amr ?? []
-      if (user && userRequiresMfa(user) && loginFactors(amr) < 2) {
-        return Check.REQUEST_PROMPT
+      const amr = (oidc.session?.amr ?? []) as amrFactor[]
+
+      if (user) {
+        // If user has MFA enabled, they must have it completed it
+        if (user.mfaRequired && loginFactors(amr) < 2) {
+          return Check.REQUEST_PROMPT
+        }
+        // If user is required to have MFA, they must have it enabled
+        if ((user.hasMfaGroup || appConfig.MFA_REQUIRED) && !user.mfaRequired) {
+          return Check.REQUEST_PROMPT
+        }
       }
     }
 
@@ -167,19 +170,12 @@ consentPromptPolicy.checks.add(new Check('client_mfa_required',
   'client requires mfa',
   'client_mfa_required', async (ctx) => {
     const { oidc } = ctx
-    const amr = oidc.session?.amr ?? []
+    const amr = (oidc.session?.amr ?? []) as amrFactor[]
+    let mfaRequired = false
 
     // If client requires mfa, check for it
-    if (oidc.client && !!oidc.client.require_mfa && loginFactors(amr) < 2) {
-      return Check.REQUEST_PROMPT
-    }
-
-    // auth internal client requires mfa if the user has it set up
-    if (oidc.client?.clientId === 'auth_internal_client') {
-      const user = oidc.account?.accountId ? await getUserById(oidc.account.accountId) : null
-      if (user?.hasTotp && loginFactors(amr) < 2) {
-        return Check.REQUEST_PROMPT
-      }
+    if (oidc.client && !!oidc.client.require_mfa) {
+      mfaRequired = true
     }
 
     // proxyauth internal client requires mfa if proxyauth_url is for a domain that requires mfa
@@ -188,7 +184,21 @@ consentPromptPolicy.checks.add(new Check('client_mfa_required',
       const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
       const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
       const domain = proxyAuthURL && await getProxyAuthWithCache(proxyAuthURL)
-      if (domain?.mfaRequired && loginFactors(amr) < 2) {
+      if (domain?.mfaRequired) {
+        mfaRequired = true
+      }
+    }
+
+    if (mfaRequired) {
+      // If user does not have MFA factors
+      if (loginFactors(amr) < 2) {
+        return Check.REQUEST_PROMPT
+      }
+
+      // If user must have MFA enabled, but does not
+      const user = oidc.account?.accountId ? await getUserById(oidc.account.accountId) : null
+      if (user && !user.mfaRequired) {
+        // User does not require mfa, but client does. Make user enable mfa for future logins
         return Check.REQUEST_PROMPT
       }
     }
@@ -450,6 +460,11 @@ async function getNextConfig() {
 async function createProvider(): Promise<Provider> {
   const config = await getNextConfig()
   const nextProvider = new Provider(`${appConfig.APP_URL}/oidc`, config)
+  assert.equal(
+    typeof nextProvider.Client.prototype.backchannelLogout,
+    'function',
+    'oidc-provider Client.prototype.backchannelLogout does not exist.',
+  )
   nextProvider.proxy = true
   // Log provider errors
   nextProvider.on('server_error', (_ctx, error) => {
@@ -613,45 +628,13 @@ export async function isProviderClaimsDesynced() {
     return
   }
 
-  const providerClaims = (providerConfig.claims ?? {})['openid'] ?? []
+  let providerClaims = (providerConfig.claims ?? {})['openid'] ?? []
+  if (!(providerClaims instanceof Array)) {
+    providerClaims = Object.keys(providerClaims)
+  }
 
   const claimsDesynced = (new Set(currentClaims)).symmetricDifference(new Set(providerClaims)).size > 0
   return claimsDesynced
-}
-
-export async function upsertClient(metadata: DeepWritable<ClientMetadata>, groups: string[], user: Pick<User, 'id'>, ctx: unknown) {
-  await provider().Client.validate(metadata)
-  const client = await add(provider(), metadata, { ctx, store: true })
-  await provider().Client.validate(client.metadata())
-  const clientId = client.clientId
-
-  // Sync groups for the client
-  const clientGroups: OIDCGroup[] = (await db().select().table<Group>(TABLES.GROUP).whereIn('name', groups)).map((g) => {
-    return {
-      groupId: g.id,
-      oidcId: clientId,
-      oidcType: PayloadTypes.Client,
-      createdBy: user.id,
-      updatedBy: user.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-  })
-  if (clientGroups[0]) {
-    await db().table<OIDCGroup>(TABLES.OIDC_GROUP).insert(clientGroups)
-      .onConflict(['groupId', 'oidcId', 'oidcType']).merge(mergeKeys(clientGroups[0]))
-  }
-  await db().table<OIDCGroup>(TABLES.OIDC_GROUP).delete()
-    .where({ oidcId: clientId }).and
-    .whereNotIn('groupId', clientGroups.map(g => g.groupId))
-
-  return client
-}
-
-export async function removeClient(client_id: string) {
-  // @ts-expect-error client adapter actually does exist
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  await provider().Client.adapter.destroy(client_id)
 }
 
 export async function getSession(req: IncomingMessage, res: ServerResponse) {
@@ -660,5 +643,44 @@ export async function getSession(req: IncomingMessage, res: ServerResponse) {
     return await provider().Session.get(ctx)
   } catch (_e) {
     return null
+  }
+}
+
+export async function endUserSessions(userId: string) {
+  const sessions = await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
+    .select('id')
+    .where({ type: PayloadTypes.Session, accountId: userId })
+
+  for (const { id } of sessions) {
+    const session = await provider().Session.find(id)
+    if (!session) {
+      // something went wrong, delete the session from the database anyway
+      await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS)
+        .delete()
+        .where({ type: PayloadTypes.Session, id })
+      continue
+    }
+
+    for (const clientId of Object.keys(session.authorizations ?? {})) {
+      const client = await provider().Client.find(clientId)
+      if (!client?.backchannelLogoutUri) {
+        continue
+      }
+
+      try {
+        await client.backchannelLogout(userId, session.sidFor(clientId))
+      } catch (error) {
+        logger({
+          level: 'error',
+          message: 'OIDC backchannel logout request failed.',
+          errors: [{
+            name: error instanceof Error ? error.name : 'Error',
+            message: error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown error',
+          }],
+        })
+      }
+    }
+
+    await session.destroy()
   }
 }

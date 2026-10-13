@@ -231,6 +231,10 @@
         </mat-form-field>
       </div>
 
+      <mat-checkbox formControlName="mfaRequired" matTooltip="{{ 'admin.common.labels.mfa-required' | translate }}">{{
+        "admin.common.labels.mfa-required" | translate
+      }}</mat-checkbox>
+
       <mat-card-actions>
         @if (form.errors) {
           <p style="color: var(--mat-form-field-error-text-color, var(--mat-sys-error))">{{ form.errors | validationError | async }}</p>

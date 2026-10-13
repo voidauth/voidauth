@@ -10,6 +10,7 @@ export const invitationUpsertValidator = {
   email: coerceEmailOrNull.optional(),
   userExpiresAt: zod.iso.datetime().transform(val => val ? new Date(val) : null).nullable(),
   emailVerified: zod.boolean(),
+  mfaRequired: zod.boolean(),
   groups: zod.array(zod.object({
     id: zod.uuidv4(),
     name: zod.string().trim(),

@@ -76,8 +76,8 @@ export class UserService {
     return firstValueFrom(this.http.delete<null>('/api/user/password'))
   }
 
-  async removeAllAuthenticators() {
-    return firstValueFrom(this.http.delete<null>('/api/user/totp'))
+  async disabledMfa() {
+    return firstValueFrom(this.http.delete<null>('/api/user/mfa'))
   }
 
   async deleteUser() {
