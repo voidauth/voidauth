@@ -12,7 +12,7 @@ import { MaterialModule } from '../../../material-module'
 import { sortWildcardDomains } from '@shared/url'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { stringCompare } from '@shared/utils'
 import { TableService } from '../../../services/table.service'
 
@@ -44,6 +44,7 @@ export class DomainsComponent {
   displayedColumns = (this.columns.map(c => c.columnDef) as string[]).concat('actions')
 
   private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
@@ -88,8 +89,8 @@ export class DomainsComponent {
     const domain = this.dataSource.data.find(d => d.id === proxyauth_id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove domain '${domain?.domain ?? proxyauth_id}'?`,
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.domains.dialogs.delete', { name: domain?.domain ?? proxyauth_id })),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -102,9 +103,9 @@ export class DomainsComponent {
         this.spinnerService.show()
         await this.adminService.deleteProxyAuth(proxyauth_id)
         this.dataSource.data = this.dataSource.data.filter(c => c.id !== proxyauth_id)
-        this.snackbarService.message('Domain was deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.domains.messages.deleted')))
       } catch (_e) {
-        this.snackbarService.error('Could not delete domain.')
+        this.snackbarService.error(String(this.translateService.instant('admin.domains.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

@@ -7,7 +7,7 @@ import { MaterialModule } from '../../material-module'
 import type { ConsentDetails } from '@shared/api-response/ConsentDetails'
 import { SpinnerService } from '../../services/spinner.service'
 import { ConfigService, getBaseHrefPath } from '../../services/config.service'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
 @Component({
@@ -25,6 +25,7 @@ export class ConsentComponent implements OnInit {
   config?: ConfigResponse
 
   private authService = inject(AuthService)
+  private translateService = inject(TranslateService)
   private route = inject(ActivatedRoute)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
@@ -42,7 +43,7 @@ export class ConsentComponent implements OnInit {
         this.redirectHost = this.details.redirectUri ? URL.parse(this.details.redirectUri)?.host : undefined
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Confirmation details not valid.')
+        this.snackbarService.error(String(this.translateService.instant('consent.messages.invalid-details')))
       } finally {
         this.spinnerService.hide()
       }
@@ -78,7 +79,7 @@ export class ConsentComponent implements OnInit {
         shownError ??= (e as Error).message
       }
 
-      shownError ??= 'Something went wrong.'
+      shownError ??= String(this.translateService.instant('components.common.messages.something-went-wrong'))
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
