@@ -427,7 +427,11 @@
       }
     },
     "client": {
-      "title": "Приложение OIDC",
+      "titles": {
+        "view": "Приложение OIDC",
+        "update": "Изменить приложение OIDC",
+        "create": "Новое приложение OIDC"
+      },
       "labels": {
         "name": "Название",
         "home-page-url": "Адрес заглавной страницы",
@@ -487,7 +491,10 @@
       }
     },
     "domain": {
-      "title": "Домен ProxyAuth",
+      "titles": {
+        "update": "Изменить домен ProxyAuth",
+        "create": "Новый домен ProxyAuth"
+      },
       "labels": {
         "domain": "Домен",
         "max-session-length": "Максимальная длительность сессии (в минутах)",
@@ -577,7 +584,10 @@
       }
     },
     "group": {
-      "title": "Группа",
+      "titles": {
+        "update": "Изменить группу",
+        "create": "Новая группа"
+      },
       "labels": {
         "name": "Имя группы",
         "add-user": "Добавить пользователя",
@@ -614,7 +624,10 @@
       }
     },
     "invitation": {
-      "title": "Приглашение",
+      "titles": {
+        "update": "Изменить приглашение",
+        "create": "Новое приглашение"
+      },
       "labels": {
         "invite-link": "Ссылка-приглашение",
         "username": "Имя пользователя",
@@ -682,6 +695,12 @@
         "edit-group-claim": "Изменить claim группы",
         "add-invite-claim": "Добавить claim приглашению",
         "edit-invite-claim": "Изменить claim приглашения"
+      }
+    },
+    "claim": {
+      "titles": {
+        "update": "Изменить claim",
+        "create": "Новый claim"
       }
     }
   },

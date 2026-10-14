@@ -481,7 +481,11 @@
       }
     },
     "client": {
-      "title": "OIDC App",
+      "titles": {
+        "view": "View OIDC App",
+        "update": "Update OIDC App",
+        "create": "Create OIDC App"
+      },
       "labels": {
         "name": "Name",
         "home-page-url": "Home Page URL",
@@ -553,7 +557,10 @@
       }
     },
     "domain": {
-      "title": "ProxyAuth Domain",
+      "titles": {
+        "update": "Update ProxyAuth Domain",
+        "create": "Create ProxyAuth Domain"
+      },
       "labels": {
         "domain": "Domain",
         "max-session-length": "Max Session Age (Minutes)",
@@ -643,7 +650,10 @@
       }
     },
     "group": {
-      "title": "Group",
+      "titles": {
+        "update": "Update Group",
+        "create": "Create Group"
+      },
       "labels": {
         "name": "Name",
         "add-user": "Add User",
@@ -688,7 +698,10 @@
       }
     },
     "invitation": {
-      "title": "Invitation",
+      "titles": {
+        "update": "Update Invitation",
+        "create": "Create Invitation"
+      },
       "labels": {
         "invite-link": "Invite Link",
         "username": "Username",
@@ -751,7 +764,10 @@
       }
     },
     "claim": {
-      "title": "Custom Claim",
+      "titles": {
+        "update": "Update Custom Claim",
+        "create": "Create Custom Claim"
+      },
       "labels": {
         "name": "Name",
         "user-claims": "Users",

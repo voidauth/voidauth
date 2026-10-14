@@ -376,7 +376,11 @@
       }
     },
     "client": {
-      "title": "Aplicativo OIDC",
+      "titles": {
+        "view": "Ver Aplicativo OIDC",
+        "update": "Atualizar Aplicativo OIDC",
+        "create": "Criar Aplicativo OIDC"
+      },
       "labels": {
         "name": "Nome",
         "home-page-url": "URL da página inicial",
@@ -419,7 +423,10 @@
       }
     },
     "domain": {
-      "title": "Domínio ProxyAuth",
+      "titles": {
+        "update": "Atualizar Domínio ProxyAuth",
+        "create": "Criar Domínio ProxyAuth"
+      },
       "labels": {
         "domain": "Domínio",
         "max-session-length": "Duração máxima da sessão (minutos)",
@@ -472,7 +479,10 @@
       }
     },
     "group": {
-      "title": "Grupo",
+      "titles": {
+        "update": "Atualizar Grupo",
+        "create": "Criar Grupo"
+      },
       "labels": {
         "name": "Nome",
         "add-user": "Adicionar usuário",
@@ -498,7 +508,10 @@
       }
     },
     "invitation": {
-      "title": "Convite",
+      "titles": {
+        "update": "Atualizar Convite",
+        "create": "Criar Convite"
+      },
       "labels": {
         "invite-link": "Link do convite",
         "username": "Nome de usuário",
@@ -541,7 +554,10 @@
       "empty-state": "Nenhuma declaração personalizada."
     },
     "claim": {
-      "title": "Declaração personalizada",
+      "titles": {
+        "update": "Atualizar Declaração personalizada",
+        "create": "Criar Declaração personalizada"
+      },
       "labels": {
         "name": "Nome",
         "user-claims": "Usuários",

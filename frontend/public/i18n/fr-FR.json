@@ -322,7 +322,11 @@
       }
     },
     "client": {
-      "title": "Application OIDC",
+      "titles": {
+        "view": "Voir l'application OIDC",
+        "update": "Modifier l'application OIDC",
+        "create": "Créer une application OIDC"
+      },
       "labels": {
         "name": "Nom",
         "home-page-url": "URL de la page d'accueil",
@@ -365,7 +369,10 @@
       }
     },
     "domain": {
-      "title": "Domaine ProxyAuth",
+      "titles": {
+        "update": "Modifier le domaine ProxyAuth",
+        "create": "Créer un domaine ProxyAuth"
+      },
       "labels": {
         "domain": "Domaine",
         "max-session-length": "Durée max de session (minutes)",
@@ -417,7 +424,10 @@
       }
     },
     "group": {
-      "title": "Groupe",
+      "titles": {
+        "update": "Modifier le groupe",
+        "create": "Créer un groupe"
+      },
       "labels": {
         "name": "Nom",
         "add-user": "Ajouter un utilisateur",
@@ -435,7 +445,10 @@
       }
     },
     "invitation": {
-      "title": "Invitation",
+      "titles": {
+        "update": "Modifier l'invitation",
+        "create": "Créer une invitation"
+      },
       "labels": {
         "invite-link": "Lien d'invitation",
         "username": "Nom d'utilisateur",
@@ -461,6 +474,12 @@
       },
       "checkboxes": {
         "email-verified": "E-mail vérifié"
+      }
+    },
+    "claim": {
+      "titles": {
+        "update": "Modifier la revendication personnalisée",
+        "create": "Créer une revendication personnalisée"
       }
     }
   },
