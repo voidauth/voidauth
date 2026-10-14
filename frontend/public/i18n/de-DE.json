@@ -291,9 +291,28 @@
         "create": "OIDC-Anwendung erstellen"
       }
     },
+    "client": {
+      "titles": {
+        "view": "OIDC-Anwendung anzeigen",
+        "update": "OIDC-Anwendung bearbeiten",
+        "create": "OIDC-Anwendung erstellen"
+      }
+    },
+    "domain": {
+      "titles": {
+        "update": "ProxyAuth-Domäne bearbeiten",
+        "create": "ProxyAuth-Domäne erstellen"
+      }
+    },
     "groups": {
       "empty-state": "Keine Gruppen vorhanden.",
       "actions": {
+        "create": "Gruppe erstellen"
+      }
+    },
+    "group": {
+      "titles": {
+        "update": "Gruppe bearbeiten",
         "create": "Gruppe erstellen"
       }
     },
@@ -301,6 +320,18 @@
       "empty-state": "Keine Einladungen vorhanden.",
       "actions": {
         "create": "Einladung erstellen"
+      }
+    },
+    "invitation": {
+      "titles": {
+        "update": "Einladung bearbeiten",
+        "create": "Einladung erstellen"
+      }
+    },
+    "claim": {
+      "titles": {
+        "update": "Benutzerdefinierten Claim bearbeiten",
+        "create": "Benutzerdefinierten Claim erstellen"
       }
     }
   },
