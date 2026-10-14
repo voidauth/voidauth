@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service'
 import { SpinnerService } from '../../services/spinner.service'
 import { SnackbarService } from '../../services/snackbar.service'
 import { HttpErrorResponse } from '@angular/common/http'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { UserService } from '../../services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 
@@ -19,6 +19,7 @@ import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 })
 export class TotpRegisterComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<TotpRegisterComponent>)
+  private translateService = inject(TranslateService)
 
   secret = signal<string | undefined>(undefined)
   uri = signal<string | undefined>(undefined)
@@ -45,7 +46,9 @@ export class TotpRegisterComponent implements OnInit {
       this.uri.set(totpOptions.uri)
     } catch (e) {
       console.error(e)
-      this.snackbarService.error('Could not get authenticator info.')
+      this.snackbarService.error(
+        String(this.translateService.instant('components.totp-register.messages.info-failed')),
+      )
       this.dialogRef.close(false)
     } finally {
       this.spinnerService.hide()
@@ -71,11 +74,11 @@ export class TotpRegisterComponent implements OnInit {
           }
         }
       } else if (e instanceof HttpErrorResponse && e.status === 401) {
-        this.snackbarService.error('Invalid code entered.')
+        this.snackbarService.error(String(this.translateService.instant('components.common.messages.invalid-code')))
       } else {
         this.snackbarService.error(!this.user?.mfaRequired
-          ? 'Could not enable Multi-Factor Authentication.'
-          : 'Could not add authenticator.')
+          ? String(this.translateService.instant('components.totp-register.messages.enable-failed'))
+          : String(this.translateService.instant('components.totp-register.messages.add-failed')))
       }
     } finally {
       this.spinnerService.hide()

@@ -15,7 +15,7 @@ import { ADMIN_GROUP, CUSTOM_CLAIM_REGEX, PROTECTED_CLAIMS } from '@shared/const
 import { SpinnerService } from '../../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { stringCompare, type ItemIn, type Nullable } from '@shared/utils'
 import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValueResult }
   from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
@@ -49,6 +49,7 @@ export class GroupComponent implements OnInit {
   public customClaimColumns = ['claim', 'value', 'actions']
 
   private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
@@ -93,7 +94,7 @@ export class GroupComponent implements OnInit {
         }
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading group.')
+        this.snackbarService.error(String(this.translateService.instant('admin.group.messages.load-failed')))
       } finally {
         this.spinnerService.hide()
       }
@@ -136,7 +137,7 @@ export class GroupComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Add Custom Claim',
+        header: String(this.translateService.instant('admin.common.dialogs.add-claim')),
         availableOptions: availableCustomClaims,
         allowNew: true,
         newRegex: CUSTOM_CLAIM_REGEX,
@@ -167,7 +168,7 @@ export class GroupComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Edit Custom Claim',
+        header: String(this.translateService.instant('admin.common.dialogs.edit-claim')),
         availableOptions: availableCustomClaims,
         allowNew: true,
         newRegex: CUSTOM_CLAIM_REGEX,
@@ -209,14 +210,22 @@ export class GroupComponent implements OnInit {
 
       this.spinnerService.show()
       const group = await this.adminService.upsertGroup({ ...values, name, id: this.id ?? undefined })
-      this.snackbarService.message(`Group ${this.id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(
+        this.id
+          ? String(this.translateService.instant('admin.group.messages.updated'))
+          : String(this.translateService.instant('admin.group.messages.created')),
+      )
 
       this.id = group.id
       await this.router.navigate(['/admin/group', this.id], {
         replaceUrl: true,
       })
     } catch (_e) {
-      this.snackbarService.error(`Could not ${this.id ? 'update' : 'create'} group.`)
+      this.snackbarService.error(
+        this.id
+          ? String(this.translateService.instant('admin.group.messages.update-failed'))
+          : String(this.translateService.instant('admin.group.messages.create-failed')),
+      )
     } finally {
       this.spinnerService.hide()
     }
@@ -225,8 +234,8 @@ export class GroupComponent implements OnInit {
   remove() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to delete this group?`,
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.group.dialogs.delete')),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -241,10 +250,10 @@ export class GroupComponent implements OnInit {
           await this.adminService.deleteGroup(this.id)
         }
 
-        this.snackbarService.message('Group deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.group.messages.deleted')))
         await this.router.navigate(['/admin/groups'])
       } catch (_e) {
-        this.snackbarService.error('Could not delete group.')
+        this.snackbarService.error(String(this.translateService.instant('admin.group.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

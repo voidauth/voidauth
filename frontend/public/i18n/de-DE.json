@@ -302,6 +302,37 @@
       "actions": {
         "create": "Einladung erstellen"
       }
+    },
+    "client": {
+      "titles": {
+        "view": "OIDC-Anwendung anzeigen",
+        "update": "OIDC-Anwendung bearbeiten",
+        "create": "OIDC-Anwendung erstellen"
+      }
+    },
+    "domain": {
+      "titles": {
+        "update": "ProxyAuth-Domäne bearbeiten",
+        "create": "ProxyAuth-Domäne erstellen"
+      }
+    },
+    "group": {
+      "titles": {
+        "update": "Gruppe bearbeiten",
+        "create": "Gruppe erstellen"
+      }
+    },
+    "claim": {
+      "titles": {
+        "update": "Benutzerdefinierten Claim bearbeiten",
+        "create": "Benutzerdefinierten Claim erstellen"
+      }
+    },
+    "invitation": {
+      "titles": {
+        "update": "Einladung bearbeiten",
+        "create": "Einladung erstellen"
+      }
     }
   },
   "components": {

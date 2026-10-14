@@ -16,7 +16,7 @@ import { SnackbarService } from './snackbar.service'
 import { SpinnerService } from './spinner.service'
 import { MaterialModule } from '../material-module'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { PasskeyNameDialog } from '../dialogs/passkey-name/passkey-name.component'
 import type { PasskeyRegisterResponse } from '@shared/api-response/PasskeyRegisterResponse'
 
@@ -25,6 +25,7 @@ import type { PasskeyRegisterResponse } from '@shared/api-response/PasskeyRegist
 })
 export class PasskeyService {
   private http = inject(HttpClient)
+  private translateService = inject(TranslateService)
   private dialog = inject(MatDialog)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
@@ -131,17 +132,19 @@ export class PasskeyService {
           this.spinnerService.show()
           this.updatePasskey(passkeyId, displayName)
             .then(() => {
-              this.snackbarService.message('Passkey added.')
+              this.snackbarService.message(String(this.translateService.instant('passkey-dialog.messages.added')))
             })
             .catch(() => {
-              this.snackbarService.error('Passkey created, but could not set name.')
+              this.snackbarService.error(
+                String(this.translateService.instant('passkey-dialog.messages.name-failed')),
+              )
             })
             .finally(() => {
               this.spinnerService.hide()
               resolve()
             })
         } else {
-          this.snackbarService.message('Passkey added.')
+          this.snackbarService.message(String(this.translateService.instant('passkey-dialog.messages.added')))
           resolve()
         }
       })
@@ -173,13 +176,13 @@ export class PasskeyService {
 
         this.register()
           .then(() => {
-            this.snackbarService.message('Passkey added.')
+            this.snackbarService.message(String(this.translateService.instant('passkey-dialog.messages.added')))
           })
           .catch((error: unknown) => {
             if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-              this.snackbarService.error('Passkey already exists.')
+              this.snackbarService.error(String(this.translateService.instant('components.common.messages.passkey-already-registered')))
             } else {
-              this.snackbarService.error('Could not create Passkey.')
+              this.snackbarService.error(String(this.translateService.instant('passkey-dialog.messages.create-failed')))
             }
           })
           .finally(() => {

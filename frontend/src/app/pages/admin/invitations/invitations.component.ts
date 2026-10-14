@@ -87,8 +87,10 @@ export class InvitationsComponent {
     const invite = this.dataSource.data.find(i => i.id === id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove invitation for '${invite?.username ?? invite?.email ?? id}'?`,
-        header: 'Delete',
+        message: String(
+          this.translate.instant('admin.invitations.dialogs.delete', { name: invite?.username ?? invite?.email ?? id }),
+        ),
+        header: String(this.translate.instant('admin.common.actions.delete')),
       },
     })
 
@@ -101,9 +103,9 @@ export class InvitationsComponent {
         this.spinnerService.show()
         await this.adminService.deleteInvitation(id)
         this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
-        this.snackbarService.message('Invitation was deleted.')
+        this.snackbarService.message(String(this.translate.instant('admin.invitations.messages.deleted')))
       } catch (_e) {
-        this.snackbarService.error('Could not delete invitation.')
+        this.snackbarService.error(String(this.translate.instant('admin.invitations.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

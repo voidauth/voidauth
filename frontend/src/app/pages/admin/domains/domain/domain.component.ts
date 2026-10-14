@@ -14,7 +14,7 @@ import { isValidWildcardDomain } from '@shared/url'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-domain',
@@ -53,6 +53,7 @@ export class DomainComponent implements OnInit {
   }) satisfies FormGroup<TypedControls<Omit<ProxyAuthUpsert, 'id' | 'domain'> & Nullable<Pick<ProxyAuthUpsert, 'domain'>>>>
 
   private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
@@ -75,7 +76,7 @@ export class DomainComponent implements OnInit {
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading ProxyAuth domain.')
+        this.snackbarService.error(String(this.translateService.instant('admin.domain.messages.load-failed')))
       } finally {
         this.spinnerService.hide()
       }
@@ -136,7 +137,11 @@ export class DomainComponent implements OnInit {
 
       this.spinnerService.show()
       const response = await this.adminService.upsertProxyAuth({ ...values, domain, id: this.id ?? undefined })
-      this.snackbarService.message(`Domain ${this.id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(
+        this.id
+          ? String(this.translateService.instant('admin.domain.messages.updated'))
+          : String(this.translateService.instant('admin.domain.messages.created')),
+      )
 
       this.id = response.id
       this.resetForm(response)
@@ -144,7 +149,11 @@ export class DomainComponent implements OnInit {
         replaceUrl: true,
       })
     } catch (_e) {
-      this.snackbarService.error(`Could not ${this.id ? 'update' : 'create'} domain.`)
+      this.snackbarService.error(
+        this.id
+          ? String(this.translateService.instant('admin.domain.messages.update-failed'))
+          : String(this.translateService.instant('admin.domain.messages.create-failed')),
+      )
     } finally {
       this.spinnerService.hide()
     }
@@ -153,8 +162,8 @@ export class DomainComponent implements OnInit {
   remove() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to delete this domain?`,
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.domain.dialogs.delete')),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -170,10 +179,10 @@ export class DomainComponent implements OnInit {
           await this.adminService.deleteProxyAuth(this.id)
         }
 
-        this.snackbarService.message('Domain deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.domain.messages.deleted')))
         await this.router.navigate(['/admin/domains'])
       } catch (_e) {
-        this.snackbarService.error('Could not delete domain.')
+        this.snackbarService.error(String(this.translateService.instant('admin.domain.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

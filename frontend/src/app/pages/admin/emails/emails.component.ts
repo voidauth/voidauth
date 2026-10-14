@@ -17,7 +17,7 @@ import { UserService } from '../../../services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { TableService } from '../../../services/table.service'
 
 @Component({
@@ -54,6 +54,7 @@ export class EmailsComponent {
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
 
   private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
   private dialog = inject(MatDialog)
@@ -101,7 +102,7 @@ export class EmailsComponent {
       this.dataSource.data = data.emails
       this.paginator().length = data.count
     } catch (_e) {
-      this.snackbarService.error('Could not get Sent Mail.')
+      this.snackbarService.error(String(this.translateService.instant('admin.emails.messages.load-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -112,7 +113,7 @@ export class EmailsComponent {
       EmailInputComponent,
       {
         data: {
-          header: 'Send Test Email',
+          header: String(this.translateService.instant('admin.emails.dialogs.send-test')),
           initial: this.me?.email,
         },
         disableClose: true,
@@ -125,10 +126,10 @@ export class EmailsComponent {
           this.spinnerService.show()
           await this.adminService.sendTestEmail(data)
           await this.setData()
-          this.snackbarService.message('Sent Test Email.')
+          this.snackbarService.message(String(this.translateService.instant('admin.emails.messages.test-sent')))
         } catch (e) {
           console.error(e)
-          this.snackbarService.error('Could not send Test Email.')
+          this.snackbarService.error(String(this.translateService.instant('admin.emails.messages.test-failed')))
         } finally {
           this.spinnerService.hide()
         }
