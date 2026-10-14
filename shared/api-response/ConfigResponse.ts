@@ -6,6 +6,7 @@ export type ConfigResponse = {
   emailVerification: boolean
   registration: boolean
   disableFileUploads: boolean
+  disablePasskeyPrompt: boolean
   contactEmail?: string
   defaultRedirect?: string
 }

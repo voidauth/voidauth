@@ -19,6 +19,7 @@ import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { PasskeyNameDialog } from '../dialogs/passkey-name/passkey-name.component'
 import type { PasskeyRegisterResponse } from '@shared/api-response/PasskeyRegisterResponse'
+import { ConfigService } from './config.service'
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +30,7 @@ export class PasskeyService {
   private dialog = inject(MatDialog)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private configService = inject(ConfigService)
 
   /**
    * Checks if passkey registration or usage has ever been flagged in localStorage.
@@ -151,9 +153,12 @@ export class PasskeyService {
     })
   }
 
-  shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'canLogin' | 'hasPasskeys'>>) {
+  async shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'canLogin' | 'hasPasskeys'>>) {
+    const config = await this.configService.getConfig()
+
     return (
-      user.canLogin
+      !config.disablePasskeyPrompt
+      && user.canLogin
       // && !user.hasPasskeys // Only ask to create a passkey if the user has none. Need to think about this.
       && this.getPasskeySupport().enabled
       && !this.localPasskeySeen()
