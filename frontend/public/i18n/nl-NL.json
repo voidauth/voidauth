@@ -376,7 +376,11 @@
       }
     },
     "client": {
-      "title": "OIDC App",
+      "titles": {
+        "view": "OIDC App bekijken",
+        "update": "OIDC App bewerken",
+        "create": "OIDC App aanmaken"
+      },
       "labels": {
         "name": "Naam",
         "home-page-url": "Homepage URL",
@@ -421,7 +425,10 @@
       }
     },
     "domain": {
-      "title": "ProxyAuth-domein",
+      "titles": {
+        "update": "ProxyAuth-domein bewerken",
+        "create": "ProxyAuth-domein aanmaken"
+      },
       "labels": {
         "domain": "Domein",
         "max-session-length": "Max sessie-duur (minuten)",
@@ -474,7 +481,10 @@
       }
     },
     "group": {
-      "title": "Groep",
+      "titles": {
+        "update": "Groep bewerken",
+        "create": "Groep aanmaken"
+      },
       "labels": {
         "name": "Naam",
         "add-user": "Gebruiker toevoegen",
@@ -500,7 +510,10 @@
       }
     },
     "invitation": {
-      "title": "Uitnodiging",
+      "titles": {
+        "update": "Uitnodiging bewerken",
+        "create": "Uitnodiging aanmaken"
+      },
       "labels": {
         "invite-link": "Uitnodigingslink",
         "username": "Gebruikersnaam",
@@ -543,7 +556,10 @@
       "empty-state": "Geen aangepaste claims."
     },
     "claim": {
-      "title": "Aangepaste claim",
+      "titles": {
+        "update": "Aangepaste claim bewerken",
+        "create": "Aangepaste claim aanmaken"
+      },
       "labels": {
         "name": "Naam",
         "user-claims": "Gebruikers",
