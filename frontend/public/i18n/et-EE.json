@@ -322,7 +322,11 @@
       }
     },
     "client": {
-      "title": "OIDC rakendus",
+      "titles": {
+        "view": "Vaata OIDC rakendust",
+        "update": "Muuda OIDC rakendust",
+        "create": "Loo OIDC rakendus"
+      },
       "labels": {
         "name": "Nimi",
         "home-page-url": "Avalehe URL",
@@ -365,7 +369,10 @@
       }
     },
     "domain": {
-      "title": "ProxyAuth domeen",
+      "titles": {
+        "update": "Muuda ProxyAuth domeeni",
+        "create": "Loo ProxyAuth domeen"
+      },
       "labels": {
         "domain": "Domeen",
         "max-session-length": "Sessiooni maksimaalne vanus (minutites)",
@@ -417,7 +424,10 @@
       }
     },
     "group": {
-      "title": "Grupp",
+      "titles": {
+        "update": "Muuda gruppi",
+        "create": "Loo grupp"
+      },
       "labels": {
         "name": "Nimi",
         "add-user": "Lisa kasutaja",
@@ -435,7 +445,10 @@
       }
     },
     "invitation": {
-      "title": "Kutse",
+      "titles": {
+        "update": "Muuda kutset",
+        "create": "Loo kutse"
+      },
       "labels": {
         "invite-link": "Kutse link",
         "username": "Kasutajanimi",
@@ -461,6 +474,12 @@
       },
       "checkboxes": {
         "email-verified": "E-post kinnitatud"
+      }
+    },
+    "claim": {
+      "titles": {
+        "update": "Muuda kohandatud väidet",
+        "create": "Loo kohandatud väide"
       }
     }
   },

@@ -13,7 +13,7 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { TextDividerComponent } from '../../components/text-divider/text-divider.component'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
 import { startRegistration, WebAuthnError } from '@simplewebauthn/browser'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-reset-password',
@@ -59,6 +59,7 @@ export class ResetPasswordComponent implements OnInit {
   )
 
   private activatedRoute = inject(ActivatedRoute)
+  private translateService = inject(TranslateService)
   private authService = inject(AuthService)
   private snackbarService = inject(SnackbarService)
   private router = inject(Router)
@@ -73,7 +74,7 @@ export class ResetPasswordComponent implements OnInit {
     const challenge = params.get('challenge')
 
     if (!id || !challenge) {
-      this.snackbarService.error('Invalid Password Reset Link.')
+      this.snackbarService.error(String(this.translateService.instant('reset-password.messages.invalid-link')))
       return
     }
 
@@ -102,7 +103,7 @@ export class ResetPasswordComponent implements OnInit {
         challenge: this.challenge,
         newPassword: this.passwordForm.controls.newPassword.value,
       })
-      this.snackbarService.message('Password Reset Complete.')
+      this.snackbarService.message(String(this.translateService.instant('reset-password.messages.complete')))
       await this.router.navigate([REDIRECT_PATHS.LOGIN], {
         queryParams: {
           username,
@@ -118,7 +119,7 @@ export class ResetPasswordComponent implements OnInit {
         shownError ??= (e as Error).message
       }
 
-      shownError ??= 'Something went wrong.'
+      shownError ??= String(this.translateService.instant('components.common.messages.something-went-wrong'))
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
@@ -136,7 +137,7 @@ export class ResetPasswordComponent implements OnInit {
       const optionsJSON = await this.authService.resetPasswordPasskeyStart({ userId, challenge })
       const registration = await startRegistration({ optionsJSON })
       const { username } = await this.authService.resetPasswordPasskeyEnd({ ...registration, userId, challenge })
-      this.snackbarService.message('Passkey created.')
+      this.snackbarService.message(String(this.translateService.instant('reset-password.messages.passkey-created')))
       await this.router.navigate([REDIRECT_PATHS.LOGIN], {
         queryParams: {
           username,
@@ -144,9 +145,9 @@ export class ResetPasswordComponent implements OnInit {
       })
     } catch (error) {
       if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-        this.snackbarService.error('Passkey already registered.')
+        this.snackbarService.error(String(this.translateService.instant('components.common.messages.passkey-already-registered')))
       } else {
-        this.snackbarService.error('Could not register passkey.')
+        this.snackbarService.error(String(this.translateService.instant('components.common.messages.register-passkey-failed')))
       }
       console.error(error)
     } finally {

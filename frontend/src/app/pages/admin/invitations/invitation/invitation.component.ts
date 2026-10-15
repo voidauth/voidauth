@@ -113,7 +113,7 @@ export class InvitationComponent implements OnInit {
         this.groupAutoFilter()
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading invitation.')
+        this.snackbarService.error(String(this.translateService.instant('admin.invitation.messages.load-failed')))
       } finally {
         this.spinnerService.hide()
       }
@@ -181,7 +181,7 @@ export class InvitationComponent implements OnInit {
       this.groupAutoFilter()
     } catch (e) {
       console.error(e)
-      this.snackbarService.error('Error adding group.')
+      this.snackbarService.error(String(this.translateService.instant('admin.invitation.messages.group-add-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -199,7 +199,7 @@ export class InvitationComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Add Custom Claim',
+        header: String(this.translateService.instant('admin.common.dialogs.add-claim')),
         availableOptions: availableCustomClaims,
         allowNew: true,
         newRegex: CUSTOM_CLAIM_REGEX,
@@ -230,7 +230,7 @@ export class InvitationComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Edit Custom Claim',
+        header: String(this.translateService.instant('admin.common.dialogs.edit-claim')),
         availableOptions: availableCustomClaims,
         allowNew: true,
         newRegex: CUSTOM_CLAIM_REGEX,
@@ -300,10 +300,12 @@ export class InvitationComponent implements OnInit {
       }
 
       await this.adminService.sendInvitation(this.id)
-      this.snackbarService.message(`Invite sent to ${String(this.inviteEmail)}.`)
+      this.snackbarService.message(
+        String(this.translateService.instant('admin.invitation.messages.sent', { email: String(this.inviteEmail) })),
+      )
     } catch (e) {
       console.error(e)
-      this.snackbarService.error('Could not send invitation.')
+      this.snackbarService.error(String(this.translateService.instant('admin.invitation.messages.send-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -320,7 +322,11 @@ export class InvitationComponent implements OnInit {
         id: this.id ?? undefined,
       })
 
-      this.snackbarService.message(`Invitation ${this.id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(
+        this.id
+          ? String(this.translateService.instant('admin.invitation.messages.updated'))
+          : String(this.translateService.instant('admin.invitation.messages.created')),
+      )
 
       this.id = invitation.id
       await this.formSet(invitation)
@@ -329,7 +335,11 @@ export class InvitationComponent implements OnInit {
       })
     } catch (e) {
       console.error(e)
-      this.snackbarService.error(`Could not ${this.id ? 'update' : 'create'} invitation.`)
+      this.snackbarService.error(
+        this.id
+          ? String(this.translateService.instant('admin.invitation.messages.update-failed'))
+          : String(this.translateService.instant('admin.invitation.messages.create-failed')),
+      )
     } finally {
       this.spinnerService.hide()
     }
@@ -338,8 +348,8 @@ export class InvitationComponent implements OnInit {
   remove() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to delete this invitation?`,
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.invitation.dialogs.delete')),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -354,10 +364,10 @@ export class InvitationComponent implements OnInit {
           await this.adminService.deleteInvitation(this.id)
         }
 
-        this.snackbarService.message('Invitation deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.invitation.messages.deleted')))
         await this.router.navigate(['/admin/invitations'])
       } catch (_e) {
-        this.snackbarService.error('Could not delete invitation.')
+        this.snackbarService.error(String(this.translateService.instant('admin.invitation.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

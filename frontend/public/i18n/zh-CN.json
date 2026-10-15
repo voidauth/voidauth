@@ -321,7 +321,11 @@
       }
     },
     "client": {
-      "title": "OIDC 应用",
+      "titles": {
+        "view": "查看 OIDC 应用",
+        "update": "更新 OIDC 应用",
+        "create": "创建 OIDC 应用"
+      },
       "labels": {
         "name": "名称",
         "home-page-url": "主页 URL",
@@ -364,7 +368,10 @@
       }
     },
     "domain": {
-      "title": "代理认证域",
+      "titles": {
+        "update": "更新 代理认证域",
+        "create": "创建 代理认证域"
+      },
       "labels": {
         "domain": "域名",
         "max-session-length": "最大会话时长（分钟）",
@@ -416,7 +423,10 @@
       }
     },
     "group": {
-      "title": "组",
+      "titles": {
+        "update": "更新 组",
+        "create": "创建 组"
+      },
       "labels": {
         "name": "名称",
         "add-user": "添加用户",
@@ -434,7 +444,10 @@
       }
     },
     "invitation": {
-      "title": "邀请",
+      "titles": {
+        "update": "更新 邀请",
+        "create": "创建 邀请"
+      },
       "labels": {
         "invite-link": "邀请链接",
         "username": "用户名",
@@ -460,6 +473,12 @@
       },
       "checkboxes": {
         "email-verified": "邮箱已验证"
+      }
+    },
+    "claim": {
+      "titles": {
+        "update": "更新 Custom Claim",
+        "create": "创建 Custom Claim"
       }
     }
   },
