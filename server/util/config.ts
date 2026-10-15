@@ -26,6 +26,7 @@ class Config {
   EMAIL_VERIFICATION: boolean | null = null
   MFA_REQUIRED: boolean = false
   DISABLE_FILE_UPLOADS: boolean = false
+  DISABLE_PASSKEY_PROMPT: boolean = false
 
   APP_COLOR = '#906bc7'
   APP_FONT = ''
@@ -124,6 +125,7 @@ function assignConfigValue(key: keyof Config, value: string | undefined) {
     case 'SIGNUP_REQUIRES_APPROVAL':
     case 'MFA_REQUIRED':
     case 'DISABLE_FILE_UPLOADS':
+    case 'DISABLE_PASSKEY_PROMPT':
     case 'DB_SSL':
     case 'DB_SSL_VERIFICATION':
     case 'MIGRATE_TO_DB_SSL':
