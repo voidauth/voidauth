@@ -35,6 +35,7 @@ type UserSessionInfo = {
   amr: amrFactor[]
   canLogin: boolean
   isPrivilegedForTotpCreate: boolean // has all amr to create totp
+  isPrivilegedForTotpValidate: boolean
   isPrivilegedForPasskeyCreate: boolean // has all amr to create passkeys
   isPrivilegedForEmail: boolean // has all amr to make email changes
 }
