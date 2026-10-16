@@ -45,7 +45,8 @@
   "passkey-dialog": {
     "title": "Включить {{platformName}}?",
     "actions": {
-      "passkey": "Включить {{platformName}}"
+      "passkey": "Включить {{platformName}}",
+      "skip": "Пропустить"
     },
     "messages": {
       "added": "Ключ безопасности добавлен.",
@@ -255,6 +256,11 @@
             "delete": {
               "tooltip": "Удалить"
             }
+          },
+          "columns": {
+            "name": "Название / ID",
+            "last-used": "Последнее использование",
+            "created-at": "Создан"
           }
         },
         "mfa": {
@@ -365,6 +371,13 @@
       "labels": {
         "search": "Поиск"
       },
+      "columns": {
+        "username": "Имя пользователя",
+        "email": "Почта",
+        "email-verified": "Почта подтверждена",
+        "approved": "Одобрен",
+        "expires": "Доступ до"
+      },
       "dialogs": {
         "delete": "Удалить пользователя «{{name}}»?",
         "approve-selected": "Одобрить выбранных пользователей ({{count}})?",
@@ -417,6 +430,11 @@
       "empty-state": "Нет приложений OIDC.",
       "actions": {
         "create": "Создать приложение OIDC"
+      },
+      "columns": {
+        "name": "Название",
+        "redirects": "Адреса перенаправления",
+        "allowed-groups": "Разрешённые группы"
       },
       "messages": {
         "deleted": "Приложение «{{name}}» удалено.",
@@ -481,6 +499,10 @@
       "empty-state": "Нет доменов.",
       "actions": {
         "create": "Создать домен ProxyAuth"
+      },
+      "columns": {
+        "domain": "Домены",
+        "allowed-groups": "Разрешённые группы"
       },
       "dialogs": {
         "delete": "Удалить домен «{{name}}»?"
@@ -548,6 +570,10 @@
         "send-failed": "Не удалось отправить ссылку для сброса пароля."
       },
       "empty-state": "Нет активных сбросов пароля.",
+      "columns": {
+        "username": "Имя пользователя",
+        "expires-in": "Истекает через"
+      },
       "dialogs": {
         "delete": "Удалить эту ссылку для сброса пароля?"
       }
@@ -560,6 +586,11 @@
       "tooltips": {
         "preview": "Предпросмотр",
         "view-user": "Показать пользователя"
+      },
+      "columns": {
+        "sent": "Отправлено",
+        "to": "Кому",
+        "type": "Тип"
       },
       "messages": {
         "load-failed": "Не удалось загрузить исходящие письма.",
@@ -574,6 +605,9 @@
       "empty-state": "Нет групп.",
       "actions": {
         "create": "Создать группу"
+      },
+      "columns": {
+        "name": "Название группы"
       },
       "dialogs": {
         "delete": "Удалить группу «{{name}}»?"
@@ -614,6 +648,12 @@
       "empty-state": "Нет приглашений.",
       "actions": {
         "create": "Создать приглашение"
+      },
+      "columns": {
+        "username": "Имя пользователя",
+        "email": "Почта",
+        "expires-in": "Истекает через",
+        "access-expires": "Доступ до"
       },
       "dialogs": {
         "delete": "Удалить приглашение для «{{name}}»?"
@@ -669,6 +709,9 @@
       }
     },
     "claims": {
+      "columns": {
+        "claim": "Claim"
+      },
       "dialogs": {
         "delete": "Удалить claim «{{name}}»?"
       },
@@ -809,18 +852,14 @@
         }
       }
     },
-    "common": {
-      "messages": {
-        "session-failed": "Не удалось создать сессию.",
-        "user-not-found": "Пользователь не найден.",
-        "passkey-already-registered": "Этот ключ безопасности уже добавлен.",
-        "invalid-code": "Введён неверный код.",
-        "register-passkey-failed": "Не удалось зарегистрировать ключ безопасности.",
-        "verification-email-sent": "Письмо для подтверждения отправлено.",
-        "email-updated": "Адрес почты обновлён.",
-        "email-update-failed": "Не удалось обновить адрес почты.",
-        "something-went-wrong": "Что-то пошло не так."
-      }
+    "paginator": {
+      "items-per-page": "На странице:",
+      "next-page": "Следующая страница",
+      "previous-page": "Предыдущая страница",
+      "first-page": "Первая страница",
+      "last-page": "Последняя страница",
+      "range": "{{start}}–{{end}} из {{length}}",
+      "range-empty": "0 из {{length}}"
     },
     "snackbar": {
       "ok": "OK"
