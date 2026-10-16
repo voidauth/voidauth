@@ -213,7 +213,7 @@ export type PasskeySupport = {
       }}</mat-icon>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button matButton mat-dialog-close>Skip</button>
+      <button matButton mat-dialog-close>{{ "passkey-dialog.actions.skip" | translate }}</button>
       <button mat-flat-button type="button" [mat-dialog-close]="true" cdkFocusInitial>
         {{ "passkey-dialog.actions.passkey" | translate: { platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}
         <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>

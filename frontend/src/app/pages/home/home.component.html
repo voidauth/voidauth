@@ -101,7 +101,7 @@
           @for (column of passkeyColumns; track column) {
             <ng-container [matColumnDef]="column.columnDef">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                {{ column.header }}
+                {{ column.header | translate }}
               </th>
               <td mat-cell *matCellDef="let row">
                 @if (column.isIcon) {
