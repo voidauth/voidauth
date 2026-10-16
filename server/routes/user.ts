@@ -48,6 +48,7 @@ userRouter.get('/me',
       amr: user.amr,
       canLogin: user.canLogin,
       isPrivilegedForTotpCreate: user.isPrivilegedForTotpCreate,
+      isPrivilegedForTotpValidate: user.isPrivilegedForTotpValidate,
       isPrivilegedForPasskeyCreate: user.isPrivilegedForPasskeyCreate,
       isPrivilegedForEmail: user.isPrivilegedForEmail,
 

@@ -1,12 +1,9 @@
 import { proxyAuthPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
 import { formatProxyAuthDomain, getProxyAuthWithCache } from '../db/proxyAuth'
-import { checkPasswordHash, getUserByInput } from '../db/user'
 import appConfig, { appUrl, getSessionDomain, sessionDomainReaches } from './config'
-import type { UserDetails } from '@shared/api-response/UserDetails'
 import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
-import { loginFactors, type amrFactor } from '@shared/user'
-import { userCanLogin } from './auth'
+import { loginFactors } from '@shared/user'
 import { getSession } from '../oidc/provider'
 import { logger } from './logger'
 
@@ -14,11 +11,6 @@ import { logger } from './logger'
 export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request', req: Request, res: Response) {
   const formattedUrl = formatProxyAuthDomain(url)
   const redirCode = method === 'auth-request' ? 401 : 302
-
-  const proxyAuthorizationHeader = req.get('proxy-authorization')
-  const authorizationHeader = req.get('authorization')
-  let user: UserDetails | undefined
-  let amr: amrFactor[]
 
   // should not block access to itself
   const appURL = appUrl()
@@ -46,7 +38,6 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   // check if user may access url
   // using a short cache
   const match = await getProxyAuthWithCache(url)
-
   if (!match) {
     logger({
       level: 'debug',
@@ -62,82 +53,45 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
     return
   }
 
-  if (req.user) {
-    user = req.user
-    amr = req.user.amr
-
-    // Check that session is not too old
-    const session = await getSession(req, res)
-    if (match.maxSessionLength && session?.past(match.maxSessionLength * 60)) {
-      res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href, 'login')}`)
-      return
-    }
-  } else if (proxyAuthorizationHeader) {
-    // Proxy-Authorization header flow
-    // Decode the Basic Authorization header
-    const [, base64Credentials] = proxyAuthorizationHeader.split(' ')
-    const [username, password] = base64Credentials ? Buffer.from(base64Credentials, 'base64').toString().split(':') : []
-    user = username ? await getUserByInput(username) : undefined
-
-    if (!user || !password || !await checkPasswordHash(user.id, password)) {
+  const user = req.user
+  const amr = user?.amr ?? []
+  if (!user) {
+    if (req.get('proxy-authorization')) {
+      // header was set but user was not found
       res.setHeader('Proxy-Authenticate', `Basic realm="${formattedUrl}"`)
       res.redirect(407, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
       return
-    }
-    amr = ['pwd']
-
-    logger({
-      level: 'debug',
-      message: `User found in proxy-authorization header`,
-      user: {
-        id: user.id,
-        username: user.username,
-        source: 'proxy-authorization',
-        amr,
-      },
-    })
-  } else if (authorizationHeader) {
-    // Authorization header flow
-    // Decode the Basic Authorization header
-    const [, base64Credentials] = authorizationHeader.split(' ')
-    const [username, password] = base64Credentials ? Buffer.from(base64Credentials, 'base64').toString().split(':') : []
-    user = username ? await getUserByInput(username) : undefined
-
-    if (!user || !password || !await checkPasswordHash(user.id, password)) {
+    } else if (req.get('authorization')) {
+      // header was set but user was not found
       res.setHeader('WWW-Authenticate', `Basic realm="${formattedUrl}"`)
       res.redirect(401, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
       return
+    } else {
+      // User not logged in, redirect to login
+      logger({
+        level: 'debug',
+        message: `Session not found, redirect to login`,
+        proxyauth: {
+          action: 'redirect_to_login',
+          reason: 'session_not_found',
+          url: url.href,
+          matchedDomain: match.domain,
+        },
+      })
+      res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
+      return
     }
-    amr = ['pwd']
+  }
 
-    logger({
-      level: 'debug',
-      message: `User found in authorization header`,
-      user: {
-        id: user.id,
-        username: user.username,
-        source: 'authorization',
-        amr,
-      },
-    })
-  } else {
-    // User not logged in, redirect to login
-    logger({
-      level: 'debug',
-      message: `Session not found, redirect to login`,
-      proxyauth: {
-        action: 'redirect_to_login',
-        reason: 'session_not_found',
-        url: url.href,
-        matchedDomain: match.domain,
-      },
-    })
-    res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href)}`)
+  // Check that session is not too old
+  const session = await getSession(req, res)
+  if (match.maxSessionLength && session?.past(match.maxSessionLength * 60)) {
+    res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href, 'login')}`)
     return
   }
 
   // Check that user is approved and verified and should be able to continue
-  if (!userCanLogin(user, amr)) {
+  if (!user.canLogin) {
     // If not, redirect to login flow, which will send to correct redirect
     logger({
       level: 'debug',

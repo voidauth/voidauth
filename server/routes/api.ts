@@ -1,21 +1,18 @@
-import { Router, type Request, type Response } from 'express'
-import { getInteractionDetails, router as interactionRouter } from './interaction'
-import { getUserById } from '../db/user'
+import { Router, type Request } from 'express'
+import { router as interactionRouter } from './interaction'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
-import type { CurrentUserPrivateDetails, UserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
 import appConfig, { sessionDomainReaches } from '../util/config'
 import { logger } from '../util/logger'
-import { userCanLogin, userIsPrivilegedForEmail, userIsPrivilegedForPasskeyCreate, userIsPrivilegedForTotpCreate } from '../util/auth'
-import { getSession } from '../oidc/provider'
 import { transaction } from '../db/db'
 import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 import { getProxyAuthWithCache } from '../db/proxyAuth'
-import type { amrFactor } from '@shared/user'
+import { getUserByBasicAuth, getUserBySession } from '../util/userMiddleware'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -37,21 +34,10 @@ router.use(async (req, _res, next) => {
 })
 
 // Set user on request
-router.use(async (req: Request, res: Response, next) => {
-  try {
-    const user = await getUserSessionInteraction(req, res)
-
-    if (user) {
-      req.user = user
-    }
-  } catch (_e) {
-    // do nothing
-  }
-  next()
-})
+router.use(getUserBySession)
 
 // proxy cookie auth endpoints
-router.get('/authz/forward-auth', async (req: Request, res) => {
+router.get('/authz/forward-auth', getUserByBasicAuth, async (req: Request, res) => {
   const proto = req.get('x-forwarded-proto')
   const host = req.get('x-forwarded-host')
   const path = req.get('x-forwarded-uri')
@@ -70,7 +56,7 @@ router.get('/authz/forward-auth', async (req: Request, res) => {
   await proxyAuth(url, 'forward-auth', req, res)
 })
 
-router.get('/authz/auth-request', async (req: Request, res) => {
+router.get('/authz/auth-request', getUserByBasicAuth, async (req: Request, res) => {
   const headerUrl = req.get('x-original-url')
   const url = headerUrl ? URL.parse(headerUrl) : null
   if (!url) {
@@ -161,58 +147,3 @@ router.use((_req, res) => {
   res.sendStatus(404)
   res.end()
 })
-
-export async function getUserSessionInteraction(req: Request, res: Response) {
-  // get user from session or interaction
-  let user: UserDetails | undefined
-  let amr: amrFactor[] = []
-  let source: string | null = null
-
-  const session = await getSession(req, res)
-  const accountId = session?.accountId
-  if (accountId) {
-    amr = [...new Set([...amr, ...(session.amr ?? []) as amrFactor[]])]
-    user = await getUserById(accountId)
-    source = 'session'
-  }
-
-  const interaction = await getInteractionDetails(req, res)
-  if (interaction) {
-    if (!user) {
-      const accountId = interaction.result?.login?.accountId
-      if (accountId) {
-        user = await getUserById(accountId)
-        source = 'interaction'
-      }
-    }
-    if (user && user.id === interaction.result?.login?.accountId) {
-      amr = [...new Set([...amr, ...(interaction.result.login.amr ?? []) as amrFactor[]])]
-    }
-  }
-
-  if (!user) {
-    return undefined
-  }
-
-  const currentUser: CurrentUserPrivateDetails | undefined = {
-    ...user,
-    amr,
-    canLogin: userCanLogin(user, amr),
-    isPrivilegedForTotpCreate: userIsPrivilegedForTotpCreate(user, amr),
-    isPrivilegedForPasskeyCreate: userIsPrivilegedForPasskeyCreate(user, amr),
-    isPrivilegedForEmail: userIsPrivilegedForEmail(user, amr),
-  }
-
-  logger({
-    level: 'debug',
-    message: `User found in ${String(source)}`,
-    user: {
-      id: currentUser.id,
-      username: currentUser.username,
-      source: source ?? 'unknown',
-      amr: currentUser.amr,
-    },
-  })
-
-  return currentUser
-}
