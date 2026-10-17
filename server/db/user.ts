@@ -249,6 +249,7 @@ export async function createInitialAdmin() {
       createdAt: new Date(),
       updatedAt: new Date(),
       mfaRequired: false,
+      skipPasskeyPrompt: false,
     }
 
     const initialAdminGroup: Group = {

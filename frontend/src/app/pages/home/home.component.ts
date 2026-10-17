@@ -10,7 +10,7 @@ import { ConfigService } from '../../services/config.service'
 import { PasswordSetComponent } from '../../components/password-reset/password-set.component'
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
-import { WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
+import { WebAuthnAbortService } from '@simplewebauthn/browser'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
@@ -259,20 +259,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   async registerPasskey() {
-    this.spinnerService.show()
-    try {
-      await this.passkeyService.register()
-      await this.loadUser()
+    const registered = await this.passkeyService.dialogRegistration({
+      skipPasskeyPrompt: !!this.user?.skipPasskeyPrompt,
+      context: 'manual',
+    })
+    await this.loadUser()
+    if (registered) {
       this.snackbarService.message(String(this.translateService.instant('settings.messages.passkey-registered')))
-    } catch (error) {
-      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-        this.snackbarService.error(String(this.translateService.instant('components.common.messages.passkey-already-registered')))
-      } else {
-        this.snackbarService.error(String(this.translateService.instant('components.common.messages.register-passkey-failed')))
-      }
-      console.error(error)
-    } finally {
-      this.spinnerService.hide()
     }
   }
 
