@@ -34,22 +34,22 @@ export class InvitationsComponent {
   columns: TableColumn<Invitation>[] = [
     {
       columnDef: 'username',
-      header: 'Username',
+      header: 'admin.invitations.columns.username',
       cell: element => element.username ?? '-',
     },
     {
       columnDef: 'email',
-      header: 'Email',
+      header: 'admin.invitations.columns.email',
       cell: element => element.email ?? '-',
     },
     {
       columnDef: 'expiresAt',
-      header: 'Expires In',
+      header: 'admin.invitations.columns.expires-in',
       cell: element => HumanDurationPipe.t(new Date(element.expiresAt).getTime() - new Date().getTime(), this.translate),
     },
     {
       columnDef: 'userExpiresAt',
-      header: 'Access Expires',
+      header: 'admin.invitations.columns.access-expires',
       cell: element => HumanDurationPipe.t(element.userExpiresAt == null
         ? null
         : new Date(element.userExpiresAt).getTime() - new Date().getTime(), this.translate),

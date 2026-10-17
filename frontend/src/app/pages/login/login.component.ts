@@ -141,7 +141,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
         const user = (await this.authService.interactionExists()).user
         if (user && this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
-          await this.passkeyService.dialogRegistration()
+          await this.passkeyService.dialogRegistration({ skipPasskeyPrompt: !!user.skipPasskeyPrompt })
         }
       } catch (_e) {
         // do nothing

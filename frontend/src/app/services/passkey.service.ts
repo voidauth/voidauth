@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Component, inject, Injectable, type OnInit, ChangeDetectionStrategy } from '@angular/core'
+import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { firstValueFrom } from 'rxjs'
 import {
   browserSupportsWebAuthn,
@@ -11,7 +12,7 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/browser'
 import type { Redirect } from '@shared/api-response/Redirect'
-import { MatDialog } from '@angular/material/dialog'
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { SnackbarService } from './snackbar.service'
 import { SpinnerService } from './spinner.service'
 import { MaterialModule } from '../material-module'
@@ -19,6 +20,7 @@ import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { PasskeyNameDialog } from '../dialogs/passkey-name/passkey-name.component'
 import type { PasskeyRegisterResponse } from '@shared/api-response/PasskeyRegisterResponse'
+import { AuthService } from './auth.service'
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +31,7 @@ export class PasskeyService {
   private dialog = inject(MatDialog)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)
+  private authService = inject(AuthService)
 
   /**
    * Checks if passkey registration or usage has ever been flagged in localStorage.
@@ -40,10 +43,6 @@ export class PasskeyService {
     return !!localStorage.getItem('passkey_seen')
   }
 
-  /**
-   * Checks if the passkey registration dialog has been skipped before
-   * @returns if the passkey dialog has previously been skipped
-   */
   localPasskeySkipped() {
     return !!localStorage.getItem('passkey_skipped')
   }
@@ -97,8 +96,8 @@ export class PasskeyService {
     return await this.sendAuth(auth, remember, enableMfa)
   }
 
-  async register(opts: { requireVerified?: boolean, enableMfa?: boolean } = {}) {
-    const { requireVerified, enableMfa } = opts
+  async register(opts: { requireVerified?: boolean, enableMfa?: boolean, skipPasskeyPrompt?: boolean } = {}) {
+    const { requireVerified, enableMfa, skipPasskeyPrompt } = opts
 
     const options = await firstValueFrom(
       this.http.post<PublicKeyCredentialCreationOptionsJSON>('/api/interaction/passkey/registration/start', { requireVerified }),
@@ -109,6 +108,13 @@ export class PasskeyService {
         ...reg,
         enableMfa,
       }))
+      if (skipPasskeyPrompt !== undefined) {
+        try {
+          await this.savePasskeyPromptPreference(skipPasskeyPrompt)
+        } catch {
+          this.showPasskeyPromptPreferenceError()
+        }
+      }
       localStorage.setItem('passkey_seen', Date())
 
       await this.openNamingDialog(result.passkeyId)
@@ -151,46 +157,67 @@ export class PasskeyService {
     })
   }
 
-  shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'canLogin' | 'hasPasskeys'>>) {
+  shouldAskPasskey(user: Partial<Pick<CurrentUserDetails, 'canLogin' | 'hasPasskeys' | 'skipPasskeyPrompt'>>) {
     return (
       user.canLogin
-      // && !user.hasPasskeys // Only ask to create a passkey if the user has none. Need to think about this.
       && this.getPasskeySupport().enabled
+      && !user.skipPasskeyPrompt
       && !this.localPasskeySeen()
       && !this.localPasskeySkipped()
     )
   }
 
-  async dialogRegistration() {
-    return new Promise<void>((resolve, _reject) => {
-      const dialog = this.dialog.open(PasskeyDialog, { disableClose: true })
+  async dialogRegistration(options: { skipPasskeyPrompt?: boolean, context?: PasskeyPromptContext } = {}): Promise<boolean> {
+    const context = options.context ?? 'automatic'
+    const result = await firstValueFrom(this.dialog.open<PasskeyDialog, PasskeyDialogData, PasskeyDialogResult>(PasskeyDialog, {
+      disableClose: true,
+      data: {
+        skipPasskeyPrompt: options.skipPasskeyPrompt ?? false,
+        context,
+      },
+    }).afterClosed())
 
-      dialog.afterClosed().subscribe((result) => {
-        if (!result) {
-          localStorage.setItem('passkey_skipped', Date())
-          resolve()
-          return
-        }
+    if (!result) {
+      return false
+    }
 
-        this.spinnerService.show()
+    if (result.action === 'skip') {
+      if (context === 'automatic') {
+        localStorage.setItem('passkey_skipped', Date())
+      }
+      this.spinnerService.show()
+      try {
+        await this.savePasskeyPromptPreference(result.skipPasskeyPrompt)
+      } catch {
+        this.showPasskeyPromptPreferenceError()
+      } finally {
+        this.spinnerService.hide()
+      }
+      return false
+    }
 
-        this.register()
-          .then(() => {
-            this.snackbarService.message(String(this.translateService.instant('passkey-dialog.messages.added')))
-          })
-          .catch((error: unknown) => {
-            if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-              this.snackbarService.error(String(this.translateService.instant('components.common.messages.passkey-already-registered')))
-            } else {
-              this.snackbarService.error(String(this.translateService.instant('passkey-dialog.messages.create-failed')))
-            }
-          })
-          .finally(() => {
-            this.spinnerService.hide()
-            resolve()
-          })
-      })
-    })
+    this.spinnerService.show()
+    try {
+      await this.register({ skipPasskeyPrompt: result.skipPasskeyPrompt })
+      return true
+    } catch (error: unknown) {
+      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
+        this.snackbarService.error(String(this.translateService.instant('components.common.messages.passkey-already-registered')))
+      } else {
+        this.snackbarService.error(String(this.translateService.instant('passkey-dialog.messages.create-failed')))
+      }
+      return false
+    } finally {
+      this.spinnerService.hide()
+    }
+  }
+
+  private async savePasskeyPromptPreference(skipPasskeyPrompt: boolean) {
+    await this.authService.updatePasskeyPrompt({ skipPasskeyPrompt })
+  }
+
+  private showPasskeyPromptPreferenceError() {
+    this.snackbarService.error(String(this.translateService.instant('passkey-dialog.messages.preference-failed')))
   }
 }
 
@@ -200,21 +227,36 @@ export type PasskeySupport = {
   platformIcon?: string
 }
 
+type PasskeyPromptContext = 'manual' | 'automatic'
+
+type PasskeyDialogData = {
+  skipPasskeyPrompt: boolean
+  context: PasskeyPromptContext
+}
+
+type PasskeyDialogResult = {
+  skipPasskeyPrompt: boolean
+  action: 'skip' | 'register'
+}
+
 @Component({
   selector: 'app-passkey-dialog',
-  imports: [MaterialModule, TranslatePipe],
+  imports: [MaterialModule, ReactiveFormsModule, TranslatePipe],
   template: `
     <h1 mat-dialog-title>
       {{ "passkey-dialog.title" | translate: { platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}
     </h1>
-    <mat-dialog-content style="height: 200px; display: flex; justify-content: center; align-items: center;">
+    <mat-dialog-content style="min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px;">
       <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px;" fontSet="material-icons-round" matSuffix>{{
         passkeySupport?.platformIcon ?? "key"
       }}</mat-icon>
+      <mat-checkbox [formControl]="skipPasskeyPrompt">{{ "passkey-dialog.actions.never-ask" | translate }}</mat-checkbox>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button matButton mat-dialog-close>Skip</button>
-      <button mat-flat-button type="button" [mat-dialog-close]="true" cdkFocusInitial>
+      <button matButton type="button" (click)="close('skip')">
+        {{ "passkey-dialog.actions.skip" | translate }}
+      </button>
+      <button mat-flat-button type="button" (click)="close('register')" cdkFocusInitial>
         {{ "passkey-dialog.actions.passkey" | translate: { platformName: passkeySupport?.platformName ?? ("passkey-title" | translate) } }}
         <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
       </button>
@@ -225,7 +267,14 @@ export type PasskeySupport = {
 })
 class PasskeyDialog implements OnInit {
   private passkeyService = inject(PasskeyService)
+  private data = inject<PasskeyDialogData>(MAT_DIALOG_DATA)
+  private dialogRef = inject<MatDialogRef<PasskeyDialog, PasskeyDialogResult>>(MatDialogRef)
+  skipPasskeyPrompt = new FormControl(this.data.skipPasskeyPrompt, { nonNullable: true })
   passkeySupport?: PasskeySupport
+
+  close(action: PasskeyDialogResult['action']) {
+    this.dialogRef.close({ action, skipPasskeyPrompt: this.skipPasskeyPrompt.value })
+  }
 
   ngOnInit() {
     this.passkeySupport = this.passkeyService.getPasskeySupport()

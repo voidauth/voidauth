@@ -10,7 +10,7 @@ import { ConfigService } from '../../services/config.service'
 import { PasswordSetComponent } from '../../components/password-reset/password-set.component'
 import { SpinnerService } from '../../services/spinner.service'
 import { PasskeyService, type PasskeySupport } from '../../services/passkey.service'
-import { WebAuthnAbortService, WebAuthnError } from '@simplewebauthn/browser'
+import { WebAuthnAbortService } from '@simplewebauthn/browser'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
@@ -99,7 +99,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   passkeyColumns: TableColumn<PasskeyResponse>[] = [
     {
       columnDef: 'displayName',
-      header: 'Name/ID',
+      header: 'settings.sections.security.passkeys.columns.name',
       // User name if exists, otherwise use id convert from base64Url to base64, then convert to hex
       cell: element =>
         element.displayName
@@ -113,7 +113,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
     {
       columnDef: 'lastUsed',
-      header: 'Last Used',
+      header: 'settings.sections.security.passkeys.columns.last-used',
       cell: element =>
         element.lastUsed
           ? new Date(element.lastUsed).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -121,7 +121,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
     {
       columnDef: 'createdAt',
-      header: 'Created At',
+      header: 'settings.sections.security.passkeys.columns.created-at',
       cell: element =>
         element.createdAt
           ? new Date(element.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -259,20 +259,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   async registerPasskey() {
-    this.spinnerService.show()
-    try {
-      await this.passkeyService.register()
-      await this.loadUser()
+    const registered = await this.passkeyService.dialogRegistration({
+      skipPasskeyPrompt: !!this.user?.skipPasskeyPrompt,
+      context: 'manual',
+    })
+    await this.loadUser()
+    if (registered) {
       this.snackbarService.message(String(this.translateService.instant('settings.messages.passkey-registered')))
-    } catch (error) {
-      if (error instanceof WebAuthnError && error.name === 'InvalidStateError') {
-        this.snackbarService.error(String(this.translateService.instant('components.common.messages.passkey-already-registered')))
-      } else {
-        this.snackbarService.error(String(this.translateService.instant('components.common.messages.register-passkey-failed')))
-      }
-      console.error(error)
-    } finally {
-      this.spinnerService.hide()
     }
   }
 

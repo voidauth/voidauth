@@ -15,6 +15,7 @@ import { oidcLoginPath } from '@shared/oidc'
 import { getCurrentHost } from './config.service'
 import type { PasswordResetResponse } from '@shared/api-response/PasswordResetResponse'
 import type { InvitationBasic } from '@shared/api-response/InvitationBasic'
+import type { UpdatePasskeyPrompt } from '@shared/api-request/UpdatePasskeyPrompt'
 
 @Injectable({
   providedIn: 'root',
@@ -32,6 +33,10 @@ export class AuthService {
 
   async interactionTryAgain() {
     return firstValueFrom(this.http.post<Redirect>('/api/interaction/try-again', {}))
+  }
+
+  async updatePasskeyPrompt(preference: UpdatePasskeyPrompt) {
+    return firstValueFrom(this.http.patch<null>('/api/interaction/passkey-prompt', preference))
   }
 
   async createInteraction(defaultRedir: boolean = false) {
