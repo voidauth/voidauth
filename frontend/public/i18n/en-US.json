@@ -93,7 +93,7 @@
     "actions": {
       "passkey": "Enable {{platformName}}",
       "skip": "Skip",
-      "never-ask": "Don't ask me to set up a passkey again."
+      "never-ask": "Don't ask me to create a passkey again."
     },
     "messages": {
       "added": "Passkey added.",

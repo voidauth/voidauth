@@ -1,17 +1,15 @@
 import esbuild from 'esbuild'
 import path from 'node:path'
 import { readFileSync, rmSync, writeFileSync } from 'node:fs'
-import madge from 'madge'
+import { parseCircular, parseDependencyTree } from 'dpdm'
 
-const madgeResult = await madge('./server/index.ts', {
-  detectiveOptions: {
-    ts: {
-      skipTypeImports: true,
-    },
-  },
+const dependencyTree = await parseDependencyTree('./server/index.ts', {
+  cwd: process.cwd(),
+  context: process.cwd(),
+  transform: true,
 })
 
-const circularDependencies = madgeResult.circular()
+const circularDependencies = parseCircular(dependencyTree)
 
 if (circularDependencies.length > 0) {
   circularDependencies.forEach((cycle) => {
