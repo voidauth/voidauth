@@ -91,12 +91,15 @@
   "passkey-dialog": {
     "title": "Enable {{platformName}}?",
     "actions": {
-      "passkey": "Enable {{platformName}}"
+      "passkey": "Enable {{platformName}}",
+      "skip": "Skip",
+      "never-ask": "Don't ask me to set up a passkey again."
     },
     "messages": {
       "added": "Passkey added.",
       "name-failed": "Passkey created, but could not set name.",
-      "create-failed": "Could not create Passkey."
+      "create-failed": "Could not create Passkey.",
+      "preference-failed": "Could not save the passkey prompt preference."
     }
   },
   "mfa": {
@@ -490,7 +493,6 @@
         "name": "Name",
         "home-page-url": "Home Page URL",
         "logo-url": "Logo URL",
-        "upload-logo": "Application logo",
         "logo-preview": "OIDC App logo preview",
         "add-group": "Add Group",
         "client-id": "Client ID",
