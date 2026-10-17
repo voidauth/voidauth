@@ -132,7 +132,7 @@ The logo images of the web interface can be customized by placing your own image
 
 For information on how to change the email templates used for invitations, password resets, email verification, etc. see the documentation page for [Email Templates](Email-Templates.md).
 
-You may also add/modify the `custom.css` file located in the **/app/config/branding** directory to add your own styling to the web interface.
+You may also add/modify the `custom.css` file located in the **/app/config/branding** directory to add your own styling to the web interface, and add a `custom.js` file there to run your own script on every page before the app loads.
 
 ## Uploaded Assets
 

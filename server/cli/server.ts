@@ -368,6 +368,11 @@ export async function serve() {
       index = index.replaceAll(/<link[^>]*rel="apple-touch-icon"[^>]*>/g, '')
     }
 
+    // add custom.js before the CSP meta tag, which would block it
+    if (brandingFiles.includes('custom.js')) {
+      index = index.replace('<head>', `<head><script src="${basePath()}/custom.js"></script>`)
+    }
+
     return index
   }
 
