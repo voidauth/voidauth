@@ -305,6 +305,11 @@
             "delete": {
               "tooltip": "Delete"
             }
+          },
+          "columns": {
+            "name": "Name/ID",
+            "last-used": "Last Used",
+            "created-at": "Created At"
           }
         },
         "mfa": {
@@ -415,6 +420,13 @@
       "labels": {
         "search": "Search"
       },
+      "columns": {
+        "username": "Username",
+        "email": "Email",
+        "email-verified": "Email Verified",
+        "approved": "Approved",
+        "expires": "Expires"
+      },
       "dialogs": {
         "delete": "Are you sure you want to remove user '{{name}}'?",
         "approve-selected": "Are you sure you want to approve {{count}} user(s)?",
@@ -474,6 +486,11 @@
       "empty-state": "No OIDC Apps.",
       "actions": {
         "create": "Create OIDC App"
+      },
+      "columns": {
+        "name": "Name",
+        "redirects": "Redirects",
+        "allowed-groups": "Allowed Groups"
       },
       "messages": {
         "deleted": "App {{name}} was deleted.",
@@ -550,6 +567,10 @@
       "actions": {
         "create": "Create ProxyAuth Domain"
       },
+      "columns": {
+        "domain": "Domains",
+        "allowed-groups": "Allowed Groups"
+      },
       "dialogs": {
         "delete": "Are you sure you want to remove domain '{{name}}'?"
       },
@@ -615,6 +636,10 @@
         "delete-failed": "Could not delete password reset link.",
         "send-failed": "Could not send password reset link."
       },
+      "columns": {
+        "username": "Username",
+        "expires-in": "Expires In"
+      },
       "empty-state": "No Password Resets.",
       "dialogs": {
         "delete": "Are you sure you want to delete this password reset link?"
@@ -629,6 +654,11 @@
         "preview": "Preview",
         "view-user": "View User"
       },
+      "columns": {
+        "sent": "Sent",
+        "to": "To",
+        "type": "Type"
+      },
       "messages": {
         "load-failed": "Could not get Sent Mail.",
         "test-sent": "Sent Test Email.",
@@ -642,6 +672,9 @@
       "empty-state": "No groups.",
       "actions": {
         "create": "Create Group"
+      },
+      "columns": {
+        "name": "Group Name"
       },
       "dialogs": {
         "delete": "Are you sure you want to remove group '{{name}}'?"
@@ -690,6 +723,12 @@
       "empty-state": "No invitations.",
       "actions": {
         "create": "Create Invitation"
+      },
+      "columns": {
+        "username": "Username",
+        "email": "Email",
+        "expires-in": "Expires In",
+        "access-expires": "Access Expires"
       },
       "dialogs": {
         "delete": "Are you sure you want to remove invitation for '{{name}}'?"
@@ -757,6 +796,9 @@
         "create": "Create Claim"
       },
       "empty-state": "No Custom Claims.",
+      "columns": {
+        "claim": "Claim"
+      },
       "dialogs": {
         "delete": "Are you sure you want to remove custom claim '{{name}}'?"
       },
@@ -928,7 +970,16 @@
       }
     },
     "common": {
-      "or": "or",
+      "or": "or"
+    },
+    "paginator": {
+      "items-per-page": "Items per page:",
+      "next-page": "Next page",
+      "previous-page": "Previous page",
+      "first-page": "First page",
+      "last-page": "Last page",
+      "range": "{{start}} – {{end}} of {{length}}",
+      "range-empty": "0 of {{length}}",
       "messages": {
         "session-failed": "Could not create session.",
         "user-not-found": "User not found.",
