@@ -93,7 +93,7 @@
     "actions": {
       "passkey": "Enable {{platformName}}",
       "skip": "Skip",
-      "never-ask": "Don't ask me to create a passkey again."
+      "never-ask": "Don't ask to setup a passkey again."
     },
     "messages": {
       "added": "Passkey added.",
@@ -970,16 +970,7 @@
       }
     },
     "common": {
-      "or": "or"
-    },
-    "paginator": {
-      "items-per-page": "Items per page:",
-      "next-page": "Next page",
-      "previous-page": "Previous page",
-      "first-page": "First page",
-      "last-page": "Last page",
-      "range": "{{start}} – {{end}} of {{length}}",
-      "range-empty": "0 of {{length}}",
+      "or": "or",
       "messages": {
         "session-failed": "Could not create session.",
         "user-not-found": "User not found.",
@@ -991,6 +982,15 @@
         "email-update-failed": "Could not update email.",
         "something-went-wrong": "Something went wrong."
       }
+    },
+    "paginator": {
+      "items-per-page": "Items per page:",
+      "next-page": "Next page",
+      "previous-page": "Previous page",
+      "first-page": "First page",
+      "last-page": "Last page",
+      "range": "{{start}} – {{end}} of {{length}}",
+      "range-empty": "0 of {{length}}"
     },
     "snackbar": {
       "ok": "Ok"
