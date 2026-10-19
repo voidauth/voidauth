@@ -1,7 +1,7 @@
 @if (translationService.currentLang(); as currentLang) {
   <button mat-button [matMenuTriggerFor]="menu">
     <span>{{ getFlagEmoji(currentLang.code) }}</span>
-    {{ currentLang.display }}
+    <span class="language-name">{{ currentLang.display }}</span>
   </button>
   <mat-menu #menu="matMenu" class="flag-emojis">
     @for (lang of translationService.availableLangs(); track lang) {

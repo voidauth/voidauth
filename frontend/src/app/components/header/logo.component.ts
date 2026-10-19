@@ -11,7 +11,7 @@ import { Component, signal, ChangeDetectionStrategy } from '@angular/core'
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
     img {
-      padding: 4px;
+      padding: 6px;
       height: 100%;
       object-fit: contain;
       object-position: left;

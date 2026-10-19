@@ -1,12 +1,13 @@
-<h1>
-  @if (invitation) {
-    {{ "registration.title.accept-invitation" | translate }}
-  } @else {
-    {{ "registration.title.sign-up" | translate }}
-  }
-</h1>
+<span style="flex-grow: 1"></span>
 <mat-card class="form-card">
   <mat-card-content>
+    <h1>
+      @if (invitation) {
+        {{ "registration.title.accept-invitation" | translate }}
+      } @else {
+        {{ "registration.title.sign-up" | translate }}
+      }
+    </h1>
     <form [formGroup]="form" (ngSubmit)="register()">
       <mat-form-field>
         <mat-label>{{ "registration.username.label" | translate }}</mat-label>
@@ -64,5 +65,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
+  <a class="contact" matButton="elevated" [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

@@ -256,5 +256,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
+  <a class="contact" matButton="elevated" [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

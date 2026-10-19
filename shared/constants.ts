@@ -18,7 +18,7 @@ export const REDIRECT_PATHS = {
   INVITE: 'invite', // registration page also
   MFA: 'mfa',
   FORBIDDEN: 'forbidden',
-  NOT_FOUND: 'not-found',
+  NOT_FOUND: 'not_found',
 } as const
 
 export const FORBIDDEN_PATHS = [REDIRECT_PATHS.FORBIDDEN, REDIRECT_PATHS.APPROVAL_REQUIRED, REDIRECT_PATHS.USER_EXPIRED] as const

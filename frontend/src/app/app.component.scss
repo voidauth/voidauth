@@ -1,3 +1,9 @@
+.container.page-background {
+  background-image: url("background.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
 mat-drawer-container {
   min-width: var(--form-min-width);
   display: flex;
@@ -11,6 +17,10 @@ mat-nav-list {
   padding: 1rem;
 }
 
+app-header {
+  margin: 4px 4px 0px 4px;
+}
+
 mat-divider {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -19,7 +29,7 @@ mat-divider {
 
 :host ::ng-deep router-outlet ~ * {
   display: flex;
-  margin: 12px;
+  padding: 12px;
   flex-direction: column;
   flex-grow: 1;
   align-items: center;
