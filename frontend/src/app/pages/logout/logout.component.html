@@ -1,6 +1,7 @@
-<h1>{{ "logout.title" | translate }}</h1>
-<mat-card class="form-card">
+<span style="flex-grow: 1"></span>
+<mat-card class="form-card thin">
   <mat-card-content>
+    <h1>{{ "logout.title" | translate }}</h1>
     <form autocomplete="off" [action]="baseHref + '/oidc/session/end/confirm'" method="post">
       <!-- TODO: Display OIDC App name/id if provided -->
       @if (privUser) {
@@ -21,3 +22,4 @@
     </form>
   </mat-card-content>
 </mat-card>
+<span style="flex-grow: 1"></span>

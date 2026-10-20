@@ -1,4 +1,4 @@
-<mat-toolbar>
+<mat-toolbar style="border-radius: 12px">
   @if (location.pathname === basePath + "/" && config?.defaultRedirect; as logoLink) {
     <a class="header-logo" [href]="logoLink">
       <app-logo></app-logo>
@@ -24,12 +24,16 @@
       ) {
         <!-- Most pages include a 'login' button as an action -->
         <span>
-          <a mat-flat-button routerLink="/login">{{ "components.header.actions.login" | translate }}</a>
+          <a mat-flat-button routerLink="/login">
+            <span class="button-text">{{ "components.header.actions.login" | translate }}</span>
+          </a>
         </span>
       } @else if (location.pathname.endsWith("/login") && config?.registration) {
         <!-- If on the login page, show a signup option if signup is enabled -->
         <span>
-          <a mat-flat-button routerLink="/register">{{ "components.header.actions.sign-up" | translate }}</a>
+          <a mat-flat-button routerLink="/register">
+            <span class="button-text">{{ "components.header.actions.sign-up" | translate }}</span>
+          </a>
         </span>
       }
     }

@@ -1,15 +1,18 @@
-<h1>{{ title | async }}</h1>
-<mat-card class="form-card">
+<span style="flex-grow: 1"></span>
+<mat-card class="form-card info-only">
   <mat-card-content>
+    <h1>{{ title | async }}</h1>
     <mat-icon align="center" style="width: 100px; height: 100px; font-size: 100px" fontSet="material-icons-round" matSuffix>mail</mat-icon>
-    <button [ngClass]="{ hidden: !userid }" mat-button (click)="sendVerification()">
-      {{ "verify-email.verify.actions.send-again" | translate }}
-    </button>
+    <mat-card-actions>
+      <button [ngClass]="{ hidden: !userid }" mat-button (click)="sendVerification()">
+        {{ "verify-email.verify.actions.send-again" | translate }}
+      </button>
+    </mat-card-actions>
   </mat-card-content>
 </mat-card>
 
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
+  <a class="contact" matButton="elevated" [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

@@ -1,8 +1,9 @@
-<h1>{{ "consent.title" | translate }}</h1>
 @let destination = details?.clientName ?? redirectHost ?? details?.redirectUri ?? "unknown";
 @if (details) {
-  <mat-card class="form-card">
+  <span style="flex-grow: 1"></span>
+  <mat-card class="form-card info-only">
     <mat-card-content>
+      <h1>{{ "consent.title" | translate }}</h1>
       <form autocomplete="off" action="{{ basePath }}/api/interaction/{{ details.uid }}/confirm" method="post">
         <div style="text-align: center">
           @if (details.logoUri) {
@@ -32,5 +33,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
+  <a class="contact" matButton="elevated" [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

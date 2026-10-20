@@ -1,6 +1,7 @@
-<h1>{{ "login.title" | translate }}</h1>
-<mat-card class="form-card">
+<span style="flex-grow: 1"></span>
+<mat-card class="form-card thin">
   <mat-card-content>
+    <h1>{{ "login.title" | translate }}</h1>
     <form [formGroup]="form" (ngSubmit)="login()">
       <mat-form-field>
         <mat-label>{{ "login.username.label" | translate }}</mat-label>
@@ -47,5 +48,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
+  <a class="contact" matButton="elevated" [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

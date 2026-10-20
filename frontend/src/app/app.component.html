@@ -2,9 +2,9 @@
   <p style="color: white">{{ "app.loading" | translate }}</p>
 </ngx-spinner>
 
-<div class="container" style="min-height: 100%">
+<div class="container" [class.page-background]="showPageBackground()" style="min-height: 100%">
   <app-header (toggleSidenav)="drawer.toggle()"></app-header>
-  <mat-drawer-container class="container">
+  <mat-drawer-container>
     <mat-drawer (click)="drawer.close()" #drawer position="end">
       <mat-nav-list>
         @if (user?.canLogin) {
