@@ -20,7 +20,7 @@ export function urlFromWildcardHref(input: string) {
     + '(?::(?<port>[0-9*]+))?' // port, ALLOW WILDCARDS, do not include ':'
     + '(?=[\\\\/?#]|$)' // match everything else up to \, /, ?, #
     + ')?'
-    + '(?<pathname>[^?#]+)?' // pathname, ':' is legal in a path segment (RFC 3986 pchar)
+    + '(?<pathname>[^?#]+)?'
     + '(?:(?<search>\\?[^#]*))?' // search
     + '(?:(?<hash>#.*))?' // hash
     + '$')
