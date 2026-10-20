@@ -119,13 +119,16 @@ LDAP is disabled by default. See the [LDAP Server](LDAP-Server.md) guide for set
 
 Your own branding can be applied to the app by mounting the **/app/config** directory and adding files or modifying the existing files.
 
-The logo images of the web interface can be customized by placing your own images in the mounted **/app/config/branding** directory. The files you can add are listed below:
+The logo and background images of the web interface can be customized by placing your own images in the mounted **/app/config/branding** directory. The files you can add are listed below:
 
 | Name | Extension |
 | :--- | :-------- |
+| background | `jpg` |
 | logo | `svg`, `png` |
 | favicon | `svg`, `png` |
 | apple-touch-icon | `png` |
+
+There is no default background image, if one is added to the **/app/config/branding** directory it will appear on most user-facing pages that are not expected to scroll too much.
 
 > [!WARNING]
 > If any custom branding images are found in the mounted **/app/config/branding** directory, the default VoidAuth images will not be available. You may want to make sure that custom `logo`, `favicon`, and `apple-touch-icon` are all added together.
@@ -144,9 +147,9 @@ Uploaded application assets are stored in the **/app/config/uploads** directory,
 ## Customization
 
 > [!IMPORTANT]
-> There are enough branding options between environment variables like `APP_TITLE`, `APP_COLOR`, and config directory customization to remove any end-user reference to VoidAuth branding. You can make it your own! Below is an example of some theming changes and light mode enabled:
+> There are enough branding options between environment variables like `APP_TITLE`, `APP_COLOR`, `APP_FONT`, and config directory customization to remove any end-user reference to VoidAuth branding. You can make it your own! Below is an example of some theming changes and light mode enabled:
 >
-> <img width="260" src="/public/screenshots/66152d9b-b041-4374-91ec-4363ab1cb064.png" />
+> <img width="750" src="/public/screenshots/customized.png" />
 
 ## Experimental
 
