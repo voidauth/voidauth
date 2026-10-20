@@ -199,11 +199,11 @@ export async function serve() {
     force: false,
   })
   // certain static assets should have Cross-Origin-Resource-Policy = cross-origin header
-  const brandImgBaseRegex = new RegExp(`(logo|favicon|apple-touch-icon)\\.(svg|png|jpg|jpeg)`)
-  const brandImgRegex = new RegExp(`^${brandImgBaseRegex.source}$`)
-  const brandImgPathRegex = new RegExp(`^${basePath()}/${brandImgBaseRegex.source}$`)
-  app.use(brandImgPathRegex, (_req, res, next) => {
-    // Allow branding assets to be used cross-origin
+  const logoImgBaseRegex = new RegExp(`(logo|favicon|apple-touch-icon)\\.(svg|png|jpg|jpeg)`)
+  const logoImgRegex = new RegExp(`^${logoImgBaseRegex.source}$`)
+  const logoImgPathRegex = new RegExp(`^${basePath()}/${logoImgBaseRegex.source}$`)
+  app.use(logoImgPathRegex, (_req, res, next) => {
+    // Allow logo assets to be used cross-origin
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
     next()
   })
@@ -212,10 +212,10 @@ export async function serve() {
   }))
   // override favicon and logo requests
   // do not return VoidAuth branding if custom branding exists
-  app.get(brandImgPathRegex, (_req, res, next) => {
+  app.get(logoImgPathRegex, (_req, res, next) => {
     const brandingFiles = fs.readdirSync(path.join('./config/branding'))
     // if custom branding exists, do not allow defaults to be used
-    if (brandingFiles.some(f => brandImgRegex.test(f))) {
+    if (brandingFiles.some(f => logoImgRegex.test(f))) {
       res.sendStatus(404)
       return
     }
@@ -337,6 +337,8 @@ export async function serve() {
 
     // dynamically replace favicon and logo depending on whats available in config/branding
     const brandingFiles = fs.readdirSync(path.join('./config/branding'))
+    const backgroundPreferenceOrder = ['background.png', 'background.jpg', 'background.jpeg']
+    const backgroundFile = backgroundPreferenceOrder.find(file => brandingFiles.includes(file))
     const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
     const isBrandingFavicon = brandingFiles.includes('favicon.svg') || brandingFiles.includes('favicon.png')
     const isBrandingTouch = brandingFiles.includes('apple-touch-icon.png')
@@ -366,6 +368,10 @@ export async function serve() {
     if (isBrandingImgs && !isBrandingTouch) {
       // If there is branding, but no branding touch icon, remove apple-touch-icon line
       index = index.replaceAll(/<link[^>]*rel="apple-touch-icon"[^>]*>/g, '')
+    }
+
+    if (backgroundFile) {
+      index = index.replace('</head>', `<style>:root { --page-background-image: url("${backgroundFile}"); }</style></head>`)
     }
 
     return index

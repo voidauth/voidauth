@@ -1,5 +1,5 @@
 .container.page-background {
-  background-image: url("background.jpg");
+  background-image: var(--page-background-image, none);
   background-position: center;
   background-size: cover;
 }

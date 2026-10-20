@@ -123,7 +123,7 @@ The logo and background images of the web interface can be customized by placing
 
 | Name | Extension |
 | :--- | :-------- |
-| background | `jpg` |
+| background | `png`, `jpg` |
 | logo | `svg`, `png` |
 | favicon | `svg`, `png` |
 | apple-touch-icon | `png` |
