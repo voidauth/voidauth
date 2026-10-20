@@ -178,6 +178,9 @@
         "name": {
           "label": "Name"
         },
+        "picture": {
+          "label": "Profilbild-URL"
+        },
         "actions": {
           "submit": {
             "label": "Profil aktualisieren"

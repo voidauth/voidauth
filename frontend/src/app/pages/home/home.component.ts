@@ -16,7 +16,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../dialogs/confirm/confirm.component'
 import { TotpRegisterComponent } from '../../dialogs/totp-register/totp-register.component'
 import { PasskeyEditDialog } from '../../dialogs/passkey-edit/passkey-edit.component'
-import { isValidEmail } from '../../validators/validators'
+import { isValidEmail, isValidWebURLControl } from '../../validators/validators'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { AsyncPipe } from '@angular/common'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
@@ -49,6 +49,13 @@ export class HomeComponent implements OnInit, OnDestroy {
         disabled: false,
       },
       [Validators.minLength(1)],
+    ),
+    picture: new FormControl<string>(
+      {
+        value: '',
+        disabled: false,
+      },
+      [Validators.maxLength(2048), isValidWebURLControl],
     ),
   })
 
@@ -183,6 +190,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       this.profileForm.reset({
         name: this.user.name ?? '',
+        picture: this.user.picture ?? '',
       })
       this.emailForm.reset({
         email: this.user.email,
@@ -204,6 +212,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       await this.userService.updateProfile({
         name: this.profileForm.value.name ?? undefined,
+        picture: this.profileForm.value.picture ?? undefined,
       })
       this.snackbarService.message(String(this.translateService.instant('settings.messages.profile-updated')))
     } catch (_e) {

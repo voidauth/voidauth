@@ -19,6 +19,14 @@
       </mat-form-field>
 
       <mat-form-field>
+        <mat-label>{{ "admin.user.labels.picture" | translate }}</mat-label>
+        <input matInput type="url" formControlName="picture" />
+        @if (form.controls.picture.errors) {
+          <mat-error>{{ form.controls.picture.errors | validationError | async }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
         <mat-label>{{ "admin.user.labels.email" | translate }}</mat-label>
         <input matInput type="text" formControlName="email" />
         @if (form.controls.email.errors) {

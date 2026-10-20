@@ -9,6 +9,11 @@ export const coerceEmailOrNull = zod.union([
 
 export const nameValidation = zod.string().trim().max(64).transform(v => v || null).nullish()
 
+export const pictureValidation = zod.union([
+  emptyString,
+  zod.url({ protocol: /^https?$/ }).max(2048),
+]).transform(v => v || null).nullish()
+
 export const passkeyRegistrationValidator = {
   id: zod.string(),
   rawId: zod.string(),

@@ -16,7 +16,7 @@ import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { OptionValueDialogComponent, type OptionValueDialogData, type OptionValueResult }
   from '../../../../dialogs/option-value-dialog/option-value-dialog.component'
 import { stringCompare, type Convert, type ItemIn } from '@shared/utils'
-import { isValidEmail } from '../../../../validators/validators'
+import { isValidEmail, isValidWebURLControl } from '../../../../validators/validators'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { calculateCustomClaims } from '@shared/user'
 
@@ -46,6 +46,7 @@ export class UserComponent implements OnInit {
     username: new FormControl<string | null>(null, [Validators.required, Validators.minLength(1), Validators.pattern(USERNAME_REGEX)]),
     email: new FormControl<string | null>(null, [isValidEmail]),
     name: new FormControl<string | null>(null, [Validators.minLength(1)]),
+    picture: new FormControl<string | null>(null, [Validators.maxLength(2048), isValidWebURLControl]),
     expiresAt: new FormControl<Date | null>(null, []),
     emailVerified: new FormControl<boolean>(false, { nonNullable: true }),
     approved: new FormControl<boolean>(false, { nonNullable: true }),
@@ -81,6 +82,7 @@ export class UserComponent implements OnInit {
         this.form.reset({
           username: user.username,
           name: user.name ?? null,
+          picture: user.picture ?? null,
           email: user.email ?? '',
           emailVerified: !!user.emailVerified,
           approved: !!user.approved,

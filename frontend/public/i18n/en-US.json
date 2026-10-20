@@ -265,6 +265,9 @@
         "name": {
           "label": "Name"
         },
+        "picture": {
+          "label": "Profile picture URL"
+        },
         "actions": {
           "submit": {
             "label": "Update Profile"
@@ -448,6 +451,7 @@
       "labels": {
         "username": "Username",
         "name": "Name",
+        "picture": "Profile picture URL",
         "email": "Email",
         "add-group": "Add Group",
         "security-groups": "Security Groups:",

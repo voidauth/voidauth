@@ -13,3 +13,11 @@ mat-expansion-panel.key-manage-panel {
     padding: 0 12px 8px
   }
 }
+
+.picture-preview {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  border-radius: 50%;
+  object-fit: cover;
+}

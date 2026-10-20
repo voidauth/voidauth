@@ -21,6 +21,17 @@
         }
       </mat-form-field>
 
+      <mat-form-field>
+        <mat-label>{{ "settings.sections.profile.picture.label" | translate }}</mat-label>
+        <input matInput type="url" formControlName="picture" />
+        @if (profileForm.controls.picture.value && !profileForm.controls.picture.errors) {
+          <img matSuffix class="picture-preview" [src]="profileForm.controls.picture.value" alt="" />
+        }
+        @if (profileForm.controls.picture.errors) {
+          <mat-error>{{ profileForm.controls.picture.errors | validationError | async }}</mat-error>
+        }
+      </mat-form-field>
+
       <mat-card-actions>
         <button mat-flat-button type="submit" [disabled]="!profileForm.enabled || !profileForm.valid || !profileForm.dirty">
           {{ "settings.sections.profile.actions.submit.label" | translate }}

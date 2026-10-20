@@ -198,6 +198,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
         email_verified?: boolean
         preferred_username?: string
         name?: string | null
+        picture?: string | null
         groups?: string[]
       } = { sub: id }
       const scopes = new Set(scope.split(/\s+/).filter(Boolean))
@@ -219,6 +220,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
       if (scopes.has('profile')) {
         accountClaims.preferred_username = user.username
         accountClaims.name = user.name
+        accountClaims.picture = user.picture ?? null
       }
       if (scopes.has('email')) {
         accountClaims.email = user.email ?? null
