@@ -24,6 +24,11 @@ import { TableService } from '../../../services/table.service'
   styleUrl: './invitations.component.scss',
 })
 export class InvitationsComponent {
+  private adminService = inject(AdminService)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
   private translate = inject(TranslateService)
 
   dataSource: MatTableDataSource<Invitation> = new MatTableDataSource()
@@ -34,22 +39,22 @@ export class InvitationsComponent {
   columns: TableColumn<Invitation>[] = [
     {
       columnDef: 'username',
-      header: 'admin.invitations.columns.username',
+      header: this.translate.stream('admin.invitations.columns.username'),
       cell: element => element.username ?? '-',
     },
     {
       columnDef: 'email',
-      header: 'admin.invitations.columns.email',
+      header: this.translate.stream('admin.invitations.columns.email'),
       cell: element => element.email ?? '-',
     },
     {
       columnDef: 'expiresAt',
-      header: 'admin.invitations.columns.expires-in',
+      header: this.translate.stream('admin.invitations.columns.expires-in'),
       cell: element => HumanDurationPipe.t(new Date(element.expiresAt).getTime() - new Date().getTime(), this.translate),
     },
     {
       columnDef: 'userExpiresAt',
-      header: 'admin.invitations.columns.access-expires',
+      header: this.translate.stream('admin.invitations.columns.access-expires'),
       cell: element => HumanDurationPipe.t(element.userExpiresAt == null
         ? null
         : new Date(element.userExpiresAt).getTime() - new Date().getTime(), this.translate),
@@ -57,12 +62,6 @@ export class InvitationsComponent {
   ]
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
-
-  private adminService = inject(AdminService)
-  private snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private dialog = inject(MatDialog)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render

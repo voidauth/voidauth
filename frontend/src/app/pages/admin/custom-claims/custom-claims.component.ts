@@ -13,6 +13,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { RouterLink } from '@angular/router'
 import type { CustomClaim } from '@shared/db/CustomClaim'
 import { TableService } from '../../../services/table.service'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 
 @Component({
   selector: 'app-custom-claims',
@@ -20,11 +21,19 @@ import { TableService } from '../../../services/table.service'
     MaterialModule,
     RouterLink,
     TranslatePipe,
+    LooseAsyncPipe,
   ],
   templateUrl: './custom-claims.component.html',
   styleUrl: './custom-claims.component.scss',
 })
 export class CustomClaimsComponent {
+  private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
+
   dataSource: MatTableDataSource<CustomClaim> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -33,19 +42,12 @@ export class CustomClaimsComponent {
   columns: TableColumn<CustomClaim>[] = [
     {
       columnDef: 'claim',
-      header: 'admin.claims.columns.claim',
+      header: this.translateService.stream('admin.claims.columns.claim'),
       cell: element => element.claim || '-',
     },
   ]
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
-
-  private adminService = inject(AdminService)
-  private translateService = inject(TranslateService)
-  private snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private dialog = inject(MatDialog)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render

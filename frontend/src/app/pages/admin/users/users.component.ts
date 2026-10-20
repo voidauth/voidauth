@@ -39,29 +39,29 @@ export class UsersComponent {
   columns: TableColumn<UserWithAdminIndicator>[] = [
     {
       columnDef: 'username',
-      header: 'admin.users.columns.username',
+      header: this.translate.stream('admin.users.columns.username'),
       cell: element => element.username,
     },
     {
       columnDef: 'email',
-      header: 'admin.users.columns.email',
+      header: this.translate.stream('admin.users.columns.email'),
       cell: element => element.email ?? '',
     },
     {
       columnDef: 'emailVerified',
-      header: 'admin.users.columns.email-verified',
+      header: this.translate.stream('admin.users.columns.email-verified'),
       isIcon: true,
       cell: element => (element.emailVerified ? 'done' : 'not_interested'),
     },
     {
       columnDef: 'approved',
-      header: 'admin.users.columns.approved',
+      header: this.translate.stream('admin.users.columns.approved'),
       isIcon: true,
       cell: element => (element.approved ? 'done' : 'not_interested'),
     },
     {
       columnDef: 'expiresAt',
-      header: 'admin.users.columns.expires',
+      header: this.translate.stream('admin.users.columns.expires'),
       cell: element => HumanDurationPipe.t(element.expiresAt == null
         ? null
         : new Date(element.expiresAt).getTime() - new Date().getTime(), this.translate),
