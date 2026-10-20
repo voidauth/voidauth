@@ -251,6 +251,7 @@
         },
         "passkeys": {
           "title": "Passkeys",
+          "noPasskeys": "U heeft geen geregistreerde wachtwoorden.",
           "register": {
             "label": "Passkey registreren"
           },
