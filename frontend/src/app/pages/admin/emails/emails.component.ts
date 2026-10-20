@@ -19,40 +19,16 @@ import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { TableService } from '../../../services/table.service'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 
 @Component({
   selector: 'app-emails',
-  imports: [MaterialModule, RouterLink, TranslatePipe],
+  imports: [MaterialModule, RouterLink, TranslatePipe, LooseAsyncPipe],
   templateUrl: './emails.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './emails.component.scss',
 })
 export class EmailsComponent {
-  dataSource: MatTableDataSource<EmailLog> = new MatTableDataSource()
-
-  readonly paginator = viewChild.required(MatPaginator)
-  readonly sort = viewChild.required(MatSort)
-
-  columns: TableColumn<EmailLog>[] = [
-    {
-      columnDef: 'createdAt',
-      header: 'admin.emails.columns.sent',
-      cell: element => new Date(element.createdAt).toDateString(),
-    },
-    {
-      columnDef: 'to',
-      header: 'admin.emails.columns.to',
-      cell: element => element.to,
-    },
-    {
-      columnDef: 'type',
-      header: 'admin.emails.columns.type',
-      cell: element => element.type,
-    },
-  ]
-
-  displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
-
   private adminService = inject(AdminService)
   private translateService = inject(TranslateService)
   private snackbarService = inject(SnackbarService)
@@ -61,6 +37,31 @@ export class EmailsComponent {
   private userService = inject(UserService)
   private configService = inject(ConfigService)
   readonly tableService = inject(TableService)
+
+  dataSource: MatTableDataSource<EmailLog> = new MatTableDataSource()
+
+  readonly paginator = viewChild.required(MatPaginator)
+  readonly sort = viewChild.required(MatSort)
+
+  columns: TableColumn<EmailLog>[] = [
+    {
+      columnDef: 'createdAt',
+      header: this.translateService.stream('admin.emails.columns.sent'),
+      cell: element => new Date(element.createdAt).toDateString(),
+    },
+    {
+      columnDef: 'to',
+      header: this.translateService.stream('admin.emails.columns.to'),
+      cell: element => element.to,
+    },
+    {
+      columnDef: 'type',
+      header: this.translateService.stream('admin.emails.columns.type'),
+      cell: element => element.type,
+    },
+  ]
+
+  displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
 
   me?: CurrentUserDetails
   public config?: ConfigResponse

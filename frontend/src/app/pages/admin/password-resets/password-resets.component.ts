@@ -39,6 +39,14 @@ import { debounceTime, distinctUntilChanged, Subject } from 'rxjs'
 })
 export class PasswordResetsComponent {
   private translate = inject(TranslateService)
+  adminService = inject(AdminService)
+  snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private configService = inject(ConfigService)
+  private dialog = inject(MatDialog)
+  private translateService = inject(TranslateService)
+  readonly tableService = inject(TableService)
+
   dataSource: MatTableDataSource<PasswordResetUser> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -47,12 +55,12 @@ export class PasswordResetsComponent {
   columns: TableColumn<PasswordResetUser>[] = [
     {
       columnDef: 'username',
-      header: 'admin.password-resets.columns.username',
+      header: this.translate.stream('admin.password-resets.columns.username'),
       cell: element => element.username,
     },
     {
       columnDef: 'expiresAt',
-      header: 'admin.password-resets.columns.expires-in',
+      header: this.translate.stream('admin.password-resets.columns.expires-in'),
       cell: element => HumanDurationPipe.t(new Date(element.expiresAt).getTime() - new Date().getTime(), this.translate),
     },
   ]
@@ -64,14 +72,6 @@ export class PasswordResetsComponent {
   userSelectInputSubject = new Subject<string>()
 
   config?: ConfigResponse
-
-  adminService = inject(AdminService)
-  snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private configService = inject(ConfigService)
-  private dialog = inject(MatDialog)
-  private translateService = inject(TranslateService)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     try {

@@ -15,15 +15,23 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { stringCompare } from '@shared/utils'
 import { TableService } from '../../../services/table.service'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 
 @Component({
   selector: 'app-domains',
-  imports: [MaterialModule, RouterLink, TranslatePipe],
+  imports: [MaterialModule, RouterLink, TranslatePipe, LooseAsyncPipe],
   templateUrl: './domains.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './domains.component.scss',
 })
 export class DomainsComponent {
+  private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
+
   dataSource: MatTableDataSource<ProxyAuthResponse> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -31,24 +39,17 @@ export class DomainsComponent {
   columns: TableColumn<ProxyAuthResponse>[] = [
     {
       columnDef: 'domain',
-      header: 'admin.domains.columns.domain',
+      header: this.translateService.stream('admin.domains.columns.domain'),
       cell: element => element.domain,
     },
     {
       columnDef: 'groups',
-      header: 'admin.domains.columns.allowed-groups',
+      header: this.translateService.stream('admin.domains.columns.allowed-groups'),
       cell: element => (element.groups.length ? element.groups.join('\n') : '*'),
     },
   ]
 
   displayedColumns = (this.columns.map(c => c.columnDef) as string[]).concat('actions')
-
-  private adminService = inject(AdminService)
-  private translateService = inject(TranslateService)
-  private snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private dialog = inject(MatDialog)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     try {
