@@ -1,6 +1,7 @@
-<h1>{{ "approval-required.title" | translate }}</h1>
-<mat-card class="form-card">
+<span style="flex-grow: 1"></span>
+<mat-card class="form-card info-only">
   <mat-card-content>
+    <h1>{{ "approval-required.title" | translate }}</h1>
     <p style="text-align: center">{{ "approval-required.content" | translate }}</p>
     <mat-card-actions>
       <a mat-button routerLink="/login">{{ "approval-required.actions.login" | translate }}</a>
@@ -12,5 +13,5 @@
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
+  <a class="contact" matButton="elevated" [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

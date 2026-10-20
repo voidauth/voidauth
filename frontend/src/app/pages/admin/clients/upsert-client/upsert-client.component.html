@@ -1,12 +1,11 @@
 <h1>
   @if (form.disabled) {
-    {{ "admin.common.actions.view" | translate }}
+    {{ "admin.client.titles.view" | translate }}
   } @else if (client_id) {
-    {{ "admin.common.actions.update" | translate }}
+    {{ "admin.client.titles.update" | translate }}
   } @else {
-    {{ "admin.common.actions.create" | translate }}
+    {{ "admin.client.titles.create" | translate }}
   }
-  {{ "admin.client.title" | translate }}
 </h1>
 <app-oidc-info style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
 <mat-card class="form-card">

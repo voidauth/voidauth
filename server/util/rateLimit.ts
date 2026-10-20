@@ -17,5 +17,5 @@ const sensitiveRateWindowS = 1 * 60 // 1 minute
 export const sensitiveRateLimit = rateLimit({
   windowMs: sensitiveRateWindowS * 1000,
   max: appConfig.API_RATELIMIT,
-  legacyHeaders: true,
+  legacyHeaders: false,
 })

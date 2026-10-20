@@ -17,17 +17,27 @@ import { UserService } from '../../../services/user.service'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { TableService } from '../../../services/table.service'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 
 @Component({
   selector: 'app-emails',
-  imports: [MaterialModule, RouterLink, TranslatePipe],
+  imports: [MaterialModule, RouterLink, TranslatePipe, LooseAsyncPipe],
   templateUrl: './emails.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './emails.component.scss',
 })
 export class EmailsComponent {
+  private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
+  private userService = inject(UserService)
+  private configService = inject(ConfigService)
+  readonly tableService = inject(TableService)
+
   dataSource: MatTableDataSource<EmailLog> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -36,30 +46,22 @@ export class EmailsComponent {
   columns: TableColumn<EmailLog>[] = [
     {
       columnDef: 'createdAt',
-      header: 'Sent',
+      header: this.translateService.stream('admin.emails.columns.sent'),
       cell: element => new Date(element.createdAt).toDateString(),
     },
     {
       columnDef: 'to',
-      header: 'To',
+      header: this.translateService.stream('admin.emails.columns.to'),
       cell: element => element.to,
     },
     {
       columnDef: 'type',
-      header: 'Type',
+      header: this.translateService.stream('admin.emails.columns.type'),
       cell: element => element.type,
     },
   ]
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
-
-  private adminService = inject(AdminService)
-  private snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private dialog = inject(MatDialog)
-  private userService = inject(UserService)
-  private configService = inject(ConfigService)
-  readonly tableService = inject(TableService)
 
   me?: CurrentUserDetails
   public config?: ConfigResponse
@@ -101,7 +103,7 @@ export class EmailsComponent {
       this.dataSource.data = data.emails
       this.paginator().length = data.count
     } catch (_e) {
-      this.snackbarService.error('Could not get Sent Mail.')
+      this.snackbarService.error(String(this.translateService.instant('admin.emails.messages.load-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -112,7 +114,7 @@ export class EmailsComponent {
       EmailInputComponent,
       {
         data: {
-          header: 'Send Test Email',
+          header: String(this.translateService.instant('admin.emails.dialogs.send-test')),
           initial: this.me?.email,
         },
         disableClose: true,
@@ -125,10 +127,10 @@ export class EmailsComponent {
           this.spinnerService.show()
           await this.adminService.sendTestEmail(data)
           await this.setData()
-          this.snackbarService.message('Sent Test Email.')
+          this.snackbarService.message(String(this.translateService.instant('admin.emails.messages.test-sent')))
         } catch (e) {
           console.error(e)
-          this.snackbarService.error('Could not send Test Email.')
+          this.snackbarService.error(String(this.translateService.instant('admin.emails.messages.test-failed')))
         } finally {
           this.spinnerService.hide()
         }

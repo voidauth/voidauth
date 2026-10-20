@@ -1,4 +1,5 @@
 import { Component, inject, type AfterViewInit, viewChild, ChangeDetectionStrategy } from '@angular/core'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 import { AdminService } from '../../../services/admin.service'
 import { MaterialModule } from '../../../material-module'
 import { MatPaginator } from '@angular/material/paginator'
@@ -11,13 +12,13 @@ import { OidcInfoComponent } from '../../../components/oidc-info/oidc-info.compo
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
 import type { ClientResponse } from '@shared/api-response/ClientResponse'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import type { Observable } from 'rxjs'
 import { TableService } from '../../../services/table.service'
 
 export type TableColumn<T> = {
   columnDef: keyof T & string
-  header: string
+  header: string | Observable<unknown>
   isIcon?: boolean
   isImage?: boolean
   cell: (element: T) => string | Observable<unknown>
@@ -25,12 +26,19 @@ export type TableColumn<T> = {
 
 @Component({
   selector: 'app-clients',
-  imports: [MaterialModule, RouterLink, OidcInfoComponent, TranslatePipe],
+  imports: [MaterialModule, RouterLink, OidcInfoComponent, TranslatePipe, LooseAsyncPipe],
   templateUrl: './clients.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './clients.component.scss',
 })
 export class ClientsComponent implements AfterViewInit {
+  private translateService = inject(TranslateService)
+  private adminService = inject(AdminService)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
+
   dataSource: MatTableDataSource<ClientResponse> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -45,28 +53,22 @@ export class ClientsComponent implements AfterViewInit {
     },
     {
       columnDef: 'client_name',
-      header: 'Name',
+      header: this.translateService.stream('admin.clients.columns.name'),
       cell: element => element.client_name ?? element.client_id,
     },
     {
       columnDef: 'redirect_uris',
-      header: 'Redirects',
+      header: this.translateService.stream('admin.clients.columns.redirects'),
       cell: element => element.redirect_uris?.join('\n') ?? '-',
     },
     {
       columnDef: 'groups',
-      header: 'Allowed Groups',
+      header: this.translateService.stream('admin.clients.columns.allowed-groups'),
       cell: element => (element.groups.length ? element.groups.join('\n') : '*'),
     },
   ]
 
   displayedColumns = this.columns.map(c => c.columnDef).concat('actions')
-
-  private adminService = inject(AdminService)
-  private snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private dialog = inject(MatDialog)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     try {
@@ -101,8 +103,8 @@ export class ClientsComponent implements AfterViewInit {
     const client = this.dataSource.data.find(c => c.client_id === client_id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove app '${client?.client_name ?? client_id}'?`,
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.clients.dialogs.delete', { name: client?.client_name ?? client_id })),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -115,9 +117,11 @@ export class ClientsComponent implements AfterViewInit {
         this.spinnerService.show()
         await this.adminService.deleteClient(client_id)
         this.dataSource.data = this.dataSource.data.filter(c => c.client_id !== client_id)
-        this.snackbarService.message(`App ${client?.client_name ?? client_id} was deleted.`)
+        this.snackbarService.message(
+          String(this.translateService.instant('admin.clients.messages.deleted', { name: client?.client_name ?? client_id })),
+        )
       } catch (_e) {
-        this.snackbarService.error('Could not delete app.')
+        this.snackbarService.error(String(this.translateService.instant('admin.clients.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

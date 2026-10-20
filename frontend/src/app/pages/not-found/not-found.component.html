@@ -1,9 +1,13 @@
-<h1 style="margin-top: 3em">{{ "page-not-found.title" | translate }}</h1>
-
-<a mat-flat-button style="margin-top: 3em" routerLink="/">{{ "page-not-found.actions.go-home" | translate }}</a>
+<span style="flex-grow: 1"></span>
+<mat-card class="form-card info-only">
+  <mat-card-content>
+    <h1>{{ "page-not-found.title" | translate }}</h1>
+    <a mat-flat-button style="margin-top: 3em" routerLink="/">{{ "page-not-found.actions.go-home" | translate }}</a>
+  </mat-card-content>
+</mat-card>
 
 <span style="flex-grow: 1"></span>
 
 @if (config?.contactEmail; as contactEmail) {
-  <a mat-button [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
+  <a class="contact" matButton="elevated" [href]="'mailto:' + contactEmail">{{ "contact-us.actions.label" | translate }}</a>
 }

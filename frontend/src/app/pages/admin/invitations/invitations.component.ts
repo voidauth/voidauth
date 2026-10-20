@@ -24,6 +24,11 @@ import { TableService } from '../../../services/table.service'
   styleUrl: './invitations.component.scss',
 })
 export class InvitationsComponent {
+  private adminService = inject(AdminService)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
   private translate = inject(TranslateService)
 
   dataSource: MatTableDataSource<Invitation> = new MatTableDataSource()
@@ -34,22 +39,22 @@ export class InvitationsComponent {
   columns: TableColumn<Invitation>[] = [
     {
       columnDef: 'username',
-      header: 'Username',
+      header: this.translate.stream('admin.invitations.columns.username'),
       cell: element => element.username ?? '-',
     },
     {
       columnDef: 'email',
-      header: 'Email',
+      header: this.translate.stream('admin.invitations.columns.email'),
       cell: element => element.email ?? '-',
     },
     {
       columnDef: 'expiresAt',
-      header: 'Expires In',
+      header: this.translate.stream('admin.invitations.columns.expires-in'),
       cell: element => HumanDurationPipe.t(new Date(element.expiresAt).getTime() - new Date().getTime(), this.translate),
     },
     {
       columnDef: 'userExpiresAt',
-      header: 'Access Expires',
+      header: this.translate.stream('admin.invitations.columns.access-expires'),
       cell: element => HumanDurationPipe.t(element.userExpiresAt == null
         ? null
         : new Date(element.userExpiresAt).getTime() - new Date().getTime(), this.translate),
@@ -57,12 +62,6 @@ export class InvitationsComponent {
   ]
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
-
-  private adminService = inject(AdminService)
-  private snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private dialog = inject(MatDialog)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     // Assign the data to the data source for the table to render
@@ -87,8 +86,10 @@ export class InvitationsComponent {
     const invite = this.dataSource.data.find(i => i.id === id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove invitation for '${invite?.username ?? invite?.email ?? id}'?`,
-        header: 'Delete',
+        message: String(
+          this.translate.instant('admin.invitations.dialogs.delete', { name: invite?.username ?? invite?.email ?? id }),
+        ),
+        header: String(this.translate.instant('admin.common.actions.delete')),
       },
     })
 
@@ -101,9 +102,9 @@ export class InvitationsComponent {
         this.spinnerService.show()
         await this.adminService.deleteInvitation(id)
         this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
-        this.snackbarService.message('Invitation was deleted.')
+        this.snackbarService.message(String(this.translate.instant('admin.invitations.messages.deleted')))
       } catch (_e) {
-        this.snackbarService.error('Could not delete invitation.')
+        this.snackbarService.error(String(this.translate.instant('admin.invitations.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

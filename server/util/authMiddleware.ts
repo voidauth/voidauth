@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction } from 'express'
-import { userIsPrivilegedForTotpValidate } from './auth'
 
 export function checkUserExists(req: Pick<Request, 'user'>, res: Response, next: NextFunction) {
   if (!req.user) {
@@ -50,7 +49,7 @@ export function checkPrivilegedForTotpValidate(req: Pick<Request, 'user'>, res: 
     res.sendStatus(401)
     return
   }
-  if (!userIsPrivilegedForTotpValidate(req.user, req.user.amr)) {
+  if (!req.user.isPrivilegedForTotpValidate) {
     res.sendStatus(403)
     return
   }

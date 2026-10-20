@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, type OnInit } from '@angula
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { MaterialModule } from '../../../../material-module'
 import { AdminService } from '../../../../services/admin.service'
@@ -38,6 +38,7 @@ export class CustomClaimComponent implements OnInit {
   })
 
   private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private snackbarService = inject(SnackbarService)
@@ -62,7 +63,7 @@ export class CustomClaimComponent implements OnInit {
         }
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading custom claim.')
+        this.snackbarService.error(String(this.translateService.instant('admin.claim.messages.load-failed')))
       } finally {
         this.spinnerService.hide()
       }
@@ -78,7 +79,7 @@ export class CustomClaimComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Add User Claim',
+        header: String(this.translateService.instant('admin.claim.dialogs.add-user-claim')),
         fetchOptions: fetchUserOptions,
         allowNew: false,
         optionLabel: 'User',
@@ -117,7 +118,7 @@ export class CustomClaimComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Edit User Claim',
+        header: String(this.translateService.instant('admin.claim.dialogs.edit-user-claim')),
         fetchOptions: fetchUserOptions,
         allowNew: false,
         optionLabel: 'User',
@@ -153,7 +154,7 @@ export class CustomClaimComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Add Group Claim',
+        header: String(this.translateService.instant('admin.claim.dialogs.add-group-claim')),
         availableOptions: availableGroups.map(g => g.name),
         allowNew: false,
         optionLabel: 'Group',
@@ -188,7 +189,7 @@ export class CustomClaimComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Edit Group Claim',
+        header: String(this.translateService.instant('admin.claim.dialogs.edit-group-claim')),
         availableOptions: availableGroups.map(g => g.name),
         allowNew: false,
         optionLabel: 'Group',
@@ -228,7 +229,7 @@ export class CustomClaimComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Add Invite Claim',
+        header: String(this.translateService.instant('admin.claim.dialogs.add-invite-claim')),
         availableOptions: availableInvites.map(n => this.inviteDisplay(n)),
         allowNew: false,
         optionLabel: 'Invite',
@@ -263,7 +264,7 @@ export class CustomClaimComponent implements OnInit {
 
     const dialogRef = this.dialog.open(OptionValueDialogComponent, {
       data: {
-        header: 'Edit Invite Claim',
+        header: String(this.translateService.instant('admin.claim.dialogs.edit-invite-claim')),
         availableOptions: availableInvites.map(n => this.inviteDisplay(n)),
         allowNew: false,
         optionLabel: 'Invitation',
@@ -306,7 +307,11 @@ export class CustomClaimComponent implements OnInit {
         id: this.id ?? undefined,
         ...values,
       })
-      this.snackbarService.message(`Custom claim ${this.id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(
+        this.id
+          ? String(this.translateService.instant('admin.claim.messages.updated'))
+          : String(this.translateService.instant('admin.claim.messages.created')),
+      )
 
       this.form.markAsUntouched()
       this.form.markAsPristine()
@@ -316,7 +321,11 @@ export class CustomClaimComponent implements OnInit {
         replaceUrl: true,
       })
     } catch (_e) {
-      this.snackbarService.error(`Could not ${this.id ? 'update' : 'create'} custom claim.`)
+      this.snackbarService.error(
+        this.id
+          ? String(this.translateService.instant('admin.claim.messages.update-failed'))
+          : String(this.translateService.instant('admin.claim.messages.create-failed')),
+      )
     } finally {
       this.spinnerService.hide()
     }
@@ -325,8 +334,8 @@ export class CustomClaimComponent implements OnInit {
   remove() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: 'Are you sure you want to delete this custom claim?',
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.claim.dialogs.delete')),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -341,10 +350,10 @@ export class CustomClaimComponent implements OnInit {
           await this.adminService.deleteCustomClaim(this.id)
         }
 
-        this.snackbarService.message('Custom claim deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.claim.messages.deleted')))
         await this.router.navigate(['/admin/claims'])
       } catch (_e) {
-        this.snackbarService.error('Could not delete custom claim.')
+        this.snackbarService.error(String(this.translateService.instant('admin.claim.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

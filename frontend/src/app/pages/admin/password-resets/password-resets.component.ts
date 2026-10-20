@@ -39,6 +39,14 @@ import { debounceTime, distinctUntilChanged, Subject } from 'rxjs'
 })
 export class PasswordResetsComponent {
   private translate = inject(TranslateService)
+  adminService = inject(AdminService)
+  snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private configService = inject(ConfigService)
+  private dialog = inject(MatDialog)
+  private translateService = inject(TranslateService)
+  readonly tableService = inject(TableService)
+
   dataSource: MatTableDataSource<PasswordResetUser> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -47,12 +55,12 @@ export class PasswordResetsComponent {
   columns: TableColumn<PasswordResetUser>[] = [
     {
       columnDef: 'username',
-      header: 'Username',
+      header: this.translate.stream('admin.password-resets.columns.username'),
       cell: element => element.username,
     },
     {
       columnDef: 'expiresAt',
-      header: 'Expires In',
+      header: this.translate.stream('admin.password-resets.columns.expires-in'),
       cell: element => HumanDurationPipe.t(new Date(element.expiresAt).getTime() - new Date().getTime(), this.translate),
     },
   ]
@@ -64,14 +72,6 @@ export class PasswordResetsComponent {
   userSelectInputSubject = new Subject<string>()
 
   config?: ConfigResponse
-
-  adminService = inject(AdminService)
-  snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private configService = inject(ConfigService)
-  private dialog = inject(MatDialog)
-  private translateService = inject(TranslateService)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     try {
@@ -119,7 +119,7 @@ export class PasswordResetsComponent {
       this.dataSource.data = data.passwordResets
       this.paginator().length = data.count
     } catch (_e) {
-      this.snackbarService.error('Could not get password reset links.')
+      this.snackbarService.error(String(this.translate.instant('admin.password-resets.messages.load-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -136,9 +136,9 @@ export class PasswordResetsComponent {
       await this.adminService.createPasswordReset({ userId: user.id })
       this.userSelect.reset()
       await this.setData()
-      this.snackbarService.message('Password reset link was created.')
+      this.snackbarService.message(String(this.translate.instant('admin.password-resets.messages.created')))
     } catch (_e) {
-      this.snackbarService.error('Could not create password reset link.')
+      this.snackbarService.error(String(this.translate.instant('admin.password-resets.messages.create-failed')))
     } finally {
       this.spinnerService.hide()
     }
@@ -147,8 +147,8 @@ export class PasswordResetsComponent {
   onDelete(id: string) {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to delete this password reset link?`,
-        header: 'Delete',
+        message: String(this.translate.instant('admin.password-resets.dialogs.delete')),
+        header: String(this.translate.instant('admin.common.actions.delete')),
       },
     })
 
@@ -161,9 +161,9 @@ export class PasswordResetsComponent {
         this.spinnerService.show()
         await this.adminService.deletePasswordReset(id)
         await this.setData()
-        this.snackbarService.message('Password reset link was deleted.')
+        this.snackbarService.message(String(this.translate.instant('admin.password-resets.messages.deleted')))
       } catch (_e) {
-        this.snackbarService.error('Could not delete password reset link.')
+        this.snackbarService.error(String(this.translate.instant('admin.password-resets.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }
@@ -191,9 +191,9 @@ export class PasswordResetsComponent {
       }
       this.spinnerService.show()
       await this.adminService.sendPasswordReset(reset.id)
-      this.snackbarService.message(`Password reset link sent to ${reset.email}.`)
+      this.snackbarService.message(String(this.translate.instant('admin.password-resets.messages.sent', { email: reset.email })))
     } catch (_e) {
-      this.snackbarService.error('Could not send password reset link.')
+      this.snackbarService.error(String(this.translate.instant('admin.password-resets.messages.send-failed')))
     } finally {
       this.spinnerService.hide()
     }

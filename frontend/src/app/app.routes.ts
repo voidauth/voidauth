@@ -9,28 +9,28 @@ import { isAdminGuard } from './guards/is-admin.guard'
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent), canActivate: [LoginGuard] },
 
-  { path: REDIRECT_PATHS.LOGIN, loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) },
+  { path: REDIRECT_PATHS.LOGIN, loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent), data: { pageBackground: true } },
 
-  { path: REDIRECT_PATHS.MFA, loadComponent: () => import('./pages/mfa/mfa.component').then(m => m.MfaComponent) },
+  { path: REDIRECT_PATHS.MFA, loadComponent: () => import('./pages/mfa/mfa.component').then(m => m.MfaComponent), data: { pageBackground: true } },
 
-  { path: REDIRECT_PATHS.FORGOT_PASSWORD, loadComponent: () => import('./pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) },
+  { path: REDIRECT_PATHS.FORGOT_PASSWORD, loadComponent: () => import('./pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent), data: { pageBackground: true } },
 
-  { path: REDIRECT_PATHS.RESET_PASSWORD, loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
+  { path: REDIRECT_PATHS.RESET_PASSWORD, loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent), data: { pageBackground: true } },
 
-  { path: `${REDIRECT_PATHS.LOGOUT}/:challenge`, loadComponent: () => import('./pages/logout/logout.component').then(m => m.LogoutComponent) },
+  { path: `${REDIRECT_PATHS.LOGOUT}/:challenge`, loadComponent: () => import('./pages/logout/logout.component').then(m => m.LogoutComponent), data: { pageBackground: true } },
   { path: REDIRECT_PATHS.LOGOUT, redirectTo: `${REDIRECT_PATHS.LOGOUT}/`, pathMatch: 'full' },
 
-  { path: `${REDIRECT_PATHS.VERIFY_EMAIL}/:id/:challenge`, loadComponent: () => import('./pages/verify-email/verify/verify.component').then(m => m.VerifyComponent) },
+  { path: `${REDIRECT_PATHS.VERIFY_EMAIL}/:id/:challenge`, loadComponent: () => import('./pages/verify-email/verify/verify.component').then(m => m.VerifyComponent), data: { pageBackground: true } },
 
-  { path: REDIRECT_PATHS.VERIFICATION_EMAIL_SENT, loadComponent: () => import('./pages/verify-email/verify-sent/verify-sent.component').then(m => m.VerifySentComponent) },
+  { path: REDIRECT_PATHS.VERIFICATION_EMAIL_SENT, loadComponent: () => import('./pages/verify-email/verify-sent/verify-sent.component').then(m => m.VerifySentComponent), data: { pageBackground: true } },
 
-  { path: REDIRECT_PATHS.APPROVAL_REQUIRED, loadComponent: () => import('./pages/approval-required/approval-required.component').then(m => m.ApprovalRequiredComponent) },
+  { path: REDIRECT_PATHS.APPROVAL_REQUIRED, loadComponent: () => import('./pages/approval-required/approval-required.component').then(m => m.ApprovalRequiredComponent), data: { pageBackground: true } },
 
-  { path: REDIRECT_PATHS.FORBIDDEN, loadComponent: () => import('./pages/forbidden/forbidden.component').then(m => m.ForbiddenComponent) },
+  { path: REDIRECT_PATHS.FORBIDDEN, loadComponent: () => import('./pages/forbidden/forbidden.component').then(m => m.ForbiddenComponent), data: { pageBackground: true } },
 
-  { path: REDIRECT_PATHS.USER_EXPIRED, loadComponent: () => import('./pages/user-expired/user-expired.component').then(m => m.UserExpiredComponent) },
+  { path: REDIRECT_PATHS.USER_EXPIRED, loadComponent: () => import('./pages/user-expired/user-expired.component').then(m => m.UserExpiredComponent), data: { pageBackground: true } },
 
-  { path: 'consent/:uid', loadComponent: () => import('./pages/consent/consent.component').then(m => m.ConsentComponent), canActivate: [LoginGuard] },
+  { path: 'consent/:uid', loadComponent: () => import('./pages/consent/consent.component').then(m => m.ConsentComponent), canActivate: [LoginGuard], data: { pageBackground: true } },
 
   { path: REDIRECT_PATHS.REGISTER, loadComponent: () => import('./pages/registration/registration.component').then(m => m.RegistrationComponent) },
   { path: REDIRECT_PATHS.INVITE, loadComponent: () => import('./pages/registration/registration.component').then(m => m.RegistrationComponent) },
@@ -62,7 +62,7 @@ export const routes: Routes = [
 
   { path: 'admin/emails', loadComponent: () => import('./pages/admin/emails/emails.component').then(m => m.EmailsComponent), canActivate: [isAdminGuard] },
 
-  { path: REDIRECT_PATHS.NOT_FOUND, loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent) },
+  { path: REDIRECT_PATHS.NOT_FOUND, loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent), data: { pageBackground: true } },
 
-  { path: '**', pathMatch: 'full', loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent) },
+  { path: '**', pathMatch: 'full', loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent), data: { pageBackground: true } },
 ]

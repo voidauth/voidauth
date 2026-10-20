@@ -180,7 +180,7 @@ export class UpsertClientComponent implements OnInit {
         }
       } catch (e) {
         console.error(e)
-        this.snackbarService.error('Error loading OIDC App Details.')
+        this.snackbarService.error(String(this.translateService.instant('admin.client.messages.load-failed')))
         this.disable()
       } finally {
         this.spinnerService.hide()
@@ -311,7 +311,11 @@ export class UpsertClientComponent implements OnInit {
         await this.adminService.deleteClientLogo(this.client_id)
       }
 
-      this.snackbarService.message(`Client ${this.client_id ? 'updated' : 'created'}.`)
+      this.snackbarService.message(
+        this.client_id
+          ? String(this.translateService.instant('admin.client.messages.updated'))
+          : String(this.translateService.instant('admin.client.messages.created')),
+      )
       await this.getCurrentClientData()
       await this.router.navigate(['/admin/client', this.client_id], {
         replaceUrl: true,
@@ -332,7 +336,9 @@ export class UpsertClientComponent implements OnInit {
       if (clientFieldsSaved && hasLogoAction) {
         shownError = String(this.translateService.instant('admin.client.messages.logo-save-failed'))
       }
-      shownError ??= `Could not ${this.client_id ? 'update' : 'create'} app.`
+      shownError ??= this.client_id
+        ? String(this.translateService.instant('admin.client.messages.update-failed'))
+        : String(this.translateService.instant('admin.client.messages.create-failed'))
       this.snackbarService.error(shownError)
     } finally {
       this.spinnerService.hide()
@@ -396,8 +402,8 @@ export class UpsertClientComponent implements OnInit {
   deleteClient() {
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to delete this app?`,
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.client.dialogs.delete')),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -413,10 +419,10 @@ export class UpsertClientComponent implements OnInit {
           await this.adminService.deleteClient(this.client_id)
         }
 
-        this.snackbarService.message('App deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.client.messages.deleted')))
         await this.router.navigate(['/admin/clients'])
       } catch (_e) {
-        this.snackbarService.error('Could not delete app.')
+        this.snackbarService.error(String(this.translateService.instant('admin.client.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }

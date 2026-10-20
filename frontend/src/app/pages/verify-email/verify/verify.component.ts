@@ -50,7 +50,7 @@ export class VerifyComponent implements OnInit {
           // attempted to create interaction and failed
           console.error('Interaction cookie session not set even after creating one.')
           console.error(e)
-          this.snackbarService.error('Could not create session.')
+          this.snackbarService.error(String(this.translate.instant('components.common.messages.session-failed')))
         }
       }
 
@@ -75,7 +75,7 @@ export class VerifyComponent implements OnInit {
         const user = (await this.authService.interactionExists()).user
         if (user && this.passkeyService.shouldAskPasskey(user)) {
           this.spinnerService.hide()
-          await this.passkeyService.dialogRegistration()
+          await this.passkeyService.dialogRegistration({ skipPasskeyPrompt: !!user.skipPasskeyPrompt })
         }
       } catch (_e) {
         // do nothing
@@ -95,7 +95,7 @@ export class VerifyComponent implements OnInit {
         error ||= (e as Error).message
       }
 
-      error ||= 'Something went wrong.'
+      error ||= String(this.translate.instant('components.common.messages.something-went-wrong'))
       this.snackbarService.error(error)
       this.title = this.translate.stream('verify-email.verify.title.email-could-not-be-verified')
     } finally {
@@ -121,7 +121,7 @@ export class VerifyComponent implements OnInit {
         error ||= (e as Error).message
       }
 
-      error ||= 'Something went wrong.'
+      error ||= String(this.translate.instant('components.common.messages.something-went-wrong'))
       this.title = this.translate.stream('verify-email.verify.title.email-verification-could-not-be-sent')
       this.snackbarService.error(error)
     } finally {

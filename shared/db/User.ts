@@ -10,6 +10,7 @@ export type User = Pick<Audit, 'createdAt' | 'updatedAt'> & {
   emailVerified: boolean | number
   approved: boolean | number
   mfaRequired: boolean | number
+  skipPasskeyPrompt: boolean | number
   expiresAt?: number | Date | null
 }
 

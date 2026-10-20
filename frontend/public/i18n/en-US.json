@@ -11,7 +11,11 @@
     "actions": {
       "login": "Login"
     },
-    "title": "Login"
+    "title": "Login",
+    "messages": {
+      "passkey-failed": "Could not login with passkey.",
+      "invalid-credentials": "Invalid username or password."
+    }
   },
   "contact-us": {
     "actions": {
@@ -33,6 +37,9 @@
         "claims": "Custom Claims"
       },
       "logout": "Logout"
+    },
+    "messages": {
+      "language-failed": "Cannot set language."
     }
   },
   "duration": {
@@ -84,7 +91,15 @@
   "passkey-dialog": {
     "title": "Enable {{platformName}}?",
     "actions": {
-      "passkey": "Enable {{platformName}}"
+      "passkey": "Enable {{platformName}}",
+      "skip": "Skip",
+      "never-ask": "Don't ask to setup a passkey again."
+    },
+    "messages": {
+      "added": "Passkey added.",
+      "name-failed": "Passkey created, but could not set name.",
+      "create-failed": "Could not create Passkey.",
+      "preference-failed": "Could not save the passkey prompt preference."
     }
   },
   "mfa": {
@@ -94,7 +109,13 @@
       "back": "Back"
     },
     "locked": "Too many incorrect codes. Try again in <b>{{duration}}</b>.",
-    "title": "Multi-Factor Authentication Required"
+    "title": "Multi-Factor Authentication Required",
+    "messages": {
+      "options-failed": "Could not get authenticator options.",
+      "passkey-mfa-only": "Only Passkeys that require MFA will satisfy MFA requirements.",
+      "passkey-failed": "Could not authenticate with passkey.",
+      "try-logout": "Something went wrong. Try logout from dropdown menu in header."
+    }
   },
   "registration": {
     "actions": {
@@ -114,6 +135,9 @@
     },
     "name": {
       "label": "Name"
+    },
+    "messages": {
+      "invalid-invite": "Invalid invite link."
     }
   },
   "reset-password": {
@@ -121,7 +145,12 @@
       "enable-passkey": "Enable {{platformName}}",
       "reset-password": "Reset Password"
     },
-    "title": "Reset Password"
+    "title": "Reset Password",
+    "messages": {
+      "invalid-link": "Invalid Password Reset Link.",
+      "complete": "Password Reset Complete.",
+      "passkey-created": "Passkey created."
+    }
   },
   "approval-required": {
     "content": "Your account needs approval before you can log in. Please wait or contact an administrator for help.",
@@ -146,7 +175,10 @@
       "sign-into-question": "Do you want to sign in to <br /> <h2>{{destination}}</h2>",
       "post-signin-redir-notice": "After you sign in, you will be redirected to <b>{{redirect}}</b>"
     },
-    "title": "Confirm"
+    "title": "Confirm",
+    "messages": {
+      "invalid-details": "Confirmation details not valid."
+    }
   },
   "forgot-password": {
     "username": {
@@ -158,7 +190,11 @@
       "create-again": "Create Again",
       "create": "Create"
     },
-    "title": "Forgot Password"
+    "title": "Forgot Password",
+    "messages": {
+      "link-sent": "Password reset link sent.",
+      "link-not-sent": "Password reset link created, but could not be sent."
+    }
   },
   "form-errors": {
     "required": "Required.",
@@ -211,6 +247,10 @@
       },
       "email": {
         "label": "Email"
+      },
+      "messages": {
+        "user-load-failed": "Could not load user details.",
+        "resent": "Verification Email Re-Sent."
       }
     }
   },
@@ -265,6 +305,11 @@
             "delete": {
               "tooltip": "Delete"
             }
+          },
+          "columns": {
+            "name": "Name/ID",
+            "last-used": "Last Used",
+            "created-at": "Created At"
           }
         },
         "mfa": {
@@ -311,6 +356,35 @@
           "label": "Delete Account"
         }
       }
+    },
+    "messages": {
+      "authenticator-added": "Authenticator added successfully.",
+      "mfa-enabled": "Multi-Factor Authentication enabled.",
+      "profile-updated": "Profile updated.",
+      "profile-update-failed": "Could not update profile.",
+      "password-updated": "Password updated.",
+      "password-update-failed": "Could not update password.",
+      "passkey-registered": "Passkey registered successfully.",
+      "passkey-updated": "Passkey updated.",
+      "passkey-update-failed": "Could not update Passkey.",
+      "passkey-deleted": "Passkey deleted.",
+      "passkey-delete-failed": "Passkey could not be deleted.",
+      "passkeys-deleted": "Removed all Passkeys.",
+      "passkeys-delete-failed": "Could not remove all Passkeys.",
+      "password-removed": "Removed password.",
+      "password-remove-failed": "Could not remove password.",
+      "mfa-disabled": "Multi-Factor Authentication disabled and Authenticators removed.",
+      "mfa-disable-failed": "Could not disable Multi-Factor Authentication or remove Authenticators.",
+      "account-deleted": "Deleted account.",
+      "account-delete-failed": "Could not delete account."
+    },
+    "dialogs": {
+      "delete-passkey": "Are you sure you want to delete this Passkey?",
+      "delete-all-passkeys": "Are you sure you want to delete all of your account Passkeys? Previously enabled services like FaceID, Windows Hello, TouchID, etc. will stop working.",
+      "remove-password": "Are you sure you want to remove your account password? You will have to login with a Passkey, FaceID, Windows Hello, etc. until you set a password again.",
+      "disable-mfa": "Are you sure you want to disable Multi-Factor Authentication and remove any Authenticators on your account?",
+      "delete-account": "Are you sure you want to delete your account?",
+      "danger": "DANGER"
     }
   },
   "admin": {
@@ -331,6 +405,10 @@
       },
       "messages": {
         "all-users-have-access": "No Groups, ALL users will have access."
+      },
+      "dialogs": {
+        "add-claim": "Add Custom Claim",
+        "edit-claim": "Edit Custom Claim"
       }
     },
     "users": {
@@ -341,6 +419,28 @@
       },
       "labels": {
         "search": "Search"
+      },
+      "columns": {
+        "username": "Username",
+        "email": "Email",
+        "email-verified": "Email Verified",
+        "approved": "Approved",
+        "expires": "Expires"
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to remove user '{{name}}'?",
+        "approve-selected": "Are you sure you want to approve {{count}} user(s)?",
+        "delete-selected": "Are you sure you want to delete {{count}} user(s)?",
+        "approval": "Approval"
+      },
+      "messages": {
+        "load-failed": "Could not get users.",
+        "deleted": "User was deleted.",
+        "delete-failed": "Could not delete user.",
+        "selected-approved": "User(s) were approved.",
+        "selected-approve-failed": "Could not approve user(s).",
+        "selected-deleted": "User(s) were deleted.",
+        "selected-delete-failed": "Could not delete user(s)."
       }
     },
     "user": {
@@ -367,21 +467,49 @@
         "remove": "Remove",
         "open": "Open",
         "edit": "Edit"
+      },
+      "messages": {
+        "load-failed": "Error loading user.",
+        "group-add-failed": "Error adding group.",
+        "updated": "User updated.",
+        "update-failed": "Could not update user.",
+        "signed-out": "User signed out.",
+        "sign-out-failed": "Could not sign out user.",
+        "deleted": "User deleted.",
+        "delete-failed": "Could not delete user."
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to delete this user?"
       }
     },
     "clients": {
       "empty-state": "No OIDC Apps.",
       "actions": {
         "create": "Create OIDC App"
+      },
+      "columns": {
+        "name": "Name",
+        "redirects": "Redirects",
+        "allowed-groups": "Allowed Groups"
+      },
+      "messages": {
+        "deleted": "App {{name}} was deleted.",
+        "delete-failed": "Could not delete app."
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to remove app '{{name}}'?"
       }
     },
     "client": {
-      "title": "OIDC App",
+      "titles": {
+        "view": "View OIDC App",
+        "update": "Update OIDC App",
+        "create": "Create OIDC App"
+      },
       "labels": {
         "name": "Name",
         "home-page-url": "Home Page URL",
         "logo-url": "Logo URL",
-        "upload-logo": "Application logo",
         "logo-preview": "OIDC App logo preview",
         "add-group": "Add Group",
         "client-id": "Client ID",
@@ -421,17 +549,41 @@
         "client-id-copied": "Client ID copied to clipboard.",
         "secret-copied": "Secret copied to clipboard.",
         "logo-invalid-file": "Choose a PNG, JPEG, or WebP image no larger than 2 MB.",
-        "logo-save-failed": "Client fields were saved, but the logo change failed."
+        "logo-save-failed": "Client fields were saved, but the logo change failed.",
+        "updated": "Client updated.",
+        "created": "Client created.",
+        "update-failed": "Could not update app.",
+        "create-failed": "Could not create app.",
+        "load-failed": "Error loading OIDC App Details.",
+        "deleted": "App deleted.",
+        "delete-failed": "Could not delete app."
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to delete this app?"
       }
     },
     "domains": {
       "empty-state": "No Domains.",
       "actions": {
         "create": "Create ProxyAuth Domain"
+      },
+      "columns": {
+        "domain": "Domains",
+        "allowed-groups": "Allowed Groups"
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to remove domain '{{name}}'?"
+      },
+      "messages": {
+        "deleted": "Domain was deleted.",
+        "delete-failed": "Could not delete domain."
       }
     },
     "domain": {
-      "title": "ProxyAuth Domain",
+      "titles": {
+        "update": "Update ProxyAuth Domain",
+        "create": "Create ProxyAuth Domain"
+      },
       "labels": {
         "domain": "Domain",
         "max-session-length": "Max Session Age (Minutes)",
@@ -451,6 +603,18 @@
         "0": "Domain should not include protocol, may include a path and port, and supports wildcards (*) at any position.",
         "1": "<b>example.domain.com/api/alive</b> will only check access to a single endpoint.",
         "2": "<b>example.domain.com/api/*</b> will check access for all endpoints under /api."
+      },
+      "messages": {
+        "updated": "Domain updated.",
+        "created": "Domain created.",
+        "update-failed": "Could not update domain.",
+        "create-failed": "Could not create domain.",
+        "load-failed": "Error loading ProxyAuth domain.",
+        "deleted": "Domain deleted.",
+        "delete-failed": "Could not delete domain."
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to delete this domain?"
       }
     },
     "password-resets": {
@@ -463,9 +627,23 @@
         "delete": "Delete"
       },
       "messages": {
-        "link-copied": "Reset link copied to clipboard."
+        "link-copied": "Reset link copied to clipboard.",
+        "sent": "Password reset link sent to {{email}}.",
+        "load-failed": "Could not get password reset links.",
+        "created": "Password reset link was created.",
+        "create-failed": "Could not create password reset link.",
+        "deleted": "Password reset link was deleted.",
+        "delete-failed": "Could not delete password reset link.",
+        "send-failed": "Could not send password reset link."
       },
-      "empty-state": "No Password Resets."
+      "columns": {
+        "username": "Username",
+        "expires-in": "Expires In"
+      },
+      "empty-state": "No Password Resets.",
+      "dialogs": {
+        "delete": "Are you sure you want to delete this password reset link?"
+      }
     },
     "emails": {
       "empty-state": "No Sent Mail.",
@@ -475,16 +653,42 @@
       "tooltips": {
         "preview": "Preview",
         "view-user": "View User"
+      },
+      "columns": {
+        "sent": "Sent",
+        "to": "To",
+        "type": "Type"
+      },
+      "messages": {
+        "load-failed": "Could not get Sent Mail.",
+        "test-sent": "Sent Test Email.",
+        "test-failed": "Could not send Test Email."
+      },
+      "dialogs": {
+        "send-test": "Send Test Email"
       }
     },
     "groups": {
       "empty-state": "No groups.",
       "actions": {
         "create": "Create Group"
+      },
+      "columns": {
+        "name": "Group Name"
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to remove group '{{name}}'?"
+      },
+      "messages": {
+        "deleted": "Group was deleted.",
+        "delete-failed": "Could not delete group."
       }
     },
     "group": {
-      "title": "Group",
+      "titles": {
+        "update": "Update Group",
+        "create": "Create Group"
+      },
       "labels": {
         "name": "Name",
         "add-user": "Add User",
@@ -501,16 +705,44 @@
       "tooltips": {
         "edit": "Edit",
         "remove": "Remove"
+      },
+      "messages": {
+        "updated": "Group updated.",
+        "created": "Group created.",
+        "update-failed": "Could not update group.",
+        "create-failed": "Could not create group.",
+        "load-failed": "Error loading group.",
+        "deleted": "Group deleted.",
+        "delete-failed": "Could not delete group."
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to delete this group?"
       }
     },
     "invitations": {
       "empty-state": "No invitations.",
       "actions": {
         "create": "Create Invitation"
+      },
+      "columns": {
+        "username": "Username",
+        "email": "Email",
+        "expires-in": "Expires In",
+        "access-expires": "Access Expires"
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to remove invitation for '{{name}}'?"
+      },
+      "messages": {
+        "deleted": "Invitation was deleted.",
+        "delete-failed": "Could not delete invitation."
       }
     },
     "invitation": {
-      "title": "Invitation",
+      "titles": {
+        "update": "Update Invitation",
+        "create": "Create Invitation"
+      },
       "labels": {
         "invite-link": "Invite Link",
         "username": "Username",
@@ -537,23 +769,49 @@
       "messages": {
         "link-copied": "Invite link copied to clipboard.",
         "email-not-verified": "Cannot email invitation link, email connection not verified.",
-        "no-email": "Cannot email invitation link, invite does not include an email address."
+        "no-email": "Cannot email invitation link, invite does not include an email address.",
+        "sent": "Invite sent to {{email}}.",
+        "updated": "Invitation updated.",
+        "created": "Invitation created.",
+        "update-failed": "Could not update invitation.",
+        "create-failed": "Could not create invitation.",
+        "load-failed": "Error loading invitation.",
+        "group-add-failed": "Error adding group.",
+        "send-failed": "Could not send invitation.",
+        "deleted": "Invitation deleted.",
+        "delete-failed": "Could not delete invitation."
       },
       "actions": {
         "send": "Send Invite"
       },
       "checkboxes": {
         "email-verified": "Email Verified"
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to delete this invitation?"
       }
     },
     "claims": {
       "actions": {
         "create": "Create Claim"
       },
-      "empty-state": "No Custom Claims."
+      "empty-state": "No Custom Claims.",
+      "columns": {
+        "claim": "Claim"
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to remove custom claim '{{name}}'?"
+      },
+      "messages": {
+        "deleted": "Custom claim was deleted.",
+        "delete-failed": "Could not delete custom claim."
+      }
     },
     "claim": {
-      "title": "Custom Claim",
+      "titles": {
+        "update": "Update Custom Claim",
+        "create": "Create Custom Claim"
+      },
       "labels": {
         "name": "Name",
         "user-claims": "Users",
@@ -570,6 +828,24 @@
       "tooltips": {
         "edit": "Edit",
         "remove": "Remove"
+      },
+      "messages": {
+        "updated": "Custom claim updated.",
+        "created": "Custom claim created.",
+        "update-failed": "Could not update custom claim.",
+        "create-failed": "Could not create custom claim.",
+        "load-failed": "Error loading custom claim.",
+        "deleted": "Custom claim deleted.",
+        "delete-failed": "Could not delete custom claim."
+      },
+      "dialogs": {
+        "delete": "Are you sure you want to delete this custom claim?",
+        "add-user-claim": "Add User Claim",
+        "edit-user-claim": "Edit User Claim",
+        "add-group-claim": "Add Group Claim",
+        "edit-group-claim": "Edit Group Claim",
+        "add-invite-claim": "Add Invite Claim",
+        "edit-invite-claim": "Edit Invite Claim"
       }
     }
   },
@@ -648,6 +924,11 @@
         "cancel": {
           "label": "Cancel"
         }
+      },
+      "messages": {
+        "enable-failed": "Could not enable Multi-Factor Authentication.",
+        "add-failed": "Could not add authenticator.",
+        "info-failed": "Could not get authenticator info."
       }
     },
     "passkey-edit": {
@@ -689,7 +970,30 @@
       }
     },
     "common": {
-      "or": "or"
+      "or": "or",
+      "messages": {
+        "session-failed": "Could not create session.",
+        "user-not-found": "User not found.",
+        "passkey-already-registered": "Passkey already registered.",
+        "invalid-code": "Invalid code entered.",
+        "register-passkey-failed": "Could not register passkey.",
+        "verification-email-sent": "Verification email sent.",
+        "email-updated": "Email updated.",
+        "email-update-failed": "Could not update email.",
+        "something-went-wrong": "Something went wrong."
+      }
+    },
+    "paginator": {
+      "items-per-page": "Items per page:",
+      "next-page": "Next page",
+      "previous-page": "Previous page",
+      "first-page": "First page",
+      "last-page": "Last page",
+      "range": "{{start}} – {{end}} of {{length}}",
+      "range-empty": "0 of {{length}}"
+    },
+    "snackbar": {
+      "ok": "Ok"
     }
   },
   "user-expired": {

@@ -1,4 +1,5 @@
 import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
@@ -12,17 +13,24 @@ import { RouterLink } from '@angular/router'
 import { SpinnerService } from '../../../services/spinner.service'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component'
-import { TranslatePipe } from '@ngx-translate/core'
+import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { TableService } from '../../../services/table.service'
 
 @Component({
   selector: 'app-groups',
-  imports: [MaterialModule, RouterLink, TranslatePipe],
+  imports: [MaterialModule, RouterLink, TranslatePipe, LooseAsyncPipe],
   templateUrl: './groups.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './groups.component.scss',
 })
 export class GroupsComponent {
+  private adminService = inject(AdminService)
+  private translateService = inject(TranslateService)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
+
   dataSource: MatTableDataSource<Group> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -31,7 +39,7 @@ export class GroupsComponent {
   columns: TableColumn<Group>[] = [
     {
       columnDef: 'name',
-      header: 'Group Name',
+      header: this.translateService.stream('admin.groups.columns.name'),
       cell: element => element.name,
     },
   ]
@@ -39,12 +47,6 @@ export class GroupsComponent {
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
 
   public ADMIN_GROUP = ADMIN_GROUP
-
-  private adminService = inject(AdminService)
-  private snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private dialog = inject(MatDialog)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     try {
@@ -69,8 +71,8 @@ export class GroupsComponent {
     const group = this.dataSource.data.find(g => g.id === id)
     const dialogRef = this.dialog.open(ConfirmComponent, {
       data: {
-        message: `Are you sure you want to remove group '${group?.name ?? id}'?`,
-        header: 'Delete',
+        message: String(this.translateService.instant('admin.groups.dialogs.delete', { name: group?.name ?? id })),
+        header: String(this.translateService.instant('admin.common.actions.delete')),
       },
     })
 
@@ -83,9 +85,9 @@ export class GroupsComponent {
         this.spinnerService.show()
         await this.adminService.deleteGroup(id)
         this.dataSource.data = this.dataSource.data.filter(g => g.id !== id)
-        this.snackbarService.message('Group was deleted.')
+        this.snackbarService.message(String(this.translateService.instant('admin.groups.messages.deleted')))
       } catch (_e) {
-        this.snackbarService.error('Could not delete group.')
+        this.snackbarService.error(String(this.translateService.instant('admin.groups.messages.delete-failed')))
       } finally {
         this.spinnerService.hide()
       }
