@@ -24,15 +24,18 @@ import { MatTableDataSource } from '@angular/material/table'
 import type { TableColumn } from '../admin/clients/clients.component'
 import { MatSort } from '@angular/material/sort'
 import { CommonModule } from '@angular/common'
+import { LooseAsyncPipe } from '../../pipes/LooseAsyncPipe'
 
 @Component({
   selector: 'app-home',
-  imports: [ReactiveFormsModule, MaterialModule, ValidationErrorPipe, PasswordSetComponent, TranslatePipe, AsyncPipe, CommonModule],
+  imports: [ReactiveFormsModule, MaterialModule, ValidationErrorPipe,
+    PasswordSetComponent, TranslatePipe, AsyncPipe, CommonModule, LooseAsyncPipe],
   templateUrl: './home.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  private translateService = inject(TranslateService)
   user?: CurrentUserPrivateDetails
 
   public passkeySupport?: PasskeySupport
@@ -99,7 +102,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   passkeyColumns: TableColumn<PasskeyResponse>[] = [
     {
       columnDef: 'displayName',
-      header: 'settings.sections.security.passkeys.columns.name',
+      header: this.translateService.stream('settings.sections.security.passkeys.columns.name'),
       // User name if exists, otherwise use id convert from base64Url to base64, then convert to hex
       cell: element =>
         element.displayName
@@ -113,7 +116,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
     {
       columnDef: 'lastUsed',
-      header: 'settings.sections.security.passkeys.columns.last-used',
+      header: this.translateService.stream('settings.sections.security.passkeys.columns.last-used'),
       cell: element =>
         element.lastUsed
           ? new Date(element.lastUsed).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -121,7 +124,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
     {
       columnDef: 'createdAt',
-      header: 'settings.sections.security.passkeys.columns.created-at',
+      header: this.translateService.stream('settings.sections.security.passkeys.columns.created-at'),
       cell: element =>
         element.createdAt
           ? new Date(element.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -133,7 +136,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly passkeySort = viewChild.required(MatSort)
 
   private configService = inject(ConfigService)
-  private translateService = inject(TranslateService)
   private userService = inject(UserService)
   private snackbarService = inject(SnackbarService)
   private spinnerService = inject(SpinnerService)

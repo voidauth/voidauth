@@ -1,4 +1,5 @@
 import { Component, inject, type AfterViewInit, viewChild, ChangeDetectionStrategy } from '@angular/core'
+import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
 import { AdminService } from '../../../services/admin.service'
 import { MaterialModule } from '../../../material-module'
 import { MatPaginator } from '@angular/material/paginator'
@@ -17,7 +18,7 @@ import { TableService } from '../../../services/table.service'
 
 export type TableColumn<T> = {
   columnDef: keyof T & string
-  header: string
+  header: string | Observable<unknown>
   isIcon?: boolean
   isImage?: boolean
   cell: (element: T) => string | Observable<unknown>
@@ -25,12 +26,19 @@ export type TableColumn<T> = {
 
 @Component({
   selector: 'app-clients',
-  imports: [MaterialModule, RouterLink, OidcInfoComponent, TranslatePipe],
+  imports: [MaterialModule, RouterLink, OidcInfoComponent, TranslatePipe, LooseAsyncPipe],
   templateUrl: './clients.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './clients.component.scss',
 })
 export class ClientsComponent implements AfterViewInit {
+  private translateService = inject(TranslateService)
+  private adminService = inject(AdminService)
+  private snackbarService = inject(SnackbarService)
+  private spinnerService = inject(SpinnerService)
+  private dialog = inject(MatDialog)
+  readonly tableService = inject(TableService)
+
   dataSource: MatTableDataSource<ClientResponse> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
@@ -45,29 +53,22 @@ export class ClientsComponent implements AfterViewInit {
     },
     {
       columnDef: 'client_name',
-      header: 'admin.clients.columns.name',
+      header: this.translateService.stream('admin.clients.columns.name'),
       cell: element => element.client_name ?? element.client_id,
     },
     {
       columnDef: 'redirect_uris',
-      header: 'admin.clients.columns.redirects',
+      header: this.translateService.stream('admin.clients.columns.redirects'),
       cell: element => element.redirect_uris?.join('\n') ?? '-',
     },
     {
       columnDef: 'groups',
-      header: 'admin.clients.columns.allowed-groups',
+      header: this.translateService.stream('admin.clients.columns.allowed-groups'),
       cell: element => (element.groups.length ? element.groups.join('\n') : '*'),
     },
   ]
 
   displayedColumns = this.columns.map(c => c.columnDef).concat('actions')
-
-  private adminService = inject(AdminService)
-  private translateService = inject(TranslateService)
-  private snackbarService = inject(SnackbarService)
-  private spinnerService = inject(SpinnerService)
-  private dialog = inject(MatDialog)
-  readonly tableService = inject(TableService)
 
   async ngAfterViewInit() {
     try {
