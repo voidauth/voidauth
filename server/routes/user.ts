@@ -20,6 +20,9 @@ import { checkCanLogin, checkPrivilegedForEmail, checkUserExists } from '../util
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import zod from 'zod'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import { deleteUserAvatar, getAvatarUrl, replaceUserAvatar } from '../db/avatar'
+import { imageUpload, normalizeUploadedImage } from '../util/uploadedImage'
+import type { AvatarResponse } from '@shared/api-response/AvatarResponse'
 
 export const userRouter = Router()
 
@@ -120,6 +123,40 @@ userRouter.patch('/email',
   })
 
 userRouter.use(checkCanLogin)
+
+userRouter.post('/avatar',
+  ...imageUpload('avatar', 'user'),
+  async (req, res) => {
+    const user = req.user
+    if (!user) {
+      res.sendStatus(500)
+      return
+    }
+    if (!req.file) {
+      res.status(400).send({ message: 'file is required.' })
+      return
+    }
+
+    let image: { buffer: Buffer, extension: string }
+    try {
+      image = await normalizeUploadedImage(req.file.buffer)
+    } catch {
+      res.status(400).send({ message: 'file must be a valid PNG, JPEG, or WebP image within the required size and dimensions.' })
+      return
+    }
+    const asset = await replaceUserAvatar(user.id, image.buffer, image.extension)
+    res.send({ avatarUrl: getAvatarUrl(asset) } satisfies AvatarResponse)
+  })
+
+userRouter.delete('/avatar', async (req, res) => {
+  const user = req.user
+  if (!user) {
+    res.sendStatus(500)
+    return
+  }
+  await deleteUserAvatar(user.id)
+  res.send()
+})
 
 userRouter.get('/me/private',
   (req, res) => {
@@ -293,6 +330,7 @@ userRouter.delete('/user', async (req, res) => {
   }
 
   await endUserSessions(user.id)
+  await deleteUserAvatar(user.id)
   await db().table<User>(TABLES.USER).delete().where({ id: user.id })
   await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).delete().where({ accountId: user.id })
   res.send()

@@ -8,6 +8,41 @@
 
   <mat-card-content>
     <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+      @let canUploadAvatar = config && !config.disableFileUploads && (!config.disableAvatarUploads || user?.isAdmin);
+      <div class="avatar-upload">
+        @if (avatarPreviewUrl(); as avatarUrl) {
+          <img class="user-avatar" [src]="avatarUrl" [alt]="'settings.sections.profile.avatar' | translate" />
+        } @else if (user?.avatarUrl && !removeAvatarSelected()) {
+          <img class="user-avatar" [src]="user.avatarUrl" [alt]="'settings.sections.profile.avatar' | translate" />
+        } @else {
+          <mat-icon class="user-avatar-placeholder" fontSet="material-icons-round">account_circle</mat-icon>
+        }
+        <input
+          #avatarFile
+          class="visually-hidden-file"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          [disabled]="!canUploadAvatar"
+          (change)="selectAvatar($event)"
+        />
+        <div class="avatar-actions">
+          @if (canUploadAvatar) {
+            <button mat-stroked-button type="button" (click)="avatarFile.click()">
+              <mat-icon fontSet="material-icons-round">upload</mat-icon>
+              {{
+                (user?.avatarUrl ? "settings.sections.profile.actions.replace-avatar" : "settings.sections.profile.actions.upload-avatar")
+                  | translate
+              }}
+            </button>
+          }
+          @if ((user?.avatarUrl && !removeAvatarSelected()) || selectedAvatar()) {
+            <button mat-button type="button" (click)="removeAvatar()">
+              {{ "settings.sections.profile.actions.remove-avatar" | translate }}
+            </button>
+          }
+        </div>
+      </div>
+
       <mat-form-field>
         <mat-label>{{ "settings.sections.profile.username.label" | translate }}</mat-label>
         <input matInput type="text" [value]="user?.username ?? ''" readonly disabled />
@@ -22,7 +57,11 @@
       </mat-form-field>
 
       <mat-card-actions>
-        <button mat-flat-button type="submit" [disabled]="!profileForm.enabled || !profileForm.valid || !profileForm.dirty">
+        <button
+          mat-flat-button
+          type="submit"
+          [disabled]="!profileForm.enabled || !profileForm.valid || (!profileForm.dirty && !selectedAvatar() && !removeAvatarSelected())"
+        >
           {{ "settings.sections.profile.actions.submit.label" | translate }}
         </button>
       </mat-card-actions>

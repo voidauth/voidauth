@@ -5,6 +5,7 @@ import type { Group, InvitationGroup } from '@shared/db/Group'
 import { TABLES } from '@shared/db'
 import type { CustomClaim, InvitationCustomClaim } from '@shared/db/CustomClaim'
 import { getGroupsCustomClaims } from './claims'
+import { getAvatarUrl, getUploadedAssetByHash } from './avatar'
 
 export async function getInvitations() {
   return await db().select().table<Invitation>(TABLES.INVITATION)
@@ -30,6 +31,7 @@ export async function getInvitationDetails(id: string) {
     .table<InvitationCustomClaim>(TABLES.INVITATION_CUSTOM_CLAIM)
     .innerJoin<CustomClaim>(TABLES.CUSTOM_CLAIM, 'invitation_custom_claim.claimId', 'custom_claim.id')
     .where({ invitationId: id })
-  const invitationDetails: InvitationDetails = { ...invitation, groups: await getGroupsCustomClaims(groups), customClaims }
+  const avatarUrl = invitation.avatarHash ? getAvatarUrl(await getUploadedAssetByHash(invitation.avatarHash)) : undefined
+  const invitationDetails: InvitationDetails = { ...invitation, avatarUrl, groups: await getGroupsCustomClaims(groups), customClaims }
   return invitationDetails
 }

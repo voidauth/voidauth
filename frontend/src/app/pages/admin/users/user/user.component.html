@@ -2,6 +2,36 @@
 <mat-card class="form-card">
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="avatar-upload">
+        @if (avatarPreviewUrl(); as currentAvatarUrl) {
+          <img class="user-avatar" [src]="currentAvatarUrl" [alt]="'admin.common.avatar.label' | translate" />
+        } @else if (avatarUrl && !removeAvatarSelected()) {
+          <img class="user-avatar" [src]="avatarUrl" [alt]="'admin.common.avatar.label' | translate" />
+        } @else {
+          <mat-icon class="user-avatar-placeholder" fontSet="material-icons-round">account_circle</mat-icon>
+        }
+        <input
+          #avatarFile
+          class="visually-hidden-file"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          [disabled]="config?.disableFileUploads"
+          (change)="selectAvatar($event)"
+        />
+        <div class="avatar-actions">
+          @if (!config?.disableFileUploads) {
+            <button mat-stroked-button type="button" (click)="avatarFile.click()">
+              <mat-icon fontSet="material-icons-round">upload</mat-icon>
+              {{ (avatarUrl ? "admin.common.avatar.actions.replace" : "admin.common.avatar.actions.upload") | translate }}
+            </button>
+          }
+          @if ((avatarUrl && !removeAvatarSelected()) || selectedAvatar()) {
+            <button mat-button type="button" (click)="removeAvatar()">
+              {{ "admin.common.avatar.actions.remove" | translate }}
+            </button>
+          }
+        </div>
+      </div>
       <mat-form-field>
         <mat-label>{{ "admin.user.labels.username" | translate }}</mat-label>
         <input matInput type="text" formControlName="username" />
@@ -196,7 +226,7 @@
       }}</mat-checkbox>
 
       <mat-card-actions>
-        <button mat-flat-button [disabled]="form.invalid || form.pristine" type="submit">
+        <button mat-flat-button [disabled]="form.invalid || (form.pristine && !selectedAvatar() && !removeAvatarSelected())" type="submit">
           {{ "admin.common.actions.update" | translate }}
         </button>
         @if (id !== me?.id) {
