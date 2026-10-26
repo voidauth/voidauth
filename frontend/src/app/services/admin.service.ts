@@ -24,6 +24,7 @@ import type { AdminConfig } from '@shared/api-response/admin/AdminConfig'
 import type { CustomClaim } from '@shared/db/CustomClaim'
 import type { CustomClaimUpsert } from '@shared/api-request/admin/CustomClaimUpsert'
 import type { CustomClaimDetails } from '@shared/api-response/admin/CustomClaimDetails'
+import type { AvatarResponse } from '@shared/api-response/AvatarResponse'
 
 @Injectable({
   providedIn: 'root',
@@ -147,6 +148,16 @@ export class AdminService {
     return firstValueFrom(this.http.get<UserDetails>(`/api/admin/user/${id}`))
   }
 
+  async uploadUserAvatar(id: string, file: File) {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    return firstValueFrom(this.http.post<AvatarResponse>(`/api/admin/user/${id}/avatar`, formData))
+  }
+
+  async deleteUserAvatar(id: string) {
+    return firstValueFrom(this.http.delete<null>(`/api/admin/user/${id}/avatar`))
+  }
+
   async updateUser(user: UserUpdate) {
     return firstValueFrom(this.http.patch<null>('/api/admin/user', user))
   }
@@ -173,6 +184,16 @@ export class AdminService {
 
   async invitation(id: string) {
     return firstValueFrom(this.http.get<InvitationDetails>(`/api/admin/invitation/${id}`))
+  }
+
+  async uploadInvitationAvatar(id: string, file: File) {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    return firstValueFrom(this.http.post<AvatarResponse>(`/api/admin/invitation/${id}/avatar`, formData))
+  }
+
+  async deleteInvitationAvatar(id: string) {
+    return firstValueFrom(this.http.delete<null>(`/api/admin/invitation/${id}/avatar`))
   }
 
   async upsertInvitation(invitation: InvitationUpsert) {

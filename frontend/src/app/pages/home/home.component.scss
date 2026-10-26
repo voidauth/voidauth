@@ -4,6 +4,45 @@ mat-divider {
   min-width: calc(var(--form-min-width) * 0.8);
   max-width: calc(var(--form-max-width) * 0.8);
 }
+
+.avatar-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.avatar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.user-avatar,
+.user-avatar-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+}
+
+.user-avatar {
+  display: block;
+  object-fit: cover;
+}
+
+.user-avatar-placeholder {
+  font-size: 88px;
+  color: var(--mat-sys-outline);
+}
+
+.visually-hidden-file {
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
 mat-expansion-panel.key-manage-panel {
   min-width: 100%;
 }
