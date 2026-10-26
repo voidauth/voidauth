@@ -6,6 +6,7 @@ import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 import { firstValueFrom } from 'rxjs'
 import type { CurrentUserDetails, CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
+import type { AvatarResponse } from '@shared/api-response/AvatarResponse'
 
 @Injectable({
   providedIn: 'root',
@@ -42,6 +43,16 @@ export class UserService {
 
   async updateProfile(profile: UpdateProfile) {
     return firstValueFrom(this.http.patch<null>('/api/user/profile', profile))
+  }
+
+  async uploadAvatar(file: File) {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    return firstValueFrom(this.http.post<AvatarResponse>('/api/user/avatar', formData))
+  }
+
+  async deleteAvatar() {
+    return firstValueFrom(this.http.delete<null>('/api/user/avatar'))
   }
 
   async sendEmailVerification() {

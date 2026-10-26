@@ -18,6 +18,7 @@ import { getGroupsCustomClaims, getUserCustomClaims } from './claims'
 import { calculateCustomClaims } from '@shared/user'
 import type { UsersResponse } from '@shared/api-response/admin/UsersResponse'
 import { escapeLikePattern } from './util'
+import { getAvatarUrl, getUploadedAssetByHash } from './avatar'
 
 export async function getUsers(
   options: {
@@ -150,8 +151,10 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const hasVerifyPasskeys = passkeys.some(p => p.canVerify)
 
   const { passwordHash, ...userWithoutPassword } = user
+  const avatarUrl = user.avatarHash ? getAvatarUrl(await getUploadedAssetByHash(user.avatarHash)) : undefined
   return {
     ...userWithoutPassword,
+    avatarUrl,
     groups: groupsWithClaims,
     customClaims,
     hasMfaGroup, hasPasskeys, hasVerifyPasskeys, hasTotp, hasPassword: !!passwordHash, isAdmin, hasEmail: !!user.email }
@@ -198,6 +201,7 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
         email_verified?: boolean
         preferred_username?: string
         name?: string | null
+        picture?: string
         groups?: string[]
       } = { sub: id }
       const scopes = new Set(scope.split(/\s+/).filter(Boolean))
@@ -219,6 +223,9 @@ export async function findAccount(_: KoaContextWithOIDC | null, id: string): Pro
       if (scopes.has('profile')) {
         accountClaims.preferred_username = user.username
         accountClaims.name = user.name
+        if (user.avatarUrl) {
+          accountClaims.picture = user.avatarUrl
+        }
       }
       if (scopes.has('email')) {
         accountClaims.email = user.email ?? null

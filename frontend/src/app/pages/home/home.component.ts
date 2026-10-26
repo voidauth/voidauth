@@ -1,5 +1,5 @@
 /* eslint-disable @stylistic/lines-between-class-members */
-import { Component, inject, viewChild, type OnDestroy, type OnInit, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, signal, viewChild, type OnDestroy, type OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { MaterialModule } from '../../material-module'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
@@ -37,6 +37,9 @@ import { LooseAsyncPipe } from '../../pipes/LooseAsyncPipe'
 export class HomeComponent implements OnInit, OnDestroy {
   private translateService = inject(TranslateService)
   user?: CurrentUserPrivateDetails
+  selectedAvatar = signal<File | null>(null)
+  avatarPreviewUrl = signal<string | null>(null)
+  removeAvatarSelected = signal(false)
 
   public passkeySupport?: PasskeySupport
   public isPasskeySession: boolean = false
@@ -154,6 +157,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     WebAuthnAbortService.cancelCeremony()
+    this.clearAvatarPreview()
   }
 
   async loadUser() {
@@ -164,6 +168,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.user = await this.userService.getMyPrivateUser({
           disableCache: true,
         })
+        this.clearAvatarPreview()
+        this.selectedAvatar.set(null)
+        this.removeAvatarSelected.set(false)
       } catch (_e) {
         // If user cannot be loaded, refresh page
         location.reload()
@@ -199,19 +206,60 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   async updateProfile() {
+    const selectedAvatar = this.selectedAvatar()
+    const hasAvatarChange = !!selectedAvatar || this.removeAvatarSelected()
     try {
       this.spinnerService.show()
 
       await this.userService.updateProfile({
         name: this.profileForm.value.name ?? undefined,
       })
+      if (selectedAvatar) {
+        await this.userService.uploadAvatar(selectedAvatar)
+      } else if (this.removeAvatarSelected()) {
+        await this.userService.deleteAvatar()
+      }
       this.snackbarService.message(String(this.translateService.instant('settings.messages.profile-updated')))
     } catch (_e) {
-      this.snackbarService.error(String(this.translateService.instant('settings.messages.profile-update-failed')))
+      this.snackbarService.error(String(this.translateService.instant(
+        hasAvatarChange ? 'settings.messages.avatar-update-failed' : 'settings.messages.profile-update-failed',
+      )))
     } finally {
       await this.loadUser()
       this.spinnerService.hide()
     }
+  }
+
+  selectAvatar(event: Event) {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    input.value = ''
+    if (!file) {
+      return
+    }
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      this.snackbarService.error(String(this.translateService.instant('settings.messages.avatar-invalid-file')))
+      return
+    }
+
+    this.clearAvatarPreview()
+    this.selectedAvatar.set(file)
+    this.removeAvatarSelected.set(false)
+    const reader = new FileReader()
+    reader.onload = () => {
+      this.avatarPreviewUrl.set(typeof reader.result === 'string' ? reader.result : null)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  removeAvatar() {
+    this.clearAvatarPreview()
+    this.selectedAvatar.set(null)
+    this.removeAvatarSelected.set(!!this.user?.avatarUrl)
+  }
+
+  private clearAvatarPreview() {
+    this.avatarPreviewUrl.set(null)
   }
 
   async updatePassword() {

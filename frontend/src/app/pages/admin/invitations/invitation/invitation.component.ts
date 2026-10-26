@@ -1,5 +1,5 @@
 import { AsyncPipe, CommonModule } from '@angular/common'
-import { Component, inject, ChangeDetectionStrategy, type OnInit } from '@angular/core'
+import { Component, inject, signal, ChangeDetectionStrategy, type OnInit } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CUSTOM_CLAIM_REGEX, PROTECTED_CLAIMS, USERNAME_REGEX } from '@shared/constants'
@@ -48,6 +48,10 @@ export class InvitationComponent implements OnInit {
 
   public inviteLink?: string
   public inviteEmail?: string | null
+  public avatarUrl?: string
+  public selectedAvatar = signal<File | null>(null)
+  public avatarPreviewUrl = signal<string | null>(null)
+  public removeAvatarSelected = signal(false)
 
   public form = new FormGroup(
     {
@@ -86,6 +90,9 @@ export class InvitationComponent implements OnInit {
         this.spinnerService.show()
 
         const id = params.get('id')
+        this.clearAvatarPreview()
+        this.selectedAvatar.set(null)
+        this.removeAvatarSelected.set(false)
 
         this.config = await this.configService.getConfig()
         this.adminConfig = await this.adminService.config()
@@ -130,6 +137,7 @@ export class InvitationComponent implements OnInit {
   }
 
   async formSet(invitation: InvitationDetails) {
+    this.avatarUrl = invitation.avatarUrl
     this.form.reset({
       username: invitation.username ?? null,
       name: invitation.name ?? null,
@@ -145,6 +153,38 @@ export class InvitationComponent implements OnInit {
       this.config = await this.configService.getConfig()
     }
     this.inviteLink = this.adminService.getInviteLink(this.config.domain, invitation.id, invitation.challenge)
+  }
+
+  selectAvatar(event: Event) {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    input.value = ''
+    if (!file) {
+      return
+    }
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      this.snackbarService.error(String(this.translateService.instant('admin.common.avatar.messages.invalid-file')))
+      return
+    }
+
+    this.clearAvatarPreview()
+    this.selectedAvatar.set(file)
+    this.removeAvatarSelected.set(false)
+    const reader = new FileReader()
+    reader.onload = () => {
+      this.avatarPreviewUrl.set(typeof reader.result === 'string' ? reader.result : null)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  removeAvatar() {
+    this.clearAvatarPreview()
+    this.selectedAvatar.set(null)
+    this.removeAvatarSelected.set(!!this.avatarUrl)
+  }
+
+  private clearAvatarPreview() {
+    this.avatarPreviewUrl.set(null)
   }
 
   groupAutoFilter(value: string = '') {
@@ -321,6 +361,15 @@ export class InvitationComponent implements OnInit {
         ...values,
         id: this.id ?? undefined,
       })
+      this.id = invitation.id
+      let avatarUrl = invitation.avatarUrl
+      const selectedAvatar = this.selectedAvatar()
+      if (selectedAvatar) {
+        avatarUrl = (await this.adminService.uploadInvitationAvatar(this.id, selectedAvatar)).avatarUrl
+      } else if (this.removeAvatarSelected()) {
+        await this.adminService.deleteInvitationAvatar(this.id)
+        avatarUrl = undefined
+      }
 
       this.snackbarService.message(
         this.id
@@ -328,8 +377,10 @@ export class InvitationComponent implements OnInit {
           : String(this.translateService.instant('admin.invitation.messages.created')),
       )
 
-      this.id = invitation.id
-      await this.formSet(invitation)
+      this.clearAvatarPreview()
+      this.selectedAvatar.set(null)
+      this.removeAvatarSelected.set(false)
+      await this.formSet({ ...invitation, avatarUrl })
       await this.router.navigate(['/admin/invitation', this.id], {
         replaceUrl: true,
       })

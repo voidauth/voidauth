@@ -7,6 +7,7 @@ export type User = Pick<Audit, 'createdAt' | 'updatedAt'> & {
   passwordHash?: string | null
   email?: string | null
   name?: string | null
+  avatarHash?: string | null
   emailVerified: boolean | number
   approved: boolean | number
   mfaRequired: boolean | number

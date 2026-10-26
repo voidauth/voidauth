@@ -27,6 +27,7 @@ The available environment variables and their defaults are listed below:
 | EMAIL_VERIFICATION | `true` if SMTP_HOST is set, otherwise `false` | If true, users must have an email address and will get a verification email when changing their email address before it can be used. If you are using an email provider, this should probably be `true`. | | |
 | MFA_REQUIRED | `false` | If set to `true`, users must use a second security factor while logging in such as an Authenticator Token or Passkey | | |
 | DISABLE_FILE_UPLOADS | `false` | If set to `true`, all file uploads will be disabled throughout the application. | | |
+| DISABLE_USER_AVATAR_UPLOADS | `false` | If set to `true`, user avatar uploads specifically will be disabled. Admins will still be able to upload and manage user avatars. | | |
 | API_RATELIMIT  | `60` | Rate Limit for mutating (state-changing) requests per minute per IP address. Default is `60`, one per second. | | |
 | ENABLE_DEBUG  | `false` | Enables debug logging. ⚠️WARNING!⚠️ Detailed user activity will be printed in the logs. | | |
 

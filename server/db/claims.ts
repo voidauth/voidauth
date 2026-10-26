@@ -23,7 +23,7 @@ const defaultClaims = {
     // 'middle_name',
     'name',
     // 'nickname',
-    // 'picture',
+    'picture',
     'preferred_username',
     // 'profile',
     // 'updated_at',
