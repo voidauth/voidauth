@@ -103,10 +103,13 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
   }
 
   // Do the same for TOTPs
-  const { locked: lockedTOTPs, decryptable: decryptableTOTPs } = checkEncrypted(await db().select().table<TOTP>(TABLES.TOTP))
+  const { locked: lockedTOTPs, decryptable: decryptableTOTPs } = checkEncrypted((await db().select().table<TOTP>(TABLES.TOTP)).map(t => ({
+    id: t.id,
+    value: t.secret,
+  })))
   // for those decryptable with STORAGE_KEY_SECONDARY, re-encrypt with STORAGE_KEY
   for (const t of decryptableTOTPs) {
-    const secret = encryptString(t.secret)
+    const secret = encryptString(t.value)
     await db().table<TOTP>(TABLES.TOTP).update({
       secret: secret,
     }).where({ id: t.id })
