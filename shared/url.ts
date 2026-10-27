@@ -1,53 +1,83 @@
 import { stringCompare } from './utils'
 
-type URLPatternGroups = {
-  protocol?: string
-  userinfo?: string
-  hostname?: string
-  port?: string
-  pathname?: string
-  search?: string
-  hash?: string
+type URLShape = {
+  protocol: string
+  username: string
+  password: string
+  hostname: string
+  port: string
+  pathname: string
+  search: string
+  hash: string
+  href: string
+}
+
+const URLComponents = [
+  'protocol',
+  'username',
+  'password',
+  'hostname',
+  'port',
+  'pathname',
+  'search',
+  'hash',
+] as const satisfies (readonly (keyof URLShape)[])
+
+function calcHref(url: URLShape) {
+  const specialProtocols = ['http:', 'https:', 'ftp:', 'ws:', 'wss:']
+  const useProtoDelim = specialProtocols.includes(url.protocol) || !!url.hostname
+
+  return url.protocol + (useProtoDelim ? '//' : '')
+    + (url.username ? url.username + (url.password ? ':' + url.password : '') + '@' : '')
+    + url.hostname + (url.port ? ':' + url.port : '') + url.pathname
+    + url.search + url.hash
 }
 
 export function urlFromWildcardHref(input: string) {
-  const pattern = new RegExp(
-    '^'
-    + '(?:(?<protocol>[^:/?#]+:)(?:///?/?)?)?' // protocol, optionally match '//(/)(/)'
-    + '(?:' // wrap host portions in an optional match, allows matching path/query/hash only
-    + '(?:(?<userinfo>[^\\\\/?#]*)@)?' // username+password
-    + '(?<hostname>[^\\\\/?#:]*?)' // hostname
-    + '(?::(?<port>[0-9*]+))?' // port, ALLOW WILDCARDS, do not include ':'
-    + '(?=[\\\\/?#]|$)' // match everything else up to \, /, ?, #
-    + ')?'
-    + '(?<pathname>[^?#:]+)?' // pathname
-    + '(?:(?<search>\\?[^#]*))?' // search
-    + '(?:(?<hash>#.*))?' // hash
-    + '$')
-
-  const url: URLPatternGroups | undefined = pattern.exec(input)?.groups
-
-  // protocol is required
-  if (!url || !url.protocol) {
+  // escape any URLPattern special characters, except wildcards which will be replaced with regex equivalent
+  // the wildcard replacement is never actually run, but it should be equivalent and non-representable after the
+  // previous regex escape (it would have been escaped)
+  const escaped = input.replaceAll(/([.*:+?^${}()|[\]\\])/g, '\\$1').replaceAll(/\\\*/g, () => {
+    return `(.{0,})`
+  })
+  let parsedPattern: URLPattern
+  try {
+    parsedPattern = new URLPattern(escaped)
+  } catch {
     return null
   }
 
-  // TODO: base url parameter to match URL.parse
-  const userInfoParts = url.userinfo?.split(':')
-  const username = userInfoParts?.[0] ?? ''
-  // the rest of the parts joined together is the password, since passwords can contain colons
-  const password = userInfoParts?.slice(1).join(':') ?? ''
-  return {
-    protocol: url.protocol,
-    hostname: url.hostname ?? '',
-    pathname: url.pathname ?? '/',
-    port: url.port ?? '',
+  const url = Object.fromEntries(
+    URLComponents.map((comp) => {
+      const defaultValue = comp === 'pathname' ? '/' : ''
+      let compValue = parsedPattern[comp]
+      if (compValue === '*') {
+        compValue = defaultValue
+      }
+      compValue = compValue.replaceAll('(.{0,})', '*')
+      if (comp === 'pathname') {
+        compValue = compValue.replaceAll('\\\\', '/')
+      }
+      compValue = compValue.replaceAll('\\', '')
+      return [comp, compValue]
+    }),
+  ) as URLShape
+
+  const result = {
+    protocol: url.protocol + ':',
+    hostname: url.hostname,
+    username: url.username,
+    password: url.password,
+    port: url.port,
+    pathname: url.pathname,
+    search: url.search ? '?' + url.search : '',
+    hash: url.hash ? '#' + url.hash : '',
     href: input,
-    search: url.search ?? '',
-    hash: url.hash ?? '',
-    username,
-    password,
   }
+
+  result.href = calcHref(result)
+
+  return result satisfies URLShape
 }
 
 export function urlFromWildcardDomain(input: string) {
@@ -67,7 +97,70 @@ export function urlFromWildcardDomain(input: string) {
     url.pathname += '*'
   }
 
-  return { ...url, protocol: undefined }
+  url.protocol = ''
+  url.href = calcHref(url)
+
+  return url
+}
+
+// Compare each component of the URL, allowing wildcards in the pattern
+function matchComponent(patternComp?: string, candidateComp?: string, caseSensitive = true) {
+  if (patternComp == null || candidateComp == null) {
+    return patternComp === candidateComp
+  }
+
+  if (!caseSensitive) {
+    patternComp = patternComp.toLowerCase()
+    candidateComp = candidateComp.toLowerCase()
+  }
+  if (patternComp.includes('*')) {
+    // use the new regex escape api
+    const regex = new RegExp('^' + patternComp.split('*').map(s => RegExp.escape(s)).join('.*') + '$')
+    return regex.test(candidateComp)
+  }
+  return patternComp === candidateComp
+}
+
+export function hrefIsWildcardMatch(pattern: string, candidate: string) {
+  if (!candidate) {
+    return false
+  }
+
+  const patternUrl = urlFromWildcardHref(pattern)
+  const candidateUrl = urlFromWildcardHref(candidate)
+  if (!patternUrl || !candidateUrl) {
+    return false
+  }
+
+  return (
+    matchComponent(patternUrl.protocol, candidateUrl.protocol, false)
+    && matchComponent(patternUrl.username, candidateUrl.username)
+    && matchComponent(patternUrl.password, candidateUrl.password)
+    && matchComponent(patternUrl.hostname, candidateUrl.hostname, false)
+    && matchComponent(patternUrl.port, candidateUrl.port)
+    && matchComponent(patternUrl.pathname, candidateUrl.pathname)
+    && matchComponent(patternUrl.search, candidateUrl.search)
+    && matchComponent(patternUrl.hash, candidateUrl.hash)
+  )
+}
+
+export function domainIsWildcardMatch(pattern: string, candidate: string) {
+  const patternUrl = urlFromWildcardDomain(pattern)
+  const candidateUrl = urlFromWildcardDomain(candidate)
+  if (!patternUrl || !candidateUrl) {
+    return false
+  }
+
+  // If the pattern URL does not specify a port, treat it as a wildcard
+  if (!patternUrl.port) {
+    patternUrl.port = '*'
+  }
+
+  return (
+    matchComponent(patternUrl.hostname, candidateUrl.hostname, false)
+    && matchComponent(patternUrl.port, candidateUrl.port)
+    && matchComponent(patternUrl.pathname, candidateUrl.pathname)
+  )
 }
 
 /**
@@ -78,7 +171,7 @@ export function wildcardRedirect(input: string) {
   const uri = urlFromWildcardHref(input)
 
   if (!uri) {
-    throw new TypeError('Invalid, must include protocol.')
+    throw new TypeError('Invalid.')
   }
 
   // redirect_uri must not include hash
@@ -124,7 +217,7 @@ export function validateWildcardRedirects(inputs: string[]) {
     hasCustomProtocol ||= (protocol !== 'http:' && protocol !== 'https:')
   }
   if (hasCustomProtocol && hasHttpProtocol) {
-    throw new TypeError('Do not mix insecure and custom protocol Redirect URLs.')
+    throw new TypeError('Cannot mix insecure and custom protocol Redirect URLs.')
   }
 }
 
@@ -145,7 +238,7 @@ export function formatWildcardDomain(input: string) {
   if (!url) {
     return ''
   }
-  return `${url.hostname}${url.port ? ':' + url.port : ''}${url.pathname}`
+  return `${url.hostname}${url.port ? (':' + url.port) : ''}${url.pathname}`
 }
 
 export function sortWildcardDomains(ad: string, bd: string) {
@@ -154,6 +247,49 @@ export function sortWildcardDomains(ad: string, bd: string) {
 
   if (!a || !b) {
     return +!a - +!b
+  }
+
+  const sortWildcardParts = (aParts: string[], bParts: string[]) => {
+    // If one has more parts, it is more specific
+    if (aParts.length !== bParts.length) {
+      return bParts.length - aParts.length
+    }
+
+    // Check if one parts has wildcard and if so in what part
+    const aWildParts = aParts.filter(sd => sd.includes('*'))
+    const bWildParts = bParts.filter(sd => sd.includes('*'))
+    if (aWildParts.length || bWildParts.length) {
+      // there are wildcards in the parts
+      // check if one has more, if so it is LESS specific
+      if (aWildParts.length !== bWildParts.length) {
+        return aWildParts.length - bWildParts.length
+      }
+
+      // check each part individually
+      const partWildRegex = new RegExp('\\*', 'g')
+      for (let i = 0; i < aParts.length; i++) {
+        // check if one has an earlier wildcard part
+        // or more wildcards in a part
+        const aPart = aParts[i] as string
+        const bPart = bParts[i] as string
+        const aPartWildCount = aPart.match(partWildRegex)?.length ?? 0
+        const bPartWildCount = bPart.match(partWildRegex)?.length ?? 0
+        if (aPartWildCount || bPartWildCount) {
+          // This part has wildcard(s)
+          // check if one has more, if so it is MORE specific
+          if (aPartWildCount !== bPartWildCount) {
+            return bPartWildCount - aPartWildCount
+          }
+
+          // if not, longer one is more specific
+          if (aPart.length !== bPart.length) {
+            return bPart.length - aPart.length
+          }
+        }
+      }
+    }
+
+    return
   }
 
   // Check if one domain has more subdomains
@@ -185,47 +321,4 @@ export function sortWildcardDomains(ad: string, bd: string) {
   }
 
   return stringCompare(b.href, a.href)
-}
-
-function sortWildcardParts(aParts: string[], bParts: string[]) {
-  // If one has more parts, it is more specific
-  if (aParts.length !== bParts.length) {
-    return bParts.length - aParts.length
-  }
-
-  // Check if one parts has wildcard and if so in what part
-  const aWildParts = aParts.filter(sd => sd.includes('*'))
-  const bWildParts = bParts.filter(sd => sd.includes('*'))
-  if (aWildParts.length || bWildParts.length) {
-    // there are wildcards in the parts
-    // check if one has more, if so it is LESS specific
-    if (aWildParts.length !== bWildParts.length) {
-      return aWildParts.length - bWildParts.length
-    }
-
-    // check each part individually
-    const partWildRegex = new RegExp('\\*', 'g')
-    for (let i = 0; i < aParts.length; i++) {
-      // check if one has an earlier wildcard part
-      // or more wildcards in a part
-      const aPart = aParts[i] as string
-      const bPart = bParts[i] as string
-      const aPartWildCount = aPart.match(partWildRegex)?.length ?? 0
-      const bPartWildCount = bPart.match(partWildRegex)?.length ?? 0
-      if (aPartWildCount || bPartWildCount) {
-        // This part has wildcard(s)
-        // check if one has more, if so it is MORE specific
-        if (aPartWildCount !== bPartWildCount) {
-          return bPartWildCount - aPartWildCount
-        }
-
-        // if not, longer one is more specific
-        if (aPart.length !== bPart.length) {
-          return bPart.length - aPart.length
-        }
-      }
-    }
-  }
-
-  return
 }
