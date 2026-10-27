@@ -1,15 +1,16 @@
 import { proxyAuthPath } from '@shared/oidc'
 import { type Request, type Response } from 'express'
-import { formatProxyAuthDomain, getProxyAuthWithCache } from '../db/proxyAuth'
+import { getProxyAuthWithCache } from '../db/proxyAuth'
 import appConfig, { appUrl, getSessionDomain, sessionDomainReaches } from './config'
 import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
 import { loginFactors } from '@shared/user'
 import { getSession } from '../oidc/provider'
 import { logger } from './logger'
+import { formatWildcardDomain } from '@shared/url'
 
 // proxy auth common
 export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request', req: Request, res: Response) {
-  const formattedUrl = formatProxyAuthDomain(url)
+  const formattedUrl = formatWildcardDomain(url.href)
   const redirCode = method === 'auth-request' ? 401 : 302
 
   // should not block access to itself
