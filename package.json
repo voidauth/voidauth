@@ -38,7 +38,6 @@
     "husky": "^9.1.7",
     "jose": "^6.2.12",
     "knex": "^3.3.0",
-    "matcher": "^7.0.0",
     "multer": "^2.4.0",
     "nodemailer": "^10.1.0",
     "oidc-provider": "^9.12.2",

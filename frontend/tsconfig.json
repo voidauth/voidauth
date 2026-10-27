@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "rootDir": "../",
+    "lib": ["ES2025", "DOM"],
     "strict": true,
     "noImplicitOverride": true,
     "noImplicitAny": true,
