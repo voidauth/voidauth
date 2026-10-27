@@ -11,7 +11,11 @@
     "actions": {
       "login": "Inloggen"
     },
-    "title": "Inloggen"
+    "title": "Inloggen",
+    "messages": {
+      "passkey-failed": "Kan niet inloggen met Passkey.",
+      "invalid-credentials": "Ongeldige gebruikersnaam of wachtwoord."
+    }
   },
   "contact-us": {
     "actions": {
@@ -33,6 +37,9 @@
         "claims": "Aangepaste claims"
       },
       "logout": "Uitloggen"
+    },
+    "messages": {
+      "language-failed": "Kan taal niet instellen."
     }
   },
   "duration": {
@@ -84,7 +91,14 @@
   "passkey-dialog": {
     "title": "{{platformName}} inschakelen?",
     "actions": {
-      "passkey": "{{platformName}} inschakelen"
+      "passkey": "{{platformName}} inschakelen",
+      "skip": "Overslaan"
+    },
+    "messages": {
+      "added": "Passkey toegevoegd.",
+      "name-failed": "Passkey aangemaakt, maar kon geen naam instellen.",
+      "create-failed": "Kon Passkey niet aanmaken.",
+      "preference-failed": "Kon de voorkeuren voor de passkey-prompt niet opslaan."
     }
   },
   "mfa": {
@@ -94,7 +108,13 @@
       "back": "Terug"
     },
     "locked": "Te veel incorrecte codes. Probeer het opnieuw over <b>{{duration}}</b>.",
-    "title": "Multi-factor authenticatie vereist"
+    "title": "Multi-factor authenticatie vereist",
+    "messages": {
+      "options-failed": "Kon authenticator-opties niet ophalen.",
+      "passkey-mfa-only": "Alleen Passkeys die MFA vereisen voldoen aan de MFA-vereisten.",
+      "passkey-failed": "Authenticatie met Passkey mislukt.",
+      "try-logout": "Er ging iets mis. Probeer uit te loggen in het dropdown menu in de kop."
+    }
   },
   "registration": {
     "actions": {
@@ -114,6 +134,9 @@
     },
     "name": {
       "label": "Naam"
+    },
+    "messages": {
+      "invalid-invite": "Ongeldige uitnodigingslink."
     }
   },
   "reset-password": {
@@ -121,7 +144,12 @@
       "enable-passkey": "{{platformName}} inschakelen",
       "reset-password": "Wachtwoord opnieuw instellen"
     },
-    "title": "Wachtwoord opnieuw instellen"
+    "title": "Wachtwoord opnieuw instellen",
+    "messages": {
+      "invalid-link": "Ongeldige link voor wachtwoordherstel.",
+      "complete": "Wachtwoordherstel voltooid.",
+      "passkey-created": "Passkey aangemaakt."
+    }
   },
   "approval-required": {
     "content": "Uw account moet worden goedgekeurd voordat u kunt inloggen. Wacht even of neem contact op met een beheerder voor hulp.",
@@ -146,7 +174,10 @@
       "sign-into-question": "Wilt u inloggen bij <br /> <h2>{{destination}}</h2>",
       "post-signin-redir-notice": "Nadat u bent ingelogd, wordt u omgeleid naar <b>{{redirect}}</b>"
     },
-    "title": "Bevestigen"
+    "title": "Bevestigen",
+    "messages": {
+      "invalid-details": "Bevestigingsgegevens niet geldig."
+    }
   },
   "forgot-password": {
     "username": {
@@ -158,7 +189,11 @@
       "create-again": "Opnieuw aanmaken",
       "create": "Aanmaken"
     },
-    "title": "Wachtwoord vergeten"
+    "title": "Wachtwoord vergeten",
+    "messages": {
+      "link-sent": "Link voor wachtwoordherstel verzonden.",
+      "link-not-sent": "Link voor wachtwoordherstel is aangemaakt, maar kon niet worden verzonden."
+    }
   },
   "form-errors": {
     "required": "Vereist.",
@@ -211,6 +246,10 @@
       },
       "email": {
         "label": "E-mailadres"
+      },
+      "messages": {
+        "user-load-failed": "Kon gebruikersdetails niet laden.",
+        "resent": "Verificatie e-mail opnieuw verzonden."
       }
     }
   },
@@ -265,6 +304,11 @@
             "delete": {
               "tooltip": "Verwijderen"
             }
+          },
+          "columns": {
+            "name": "Naam/ID",
+            "last-used": "Laatst gebruikt",
+            "created-at": "Gemaakt op"
           }
         },
         "mfa": {
@@ -311,6 +355,35 @@
           "label": "Account verwijderen"
         }
       }
+    },
+    "messages": {
+      "authenticator-added": "Authenticator met succes toegevoegd.",
+      "mfa-enabled": "Multi-factor authenticatie ingeschakeld.",
+      "profile-updated": "Profiel bijgewerkt.",
+      "profile-update-failed": "Kan profiel niet bijwerken.",
+      "password-updated": "Wachtwoord bijgewerkt.",
+      "password-update-failed": "Wachtwoord kon niet worden bijgewerkt.",
+      "passkey-registered": "Passkey succesvol geregistreerd.",
+      "passkey-updated": "Passkey bijgewerkt.",
+      "passkey-update-failed": "Passkey kon niet worden bijgewerkt.",
+      "passkey-deleted": "Passkey verwijderd.",
+      "passkey-delete-failed": "Passkey kon niet worden verwijderd.",
+      "passkeys-deleted": "Alle Passkeys verwijderd.",
+      "passkeys-delete-failed": "Kon niet alle Passkeys verwijderen.",
+      "password-removed": "Wachtwoord verwijderd.",
+      "password-remove-failed": "Kon wachtwoord niet verwijderen.",
+      "mfa-disabled": "Multi-factor authenticatie uitgeschakeld en Authenticators verwijderd.",
+      "mfa-disable-failed": "Kon Multi-Factor Authenticatie niet uitschakelen of Authenticators verwijderen.",
+      "account-deleted": "Account verwijderd.",
+      "account-delete-failed": "Kon account niet verwijderen."
+    },
+    "dialogs": {
+      "delete-passkey": "Weet u zeker dat u deze Passkey wilt verwijderen?",
+      "delete-all-passkeys": "Weet u zeker dat u al uw Passkeys wilt verwijderen? Eerder ingeschakelde diensten zoals FaceID, Windows Hello, TouchID, etc. zullen niet meer werken.",
+      "remove-password": "Weet u zeker dat u uw wachtwoord wilt verwijderen? U moet inloggen met een Passkey, FaceID, Windows Hello, enz. totdat u opnieuw een wachtwoord instelt.",
+      "disable-mfa": "Weet u zeker dat u Multi-Factor Authenticatie wilt uitschakelen en alle Authenticators op uw account wilt verwijderen?",
+      "delete-account": "Weet u zeker dat u uw account wilt verwijderen?",
+      "danger": "GEVAAR"
     }
   },
   "admin": {
@@ -331,6 +404,10 @@
       },
       "messages": {
         "all-users-have-access": "Geen groepen, ALLE gebruikers hebben toegang."
+      },
+      "dialogs": {
+        "add-claim": "Aangepaste Claim toevoegen",
+        "edit-claim": "Aangepaste Claim bewerken"
       }
     },
     "users": {
@@ -341,6 +418,28 @@
       },
       "labels": {
         "search": "Zoeken"
+      },
+      "columns": {
+        "username": "Gebruikersnaam",
+        "email": "E-mail",
+        "email-verified": "E-mail geverifieerd",
+        "approved": "Goedgekeurd",
+        "expires": "Verloopt"
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u gebruiker '{{name}} ' wilt verwijderen?",
+        "approve-selected": "Weet u zeker dat u {{count}} gebruiker(s) wilt goedkeuren?",
+        "delete-selected": "Weet u zeker dat u {{count}} gebruiker(s) wilt verwijderen?",
+        "approval": "Goedkeuring"
+      },
+      "messages": {
+        "load-failed": "Kan gebruikers niet ophalen.",
+        "deleted": "Gebruiker is verwijderd.",
+        "delete-failed": "Kon gebruiker niet verwijderen.",
+        "selected-approved": "Gebruiker(s) zijn goedgekeurd.",
+        "selected-approve-failed": "Kan gebruiker(s) niet goedkeuren.",
+        "selected-deleted": "Gebruiker(s) zijn verwijderd.",
+        "selected-delete-failed": "Kan gebruiker(s) niet verwijderen."
       }
     },
     "user": {
@@ -367,12 +466,37 @@
         "remove": "Verwijderen",
         "open": "Openen",
         "edit": "Bewerken"
+      },
+      "messages": {
+        "load-failed": "Fout bij laden gebruiker.",
+        "group-add-failed": "Fout bij toevoegen groep.",
+        "updated": "Gebruiker bijgewerkt.",
+        "update-failed": "Kan gebruiker niet bijwerken.",
+        "signed-out": "Gebruiker is uitgelogd.",
+        "sign-out-failed": "Kan de gebruiker niet uitloggen.",
+        "deleted": "Gebruiker verwijderd.",
+        "delete-failed": "Kon gebruiker niet verwijderen."
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u deze gebruiker wilt verwijderen?"
       }
     },
     "clients": {
       "empty-state": "Geen OIDC Apps.",
       "actions": {
         "create": "OIDC App aanmaken"
+      },
+      "columns": {
+        "name": "Naam",
+        "redirects": "Doorverwijzingen",
+        "allowed-groups": "Toegestane groepen"
+      },
+      "messages": {
+        "deleted": "App {{name}} is verwijderd.",
+        "delete-failed": "Kan de app niet verwijderen."
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u de app '{{name}}' wilt verwijderen?"
       }
     },
     "client": {
@@ -385,6 +509,7 @@
         "name": "Naam",
         "home-page-url": "Homepage URL",
         "logo-url": "Logo URL",
+        "logo-preview": "Voorbeeld van OIDC App-logo",
         "add-group": "Groep toevoegen",
         "client-id": "Client-ID",
         "auth-method": "Auth-methode",
@@ -393,13 +518,21 @@
         "response-types": "Reactietypes",
         "grant-types": "Toekenningstypes",
         "postlogout-url": "PostLogout URL",
+        "backchannel-logout-url": "URL voor uitloggen backchannel",
         "allowed-groups": "Toegestane groepen:",
         "redirect-urls": "Omleidings-URLs:"
+      },
+      "actions": {
+        "choose-logo": "Logo uploaden",
+        "replace-logo": "Logo vervangen",
+        "cancel-logo": "Uploaden annuleren",
+        "remove-logo": "Logo verwijderen"
       },
       "hints": {
         "pkce-required": "PKCE vereist met deze authenticatiemethode.",
         "not-required": "Niet vereist voor huidige authenticatiemethode.",
-        "postlogout-redirect": "Toegestane omleidings-URL na uitloggen bij door de client geïnitieerd uitloggen."
+        "postlogout-redirect": "Toegestane omleidings-URL na uitloggen bij door de client geïnitieerd uitloggen.",
+        "backchannel-logout": "Client-eindpunt dat wordt geïnformeerd wanneer de gebruiker zich afmeldt."
       },
       "checkboxes": {
         "skip-consent": "Toestemming overslaan",
@@ -413,13 +546,36 @@
       },
       "messages": {
         "client-id-copied": "Client-ID naar klembord gekopieerd.",
-        "secret-copied": "Geheim gekopieerd naar klembord."
+        "secret-copied": "Geheim gekopieerd naar klembord.",
+        "logo-invalid-file": "Kies een PNG, JPEG of WebP-afbeelding niet groter dan 2 MB.",
+        "logo-save-failed": "Client-velden zijn opgeslagen, maar het logo kon niet worden gewijzigd.",
+        "updated": "Client bijgewerkt.",
+        "created": "Client aangemaakt.",
+        "update-failed": "Kan de app niet bijwerken.",
+        "create-failed": "Kan de app niet aanmaken.",
+        "load-failed": "Fout bij het laden van OIDC App-details.",
+        "deleted": "App verwijderd.",
+        "delete-failed": "Kan de app niet verwijderen."
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u deze app wilt verwijderen?"
       }
     },
     "domains": {
       "empty-state": "Geen domeinen.",
       "actions": {
         "create": "ProxyAuth-domein aanmaken"
+      },
+      "columns": {
+        "domain": "Domeinen",
+        "allowed-groups": "Toegestane groepen"
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u domein '{{name}}' wilt verwijderen?"
+      },
+      "messages": {
+        "deleted": "Domein is verwijderd.",
+        "delete-failed": "Kan domein niet verwijderen."
       }
     },
     "domain": {
@@ -446,6 +602,18 @@
         "0": "Domein mag geen protocol bevatten, kan een pad en een poort bevatten en ondersteunt wildcards (*) op elke positie.",
         "1": "<b>example.domain.com/api/alive</b> zal slechts de toegang tot één eindpunt controleren.",
         "2": "<b>example.domain.com/api/*</b> controleert de toegang tot alle eindpunten onder /api."
+      },
+      "messages": {
+        "updated": "Domein bijgewerkt.",
+        "created": "Domein aangemaakt.",
+        "update-failed": "Kan domein niet bijwerken.",
+        "create-failed": "Kan domein niet aanmaken.",
+        "load-failed": "Fout bij het laden van ProxyAuth-domein.",
+        "deleted": "Domein verwijderd.",
+        "delete-failed": "Kan domein niet verwijderen."
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u dit domein wilt verwijderen?"
       }
     },
     "password-resets": {
@@ -458,9 +626,23 @@
         "delete": "Verwijderen"
       },
       "messages": {
-        "link-copied": "Herstellink naar klembord gekopieerd."
+        "link-copied": "Herstellink naar klembord gekopieerd.",
+        "sent": "Link voor wachtwoordherstel verstuurd naar {{email}}.",
+        "load-failed": "Kon de links voor wachtwoordherstel niet ophalen.",
+        "created": "Link voor wachtwoordherstel is aangemaakt.",
+        "create-failed": "Kon de link voor wachtwoordherstel niet aanmaken.",
+        "deleted": "Link voor wachtwoordherstel is verwijderd.",
+        "delete-failed": "Kon link voor wachtwoordherstel niet verwijderen.",
+        "send-failed": "Kon link voor wachtwoordherstel niet versturen."
       },
-      "empty-state": "Geen herstelde wachtwoorden."
+      "columns": {
+        "username": "Gebruikersnaam",
+        "expires-in": "Verloopt over"
+      },
+      "empty-state": "Geen herstelde wachtwoorden.",
+      "dialogs": {
+        "delete": "Weet u zeker dat u deze link voor wachtwoordherstel wilt verwijderen?"
+      }
     },
     "emails": {
       "empty-state": "Geen verzonden e-mail.",
@@ -470,12 +652,35 @@
       "tooltips": {
         "preview": "Voorbeeld",
         "view-user": "Gebruiker weergeven"
+      },
+      "columns": {
+        "sent": "Verstuurd",
+        "to": "Aan",
+        "type": "Type"
+      },
+      "messages": {
+        "load-failed": "Kon Verzonden mail niet ophalen.",
+        "test-sent": "Testmail verzonden.",
+        "test-failed": "Test-mail kon niet worden verstuurd."
+      },
+      "dialogs": {
+        "send-test": "Test-mail versturen"
       }
     },
     "groups": {
       "empty-state": "Geen groepen.",
       "actions": {
         "create": "Groep aanmaken"
+      },
+      "columns": {
+        "name": "Groepsnaam"
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u groep '{{name}}' wilt verwijderen?"
+      },
+      "messages": {
+        "deleted": "Groep is verwijderd.",
+        "delete-failed": "Kan groep niet verwijderen."
       }
     },
     "group": {
@@ -499,12 +704,37 @@
       "tooltips": {
         "edit": "Bewerken",
         "remove": "Verwijderen"
+      },
+      "messages": {
+        "updated": "Groep bijgewerkt.",
+        "created": "Groep aangemaakt.",
+        "update-failed": "Kan de groep niet bijwerken.",
+        "create-failed": "Kan de groep niet aanmaken.",
+        "load-failed": "Fout bij laden groep.",
+        "deleted": "Groep verwijderd.",
+        "delete-failed": "Kan groep niet verwijderen."
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u deze groep wilt verwijderen?"
       }
     },
     "invitations": {
       "empty-state": "Geen uitnodigingen.",
       "actions": {
         "create": "Uitnodiging aanmaken"
+      },
+      "columns": {
+        "username": "Gebruikersnaam",
+        "email": "E-mail",
+        "expires-in": "Verloopt over",
+        "access-expires": "Toegang verloopt"
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u de uitnodiging voor '{{name}}' wilt verwijderen?"
+      },
+      "messages": {
+        "deleted": "Uitnodiging is verwijderd.",
+        "delete-failed": "Kan uitnodiging niet verwijderen."
       }
     },
     "invitation": {
@@ -538,20 +768,43 @@
       "messages": {
         "link-copied": "Uitnodigingslink gekopieerd naar klembord.",
         "email-not-verified": "Kan geen e-mail sturen naar uitnodigingslink, e-mailverbinding niet geverifieerd.",
-        "no-email": "Kan geen e-mail sturen naar uitnodigingslink, uitnodiging bevat geen e-mailadres."
+        "no-email": "Kan geen e-mail sturen naar uitnodigingslink, uitnodiging bevat geen e-mailadres.",
+        "sent": "Uitnodiging verstuurd naar {{email}}.",
+        "updated": "Uitnodiging bijgewerkt.",
+        "created": "Uitnodiging aangemaakt.",
+        "update-failed": "Uitnodiging kan niet worden bijgewerkt.",
+        "create-failed": "Uitnodiging kon niet worden aangemaakt.",
+        "load-failed": "Fout bij laden van uitnodiging.",
+        "group-add-failed": "Fout bij toevoegen groep.",
+        "send-failed": "Kon uitnodiging niet versturen.",
+        "deleted": "Uitnodiging verwijderd.",
+        "delete-failed": "Kan uitnodiging niet verwijderen."
       },
       "actions": {
         "send": "Uitnodiging versturen"
       },
       "checkboxes": {
         "email-verified": "E-mailadres geverifieerd"
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u deze uitnodiging wilt verwijderen?"
       }
     },
     "claims": {
       "actions": {
         "create": "Claim aanmaken"
       },
-      "empty-state": "Geen aangepaste claims."
+      "empty-state": "Geen aangepaste claims.",
+      "columns": {
+        "claim": "Claim"
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u de aangepaste claim '{{name}}' wilt verwijderen?"
+      },
+      "messages": {
+        "deleted": "Aangepaste claim is verwijderd.",
+        "delete-failed": "Aangepaste claim kan niet verwijderd worden."
+      }
     },
     "claim": {
       "titles": {
@@ -574,6 +827,24 @@
       "tooltips": {
         "edit": "Bewerken",
         "remove": "Verwijderen"
+      },
+      "messages": {
+        "updated": "Aangepaste claim bijgewerkt.",
+        "created": "Aangepaste claim aangemaakt.",
+        "update-failed": "Aangepaste claim kan niet worden bijgewerkt.",
+        "create-failed": "Aangepaste claim kan niet worden gemaakt.",
+        "load-failed": "Fout bij het laden van aangepaste claim.",
+        "deleted": "Aangepaste claim verwijderd.",
+        "delete-failed": "Aangepaste claim kan niet verwijderd worden."
+      },
+      "dialogs": {
+        "delete": "Weet u zeker dat u deze aangepaste claim wilt verwijderen?",
+        "add-user-claim": "Gebruikersclaim toevoegen",
+        "edit-user-claim": "Gebruikersclaim bewerken",
+        "add-group-claim": "Groepsclaim toevoegen",
+        "edit-group-claim": "Groepsclaim bewerken",
+        "add-invite-claim": "Uitnodigingsclaim toevoegen",
+        "edit-invite-claim": "Uitnodigingsclaim bewerken"
       }
     }
   },
@@ -652,6 +923,11 @@
         "cancel": {
           "label": "Annuleren"
         }
+      },
+      "messages": {
+        "enable-failed": "Kan Multi-factor authenticatie niet inschakelen.",
+        "add-failed": "Kan authenticator niet toevoegen.",
+        "info-failed": "Kan geen authenticatorinfo verkrijgen."
       }
     },
     "passkey-edit": {
@@ -691,6 +967,21 @@
       "labels": {
         "value": "Waarde"
       }
+    },
+    "common": {
+      "or": "of"
+    },
+    "paginator": {
+      "items-per-page": "Items per pagina:",
+      "next-page": "Volgende pagina",
+      "previous-page": "Vorige pagina",
+      "first-page": "Eerste pagina",
+      "last-page": "Laatste pagina",
+      "range": "{{start}} - {{end}} van {{length}}",
+      "range-empty": "0 van {{length}}"
+    },
+    "snackbar": {
+      "ok": "Ok"
     }
   },
   "user-expired": {
