@@ -29,9 +29,55 @@
         "groups": "Groupes",
         "invitations": "Invitations",
         "password-resets": "Réinitialisations de mot de passe",
-        "sent-mail": "E-mails envoyés"
+        "sent-mail": "E-mails envoyés",
+        "claims": "Claims personnalisés"
       },
       "logout": "Déconnexion"
+    }
+  },
+  "duration": {
+    "now": "maintenant",
+    "second": {
+      "singular": "{{count}} seconde",
+      "plural": "{{count}} secondes",
+      "singular-ago": "il y a {{count}} seconde",
+      "plural-ago": "il y a {{count}} secondes"
+    },
+    "minute": {
+      "singular": "{{count}} minute",
+      "plural": "{{count}} minutes",
+      "singular-ago": "il y a {{count}} minute",
+      "plural-ago": "il y a {{count}} minutes"
+    },
+    "hour": {
+      "singular": "{{count}} heure",
+      "plural": "{{count}} heures",
+      "singular-ago": "Il y a {{count}} heure",
+      "plural-ago": "Il y a {{count}} heures"
+    },
+    "day": {
+      "singular": "{{count}} jour",
+      "plural": "{{count}} jours",
+      "singular-ago": "il y a {{count}} jour",
+      "plural-ago": "il y a {{count}} jours"
+    },
+    "week": {
+      "singular": "{{count}} semaine",
+      "plural": "{{count}} semaines",
+      "singular-ago": "il y a {{count}} semaine",
+      "plural-ago": "il y a {{count}} semaines"
+    },
+    "month": {
+      "singular": "{{count}} mois",
+      "plural": "{{count}} mois",
+      "singular-ago": "il y a {{count}} mois",
+      "plural-ago": "il y a {{count}} mois"
+    },
+    "year": {
+      "singular": "{{count}} an",
+      "plural": "{{count}} ans",
+      "singular-ago": "il y a {{count}} an",
+      "plural-ago": "il y a {{count}} ans"
     }
   },
   "passkey-title": "Clé d'authentification",
@@ -47,6 +93,7 @@
       "register-passkey": "Enregistrer une clé d'authentification",
       "back": "Retour"
     },
+    "locked": "Trop de codes incorrects. Réessayer dans <b>{{duration}}</b>.",
     "title": "Authentification multifactorielle requise"
   },
   "registration": {
@@ -305,14 +352,21 @@
         "add-group": "Ajouter un groupe",
         "security-groups": "Groupes de sécurité :",
         "user-expiration-date": "Date d'expiration de l'accès",
-        "user-expiration-time": "Heure d'expiration de l'accès"
+        "user-expiration-time": "Heure d'expiration de l'accès",
+        "custom-claims": "Claims personnalisés",
+        "claim": "Claim",
+        "value": "Valeur",
+        "no-custom-claims": "Aucun claim personnalisé.",
+        "group": "Groupe",
+        "applied": "Appliqué"
       },
       "actions": {
         "sign-out": "Déconnecter"
       },
       "tooltips": {
         "remove": "Retirer",
-        "open": "Ouvrir"
+        "open": "Ouvrir",
+        "edit": "Modifier"
       }
     },
     "clients": {
@@ -405,7 +459,8 @@
       },
       "messages": {
         "link-copied": "Lien de réinitialisation copié dans le presse-papiers."
-      }
+      },
+      "empty-state": "Aucune réinitialisation de mot de passe."
     },
     "emails": {
       "empty-state": "Aucun e-mail envoyé.",
@@ -431,11 +486,19 @@
       "labels": {
         "name": "Nom",
         "add-user": "Ajouter un utilisateur",
-        "users": "Utilisateurs :"
+        "users": "Utilisateurs :",
+        "custom-claims": "Claims personnalisés",
+        "claim": "Claim",
+        "value": "Valeur",
+        "no-custom-claims": "Aucun claim personnalisé configuré."
       },
       "checkboxes": {
         "mfa-required": "AMF requise",
         "auto-assign": "Attribution automatique"
+      },
+      "tooltips": {
+        "edit": "Modifier",
+        "remove": "Retirer"
       }
     },
     "invitations": {
@@ -457,12 +520,20 @@
         "add-group": "Ajouter un groupe",
         "security-groups": "Groupes de sécurité :",
         "user-expiration-date": "Date d'expiration de l'accès",
-        "user-expiration-time": "Heure d'expiration de l'accès"
+        "user-expiration-time": "Heure d'expiration de l'accès",
+        "custom-claims": "Claims personnalisés",
+        "claim": "Claim",
+        "value": "Valeur",
+        "no-custom-claims": "Aucun claim personnalisé configuré.",
+        "applied": "Appliqué",
+        "group": "Groupes"
       },
       "tooltips": {
         "copy-invite-link": "Copier le lien d'invitation",
         "unsaved-changes": "Vous avez des modifications non enregistrées.",
-        "send-to": "Envoyer l'invitation à : {{email}}"
+        "send-to": "Envoyer l'invitation à : {{email}}",
+        "edit": "Modifier",
+        "remove": "Supprimer"
       },
       "messages": {
         "link-copied": "Lien d'invitation copié dans le presse-papiers.",
@@ -476,10 +547,33 @@
         "email-verified": "E-mail vérifié"
       }
     },
+    "claims": {
+      "actions": {
+        "create": "Créer un claim"
+      },
+      "empty-state": "Aucun claim personnalisé."
+    },
     "claim": {
       "titles": {
         "update": "Modifier la revendication personnalisée",
         "create": "Créer une revendication personnalisée"
+      },
+      "labels": {
+        "name": "Nom",
+        "user-claims": "Utilisateurs",
+        "username": "Nom d'utilisateur",
+        "value": "Valeur",
+        "no-user-claims": "Aucun claim utilisateur",
+        "no-group-claims": "Aucun claim de groupe",
+        "group-name": "Groupe",
+        "group-claims": "Groupes",
+        "invitation-claims": "Invitations",
+        "invitation": "Invitation",
+        "no-invitation-claims": "Aucun claim d'invitation"
+      },
+      "tooltips": {
+        "edit": "Modifier",
+        "remove": "Supprimer"
       }
     }
   },
@@ -519,8 +613,17 @@
     },
     "totp-input": {
       "title": "Cela activera l'authentification multifactorielle sur votre compte.",
+      "labels": {
+        "secret": "Secret :"
+      },
       "text": {
         "enter-token": "Saisissez le jeton de l'authentificateur pour continuer"
+      },
+      "tooltips": {
+        "copy-secret": "Copier le secret dans le presse-papiers."
+      },
+      "messages": {
+        "copied-secret": "Secret copié dans le presse-papiers."
       }
     },
     "theme-toggle": {
@@ -574,6 +677,19 @@
         "confirm": {
           "label": "Confirmer"
         }
+      }
+    },
+    "option-value-dialog": {
+      "actions": {
+        "cancel": {
+          "label": "Annuler"
+        },
+        "save": {
+          "label": "Enregistrer"
+        }
+      },
+      "labels": {
+        "value": "Valeur"
       }
     }
   },

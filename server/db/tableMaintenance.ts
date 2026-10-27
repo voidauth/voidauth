@@ -15,6 +15,9 @@ import type { TOTP } from '@shared/db/TOTP'
 import type { TOTPFailedAttempt } from '@shared/db/TOTPFailedAttempt'
 import { logger } from '../util/logger'
 import type { DeepWritable } from '@shared/utils'
+import type { ClientLogoAsset, UploadedAsset } from '@shared/db/Asset'
+import { deleteUnreferencedAsset } from './uploaded'
+import type { User } from '@shared/db/User'
 
 export async function clearAllExpiredEntries() {
   await db().delete().table<Key>(TABLES.KEY).where('expiresAt', '<', new Date())
@@ -27,6 +30,17 @@ export async function clearAllExpiredEntries() {
   await db().delete().table<PasskeyAuthentication>(TABLES.PASSKEY_AUTHENTICATION).where('expiresAt', '<', new Date())
   await db().delete().table<TOTP>(TABLES.TOTP).where('expiresAt', '<', new Date())
   await db().delete().table<TOTPFailedAttempt>(TABLES.TOTP_FAILED_ATTEMPT).where('expiresAt', '<', new Date())
+}
+
+export async function deleteOrphanedAssets() {
+  const orphans = await db().select().table<UploadedAsset>(TABLES.UPLOADED_ASSET)
+    .whereNotIn('contentHash', db().select('uploadedHash').table<ClientLogoAsset>(TABLES.CLIENT_LOGO_ASSET))
+    .and.whereNotIn('contentHash', db().select('avatarHash').table<User>(TABLES.USER).whereNotNull('avatarHash'))
+    .and.whereNotIn('contentHash', db().select('avatarHash').table<Invitation>(TABLES.INVITATION).whereNotNull('avatarHash'))
+
+  for (const asset of orphans) {
+    await deleteUnreferencedAsset(asset.contentHash)
+  }
 }
 
 export type EncryptedTable = {
@@ -89,10 +103,13 @@ export async function updateEncryptedTables(enableWarnings: boolean = false) {
   }
 
   // Do the same for TOTPs
-  const { locked: lockedTOTPs, decryptable: decryptableTOTPs } = checkEncrypted(await db().select().table<TOTP>(TABLES.TOTP))
+  const { locked: lockedTOTPs, decryptable: decryptableTOTPs } = checkEncrypted((await db().select().table<TOTP>(TABLES.TOTP)).map(t => ({
+    id: t.id,
+    value: t.secret,
+  })))
   // for those decryptable with STORAGE_KEY_SECONDARY, re-encrypt with STORAGE_KEY
   for (const t of decryptableTOTPs) {
-    const secret = encryptString(t.secret)
+    const secret = encryptString(t.value)
     await db().table<TOTP>(TABLES.TOTP).update({
       secret: secret,
     }).where({ id: t.id })

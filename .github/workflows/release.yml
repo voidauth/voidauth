@@ -18,7 +18,7 @@ jobs:
       
     steps:
       - name: Checkout
-        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Login GitHub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
@@ -30,15 +30,15 @@ jobs:
       - name: Login Dockerhub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
-          username: notquitenothing
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: voidauth
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Login Docker Hardened Images Registry
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: dhi.io
-          username: notquitenothing
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: voidauth
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: DOCKER_IMAGE_NAME
         run: |
@@ -88,8 +88,8 @@ jobs:
         uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          username: notquitenothing
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: voidauth
+          password: ${{ secrets.DOCKER_TOKEN }}
           repository: ${{ env.DOCKER_IMAGE_NAME }}
           short-description: ${{ github.event.repository.description }}
           enable-url-completion: true

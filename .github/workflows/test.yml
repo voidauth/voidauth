@@ -12,7 +12,7 @@ jobs:
       
     steps:
       - name: Checkout
-        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Docker QEMU
         uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
@@ -25,8 +25,8 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && (github.event.pull_request == null || !github.event.pull_request.head.repo.fork) }}
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
-          username: notquitenothing
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: voidauth
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       # Login to docker hardened image registry if not a fork PR and not dependabot
       - name: Login Docker Hardened Images Registry
@@ -34,8 +34,8 @@ jobs:
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: dhi.io
-          username: notquitenothing
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: voidauth
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       # runs for PRs from forks or dependabot (skip any registry-backed cache)
       - name: Build Push (fork/dependabot - no remote cache)
