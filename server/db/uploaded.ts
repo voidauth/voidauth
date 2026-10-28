@@ -24,12 +24,12 @@ function generateFilePath(contentHash: string, extension: string) {
   return path.join(contentHash.slice(0, 2), contentHash, `${rando}.${extension}`)
 }
 
-function uploadAssetWebPath(filePath: string) {
-  return `/assets/uploads/${filePath.replaceAll('\\', '/')}`
-}
-
 export function getUploadedAssetWebUrl(filePath: string) {
-  return `${appUrl().href}${uploadAssetWebPath(filePath)}`
+  let href = appUrl().href
+  if (!href.endsWith('/')) {
+    href += '/'
+  }
+  return `${href}assets/uploads/${filePath.replaceAll('\\', '/')}`
 }
 
 function uploadedStoragePath(filePath: string) {
