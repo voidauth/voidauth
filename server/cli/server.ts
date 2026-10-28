@@ -337,7 +337,7 @@ export async function serve() {
 
     // dynamically replace favicon and logo depending on whats available in config/branding
     const brandingFiles = fs.readdirSync(path.join('./config/branding'))
-    const backgroundPreferenceOrder = ['background.png', 'background.jpg', 'background.jpeg']
+    const backgroundPreferenceOrder = ['background.png', 'background.webp', 'background.jpg', 'background.jpeg']
     const backgroundFile = backgroundPreferenceOrder.find(file => brandingFiles.includes(file))
     const isBrandingLogo = brandingFiles.includes('logo.svg') || brandingFiles.includes('logo.png')
     const isBrandingFavicon = brandingFiles.includes('favicon.svg') || brandingFiles.includes('favicon.png')
