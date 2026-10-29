@@ -1,10 +1,12 @@
 .language-name {
-	display: inline-block;
 	max-width: 80px;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-  margin-left: 6px;
-  vertical-align: center;
+	margin-left: 6px;
+}
+
+.language-name, .language-flag {
+	display: inline-block;
 }
