@@ -1,7 +1,7 @@
 import { AsyncPipe, CommonModule } from '@angular/common'
 import { Component, inject, signal, ChangeDetectionStrategy, type OnInit } from '@angular/core'
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { CUSTOM_CLAIM_REGEX, PROTECTED_CLAIMS, USERNAME_REGEX } from '@shared/constants'
 import { MaterialModule } from '../../../../material-module'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
@@ -25,7 +25,9 @@ import { calculateCustomClaims } from '@shared/user'
 
 @Component({
   selector: 'app-invitation',
-  imports: [CommonModule, MaterialModule, ValidationErrorPipe, ReactiveFormsModule, AsyncPipe, TranslatePipe],
+  imports: [CommonModule, MaterialModule,
+    ValidationErrorPipe, ReactiveFormsModule,
+    AsyncPipe, TranslatePipe, RouterLink],
   templateUrl: './invitation.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './invitation.component.scss',

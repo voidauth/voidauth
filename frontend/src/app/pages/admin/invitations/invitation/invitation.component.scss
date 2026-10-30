@@ -1,3 +1,7 @@
+:host {
+  gap: 8px;
+}
+
 .avatar-upload {
   display: flex;
   flex-direction: column;
@@ -37,7 +41,7 @@
   position: absolute;
 }
 mat-divider {
-  margin-top: 5rem;
+  margin-top: 3rem;
   margin-bottom: 3rem;
   min-width: calc(var(--form-min-width) * 0.8);
   max-width: calc(var(--form-max-width) * 0.8);
