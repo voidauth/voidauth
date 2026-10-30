@@ -1,8 +1,0 @@
-@font-face {
-  font-family: 'Noto Flag Emoji';
-  src: url(NotoColorEmoji-flagsonly.ttf) format('ttf');
-}
-
-.flag-emojis {
-  font-family: 'Noto Flag Emoji';
-}
