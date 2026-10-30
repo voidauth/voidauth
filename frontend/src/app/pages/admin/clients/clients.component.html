@@ -4,60 +4,65 @@
   </span>
   <app-oidc-info style="width: 100%; margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
 
-  <table mat-table [dataSource]="dataSource" matSort>
-    @for (column of columns; track column) {
-      <ng-container [matColumnDef]="column.columnDef">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ column.header | looseAsync }}
-        </th>
-        <td mat-cell style="white-space: pre-line" *matCellDef="let row">
-          @if (column.isIcon) {
-            <mat-icon fontSet="material-icons-round">{{ column.cell(row) }}</mat-icon>
-          } @else if (column.isImage) {
-            <div style="display: flex">
-              <img
-                [src]="column.cell(row)"
-                (load)="resizeLogo($event, 42)"
-                style="max-width: 42px; max-height: 42px; object-fit: contain; border-radius: 4px"
-              />
-            </div>
+  <div class="table-container">
+    <table mat-table [dataSource]="dataSource" matSort>
+      @for (column of columns; track column) {
+        <ng-container [matColumnDef]="column.columnDef">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ column.header | looseAsync }}
+          </th>
+          <td mat-cell style="white-space: pre-line" *matCellDef="let row">
+            @if (column.isIcon) {
+              <mat-icon fontSet="material-icons-round">{{ column.cell(row) }}</mat-icon>
+            } @else if (column.isImage) {
+              <div style="display: flex">
+                <img
+                  [src]="column.cell(row)"
+                  (load)="resizeLogo($event, 42)"
+                  style="max-width: 42px; max-height: 42px; object-fit: contain; border-radius: 4px"
+                />
+              </div>
+            } @else {
+              {{ column.cell(row) }}
+            }
+          </td>
+        </ng-container>
+      }
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row" class="actions">
+          @if (row.declared) {
+            <a mat-icon-button [routerLink]="['/admin', 'client', row.client_id]" [matTooltip]="'admin.common.actions.view' | translate">
+              <mat-icon fontSet="material-icons-round">visibility</mat-icon>
+            </a>
           } @else {
-            {{ column.cell(row) }}
+            <a mat-icon-button [routerLink]="['/admin', 'client', row.client_id]" [matTooltip]="'admin.common.actions.edit' | translate">
+              <mat-icon fontSet="material-icons-round">edit</mat-icon>
+            </a>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="onDelete(row.client_id)"
+              [matTooltip]="'admin.common.actions.delete' | translate"
+            >
+              <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
+            </button>
           }
         </td>
       </ng-container>
-    }
 
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef></th>
-      <td mat-cell *matCellDef="let row" class="actions">
-        @if (row.declared) {
-          <a mat-icon-button [routerLink]="['/admin', 'client', row.client_id]" [matTooltip]="'admin.common.actions.view' | translate">
-            <mat-icon fontSet="material-icons-round">visibility</mat-icon>
-          </a>
-        } @else {
-          <a mat-icon-button [routerLink]="['/admin', 'client', row.client_id]" [matTooltip]="'admin.common.actions.edit' | translate">
-            <mat-icon fontSet="material-icons-round">edit</mat-icon>
-          </a>
-          <button mat-icon-button type="button" (click)="onDelete(row.client_id)" [matTooltip]="'admin.common.actions.delete' | translate">
-            <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
-          </button>
-        }
-      </td>
-    </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-    <!-- Row shown when there is no matching data. -->
-    <tr *matNoDataRow>
-      <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1">
-        <h1>{{ "admin.clients.empty-state" | translate }}</h1>
-      </td>
-    </tr>
-  </table>
-
-  <div style="flex-grow: 1"></div>
+      <!-- Row shown when there is no matching data. -->
+      <tr *matNoDataRow>
+        <td style="height: 40px; text-align: center; font-weight: bold" [attr.colspan]="columns.length + 1">
+          <h1>{{ "admin.clients.empty-state" | translate }}</h1>
+        </td>
+      </tr>
+    </table>
+  </div>
 
   <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="tableService.currentPageSize"></mat-paginator>
 </div>
