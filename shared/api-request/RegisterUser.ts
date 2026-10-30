@@ -9,7 +9,6 @@ export const registerUserValidator = {
   email: coerceEmailOrNull.optional(),
   inviteId: zod.string().optional(),
   challenge: zod.string().optional(),
-  password: zod.string(),
 } as const
 
 export type RegisterUser = SchemaInfer<typeof registerUserValidator>
