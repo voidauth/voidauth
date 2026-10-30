@@ -1,12 +1,18 @@
-<h1>
-  @if (id) {
-    {{ "admin.domain.titles.update" | translate }}
-  } @else {
-    {{ "admin.domain.titles.create" | translate }}
-  }
-</h1>
+<div class="form-width">
+  <a matButton="elevated" routerLink="/admin/domains">
+    <mat-icon fontSet="material-icons-round">arrow_back_ios_new</mat-icon>
+    {{ "admin.domain.actions.back" | translate }}
+  </a>
+</div>
 <mat-card class="form-card">
   <mat-card-content>
+    <h1>
+      @if (id) {
+        {{ "admin.domain.titles.update" | translate }}
+      } @else {
+        {{ "admin.domain.titles.create" | translate }}
+      }
+    </h1>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field>
         <mat-label>{{ "admin.domain.labels.domain" | translate }}</mat-label>

@@ -1,10 +1,9 @@
-<h1>
-  @if (id) {
-    {{ "admin.invitation.titles.update" | translate }}
-  } @else {
-    {{ "admin.invitation.titles.create" | translate }}
-  }
-</h1>
+<div class="form-width">
+  <a matButton="elevated" routerLink="/admin/invitations">
+    <mat-icon fontSet="material-icons-round">arrow_back_ios_new</mat-icon>
+    {{ "admin.invitation.actions.back" | translate }}
+  </a>
+</div>
 @if (id) {
   <mat-card class="form-card">
     <mat-card-content>
@@ -55,6 +54,13 @@
 
 <mat-card class="form-card">
   <mat-card-content>
+    <h1>
+      @if (id) {
+        {{ "admin.invitation.titles.update" | translate }}
+      } @else {
+        {{ "admin.invitation.titles.create" | translate }}
+      }
+    </h1>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="avatar-upload">
         @if (avatarPreviewUrl(); as currentAvatarUrl) {

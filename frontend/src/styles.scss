@@ -137,6 +137,15 @@ div.table-container {
   background: rgba(0,0,0,.90);
 }
 
+div.form-width {
+  max-width: var(--form-max-width);
+  width: 100%;
+
+  &.thin {
+    max-width: var(--form-thin-max-width);
+  }
+}
+
 mat-card.form-card {
   max-width: var(--form-max-width);
   width: 100%;

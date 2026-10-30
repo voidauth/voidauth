@@ -480,7 +480,8 @@
         "applied": "Applied"
       },
       "actions": {
-        "sign-out": "Sign Out"
+        "sign-out": "Sign Out",
+        "back": "Users"
       },
       "tooltips": {
         "remove": "Remove",
@@ -504,7 +505,8 @@
     "clients": {
       "empty-state": "No OIDC Apps.",
       "actions": {
-        "create": "Create OIDC App"
+        "create": "Create OIDC App",
+        "back": "OIDC Apps"
       },
       "columns": {
         "name": "Name",
@@ -634,6 +636,9 @@
       },
       "dialogs": {
         "delete": "Are you sure you want to delete this domain?"
+      },
+      "actions": {
+        "back": "ProxyAuth Domains"
       }
     },
     "password-resets": {
@@ -736,6 +741,9 @@
       },
       "dialogs": {
         "delete": "Are you sure you want to delete this group?"
+      },
+      "actions": {
+        "back": "Groups"
       }
     },
     "invitations": {
@@ -801,7 +809,8 @@
         "delete-failed": "Could not delete invitation."
       },
       "actions": {
-        "send": "Send Invite"
+        "send": "Send Invite",
+        "back": "Invitations"
       },
       "checkboxes": {
         "email-verified": "Email Verified"
@@ -812,7 +821,8 @@
     },
     "claims": {
       "actions": {
-        "create": "Create Claim"
+        "create": "Create Claim",
+        "back": "Custom Claims"
       },
       "empty-state": "No Custom Claims.",
       "columns": {
