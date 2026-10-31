@@ -92,7 +92,8 @@
     "title": "{{platformName}} inschakelen?",
     "actions": {
       "passkey": "{{platformName}} inschakelen",
-      "skip": "Overslaan"
+      "skip": "Overslaan",
+      "never-ask": "Niet vragen om opnieuw een passkey in te stellen."
     },
     "messages": {
       "added": "Passkey toegevoegd.",
@@ -267,7 +268,10 @@
         "actions": {
           "submit": {
             "label": "Profiel bijwerken"
-          }
+          },
+          "upload-avatar": "Avatar uploaden",
+          "replace-avatar": "Avatar vervangen",
+          "remove-avatar": "Avatar verwijderen"
         },
         "email": {
           "label": "E-mailadres",
@@ -361,6 +365,9 @@
       "mfa-enabled": "Multi-factor authenticatie ingeschakeld.",
       "profile-updated": "Profiel bijgewerkt.",
       "profile-update-failed": "Kan profiel niet bijwerken.",
+      "avatar-invalid-file": "Kies een PNG, JPEG of WebP-afbeelding niet groter dan 2 MB.",
+      "avatar-update-failed": "Kan avatar niet bijwerken.",
+      "avatar-remove-failed": "Kan avatar niet verwijderen.",
       "password-updated": "Wachtwoord bijgewerkt.",
       "password-update-failed": "Wachtwoord kon niet worden bijgewerkt.",
       "passkey-registered": "Passkey succesvol geregistreerd.",
@@ -396,6 +403,19 @@
         "view": "Weergeven",
         "open": "Openen",
         "remove": "Verwijderen"
+      },
+      "avatar": {
+        "label": "Gebruikersavatar",
+        "actions": {
+          "upload": "Avatar uploaden",
+          "replace": "Avatar vervangen",
+          "remove": "Avatar verwijderen"
+        },
+        "messages": {
+          "invalid-file": "Kies een PNG, JPEG of WebP-afbeelding niet groter dan 2 MB.",
+          "update-failed": "Kan avatar niet bijwerken.",
+          "remove-failed": "Kan avatar niet verwijderen."
+        }
       },
       "labels": {
         "mfa-required": "MFA vereist",
@@ -969,7 +989,18 @@
       }
     },
     "common": {
-      "or": "of"
+      "or": "of",
+      "messages": {
+        "session-failed": "Kan de sessie niet aanmaken.",
+        "user-not-found": "Gebruiker niet gevonden.",
+        "passkey-already-registered": "Passkey is al geregistreerd.",
+        "invalid-code": "Ongeldige code ingevoerd.",
+        "register-passkey-failed": "Kan passkey niet registreren.",
+        "verification-email-sent": "Verificatie-e-mail verzonden.",
+        "email-updated": "E-mail bijgewerkt.",
+        "email-update-failed": "Kon e-mail niet bijwerken.",
+        "something-went-wrong": "Er is iets misgegaan."
+      }
     },
     "paginator": {
       "items-per-page": "Items per pagina:",
