@@ -1,15 +1,21 @@
-<h1>
-  @if (form.disabled) {
-    {{ "admin.client.titles.view" | translate }}
-  } @else if (client_id) {
-    {{ "admin.client.titles.update" | translate }}
-  } @else {
-    {{ "admin.client.titles.create" | translate }}
-  }
-</h1>
-<app-oidc-info style="width: 100%; max-width: var(--form-max-width); margin-bottom: 8px; margin-top: 8px"></app-oidc-info>
+<div class="form-width">
+  <a matButton="elevated" routerLink="/admin/clients">
+    <mat-icon fontSet="material-icons-round">arrow_back_ios_new</mat-icon>
+    {{ "admin.clients.actions.back" | translate }}
+  </a>
+</div>
+<app-oidc-info style="width: 100%; max-width: var(--form-max-width)"></app-oidc-info>
 <mat-card class="form-card">
   <mat-card-content>
+    <h1>
+      @if (form.disabled) {
+        {{ "admin.client.titles.view" | translate }}
+      } @else if (client_id) {
+        {{ "admin.client.titles.update" | translate }}
+      } @else {
+        {{ "admin.client.titles.create" | translate }}
+      }
+    </h1>
     <form [formGroup]="form">
       <mat-form-field>
         <mat-label>{{ "admin.client.labels.name" | translate }}</mat-label>

@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common'
 import { MaterialModule } from '../../../../material-module'
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ValidationErrorPipe } from '../../../../pipes/ValidationErrorPipe'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import { isValidWebURLControl, isValidWildcardRedirectControl } from '../../../../validators/validators'
 import {
@@ -39,7 +39,15 @@ export function generateBase64URLString(bytes: number) {
 
 @Component({
   selector: 'app-upsert-client',
-  imports: [CommonModule, MaterialModule, ValidationErrorPipe, ReactiveFormsModule, OidcInfoComponent, TranslatePipe],
+  imports: [
+    CommonModule,
+    MaterialModule,
+    ValidationErrorPipe,
+    ReactiveFormsModule,
+    OidcInfoComponent,
+    TranslatePipe,
+    RouterLink,
+  ],
   templateUrl: './upsert-client.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './upsert-client.component.scss',
@@ -178,6 +186,9 @@ export class UpsertClientComponent implements OnInit {
         } catch {
           // do nothing
         }
+
+        this.form.markAsPristine()
+        this.form.markAsUntouched()
       } catch (e) {
         console.error(e)
         this.snackbarService.error(String(this.translateService.instant('admin.client.messages.load-failed')))

@@ -59,7 +59,7 @@ export class AuthService {
     return firstValueFrom(this.http.delete<null>('/api/interaction/current'))
   }
 
-  async register(body: RegisterUser) {
+  async register(body: RegisterUser & { password: string }) {
     return firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/register', body))
   }
 
@@ -70,7 +70,7 @@ export class AuthService {
     }))
   }
 
-  async endPasskeySignup(body: RegistrationResponseJSON & Omit<RegisterUser, 'password'>) {
+  async endPasskeySignup(body: RegistrationResponseJSON & RegisterUser) {
     try {
       const result = await firstValueFrom(this.http.post<Redirect | undefined>('/api/interaction/register/passkey/end', body))
       localStorage.setItem('passkey_seen', 'true')

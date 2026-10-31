@@ -1,5 +1,14 @@
 @use '@angular/material' as mat;
 
+// The below is MIT licensed from https://github.com/talkjs/country-flag-emoji-polyfill
+@font-face {
+  font-family: "Twemoji Country Flags";
+  unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E0063, U+E0065, U+E0067,
+    U+E006C, U+E006E, U+E0073-E0074, U+E0077, U+E007F;
+  src: url('../public/TwemojiCountryFlags.woff2') format('woff2');
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -92,6 +101,23 @@ mat-drawer-content {
   flex-grow: 1 !important;
 }
 
+table {
+  td.mdc-data-table__cell {
+    padding: 0 8px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    // max-width: 150px;
+    min-width: 0;
+  }
+}
+
+div.table-container {
+  overflow: auto;
+  max-width: 100%;
+  max-height: 100%;
+  flex-grow: 1;
+}
+
 .field-suffix {
   margin-right: 8px;
 }
@@ -109,6 +135,15 @@ mat-drawer-content {
 
 .cdk-overlay-dark-backdrop {
   background: rgba(0,0,0,.90);
+}
+
+div.form-width {
+  max-width: var(--form-max-width);
+  width: 100%;
+
+  &.thin {
+    max-width: var(--form-thin-max-width);
+  }
 }
 
 mat-card.form-card {
@@ -214,6 +249,14 @@ a {
   &:hover {
     color: unset;
   }
+}
+
+.mdc-button__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .clickable {

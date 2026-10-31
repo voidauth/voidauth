@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, inject, type OnInit } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { ConfirmComponent } from '../../../../dialogs/confirm/confirm.component'
 import { MaterialModule } from '../../../../material-module'
@@ -19,7 +19,9 @@ import { OptionValueDialogComponent,
 
 @Component({
   selector: 'app-custom-claim',
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, ValidationErrorPipe, TranslatePipe],
+  imports: [CommonModule,
+    MaterialModule, ReactiveFormsModule, RouterLink,
+    ValidationErrorPipe, TranslatePipe],
   templateUrl: './custom-claim.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './custom-claim.component.scss',

@@ -19,7 +19,7 @@ html {
       primary: theme-colors.$primary-palette,
       tertiary: theme-colors.$tertiary-palette,
     ),
-    typography: "__APP_FONT__monospace",
+    typography: "'Twemoji Country Flags', __APP_FONT__monospace",
     density: 0,
   ));
 }

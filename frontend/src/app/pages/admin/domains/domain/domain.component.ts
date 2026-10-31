@@ -1,6 +1,6 @@
 import { Component, inject, ChangeDetectionStrategy, type OnInit } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { AdminService } from '../../../../services/admin.service'
 import { SnackbarService } from '../../../../services/snackbar.service'
 import { SpinnerService } from '../../../../services/spinner.service'
@@ -18,7 +18,9 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-domain',
-  imports: [CommonModule, MaterialModule, ValidationErrorPipe, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, MaterialModule,
+    ValidationErrorPipe, ReactiveFormsModule,
+    TranslatePipe, RouterLink],
   templateUrl: './domain.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './domain.component.scss',
