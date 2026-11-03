@@ -5,17 +5,22 @@ import { TABLES } from '@shared/db'
 import appConfig from '../util/config'
 import { stringCompare, type Nullable } from '@shared/utils'
 import { getLDAPVisibleUsers, getUserByUsername } from '../db/user'
+import { getUserAvatarBasicJpeg } from '../db/avatar'
+import { logger } from '../util/logger'
 import { parseDN } from './util'
 
 export const MAX_SEARCH_RESULTS = 1000
 
+export type LDAPAttributeValue = string | Buffer
+
 export type LDAPAttributes = {
-  [x: string]: string | string[]
+  [x: string]: LDAPAttributeValue | LDAPAttributeValue[]
 }
 
 export type LDAPEntry = {
   dn: string
   attributes: LDAPAttributes
+  avatarUserId?: string
 }
 
 export type LDAPSearchScope = 'base' | 'one' | 'sub' | 0 | 1 | 2
@@ -94,6 +99,24 @@ export async function getLDAPEntries() {
 
 export async function getLDAPEntryByDN(dn: string) {
   return (await getLDAPEntries()).find(entry => dnEqual(entry.dn, dn))
+}
+
+// Get the jpegPhoto for entry if it exists
+export async function getEntryJpegPhoto(entry: LDAPEntry): Promise<Buffer | undefined> {
+  if (!entry.avatarUserId) {
+    return undefined
+  }
+
+  try {
+    return await getUserAvatarBasicJpeg(entry.avatarUserId)
+  } catch (error) {
+    logger({
+      level: 'debug',
+      message: 'Could not load LDAP jpegPhoto; returning the entry without it.',
+      errors: error instanceof Error ? [error] : [{ message: String(error) }],
+    })
+    return undefined
+  }
 }
 
 export async function getLDAPUserIdByDN(dn: string) {
@@ -189,6 +212,7 @@ function userEntry(
 
   return {
     dn: ldapUserDN(user),
+    avatarUserId: user.id,
     attributes: truthyAttributes({
       objectClass: ['top', 'person', 'organizationalPerson', 'inetOrgPerson'],
       entryUUID: user.id,
