@@ -88,36 +88,40 @@ export async function getUsers(
 }
 
 export async function getLDAPVisibleUsers(limit = 1000): Promise<Pick<User, 'id' | 'username' | 'name' | 'email'>[]> {
-  return (await db().table<User>(TABLES.USER).select(
+  const query = db().table<User>(TABLES.USER).select(
     db().ref('id').withSchema(TABLES.USER),
     db().ref('username').withSchema(TABLES.USER),
     db().ref('name').withSchema(TABLES.USER),
     db().ref('email').withSchema(TABLES.USER),
-  ).whereExists((w) => {
+  ).where((w) => {
     // Users that are admin are always returned
-    w.select('*')
-      .table<UserGroup>(TABLES.USER_GROUP)
-      .join<Group>(TABLES.GROUP, `${TABLES.USER_GROUP}.groupId`, `${TABLES.GROUP}.id`)
-      .where(`${TABLES.GROUP}.name`, ADMIN_GROUP)
-      .andWhereRaw('?? = ??', [`${TABLES.USER_GROUP}.userId`, `${TABLES.USER}.id`])
-  }).orWhere((w) => {
-    // Non-admin users are only returned if they are:
-    // non-expired
-    w.where((e) => {
-      e.where('expiresAt', '>', new Date())
-      e.orWhere({ expiresAt: null })
+    w.whereExists((adminW) => {
+      adminW.select('*')
+        .table<UserGroup>(TABLES.USER_GROUP)
+        .join<Group>(TABLES.GROUP, `${TABLES.USER_GROUP}.groupId`, `${TABLES.GROUP}.id`)
+        .where(`${TABLES.GROUP}.name`, ADMIN_GROUP)
+        .andWhereRaw('?? = ??', [`${TABLES.USER_GROUP}.userId`, `${TABLES.USER}.id`])
+    }).orWhere((nonAdminW) => {
+      // Non-admin users are only returned if they are:
+      // non-expired
+      nonAdminW.where((e) => {
+        e.where('expiresAt', '>', new Date())
+        e.orWhere({ expiresAt: null })
+      })
+
+      // approved (if approval is required)
+      if (appConfig.SIGNUP_REQUIRES_APPROVAL) {
+        nonAdminW.andWhere('approved', true)
+      }
+
+      // email verified (if email verification is required)
+      if (appConfig.EMAIL_VERIFICATION) {
+        nonAdminW.andWhere('emailVerified', true)
+      }
     })
+  })
 
-    // approved (if approval is required)
-    if (appConfig.SIGNUP_REQUIRES_APPROVAL) {
-      w.andWhere('approved', true)
-    }
-
-    // email verified (if email verification is required)
-    if (appConfig.EMAIL_VERIFICATION) {
-      w.andWhere('emailVerified', true)
-    }
-  }).limit(limit)).map((u) => {
+  return (await query.limit(limit)).map((u) => {
     return {
       id: u.id,
       username: u.username,

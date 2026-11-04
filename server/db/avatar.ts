@@ -71,13 +71,14 @@ export async function transferInvitationAvatar(invitationId: string, userId: str
   await db().table<Invitation>(TABLES.INVITATION).update({ avatarHash: null }).where({ id: invitationId })
 }
 
-export async function getUserAvatarJpeg(userId: string) {
+export async function getUserAvatarBasicJpeg(userId: string) {
   const avatar = await getUserAvatarUploadedAsset(userId)
   if (!avatar) {
     return
   }
   return await sharp(await readAsset(avatar.contentHash), { limitInputPixels: 12000000 })
     .flatten({ background: '#ffffff' })
+    .resize(128, 128, { fit: 'cover', withoutEnlargement: true })
     .jpeg({ quality: 85 })
     .toBuffer()
 }
