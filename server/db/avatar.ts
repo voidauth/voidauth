@@ -2,9 +2,9 @@ import { TABLES } from '@shared/db'
 import type { UploadedAsset } from '@shared/db/Asset'
 import type { Invitation } from '@shared/db/Invitation'
 import type { User } from '@shared/db/User'
-import sharp from 'sharp'
 import { db } from './db'
 import { createUploadedAssetFile, deleteUnreferencedAsset, getUploadedAssetWebUrl, readAsset } from './uploaded'
+import { getSharp } from '../util/imageParse'
 
 export async function getUploadedAssetByHash(contentHash: string) {
   return await db().select().table<UploadedAsset>(TABLES.UPLOADED_ASSET).where({ contentHash }).first()
@@ -76,7 +76,8 @@ export async function getUserAvatarBasicJpeg(userId: string) {
   if (!avatar) {
     return
   }
-  return await sharp(await readAsset(avatar.contentHash), { limitInputPixels: 12000000 })
+
+  return await (await getSharp())(await readAsset(avatar.contentHash), { limitInputPixels: 12000000 })
     .flatten({ background: '#ffffff' })
     .resize(128, 128, { fit: 'cover', withoutEnlargement: true })
     .jpeg({ quality: 85 })
