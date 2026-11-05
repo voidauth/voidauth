@@ -81,8 +81,8 @@ export function urlFromWildcardHref(input: string) {
 }
 
 export function urlFromWildcardDomain(input: string) {
-  // input should not include a protocol
-  // If the input does not start with http(s), add it so it can be later safely removed
+  // input should not include a protocol, but user might have mistakenly added a common one
+  // Add protocol so it can be later safely removed
   if (!input.startsWith('http:') && !input.startsWith('https:')) {
     input = 'http:' + input
   }
@@ -233,12 +233,16 @@ export function isValidWildcardDomain(input: string) {
   }
 }
 
+export function convertUrlToDomain(url: Pick<URL, 'hostname' | 'port' | 'pathname'>) {
+  return `${url.hostname}${url.port ? (':' + url.port) : ''}${url.pathname}`
+}
+
 export function formatWildcardDomain(input: string) {
   const url = urlFromWildcardDomain(input)
   if (!url) {
     return ''
   }
-  return `${url.hostname}${url.port ? (':' + url.port) : ''}${url.pathname}`
+  return convertUrlToDomain(url)
 }
 
 export function sortWildcardDomains(ad: string, bd: string) {
