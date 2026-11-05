@@ -14,6 +14,10 @@ import { logger } from './logger'
 import type { NextFunction, Request, Response } from 'express'
 import { ipKeyGenerator, rateLimit } from 'express-rate-limit'
 
+export type RequestUser = CurrentUserPrivateDetails & {
+  source: 'header' | 'cookie'
+}
+
 export async function getUserSessionInteraction(req: Request, res: Response) {
   // get user from session or interaction
   let user: UserDetails | undefined
@@ -46,8 +50,9 @@ export async function getUserSessionInteraction(req: Request, res: Response) {
     return undefined
   }
 
-  const currentUser: CurrentUserPrivateDetails | undefined = {
+  const currentUser: RequestUser = {
     ...user,
+    source: 'cookie',
     amr,
     canLogin: userCanLogin(user, amr),
     isPrivilegedForTotpCreate: userIsPrivilegedForTotpCreate(user, amr),
@@ -133,6 +138,7 @@ export const getUserByBasicAuth = rateLimit({
 
       req.user = {
         ...user,
+        source: 'header',
         amr: ['pwd'],
         canLogin: userCanLogin(user, ['pwd']),
         // auth-header user cannot do account management
