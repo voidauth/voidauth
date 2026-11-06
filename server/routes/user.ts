@@ -21,7 +21,7 @@ import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import zod from 'zod'
 import type { CurrentUserDetails, UserApp } from '@shared/api-response/UserDetails'
 import { deleteUserAvatar, getAvatarUrl, replaceUserAvatar } from '../db/avatar'
-import { imageUpload, normalizeUploadedImage } from '../util/uploadedImage'
+import { imageUpload, InvalidImageError, normalizeUploadedImage } from '../util/uploadedImage'
 import type { AvatarResponse } from '@shared/api-response/AvatarResponse'
 import { getClients } from '../db/client_get'
 
@@ -141,8 +141,12 @@ userRouter.post('/avatar',
     let image: { buffer: Buffer, extension: string }
     try {
       image = await normalizeUploadedImage(req.file.buffer)
-    } catch {
-      res.status(400).send({ message: 'file must be a valid PNG, JPEG, or WebP image within the required size and dimensions.' })
+    } catch (e) {
+      if (e instanceof InvalidImageError) {
+        res.status(400).send({ message: e.message + ' Please upload a valid image file (PNG, JPEG, or WebP)' })
+        return
+      }
+      res.status(500).send({ message: 'An error occurred while processing the image.' })
       return
     }
     const asset = await replaceUserAvatar(user.id, image.buffer, image.extension)
