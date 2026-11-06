@@ -14,6 +14,10 @@ import { logger } from './logger'
 import type { NextFunction, Request, Response } from 'express'
 import { ipKeyGenerator, rateLimit } from 'express-rate-limit'
 
+export type RequestUser = CurrentUserPrivateDetails & {
+  source: 'header' | 'cookie'
+}
+
 export async function getUserSessionInteraction(req: Request, res: Response) {
   // get user from session or interaction
   let user: UserDetails | undefined
@@ -46,8 +50,9 @@ export async function getUserSessionInteraction(req: Request, res: Response) {
     return undefined
   }
 
-  const currentUser: CurrentUserPrivateDetails | undefined = {
+  const currentUser: RequestUser = {
     ...user,
+    source: 'cookie',
     amr,
     canLogin: userCanLogin(user, amr),
     isPrivilegedForTotpCreate: userIsPrivilegedForTotpCreate(user, amr),
@@ -102,9 +107,17 @@ export const getUserByBasicAuth = rateLimit({
         return true
       }
 
+      // Check if the request should already be rate-limited based on previous failures
+      const alreadyLimited = async () => {
+        const failures = await getUserByBasicAuth.getKey(ipKeyGenerator(req.ip || ''))
+        if (failures && failures.totalHits >= MAX_BASIC_AUTH_FAILS && failures.resetTime && failures.resetTime.getTime() > Date.now()) {
+          return true
+        }
+        return false
+      }
+
       // if request should already be rate-limited, never skip
-      const failures = await getUserByBasicAuth.getKey(ipKeyGenerator(req.ip || ''))
-      if (failures && failures.totalHits >= MAX_BASIC_AUTH_FAILS && failures.resetTime && failures.resetTime.getTime() > Date.now()) {
+      if (await alreadyLimited()) {
         return false
       }
 
@@ -114,12 +127,18 @@ export const getUserByBasicAuth = rateLimit({
       const [username, password] = base64Credentials ? Buffer.from(base64Credentials, 'base64').toString().split(':') : []
       const user = username ? await getUserByInput(username) : undefined
       if (!user || !password || !await checkPasswordHash(user.id, password)) {
-      // Invalid auth header, rate-limit this request
+        // Invalid auth header, rate-limit this request
+        return false
+      }
+
+      // recheck if there are too many failures, just in case there have been additional attempts
+      if (await alreadyLimited()) {
         return false
       }
 
       req.user = {
         ...user,
+        source: 'header',
         amr: ['pwd'],
         canLogin: userCanLogin(user, ['pwd']),
         // auth-header user cannot do account management

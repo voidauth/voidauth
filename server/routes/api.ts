@@ -2,7 +2,6 @@ import { Router, type Request } from 'express'
 import { router as interactionRouter } from './interaction'
 import { userRouter } from './user'
 import { adminRouter } from './admin'
-import type { CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import { authRouter } from './auth'
 import { publicRouter } from './public'
 import { proxyAuth } from '../util/proxyAuth'
@@ -12,13 +11,13 @@ import { transaction } from '../db/db'
 import { zodValidate } from '../util/zodValidate'
 import zod from 'zod'
 import { getProxyAuthWithCache } from '../db/proxyAuth'
-import { getUserByBasicAuth, getUserBySession } from '../util/userMiddleware'
+import { getUserByBasicAuth, getUserBySession, type RequestUser } from '../util/userMiddleware'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user: CurrentUserPrivateDetails | undefined // user indicated by the session
+      user: RequestUser | undefined
     }
   }
 }

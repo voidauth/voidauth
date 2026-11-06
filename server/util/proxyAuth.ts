@@ -6,11 +6,11 @@ import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
 import { loginFactors } from '@shared/user'
 import { getSession } from '../oidc/provider'
 import { logger } from './logger'
-import { formatWildcardDomain } from '@shared/url'
+import { convertUrlToDomain } from '@shared/url'
 
 // proxy auth common
 export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request', req: Request, res: Response) {
-  const formattedUrl = formatWildcardDomain(url.href)
+  const formattedUrl = convertUrlToDomain(url)
   const redirCode = method === 'auth-request' ? 401 : 302
 
   // should not block access to itself
@@ -85,10 +85,12 @@ export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request
   }
 
   // Check that session is not too old
-  const session = await getSession(req, res)
-  if (match.maxSessionLength && session?.past(match.maxSessionLength * 60)) {
-    res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href, 'login')}`)
-    return
+  if (user.source === 'cookie' && match.maxSessionLength) {
+    const session = await getSession(req, res)
+    if (session?.past(match.maxSessionLength * 60)) {
+      res.redirect(redirCode, `${appConfig.APP_URL}${proxyAuthPath(appConfig.APP_URL, url.href, 'login')}`)
+      return
+    }
   }
 
   // Check that user is approved and verified and should be able to continue

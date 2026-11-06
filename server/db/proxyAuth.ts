@@ -1,7 +1,7 @@
 import { db } from './db'
 import type { Group, ProxyAuthGroup } from '@shared/db/Group'
 import type { ProxyAuth } from '@shared/db/ProxyAuth'
-import { sortWildcardDomains, domainIsWildcardMatch, formatWildcardDomain } from '@shared/url'
+import { sortWildcardDomains, domainIsWildcardMatch, convertUrlToDomain } from '@shared/url'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { TABLES } from '@shared/db'
 
@@ -10,7 +10,7 @@ let proxyAuthCache: Pick<ProxyAuthResponse, 'domain' | 'mfaRequired' | 'groups' 
 let proxyAuthCacheExpires: number = 0
 
 export async function getProxyAuthWithCache(url: URL) {
-  const formattedDomain = formatWildcardDomain(url.href)
+  const formattedDomain = convertUrlToDomain(url)
   if (proxyAuthCacheExpires < new Date().getTime()) {
     proxyAuthCache = await getProxyAuths()
 

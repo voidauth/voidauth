@@ -206,15 +206,19 @@ function refreshDeclaredClients(docker: Docker | undefined) {
       if (!containers) return
 
       for (const { Id } of containers) {
-        const info = await docker.getContainer(Id).inspect()
-        if (!info.State.Running || info.Config.Labels['voidauth.enable'] !== 'true') continue
+        try {
+          const info = await docker.getContainer(Id).inspect()
+          if (!info.State.Running || info.Config.Labels['voidauth.enable'] !== 'true') continue
 
-        for (const [rawKey, value] of Object.entries(info.Config.Labels)) {
-          const key = rawKey.toLowerCase()
-          if (!key.startsWith('voidauth.oidc.')) continue
-          const [, , client_id, variable] = key.split('.', 4)
-          if (!client_id || !variable) continue
-          registerClientVariable(clients, client_id, variable, value, 'label')
+          for (const [rawKey, value] of Object.entries(info.Config.Labels)) {
+            const key = rawKey.toLowerCase()
+            if (!key.startsWith('voidauth.oidc.')) continue
+            const [, , client_id, variable] = key.split('.', 4)
+            if (!client_id || !variable) continue
+            registerClientVariable(clients, client_id, variable, value, 'label')
+          }
+        } catch {
+          // Ignore errors
         }
       }
     })
