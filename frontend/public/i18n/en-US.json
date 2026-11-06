@@ -257,6 +257,9 @@
   "settings": {
     "title": "Settings",
     "sections": {
+      "apps": {
+        "title": "Apps"
+      },
       "profile": {
         "title": "Profile",
         "username": {

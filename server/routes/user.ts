@@ -19,10 +19,13 @@ import { passwordStrength } from '../util/zxcvbn'
 import { checkCanLogin, checkPrivilegedForEmail, checkUserExists } from '../util/authMiddleware'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import zod from 'zod'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, UserApp } from '@shared/api-response/UserDetails'
 import { deleteUserAvatar, getAvatarUrl, replaceUserAvatar } from '../db/avatar'
 import { imageUpload, normalizeUploadedImage } from '../util/uploadedImage'
 import type { AvatarResponse } from '@shared/api-response/AvatarResponse'
+import { getClients } from '../db/client_get'
+import { getProxyAuths } from '../db/proxyAuth'
+import { urlFromWildcardDomain } from '@shared/url'
 
 export const userRouter = Router()
 
@@ -212,6 +215,33 @@ userRouter.patch('/password',
     await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
     res.send()
   })
+
+userRouter.get('/apps', async (req, res) => {
+  const user = req.user
+  if (!user) {
+    res.sendStatus(500)
+    return
+  }
+
+  // Same rule as login: no groups means everyone, admins see everything
+  const canAccess = (groups: string[]) => user.isAdmin || !groups.length || user.groups.some(g => groups.includes(g.name))
+
+  res.send([
+    ...(await getClients()).flatMap(c => c.client_uri && canAccess(c.groups)
+      ? [{ name: c.client_name || c.client_id, url: c.client_uri, logo: c.logo_uri ?? new URL('/favicon.ico', c.client_uri).href }]
+      : []),
+    ...(await getProxyAuths()).flatMap(({ domain, groups }) => {
+      const url = urlFromWildcardDomain(domain)
+      return url && !url.hostname.includes('*') && canAccess(groups)
+        ? [{
+            name: url.hostname.split('.')[0] ?? url.hostname,
+            url: `https://${url.hostname}${url.pathname.replace(/\*.*$/, '')}`,
+            logo: `https://${url.hostname}/favicon.ico`,
+          }]
+        : []
+    }),
+  ] satisfies UserApp[])
+})
 
 userRouter.get('/passkeys', async (req, res) => {
   const user = req.user

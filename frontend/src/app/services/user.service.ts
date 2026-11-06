@@ -4,7 +4,7 @@ import type { UpdateProfile } from '@shared/api-request/UpdateProfile'
 import type { UpdateEmail } from '@shared/api-request/UpdateEmail'
 import type { UpdatePassword } from '@shared/api-request/UpdatePassword'
 import { firstValueFrom } from 'rxjs'
-import type { CurrentUserDetails, CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, CurrentUserPrivateDetails, UserApp } from '@shared/api-response/UserDetails'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import type { AvatarResponse } from '@shared/api-response/AvatarResponse'
 
@@ -93,5 +93,9 @@ export class UserService {
 
   async deleteUser() {
     return firstValueFrom(this.http.delete<null>('/api/user/user'))
+  }
+
+  async getApps() {
+    return firstValueFrom(this.http.get<UserApp[]>('/api/user/apps'))
   }
 }
