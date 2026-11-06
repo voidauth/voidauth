@@ -255,7 +255,7 @@
     }
   },
   "settings": {
-    "title": "Settings",
+    "title": "Home",
     "sections": {
       "apps": {
         "title": "Apps"

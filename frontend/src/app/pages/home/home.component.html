@@ -7,9 +7,13 @@
     </mat-card-header>
     <mat-card-content>
       <nav class="apps">
-        @for (app of apps; track app.url) {
-          <a [href]="app.url" [title]="app.name" target="_blank" rel="noopener">
-            <img [src]="app.logo" alt="" (error)="$any($event.target).hidden = true" />
+        @for (app of apps; track app.name; let i = $index) {
+          <a [href]="app.url" target="_blank" rel="noopener">
+            @if (failedAppLogos.has(i)) {
+              <div class="app-logo-fallback">{{ app.name.charAt(0).toUpperCase() }}</div>
+            } @else {
+              <img [src]="app.logo" (load)="resizeLogo($event, 40)" (error)="onAppLogoError(i)" />
+            }
             <span>{{ app.name }}</span>
           </a>
         }

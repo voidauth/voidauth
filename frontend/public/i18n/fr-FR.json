@@ -215,7 +215,6 @@
     }
   },
   "settings": {
-    "title": "Paramètres",
     "sections": {
       "profile": {
         "title": "Profil",
