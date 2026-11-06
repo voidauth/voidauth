@@ -479,7 +479,8 @@
         "applied": "Toegepast"
       },
       "actions": {
-        "sign-out": "Uitloggen"
+        "sign-out": "Uitloggen",
+        "back": "Gebruikers"
       },
       "tooltips": {
         "remove": "Verwijderen",
@@ -503,7 +504,8 @@
     "clients": {
       "empty-state": "Geen OIDC Apps.",
       "actions": {
-        "create": "OIDC App aanmaken"
+        "create": "OIDC App aanmaken",
+        "back": "OIDC Apps"
       },
       "columns": {
         "name": "Naam",
@@ -633,6 +635,9 @@
       },
       "dialogs": {
         "delete": "Weet u zeker dat u dit domein wilt verwijderen?"
+      },
+      "actions": {
+        "back": "ProxyAuth Domains"
       }
     },
     "password-resets": {
@@ -735,6 +740,9 @@
       },
       "dialogs": {
         "delete": "Weet u zeker dat u deze groep wilt verwijderen?"
+      },
+      "actions": {
+        "back": "Groepen"
       }
     },
     "invitations": {
@@ -800,7 +808,8 @@
         "delete-failed": "Kan uitnodiging niet verwijderen."
       },
       "actions": {
-        "send": "Uitnodiging versturen"
+        "send": "Uitnodiging versturen",
+        "back": "Uitnodigingen"
       },
       "checkboxes": {
         "email-verified": "E-mailadres geverifieerd"
@@ -811,7 +820,8 @@
     },
     "claims": {
       "actions": {
-        "create": "Claim aanmaken"
+        "create": "Claim aanmaken",
+        "back": "Aangepaste claims"
       },
       "empty-state": "Geen aangepaste claims.",
       "columns": {
