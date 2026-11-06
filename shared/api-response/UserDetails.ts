@@ -56,5 +56,5 @@ export type CurrentUserDetails = OnlyKeys<
 export type UserApp = {
   name: string
   url: string
-  logo: string
+  logo?: string
 }

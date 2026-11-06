@@ -24,8 +24,6 @@ import { deleteUserAvatar, getAvatarUrl, replaceUserAvatar } from '../db/avatar'
 import { imageUpload, normalizeUploadedImage } from '../util/uploadedImage'
 import type { AvatarResponse } from '@shared/api-response/AvatarResponse'
 import { getClients } from '../db/client_get'
-import { getProxyAuths } from '../db/proxyAuth'
-import { urlFromWildcardDomain } from '@shared/url'
 
 export const userRouter = Router()
 
@@ -226,21 +224,16 @@ userRouter.get('/apps', async (req, res) => {
   // Same rule as login: no groups means everyone, admins see everything
   const canAccess = (groups: string[]) => user.isAdmin || !groups.length || user.groups.some(g => groups.includes(g.name))
 
-  res.send([
-    ...(await getClients()).flatMap(c => c.client_uri && canAccess(c.groups)
-      ? [{ name: c.client_name || c.client_id, url: c.client_uri, logo: c.logo_uri ?? new URL('/favicon.ico', c.client_uri).href }]
-      : []),
-    ...(await getProxyAuths()).flatMap(({ domain, groups }) => {
-      const url = urlFromWildcardDomain(domain)
-      return url && !url.hostname.includes('*') && canAccess(groups)
-        ? [{
-            name: url.hostname.split('.')[0] ?? url.hostname,
-            url: `https://${url.hostname}${url.pathname.replace(/\*.*$/, '')}`,
-            logo: `https://${url.hostname}/favicon.ico`,
-          }]
-        : []
-    }),
-  ] satisfies UserApp[])
+  const apps = (await getClients())
+    .filter(c => c.client_uri && canAccess(c.groups))
+    .reduce<UserApp[]>((apps, c) => {
+      if (c.client_uri) {
+        apps.push({ name: c.client_name || c.client_id, url: c.client_uri, logo: c.logo_uri })
+      }
+      return apps
+    }, [])
+
+  res.send(apps satisfies UserApp[])
 })
 
 userRouter.get('/passkeys', async (req, res) => {
