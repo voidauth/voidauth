@@ -19,10 +19,11 @@ import { passwordStrength } from '../util/zxcvbn'
 import { checkCanLogin, checkPrivilegedForEmail, checkUserExists } from '../util/authMiddleware'
 import type { PasskeyResponse } from '@shared/api-response/PasskeyResponse'
 import zod from 'zod'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserDetails, UserApp } from '@shared/api-response/UserDetails'
 import { deleteUserAvatar, getAvatarUrl, replaceUserAvatar } from '../db/avatar'
-import { imageUpload, normalizeUploadedImage } from '../util/uploadedImage'
+import { imageUpload, InvalidImageError, normalizeUploadedImage } from '../util/uploadedImage'
 import type { AvatarResponse } from '@shared/api-response/AvatarResponse'
+import { getClients } from '../db/client_get'
 
 export const userRouter = Router()
 
@@ -140,8 +141,12 @@ userRouter.post('/avatar',
     let image: { buffer: Buffer, extension: string }
     try {
       image = await normalizeUploadedImage(req.file.buffer)
-    } catch {
-      res.status(400).send({ message: 'file must be a valid PNG, JPEG, or WebP image within the required size and dimensions.' })
+    } catch (e) {
+      if (e instanceof InvalidImageError) {
+        res.status(400).send({ message: e.message + ' Please upload a valid image file (PNG, JPEG, or WebP)' })
+        return
+      }
+      res.status(500).send({ message: 'An error occurred while processing the image.' })
       return
     }
     const asset = await replaceUserAvatar(user.id, image.buffer, image.extension)
@@ -212,6 +217,28 @@ userRouter.patch('/password',
     await db().table<User>(TABLES.USER).update({ passwordHash: argon2.hash(newPassword) }).where({ id: user.id })
     res.send()
   })
+
+userRouter.get('/apps', async (req, res) => {
+  const user = req.user
+  if (!user) {
+    res.sendStatus(500)
+    return
+  }
+
+  // Same rule as login: no groups means everyone, admins see everything
+  const canAccess = (groups: string[]) => user.isAdmin || !groups.length || user.groups.some(g => groups.includes(g.name))
+
+  const apps = (await getClients())
+    .filter(c => c.client_uri && canAccess(c.groups))
+    .reduce<UserApp[]>((apps, c) => {
+      if (c.client_uri) {
+        apps.push({ name: c.client_name || c.client_id, url: c.client_uri, logo: c.logo_uri })
+      }
+      return apps
+    }, [])
+
+  res.send(apps satisfies UserApp[])
+})
 
 userRouter.get('/passkeys', async (req, res) => {
   const user = req.user

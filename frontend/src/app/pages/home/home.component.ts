@@ -5,7 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ValidationErrorPipe } from '../../pipes/ValidationErrorPipe'
 import { SnackbarService } from '../../services/snackbar.service'
 import { UserService } from '../../services/user.service'
-import type { CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserPrivateDetails, UserApp } from '@shared/api-response/UserDetails'
 import { ConfigService } from '../../services/config.service'
 import { PasswordSetComponent } from '../../components/password-reset/password-set.component'
 import { SpinnerService } from '../../services/spinner.service'
@@ -136,6 +136,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   ]
   displayedPasskeyColumns = ([] as string[]).concat(this.passkeyColumns.map(c => c.columnDef)).concat(['actions'])
   passkeys: MatTableDataSource<PasskeyResponse> = new MatTableDataSource()
+  apps: UserApp[] = []
+  failedAppLogos = new Set<number>()
   readonly passkeySort = viewChild.required(MatSort)
 
   private configService = inject(ConfigService)
@@ -153,6 +155,11 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.passkeySupport = this.passkeyService.getPasskeySupport()
     this.config = await this.configService.getConfig()
+    this.apps = (await this.userService.getApps()).map(a => ({
+      ...a,
+      // Guess the app's icon as a fallback logo
+      logo: a.logo ?? new URL('/apple-touch-icon.png', a.url).href,
+    }))
   }
 
   ngOnDestroy(): void {
@@ -203,6 +210,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     } finally {
       this.spinnerService.hide()
     }
+  }
+
+  resizeLogo(event: Event, targetSize: number) {
+    const image = event.currentTarget
+    if (!(image instanceof HTMLImageElement)) {
+      return
+    }
+    const scale = targetSize / Math.max(image.naturalWidth, image.naturalHeight)
+    image.style.width = `${String(Math.ceil(image.naturalWidth * scale))}px`
+    image.style.height = `${String(Math.ceil(image.naturalHeight * scale))}px`
+  }
+
+  onAppLogoError(index: number) {
+    this.failedAppLogos.add(index)
   }
 
   async updateProfile() {

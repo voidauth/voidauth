@@ -1,24 +1,32 @@
 import type { RequestHandler } from 'express'
 import type { Request } from 'express'
 import multer from 'multer'
-import sharp from 'sharp'
 import appConfig from './config'
+import { getSharp } from './imageParse'
+
+// Create error type specifically for invalid image uploads
+export class InvalidImageError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'InvalidImageError'
+  }
+}
 
 export async function normalizeUploadedImage(buffer: Buffer): Promise<{ buffer: Buffer, extension: string }> {
-  const image = sharp(buffer, { limitInputPixels: 12000000 })
+  const image = (await getSharp())(buffer, { limitInputPixels: 12000000 })
   const metadata = await image.metadata()
   const expectedFormats = ['png', 'jpeg', 'webp']
   if (typeof metadata.format !== 'string' || !expectedFormats.includes(metadata.format)
     || !metadata.width || !metadata.height
     || (metadata.width * metadata.height) > 12000000) {
-    throw new Error('Unsupported or excessive image dimensions.')
+    throw new InvalidImageError('Unsupported or excessive image dimensions.')
   }
 
   const data = await image
     .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
     .toBuffer()
   if (data.byteLength > (4 * 1024 * 1024)) {
-    throw new Error('Normalized image exceeds the output limit of 4 MB.')
+    throw new InvalidImageError('Normalized image exceeds the output limit of 4 MB.')
   }
   return { buffer: data, extension: metadata.format }
 }

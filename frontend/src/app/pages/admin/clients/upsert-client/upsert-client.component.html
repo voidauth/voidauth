@@ -54,6 +54,14 @@
           [alt]="'admin.client.labels.logo-preview' | translate"
           (load)="resizeLogo($event, 128)"
         />
+      } @else if (form.controls.client_uri.value && URL.parse("/apple-touch-icon.png", form.controls.client_uri.value)?.href; as guess) {
+        <img
+          class="client-logo"
+          [src]="guess"
+          [alt]="'admin.client.labels.logo-preview' | translate"
+          hidden="true"
+          (load)="resizeLogo($event, 128); $any($event.target).hidden = false"
+        />
       }
       <input
         #logoFile

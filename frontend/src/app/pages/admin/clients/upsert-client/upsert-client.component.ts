@@ -53,6 +53,8 @@ export function generateBase64URLString(bytes: number) {
   styleUrl: './upsert-client.component.scss',
 })
 export class UpsertClientComponent implements OnInit {
+  protected URL = URL
+
   public authMethods: { name: string, value: ItemIn<typeof CLIENT_AUTH_METHODS> }[] = [
     { name: 'Client Secret Basic', value: 'client_secret_basic' },
     { name: 'Client Secret Post', value: 'client_secret_post' },

@@ -168,7 +168,6 @@
     }
   },
   "settings": {
-    "title": "Einstellungen",
     "sections": {
       "profile": {
         "title": "Profil",
