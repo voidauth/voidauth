@@ -5,6 +5,7 @@ import type { ClientMetadata } from 'oidc-provider'
 export type ClientResponse = DeepWritable<ClientMetadata> & {
   skip_consent?: boolean
   require_mfa?: boolean
+  hide_from_home?: boolean
   declared?: 'env' | 'label' | false
   groups: Group['name'][]
 }

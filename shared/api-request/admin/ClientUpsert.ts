@@ -33,6 +33,7 @@ export const clientUpsertValidator = {
   grant_types: zod.array(zod.enum(GRANT_TYPES)),
   skip_consent: zod.boolean(),
   require_mfa: zod.boolean(),
+  hide_from_home: zod.boolean(),
   logo_uri: zod.union([zod.url().trim(), emptyString]).nullable().transform(v => v || undefined).optional(),
   client_uri: zod.union([zod.url().trim(), emptyString]).nullable().transform(v => v || undefined).optional(),
   groups: zod.array(zod.string().trim().min(1)),

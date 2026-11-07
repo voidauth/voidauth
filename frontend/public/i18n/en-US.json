@@ -561,13 +561,15 @@
       },
       "checkboxes": {
         "skip-consent": "Skip Consent",
-        "mfa-required": "MFA Required"
+        "mfa-required": "MFA Required",
+        "hide-from-home": "Hide from Home"
       },
       "tooltips": {
         "skip-consent": "Skip user confirmation for this app.",
         "mfa-required": "Users will have to use mfa to access this app.",
         "copy-client-id": "Copy Client ID",
-        "copy-secret": "Copy Secret"
+        "copy-secret": "Copy Secret",
+        "hide-from-home": "Hides the OIDC App from the Home page."
       },
       "messages": {
         "client-id-copied": "Client ID copied to clipboard.",

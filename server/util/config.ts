@@ -276,6 +276,7 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
         ...CLIENT_DEFAULTS,
         groups: [],
         skip_consent: false,
+        hide_from_home: false,
         declared: source,
       }
       clients.set(client_id, client)
@@ -340,6 +341,12 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
       }
       case 'CLIENT_SKIP_CONSENT':
         client.skip_consent = validateClientVar(value, zod.stringbool())
+        break
+      case 'CLIENT_MFA_REQUIRED':
+        client.mfa_required = validateClientVar(value, zod.stringbool())
+        break
+      case 'CLIENT_HIDE_FROM_HOME':
+        client.hide_from_home = validateClientVar(value, zod.stringbool())
         break
     }
   } catch (e) {
