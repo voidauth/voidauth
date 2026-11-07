@@ -1,5 +1,29 @@
 <h1>{{ "settings.title" | translate }}</h1>
 
+@if (apps.length) {
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title> {{ "settings.sections.apps.title" | translate }} </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <nav class="apps">
+        @for (app of apps; track app.name; let i = $index) {
+          <a [href]="app.url" target="_blank" rel="noopener">
+            @if (failedAppLogos.has(i)) {
+              <div class="app-logo-fallback">{{ app.name.charAt(0).toUpperCase() }}</div>
+            } @else {
+              <img [src]="app.logo" (load)="resizeLogo($event, 40)" (error)="onAppLogoError(i)" />
+            }
+            <span>{{ app.name }}</span>
+          </a>
+        }
+      </nav>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-divider></mat-divider>
+}
+
 <!-- profile card -->
 <mat-card class="form-card">
   <mat-card-header>

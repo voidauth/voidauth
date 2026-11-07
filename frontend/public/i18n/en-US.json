@@ -255,8 +255,11 @@
     }
   },
   "settings": {
-    "title": "Settings",
+    "title": "Home",
     "sections": {
+      "apps": {
+        "title": "Apps"
+      },
       "profile": {
         "title": "Profile",
         "username": {

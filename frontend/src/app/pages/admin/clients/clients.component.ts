@@ -49,7 +49,7 @@ export class ClientsComponent implements AfterViewInit {
       columnDef: 'logo_uri',
       header: '',
       isImage: true,
-      cell: element => element.logo_uri ?? '',
+      cell: element => element.logo_uri ?? (element.client_uri ? new URL('/apple-touch-icon.png', element.client_uri).href : ''),
     },
     {
       columnDef: 'client_name',

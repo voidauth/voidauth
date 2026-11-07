@@ -18,8 +18,9 @@
               <div style="display: flex">
                 <img
                   [src]="column.cell(row)"
-                  (load)="resizeLogo($event, 42)"
-                  style="max-width: 42px; max-height: 42px; object-fit: contain; border-radius: 4px"
+                  hidden="true"
+                  (load)="resizeLogo($event, 42); $any($event.target).hidden = false"
+                  style="max-width: 42px; max-height: 42px; object-fit: contain; border-radius: 10%"
                 />
               </div>
             } @else {

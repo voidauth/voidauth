@@ -167,7 +167,6 @@
     }
   },
   "settings": {
-    "title": "设置",
     "sections": {
       "profile": {
         "title": "个人资料",

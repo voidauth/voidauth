@@ -23,7 +23,7 @@ jobs:
       # Login to dockerhub if not a fork PR and not dependabot
       - name: Login Dockerhub
         if: ${{ github.actor != 'dependabot[bot]' && (github.event.pull_request == null || !github.event.pull_request.head.repo.fork) }}
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           username: voidauth
           password: ${{ secrets.DOCKER_TOKEN }}
@@ -31,7 +31,7 @@ jobs:
       # Login to docker hardened image registry if not a fork PR and not dependabot
       - name: Login Docker Hardened Images Registry
         if: ${{ github.actor != 'dependabot[bot]' && (github.event.pull_request == null || !github.event.pull_request.head.repo.fork) }}
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: dhi.io
           username: voidauth

@@ -52,3 +52,9 @@ export type CurrentUserDetails = OnlyKeys<
   | 'hasPasskeys' | 'hasVerifyPasskeys' | 'hasEmail'
   | 'emailVerified' | 'expiresAt' | 'approved' | 'skipPasskeyPrompt'>
   & UserSessionInfo
+
+export type UserApp = {
+  name: string
+  url: string
+  logo?: string
+}
