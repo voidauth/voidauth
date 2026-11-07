@@ -203,7 +203,45 @@ export const argv = yargs(hideBin(process.argv))
           }
         },
       )
-      .demandCommand(1, 'Please specify a subcommand: mfa or password-reset'),
+      .command(
+        'import [file]',
+        'Import users with existing password hashes from a JSON file.',
+        yg => yg
+          .positional('file', {
+            type: 'string',
+            describe: 'Path of the JSON file, or /dev/stdin',
+          }),
+        async (argv) => {
+          if (!argv.file) {
+            logger({
+              level: 'error',
+              message: 'File must be specified',
+            })
+            exit(2)
+          }
+          try {
+            const iu = await import('./cli/importUsers.ts')
+            const { imported, withoutPassword, problems } = await iu.importUsers(argv.file)
+            if (problems.length) {
+              for (const problem of problems) {
+                console.error(problem)
+              }
+              console.error(`\nNothing was imported, ${String(problems.length)} problem(s) found.\n`)
+              exit(1)
+            }
+            console.log(`\nImported ${String(imported)} user(s), ${String(withoutPassword)} without a password.\n`)
+            exit(0)
+          } catch (e) {
+            logger({
+              level: 'error',
+              message: 'Failed to import users',
+              errors: e instanceof Error ? [e] : [{ message: String(e) }],
+            })
+            exit(1)
+          }
+        },
+      )
+      .demandCommand(1, 'Please specify a subcommand: mfa, password-reset or import'),
     async () => {
       /* no top level command */
     },
