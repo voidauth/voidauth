@@ -562,7 +562,7 @@
       "checkboxes": {
         "skip-consent": "Skip Consent",
         "mfa-required": "MFA Required",
-        "hide-from-home": "Hide on Home"
+        "hide-from-home": "Hide from Home"
       },
       "tooltips": {
         "skip-consent": "Skip user confirmation for this app.",
