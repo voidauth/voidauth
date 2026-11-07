@@ -415,7 +415,7 @@ async function getNextConfig() {
     responseTypes: [...RESPONSE_TYPES],
     conformIdTokenClaims: false,
     extraClientMetadata: {
-      properties: ['skip_consent', 'require_mfa'],
+      properties: ['skip_consent', 'require_mfa', 'hide_from_home'],
     },
     issueRefreshToken: (_ctx, client, code) => {
       if (!client.grantTypeAllowed('refresh_token')) {

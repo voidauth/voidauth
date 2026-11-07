@@ -25,14 +25,6 @@
         }
       </mat-form-field>
 
-      <mat-form-field>
-        <mat-label>{{ "admin.client.labels.home-page-url" | translate }}</mat-label>
-        <input matInput type="text" formControlName="client_uri" />
-        @if (form.controls.client_uri.errors) {
-          <mat-error>{{ form.controls.client_uri.errors | validationError | async }}</mat-error>
-        }
-      </mat-form-field>
-
       @if (selectedLogoPreview()) {
         <img
           class="client-logo"
@@ -100,6 +92,24 @@
           <mat-error>{{ form.controls.logo_uri.errors | validationError | async }}</mat-error>
         }
       </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>{{ "admin.client.labels.home-page-url" | translate }}</mat-label>
+        <input matInput type="text" formControlName="client_uri" />
+        @if (form.controls.client_uri.errors) {
+          <mat-error>{{ form.controls.client_uri.errors | validationError | async }}</mat-error>
+        }
+      </mat-form-field>
+
+      @if (form.controls.client_uri.value && form.controls.client_uri.valid) {
+        <mat-checkbox formControlName="hide_from_home" [matTooltip]="'admin.client.tooltips.hide-from-home' | translate">{{
+          "admin.client.checkboxes.hide-from-home" | translate
+        }}</mat-checkbox>
+      } @else {
+        <mat-checkbox [checked]="true" [disabled]="true">
+          {{ "admin.client.checkboxes.hide-from-home" | translate }}
+        </mat-checkbox>
+      }
 
       <mat-list
         [ngClass]="{ invalid: form.controls.groups.errors, disabled: form.controls.groups.disabled }"

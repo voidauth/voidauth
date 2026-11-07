@@ -229,7 +229,7 @@ userRouter.get('/apps', async (req, res) => {
   const canAccess = (groups: string[]) => user.isAdmin || !groups.length || user.groups.some(g => groups.includes(g.name))
 
   const apps = (await getClients())
-    .filter(c => c.client_uri && canAccess(c.groups))
+    .filter(c => c.client_uri && !c.hide_from_home && canAccess(c.groups))
     .reduce<UserApp[]>((apps, c) => {
       if (c.client_uri) {
         apps.push({ name: c.client_name || c.client_id, url: c.client_uri, logo: c.logo_uri })
