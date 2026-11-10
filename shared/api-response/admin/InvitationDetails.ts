@@ -6,6 +6,7 @@ export type InvitationDetails = Invitation & {
   groups: {
     id: Group['id']
     name: Group['name']
+    mfaRequired: Group['mfaRequired']
     customClaims: {
       claim: string
       value: string

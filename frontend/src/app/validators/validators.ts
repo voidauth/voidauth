@@ -42,6 +42,11 @@ export function isValidURLControl(control: AbstractControl) {
 
 export function isValidWildcardRedirectControl(control: AbstractControl<string>) {
   if (typeof control.value === 'string' && control.value) {
+    if (typeof URLPattern === 'undefined') {
+      return {
+        isValidUrl: 'URLPattern API not found, you may need to update your browser.',
+      }
+    }
     try {
       wildcardRedirect(control.value)
     } catch (e) {

@@ -231,6 +231,13 @@
         "admin.common.labels.mfa-required" | translate
       }}</mat-checkbox>
 
+      @if (mfaRequiredGroupName() && !form.controls.mfaRequired.value) {
+        <div class="mfa-warning" role="alert">
+          <mat-icon style="flex-shrink: 0" fontSet="material-icons-round" aria-hidden="true">warning</mat-icon>
+          {{ "admin.user.messages.mfa-required-group-warning" | translate: { group: mfaRequiredGroupName() } }}
+        </div>
+      }
+
       <mat-card-actions>
         <button mat-flat-button [disabled]="form.invalid || (form.pristine && !selectedAvatar() && !removeAvatarSelected())" type="submit">
           {{ "admin.common.actions.update" | translate }}

@@ -213,6 +213,7 @@ export class InvitationComponent implements OnInit {
       const group = {
         id: groupDetails.id,
         name: groupDetails.name,
+        mfaRequired: groupDetails.mfaRequired,
         customClaims: groupDetails.customClaims,
       } satisfies Convert<typeof groupDetails, ItemIn<typeof this.form.controls.groups.value>>
       this.form.controls.groups.setValue([group].concat(this.form.controls.groups.value).sort((a, b) => stringCompare(a.name, b.name)))
