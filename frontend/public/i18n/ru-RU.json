@@ -92,12 +92,14 @@
     "title": "Включить {{platformName}}?",
     "actions": {
       "passkey": "Включить {{platformName}}",
-      "skip": "Пропустить"
+      "skip": "Пропустить",
+      "never-ask": "Больше не предлагать настроить ключ безопасности."
     },
     "messages": {
       "added": "Ключ безопасности добавлен.",
       "name-failed": "Ключ безопасности создан, но не удалось задать ему название.",
-      "create-failed": "Не удалось создать ключ безопасности."
+      "create-failed": "Не удалось создать ключ безопасности.",
+      "preference-failed": "Не удалось сохранить настройку показа запроса на создание ключа безопасности."
     }
   },
   "mfa": {
@@ -253,7 +255,11 @@
     }
   },
   "settings": {
+    "title": "Главная",
     "sections": {
+      "apps": {
+        "title": "Приложения"
+      },
       "profile": {
         "title": "Профиль",
         "username": {
@@ -265,7 +271,10 @@
         "actions": {
           "submit": {
             "label": "Изменить имя"
-          }
+          },
+          "upload-avatar": "Загрузить аватар",
+          "replace-avatar": "Заменить аватар",
+          "remove-avatar": "Удалить аватар"
         },
         "email": {
           "label": "Адрес почты",
@@ -359,6 +368,9 @@
       "mfa-enabled": "Мультифакторная аутентификация включена.",
       "profile-updated": "Профиль обновлён.",
       "profile-update-failed": "Не удалось обновить профиль.",
+      "avatar-invalid-file": "Выберите изображение PNG, JPEG или WebP размером до 2 МБ.",
+      "avatar-update-failed": "Не удалось обновить аватар.",
+      "avatar-remove-failed": "Не удалось удалить аватар.",
       "password-updated": "Пароль изменён.",
       "password-update-failed": "Не удалось изменить пароль.",
       "passkey-registered": "Ключ безопасности зарегистрирован.",
@@ -394,6 +406,19 @@
         "view": "Просмотреть",
         "open": "Открыть",
         "remove": "Убрать"
+      },
+      "avatar": {
+        "label": "Аватар пользователя",
+        "actions": {
+          "upload": "Загрузить аватар",
+          "replace": "Заменить аватар",
+          "remove": "Удалить аватар"
+        },
+        "messages": {
+          "invalid-file": "Выберите изображение PNG, JPEG или WebP размером до 2 МБ.",
+          "update-failed": "Не удалось обновить аватар.",
+          "remove-failed": "Не удалось удалить аватар."
+        }
       },
       "labels": {
         "mfa-required": "Мультифакторная аутентификация обязательна",
@@ -458,7 +483,8 @@
         "applied": "Действует"
       },
       "actions": {
-        "sign-out": "Выйти"
+        "sign-out": "Выйти",
+        "back": "Пользователи"
       },
       "tooltips": {
         "remove": "Убрать",
@@ -482,7 +508,8 @@
     "clients": {
       "empty-state": "Нет приложений OIDC.",
       "actions": {
-        "create": "Создать приложение OIDC"
+        "create": "Создать приложение OIDC",
+        "back": "Приложения OIDC"
       },
       "columns": {
         "name": "Название",
@@ -534,13 +561,15 @@
       },
       "checkboxes": {
         "skip-consent": "Скрыть запрос подтверждения",
-        "mfa-required": "Мультифакторная аутентификация обязательна"
+        "mfa-required": "Мультифакторная аутентификация обязательна",
+        "hide-from-home": "Скрыть с главной страницы"
       },
       "tooltips": {
         "skip-consent": "Не показывать запрос подтверждения для этого приложения.",
         "mfa-required": "Мультифакторная аутентификация обязательна.",
         "copy-client-id": "Скопировать Client ID",
-        "copy-secret": "Скопировать Secret"
+        "copy-secret": "Скопировать Secret",
+        "hide-from-home": "Скрывает приложение OIDC с главной страницы."
       },
       "messages": {
         "client-id-copied": "Client ID скопирован в буфер обмена.",
@@ -612,6 +641,9 @@
       },
       "dialogs": {
         "delete": "Удалить этот домен?"
+      },
+      "actions": {
+        "back": "Домены ProxyAuth"
       }
     },
     "password-resets": {
@@ -714,6 +746,9 @@
       },
       "dialogs": {
         "delete": "Удалить эту группу?"
+      },
+      "actions": {
+        "back": "Группы"
       }
     },
     "invitations": {
@@ -779,7 +814,8 @@
         "delete-failed": "Не удалось удалить приглашение."
       },
       "actions": {
-        "send": "Отправить приглашение"
+        "send": "Отправить приглашение",
+        "back": "Приглашения"
       },
       "checkboxes": {
         "email-verified": "Почта подтверждена"
@@ -790,7 +826,8 @@
     },
     "claims": {
       "actions": {
-        "create": "Новый claim"
+        "create": "Новый claim",
+        "back": "Дополнительные claims"
       },
       "empty-state": "Дополнительных claims нет.",
       "columns": {
