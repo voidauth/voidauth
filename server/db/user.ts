@@ -146,7 +146,7 @@ export async function getUserById(id: string): Promise<UserDetails | undefined> 
   const hasMfaGroup = groups.some(g => g.mfaRequired)
   const isAdmin = groups.some(g => g.name === ADMIN_GROUP)
 
-  const groupsWithClaims = await getGroupsCustomClaims(groups.map(g => ({ id: g.id, name: g.name })))
+  const groupsWithClaims = await getGroupsCustomClaims(groups.map(g => ({ id: g.id, name: g.name, mfaRequired: g.mfaRequired })))
   const customClaims = await getUserCustomClaims(user.id)
 
   const hasTotp = await hasTOTP(id)

@@ -19,6 +19,7 @@ import { stringCompare, type Convert, type ItemIn } from '@shared/utils'
 import { isValidEmail } from '../../../../validators/validators'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { calculateCustomClaims } from '@shared/user'
+import type { Group } from '@shared/db/Group'
 import { ConfigService } from '../../../../services/config.service'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 
@@ -38,9 +39,9 @@ export class UserComponent implements OnInit {
   public removeAvatarSelected = signal(false)
   public config?: ConfigResponse
 
-  public availableGroups: ItemIn<UserUpdate['groups']>[] = []
-  public unselectedGroups: ItemIn<UserUpdate['groups']>[] = []
-  public selectableGroups: ItemIn<UserUpdate['groups']>[] = []
+  public availableGroups: Group[] = []
+  public unselectedGroups: Group[] = []
+  public selectableGroups: Group[] = []
   groupSelect = new FormControl<string>(
     {
       value: '',
@@ -119,6 +120,13 @@ export class UserComponent implements OnInit {
     })
   }
 
+  mfaRequiredGroupName(): string | undefined {
+    return (this.form.controls.groups.value
+      .filter(userGroup => !!userGroup.mfaRequired)
+      .map(userGroup => userGroup.name)
+      .sort((a, b) => stringCompare(a, b)))[0]
+  }
+
   groupAutoFilter(value: string = '') {
     this.unselectedGroups = this.availableGroups.filter((g) => {
       return !this.form.controls.groups.value.some(f => f.name === g.name)
@@ -144,6 +152,7 @@ export class UserComponent implements OnInit {
         id: groupDetails.id,
         name: groupDetails.name,
         customClaims: groupDetails.customClaims,
+        mfaRequired: groupDetails.mfaRequired,
       } satisfies Convert<typeof groupDetails, ItemIn<typeof this.form.controls.groups.value>>
       this.form.controls.groups.setValue([group].concat(this.form.controls.groups.value).sort((a, b) => stringCompare(a.name, b.name)))
       this.form.controls.groups.markAsDirty()

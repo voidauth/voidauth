@@ -100,6 +100,12 @@ export async function serve() {
     next()
   }
 
+  function setCrossOriginResourcePolicy(_req: Request, res: Response, next: NextFunction) {
+    // Allow external apps to embed profile images and logos without being blocked by Helmet's default same-origin policy.
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+    next()
+  }
+
   app.use(`/healthcheck`, noCache, (_req, res) => {
     res.status(200).send()
     return
@@ -202,11 +208,7 @@ export async function serve() {
   const logoImgBaseRegex = new RegExp(`(logo|favicon|apple-touch-icon)\\.(svg|png|jpg|jpeg)`)
   const logoImgRegex = new RegExp(`^${logoImgBaseRegex.source}$`)
   const logoImgPathRegex = new RegExp(`^${basePath()}/${logoImgBaseRegex.source}$`)
-  app.use(logoImgPathRegex, (_req, res, next) => {
-    // Allow logo assets to be used cross-origin
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-    next()
-  })
+  app.use(logoImgPathRegex, setCrossOriginResourcePolicy)
   app.use(`${basePath()}/`, express.static(path.join('./config/branding'), {
     index: false,
   }))
@@ -239,7 +241,7 @@ export async function serve() {
       recursive: true,
     })
   }
-  app.use(`${basePath()}/assets/uploads/`, express.static(uploadsPath, {
+  app.use(`${basePath()}/assets/uploads/`, setCrossOriginResourcePolicy, express.static(uploadsPath, {
     index: false,
   }), (_req, res, _next) => {
     res.status(404).send({

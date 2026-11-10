@@ -23,7 +23,7 @@ export async function getInvitationDetails(id: string) {
   if (!invitation) {
     return
   }
-  const groups = await db().select('id', 'name')
+  const groups = await db().select('id', 'name', 'mfaRequired')
     .table<Group>(TABLES.GROUP)
     .innerJoin<InvitationGroup>(TABLES.INVITATION_GROUP, 'invitation_group.groupId', 'group.id')
     .where({ invitationId: id }).orderBy(db().ref('name').withSchema(TABLES.GROUP), 'asc')

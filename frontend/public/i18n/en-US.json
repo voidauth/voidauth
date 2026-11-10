@@ -494,6 +494,7 @@
       "messages": {
         "load-failed": "Error loading user.",
         "group-add-failed": "Error adding group.",
+        "mfa-required-group-warning": "This user will still be required to setup MFA due to group: {{group}}",
         "updated": "User updated.",
         "update-failed": "Could not update user.",
         "signed-out": "User signed out.",

@@ -229,9 +229,7 @@ export class UsersComponent {
       try {
         this.spinnerService.show()
         await this.adminService.deleteUsers(this.selected.map(s => s.id))
-        this.dataSource.data = this.dataSource.data.filter(u => !this.selected.some(s => s.id === u.id))
-        this.selected.forEach(s => (s.source.checked = false))
-        this.selected = []
+        await this.setData()
 
         this.toggleSelectEnabled()
 

@@ -47,6 +47,12 @@ mat-divider {
   max-width: calc(var(--form-max-width) * 0.8);
 }
 
+.mfa-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 tr.disabled {
   opacity: 0.5;
 }

@@ -198,7 +198,7 @@ adminRouter.delete('/invitation/:id/avatar',
 
 adminRouter.get('/config', async (_req, res) => {
   const defaultGroupsWithClaims = await getGroupsCustomClaims(
-    await db().table<Group>(TABLES.GROUP).select('id', 'name').where({ autoAssign: true }))
+    await db().table<Group>(TABLES.GROUP).select('id', 'name', 'mfaRequired').where({ autoAssign: true }))
   res.send({
     defaultUserExpireDuration: appConfig.DEFAULT_USER_EXPIRES_IN,
     defaultGroups: defaultGroupsWithClaims,

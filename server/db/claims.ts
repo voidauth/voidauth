@@ -63,7 +63,7 @@ export async function getUserCustomClaims(userId: string) {
   return claims
 }
 
-export async function getGroupsCustomClaims(groups: Pick<Group, 'id' | 'name'>[]): Promise<AdminConfig['defaultGroups']> {
+export async function getGroupsCustomClaims(groups: Pick<Group, 'id' | 'name' | 'mfaRequired'>[]): Promise<AdminConfig['defaultGroups']> {
   if (groups.length === 0) {
     return []
   }
@@ -81,7 +81,7 @@ export async function getGroupsCustomClaims(groups: Pick<Group, 'id' | 'name'>[]
         group.customClaims.push({ claim: gc.claim, value: gc.value })
       }
       return acc
-    }, groups.map<ItemIn<AdminConfig['defaultGroups']>>(g => ({ id: g.id, name: g.name, customClaims: [] })))
+    }, groups.map<ItemIn<AdminConfig['defaultGroups']>>(g => ({ id: g.id, name: g.name, mfaRequired: !!g.mfaRequired, customClaims: [] })))
   return groupsWithCustomClaims
 }
 
