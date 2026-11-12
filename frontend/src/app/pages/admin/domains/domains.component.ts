@@ -1,6 +1,6 @@
 import { Component, inject, viewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
-import { type Sort } from '@angular/material/sort'
+import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
 import type { ProxyAuthResponse } from '@shared/api-response/admin/ProxyAuthResponse'
 import { AdminService } from '../../../services/admin.service'
@@ -16,10 +16,12 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 import { stringCompare } from '@shared/utils'
 import { TableService } from '../../../services/table.service'
 import { LooseAsyncPipe } from '../../../pipes/LooseAsyncPipe'
+import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { debounceTime, distinctUntilChanged } from 'rxjs'
 
 @Component({
   selector: 'app-domains',
-  imports: [MaterialModule, RouterLink, TranslatePipe, LooseAsyncPipe],
+  imports: [MaterialModule, RouterLink, ReactiveFormsModule, TranslatePipe, LooseAsyncPipe],
   templateUrl: './domains.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './domains.component.scss',
@@ -35,6 +37,11 @@ export class DomainsComponent {
   dataSource: MatTableDataSource<ProxyAuthResponse> = new MatTableDataSource()
 
   readonly paginator = viewChild.required(MatPaginator)
+  readonly sort = viewChild.required(MatSort)
+
+  search = new FormControl<string>('')
+
+  private allData: ProxyAuthResponse[] = []
 
   columns: TableColumn<ProxyAuthResponse>[] = [
     {
@@ -62,28 +69,49 @@ export class DomainsComponent {
       this.paginator().page.subscribe((event) => {
         this.tableService.currentPageSize = event.pageSize
       })
-      this.dataSource.data = await this.adminService.proxyAuths()
+
+      this.sort().sortChange.subscribe(() => {
+        this.paginator().pageIndex = 0
+        this.setData()
+      })
+
+      this.search.valueChanges.pipe(debounceTime(500), distinctUntilChanged()).subscribe((searchTerm) => {
+        this.paginator().pageIndex = 0
+        this.setData(searchTerm ?? undefined)
+      })
+
+      this.allData = await this.adminService.proxyAuths()
       this.dataSource.paginator = this.paginator()
+      this.setData()
     } finally {
       this.spinnerService.hide()
     }
   }
 
-  onSortChange(event: Sort) {
-    const field = event.active as keyof ProxyAuthResponse
-    if (field === 'domain') {
-      this.dataSource.data.sort((a, b) => sortWildcardDomains(a.domain, b.domain))
-    } else {
-      this.dataSource.data.sort((a, b) => {
-        return stringCompare(String(a[field]), String(b[field]))
-      })
+  setData(searchTerm = this.search.value ?? undefined) {
+    let data = [...this.allData]
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      data = data.filter(d => d.domain.toLowerCase().includes(term))
     }
 
-    if (event.direction === 'desc') {
-      this.dataSource.data.reverse()
+    // Apply sort
+    const active = this.sort().active
+    const direction = this.sort().direction
+    if (active && direction) {
+      const field = active as keyof ProxyAuthResponse
+      if (field === 'domain') {
+        data.sort((a, b) => sortWildcardDomains(a.domain, b.domain))
+      } else {
+        data.sort((a, b) => stringCompare(String(a[field]), String(b[field])))
+      }
+      if (direction === 'desc') {
+        data.reverse()
+      }
     }
 
-    this.dataSource.data = this.dataSource.data.splice(0)
+    this.dataSource.data = data
   }
 
   onDelete(proxyauth_id: string) {
@@ -103,7 +131,8 @@ export class DomainsComponent {
       try {
         this.spinnerService.show()
         await this.adminService.deleteProxyAuth(proxyauth_id)
-        this.dataSource.data = this.dataSource.data.filter(c => c.id !== proxyauth_id)
+        this.allData = this.allData.filter(c => c.id !== proxyauth_id)
+        this.setData()
         this.snackbarService.message(String(this.translateService.instant('admin.domains.messages.deleted')))
       } catch (_e) {
         this.snackbarService.error(String(this.translateService.instant('admin.domains.messages.delete-failed')))
