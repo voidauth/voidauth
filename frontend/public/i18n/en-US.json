@@ -591,6 +591,9 @@
     },
     "domains": {
       "empty-state": "No Domains.",
+      "labels": {
+        "search": "Search"
+      },
       "actions": {
         "create": "Create ProxyAuth Domain"
       },
