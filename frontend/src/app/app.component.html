@@ -15,14 +15,6 @@
           <mat-divider></mat-divider>
 
           @if (user.isAdmin) {
-            <a mat-list-item routerLink="/admin/clients"
-              ><mat-icon fontSet="material-icons-round" matListItemIcon>security</mat-icon
-              >{{ "app.navigation.admin.oidc-apps" | translate }}</a
-            >
-            <a mat-list-item routerLink="/admin/domains"
-              ><mat-icon fontSet="material-icons-round" matListItemIcon>domain</mat-icon
-              >{{ "app.navigation.admin.proxyauth-domains" | translate }}</a
-            >
             <a mat-list-item routerLink="/admin/users"
               ><mat-icon fontSet="material-icons-round" matListItemIcon>supervised_user_circle</mat-icon
               >{{ "app.navigation.admin.users" | translate }}</a
@@ -33,6 +25,14 @@
             <a mat-list-item routerLink="/admin/invitations"
               ><mat-icon fontSet="material-icons-round" matListItemIcon>mail</mat-icon
               >{{ "app.navigation.admin.invitations" | translate }}</a
+            >
+            <a mat-list-item routerLink="/admin/clients"
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>security</mat-icon
+              >{{ "app.navigation.admin.oidc-apps" | translate }}</a
+            >
+            <a mat-list-item routerLink="/admin/domains"
+              ><mat-icon fontSet="material-icons-round" matListItemIcon>domain</mat-icon
+              >{{ "app.navigation.admin.proxyauth-domains" | translate }}</a
             >
             <a mat-list-item routerLink="/admin/claims"
               ><mat-icon fontSet="material-icons-round" matListItemIcon>contact_page</mat-icon
