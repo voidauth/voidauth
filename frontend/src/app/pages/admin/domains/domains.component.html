@@ -1,9 +1,17 @@
 <div class="container">
-  <span style="align-self: end">
+  <span style="align-self: end; padding: 8px">
     <a mat-flat-button routerLink="/admin/domain">{{ "admin.domains.actions.create" | translate }}</a>
   </span>
 
-  <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
+  <mat-form-field>
+    <mat-label>{{ "admin.domains.labels.search" | translate }}</mat-label>
+    <input matInput type="text" [formControl]="search" />
+    <button class="field-suffix" mat-icon-button matSuffix (click)="search.setValue('')">
+      <mat-icon fontSet="material-icons-round">cancel</mat-icon>
+    </button>
+  </mat-form-field>
+
+  <table mat-table [dataSource]="dataSource" matSort>
     @for (column of columns; track column) {
       <ng-container [matColumnDef]="column.columnDef">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
