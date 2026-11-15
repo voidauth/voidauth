@@ -14,7 +14,7 @@ import { DomSanitizer, type SafeHtml } from '@angular/platform-browser'
 import DOMPurify from 'isomorphic-dompurify'
 import { EmailInputComponent } from '../../../dialogs/email-input/email-input.component'
 import { UserService } from '../../../services/user.service'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import type { ConfigResponse } from '@shared/api-response/ConfigResponse'
 import { ConfigService } from '../../../services/config.service'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
@@ -63,7 +63,7 @@ export class EmailsComponent {
 
   displayedColumns = ([] as string[]).concat(this.columns.map(c => c.columnDef)).concat(['actions'])
 
-  me?: CurrentUserDetails
+  user?: CurrentUserPrivateDetails
   public config?: ConfigResponse
 
   async ngAfterViewInit() {
@@ -75,8 +75,8 @@ export class EmailsComponent {
         this.paginator().pageSize = currentPageSize
       }
 
-      const [me, config, _] = await Promise.all([this.userService.getMyUser(), this.configService.getConfig(), this.setData()])
-      this.me = me
+      const [user, config, _] = await Promise.all([this.userService.getMyPrivateUser(), this.configService.getConfig(), this.setData()])
+      this.user = user
       this.config = config
 
       this.paginator().page.subscribe(async (event) => {
@@ -115,7 +115,7 @@ export class EmailsComponent {
       {
         data: {
           header: String(this.translateService.instant('admin.emails.dialogs.send-test')),
-          initial: this.me?.email,
+          initial: this.user?.email ?? undefined,
         },
         disableClose: true,
       },
