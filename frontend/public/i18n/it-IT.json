@@ -1,1 +1,1054 @@
-{}
+{
+  "login": {
+    "password": {
+      "label": "Password"
+    },
+    "username": {
+      "label": "Username o Email"
+    },
+    "forgot-password": "Password dimenticata?",
+    "remember-me": "Ricordami",
+    "actions": {
+      "login": "Login"
+    },
+    "title": "Login",
+    "messages": {
+      "passkey-failed": "Impossibile fare login con passkey.",
+      "invalid-credentials": "Username o password errati."
+    }
+  },
+  "contact-us": {
+    "actions": {
+      "label": "Contatti"
+    }
+  },
+  "app": {
+    "loading": "Caricamento...",
+    "navigation": {
+      "profile": "Profilo",
+      "admin": {
+        "oidc-apps": "App OIDC",
+        "proxyauth-domains": "Domini ProxyAuth",
+        "users": "Utenti",
+        "groups": "Gruppi",
+        "invitations": "Inviti",
+        "password-resets": "Reset Password",
+        "sent-mail": "Mail Inviate",
+        "claims": "Claims Personalizzati"
+      },
+      "logout": "Logout"
+    },
+    "messages": {
+      "language-failed": "Imposibile cambiare la lingua."
+    }
+  },
+  "duration": {
+    "now": "ora",
+    "second": {
+      "singular": "{{count}} secondo",
+      "plural": "{{count}} secondi",
+      "singular-ago": "{{count}} secondo fa",
+      "plural-ago": "{{count}} secondi fa"
+    },
+    "minute": {
+      "singular": "{{count}} minuto",
+      "plural": "{{count}} minuti",
+      "singular-ago": "{{count}} minuto fa",
+      "plural-ago": "{{count}} minuti fa"
+    },
+    "hour": {
+      "singular": "{{count}} ora",
+      "plural": "{{count}} ore",
+      "singular-ago": "{{count}} ora fa",
+      "plural-ago": "{{count}} ore fa"
+    },
+    "day": {
+      "singular": "{{count}} giorno",
+      "plural": "{{count}} giorni",
+      "singular-ago": "{{count}} giorno fa",
+      "plural-ago": "{{count}} giorni fa"
+    },
+    "week": {
+      "singular": "{{count}} settimana",
+      "plural": "{{count}} settimane",
+      "singular-ago": "{{count}} settimana fa",
+      "plural-ago": "{{count}} settimane fa"
+    },
+    "month": {
+      "singular": "{{count}} mese",
+      "plural": "{{count}} mesi",
+      "singular-ago": "{{count}} mese fa",
+      "plural-ago": "{{count}} mesi fa"
+    },
+    "year": {
+      "singular": "{{count}} anno",
+      "plural": "{{count}} anni",
+      "singular-ago": "{{count}} anno fa",
+      "plural-ago": "{{count}} anni fa"
+    }
+  },
+  "passkey-title": "Passkey",
+  "passkey-dialog": {
+    "title": "Attiva {{platformName}}?",
+    "actions": {
+      "passkey": "Attiva {{platformName}}",
+      "skip": "Salta",
+      "never-ask": "Non chiedere nuovamente di impostare una passky."
+    },
+    "messages": {
+      "added": "Passkey aggiunta.",
+      "name-failed": "Passkey creata, ma non è stato possibile impostarne il nome.",
+      "create-failed": "Impossibile creare Passkey.",
+      "preference-failed": "Impossibile salva la preferenza del prompt Passkey."
+    }
+  },
+  "mfa": {
+    "actions": {
+      "use-passkey": "Usa {{platformName}}",
+      "register-passkey": "Registra Passkey",
+      "back": "Indietro"
+    },
+    "locked": "Troppi codici errati. Prova nuovamente tra <b>{{duration}}</b>.",
+    "title": "Autenticazione Multi-Fattore richiesta",
+    "messages": {
+      "options-failed": "Impossibile recuperare le opzioni dell'autenticatore.",
+      "passkey-mfa-only": "Solo le Passkey che richiedono MFA soddisferanno i requisiti MFA.",
+      "passkey-failed": "Impossibile autenticarsi con la passkey.",
+      "try-logout": "Qualcosa è andato storto. Prova a fare logout dal menu a tendina nell'header."
+    }
+  },
+  "registration": {
+    "actions": {
+      "passkey-sign-up": "Registrati Con {{platformName}}",
+      "sign-up": "Registrati",
+      "login": "Login"
+    },
+    "title": {
+      "accept-invitation": "Accetta Invito",
+      "sign-up": "Registrati"
+    },
+    "username": {
+      "label": "Username"
+    },
+    "email": {
+      "label": "Email"
+    },
+    "name": {
+      "label": "Nome"
+    },
+    "messages": {
+      "invalid-invite": "Link di invito non valido."
+    }
+  },
+  "reset-password": {
+    "actions": {
+      "enable-passkey": "Attiva {{platformName}}",
+      "reset-password": "Resetta Password"
+    },
+    "title": "Resetta Password",
+    "messages": {
+      "invalid-link": "Link di Reset della Password Non Valido.",
+      "complete": "Reset della Password Completato.",
+      "passkey-created": "Passkey creata."
+    }
+  },
+  "approval-required": {
+    "content": "Il tuo account deve essere approvato prima che tu possa fare login. Per favore attendi o contatta un amministratore per ricevere supporto.",
+    "title": "Approvazione Richiesta",
+    "actions": {
+      "login": "Login",
+      "try-again": "Prova Nuovamente"
+    }
+  },
+  "forbidden": {
+    "title": "Accesso Negato",
+    "content": "Non hai i permessi per accedere a questa risorsa.",
+    "actions": {
+      "back": "Indietro"
+    }
+  },
+  "consent": {
+    "actions": {
+      "sign-in": "Login"
+    },
+    "info": {
+      "sign-into-question": "Vuoi fare login su <br /> <h2>{{destination}}</h2>",
+      "post-signin-redir-notice": "Dopo avere fatto login, sarai rediretto a <b>{{redirect}}</b>"
+    },
+    "title": "Conferma",
+    "messages": {
+      "invalid-details": "Dettagli di conferma non validi."
+    }
+  },
+  "forgot-password": {
+    "username": {
+      "label": "Email o Username"
+    },
+    "actions": {
+      "send": "Invia",
+      "send-again": "Invia Nuovamente",
+      "create-again": "Crea Nuovamente",
+      "create": "Crea"
+    },
+    "title": "Password Dimenticata",
+    "messages": {
+      "link-sent": "Link di reset della password inviato.",
+      "link-not-sent": "Link di reset della password creato, ma non è stato possibile inviarlo."
+    }
+  },
+  "form-errors": {
+    "required": "Richiesto.",
+    "min": "Deve essere almeno {{min}}.",
+    "max": "Non può essere più grande di {{max}}.",
+    "minLength": "Deve essere lungo almeno {{requiredLength}} caratteri.",
+    "maxLength": "Deve essere lungo meno di {{requiredLength}} caratteri.",
+    "email": "Email non valida.",
+    "default": "Valore non valido.",
+    "alpha-num-underscore-only": "Solo A-Z,0-9,e _ sono permessi"
+  },
+  "logout": {
+    "title": "Logout",
+    "info": {
+      "logout-question": "Vuoi fare logout?"
+    },
+    "actions": {
+      "yes": "Sì",
+      "back": "Indietro",
+      "no": "No"
+    }
+  },
+  "page-not-found": {
+    "title": "Pagina Non Trovata",
+    "actions": {
+      "go-home": "Torna alla Home"
+    }
+  },
+  "verify-email": {
+    "verify": {
+      "title": {
+        "verifying-email": "Verifica dell'Email...",
+        "email-could-not-be-verified": "Non È Stato Possibile Verificare l'Email",
+        "sending-new-verification": "Invio Nuova Verifica...",
+        "email-verification-could-not-be-sent": "Non È Stato Possibile Inviare l'Email di Verifica"
+      },
+      "actions": {
+        "send-again": "Invia Nuovamente"
+      }
+    },
+    "verify-sent": {
+      "title": {
+        "verification-email-sent": "Email di Verifica Inviata",
+        "email-verification-required": "Verifica dell'Email Richiesta"
+      },
+      "actions": {
+        "logout": "Logout",
+        "send-again": "Invia Nuovamente",
+        "send-verification": "Invia Verifica"
+      },
+      "email": {
+        "label": "Email"
+      },
+      "messages": {
+        "user-load-failed": "Impossibile caricare i dettagli dell'utente.",
+        "resent": "Email di Verifica Inviata Nuovamente."
+      }
+    }
+  },
+  "settings": {
+    "title": "Home",
+    "sections": {
+      "apps": {
+        "title": "App"
+      },
+      "profile": {
+        "title": "Profilo",
+        "username": {
+          "label": "Username"
+        },
+        "name": {
+          "label": "Nome"
+        },
+        "actions": {
+          "submit": {
+            "label": "Aggiorna Profilo"
+          },
+          "upload-avatar": "Carica avatar",
+          "replace-avatar": "Rimpiazza avatar",
+          "remove-avatar": "Rimuovi avatar"
+        },
+        "email": {
+          "label": "Email",
+          "actions": {
+            "submit": {
+              "label": "Aggiorna Email"
+            }
+          }
+        }
+      },
+      "security": {
+        "title": "Sicurezza",
+        "password": {
+          "set": {
+            "label": "Imposta Password"
+          },
+          "change": {
+            "label": "Cambia Password"
+          }
+        },
+        "passkeys": {
+          "title": "Passkey",
+          "noPasskeys": "Non hai alcuna passkey registrata.",
+          "register": {
+            "label": "Registra Passkey"
+          },
+          "manage": {
+            "title": "Gestisci Passkey"
+          },
+          "actions": {
+            "edit": {
+              "tooltip": "Modifica"
+            },
+            "delete": {
+              "tooltip": "Cancella"
+            }
+          },
+          "columns": {
+            "name": "Nome/ID",
+            "last-used": "Usato Ultima Volta",
+            "created-at": "Creato Il"
+          }
+        },
+        "mfa": {
+          "title": "Autenticazione Multi-Fattore",
+          "status": {
+            "enabled": "L'Autenticazione Multi-Fattore è attiva.",
+            "disabled": "L'Autenticazione Multi-Fattore non è attiva."
+          },
+          "authenticators": {
+            "has": "Hai almeno un Autenticatore registrato.",
+            "none": "Non hai alcun Autenticatore registrato."
+          },
+          "add": {
+            "label": "Aggiungi Autenticatore"
+          },
+          "enable": {
+            "label": "Attiva MFA"
+          }
+        }
+      },
+      "account": {
+        "title": "Account",
+        "removePassword": {
+          "label": "Rimuovi Password",
+          "tooltip": {
+            "noPassword": "Non hai alcuna password da rimuovere",
+            "noPasskeys": "Non hai alcuna passkey"
+          }
+        },
+        "removeAllPasskeys": {
+          "label": "Rimuovi Tutte le Passkey",
+          "tooltip": {
+            "noPasskeys": "Non hai alcuna passkey da rimuovere",
+            "noPassword": "Non hai una password"
+          }
+        },
+        "disableMfa": {
+          "label": "Disattiva MFA"
+        },
+        "removeAuthenticators": {
+          "label": "Rimuovi Autenticatori"
+        },
+        "deleteAccount": {
+          "label": "Cancella Account"
+        }
+      }
+    },
+    "messages": {
+      "authenticator-added": "Autenticatore aggiunto con successo.",
+      "mfa-enabled": "Autenticazione Multi-Fattore attivata.",
+      "profile-updated": "Profilo aggiornato.",
+      "profile-update-failed": "Impossibile aggiornare il profilo.",
+      "avatar-invalid-file": "Scegli un'immagine PNG, JPG o WebP non più grande di 2 MB.",
+      "avatar-update-failed": "Impossibile aggioranare l'avatar.",
+      "avatar-remove-failed": "Impossibile rimuovere l'avatar.",
+      "password-updated": "Password aggiornata.",
+      "password-update-failed": "Impossibile aggiornare la password.",
+      "passkey-registered": "Passkey registrata con successo.",
+      "passkey-updated": "Passkey aggiornata.",
+      "passkey-update-failed": "Impossibile aggiornare la Passkey.",
+      "passkey-deleted": "Passkey cancellata.",
+      "passkey-delete-failed": "Impossibile cancellare la Passkey.",
+      "passkeys-deleted": "Tutte le Passkey sono state rimosse.",
+      "passkeys-delete-failed": "Impossibile rimuovere tutte le Passkey.",
+      "password-removed": "Password rimossa.",
+      "password-remove-failed": "Impossibile rimuovere la password.",
+      "mfa-disabled": "Autenticazione Multi-Fattore disattivata e Autenticatore rimosso.",
+      "mfa-disable-failed": "Impossible disattivare l'Autenticazione Multi-Fattore o rimuovere l'Autenticatore.",
+      "account-deleted": "Account cancellato.",
+      "account-delete-failed": "Impossibile cancellare l'account."
+    },
+    "dialogs": {
+      "delete-passkey": "Sei sicuro di volere cancella questa Passkey?",
+      "delete-all-passkeys": "Sei sicuro di volere cancellare tutte le Passkey del tuo account? Servizi precedentementi attivati come FaceID, Windows Hello, TouchID, ecc. smetterano di funzionare.",
+      "remove-password": "Sei sicuro di volere rimuovere la password del tuo account? Dovrai fare login con una Passkey, FaceID, Windows Hello, ecc. fino a quando non imposterai nuovamente una password.",
+      "disable-mfa": "Sei sicuro di volere disattivare l'Autenticazione Multi-Fattore e rimuovere qualsiasi Autenticatore dal tuo account?",
+      "delete-account": "Sei sicuro di volere cancellare il tuo account?",
+      "danger": "PERICOLO"
+    }
+  },
+  "admin": {
+    "common": {
+      "actions": {
+        "edit": "Modifica",
+        "delete": "Cancella",
+        "update": "Aggiorna",
+        "create": "Crea",
+        "view": "Visualizza",
+        "open": "Apri",
+        "remove": "Rimuovi"
+      },
+      "avatar": {
+        "label": "Avatar utente",
+        "actions": {
+          "upload": "Carica avatar",
+          "replace": "Rimpiazza avatar",
+          "remove": "Rimuovi avatar"
+        },
+        "messages": {
+          "invalid-file": "Scegli un'immagine PNG, JPEG, o WebP non più grande di 2 MB.",
+          "update-failed": "Impossibile aggiornare l'avatar.",
+          "remove-failed": "Impossibile rimuovere l'avatar."
+        }
+      },
+      "labels": {
+        "mfa-required": "MFA Richiesta",
+        "email-verified": "Email Verificata",
+        "approved": "Approvato"
+      },
+      "messages": {
+        "all-users-have-access": "Nessun Gruppo, TUTTI gli utenti avranno accesso."
+      },
+      "dialogs": {
+        "add-claim": "Aggiungi Claim Personalizzato",
+        "edit-claim": "Modifica Claim Personalizzato",
+      }
+    },
+    "users": {
+      "empty-state": "Nessun utente.",
+      "actions": {
+        "select": "Seleziona",
+        "approve": "Approva"
+      },
+      "labels": {
+        "search": "Cerca"
+      },
+      "columns": {
+        "username": "Username",
+        "email": "Email",
+        "email-verified": "Email Verificata",
+        "approved": "Approvato",
+        "expires": "Scade"
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere rimuovere l'utente '{{name}}'?",
+        "approve-selected": "Sei sicuro di volere approvare {{count}} utente/i?",
+        "delete-selected": "Sei sicuro di volere cancellare {{count}} utente/i?",
+        "approval": "Approvazione"
+      },
+      "messages": {
+        "load-failed": "Impossibile recuperare gli utenti.",
+        "deleted": "L'utente è stato cancellato.",
+        "delete-failed": "Impossibile cancellare l'utente.",
+        "selected-approved": "L'utente/i è stato approvato.",
+        "selected-approve-failed": "Impossibile approvare l'utente/i.",
+        "selected-deleted": "L'utente/i è stato cancellato.",
+        "selected-delete-failed": "Impossibile cancellare l'utente/i."
+      }
+    },
+    "user": {
+      "title": "Aggiorna Utente",
+      "labels": {
+        "username": "Username",
+        "name": "Nome",
+        "email": "Email",
+        "add-group": "Aggiungi Gruppo",
+        "security-groups": "Gruppi di Sicurezza:",
+        "user-expiration-date": "Data di Scadenza dell'Accesso",
+        "user-expiration-time": "Ora di Scadenza dell'Accesso",
+        "custom-claims": "Claim Personalizzati",
+        "claim": "Claim",
+        "value": "Valore",
+        "no-custom-claims": "Nessun claim personalizzato configurato.",
+        "group": "Gruppo",
+        "applied": "Applicato"
+      },
+      "actions": {
+        "sign-out": "Logout",
+        "back": "Utenti"
+      },
+      "tooltips": {
+        "remove": "Rimuovi",
+        "open": "Apri",
+        "edit": "Modifica"
+      },
+      "messages": {
+        "load-failed": "Errore nel caricare l'utente.",
+        "group-add-failed": "Errore nell'aggiungere il gruppo.",
+        "mfa-required-group-warning": "Questo utente dovrà ancora impostare l'MFA per via del gruppo: {{group}}",
+        "updated": "Utente aggiornato.",
+        "update-failed": "Impossibile aggiornare l'utente.",
+        "signed-out": "Utente sloggato.",
+        "sign-out-failed": "Impossibile sloggare l'utente.",
+        "deleted": "Utente cancellato.",
+        "delete-failed": "Impossibile cancellare l'utente."
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere cancellare questo utente?"
+      }
+    },
+    "clients": {
+      "empty-state": "Nessuna App OIDC.",
+      "actions": {
+        "create": "Crea App OIDC",
+        "back": "App OIDC"
+      },
+      "columns": {
+        "name": "Nome",
+        "redirects": "Redirect",
+        "allowed-groups": "Gruppi Autorizzati"
+      },
+      "messages": {
+        "deleted": "L'App {{name}} è stata cancellata.",
+        "delete-failed": "Impossibile cancellare l'app."
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere rimuovere l'app '{{name}}'?"
+      }
+    },
+    "client": {
+      "titles": {
+        "view": "Visualizza App OIDC",
+        "update": "Aggiorna App OIDC",
+        "create": "Crea App OIDC"
+      },
+      "labels": {
+        "name": "Nome",
+        "home-page-url": "URL Home Page",
+        "logo-url": "URL Logo",
+        "logo-preview": "Anteprima Logo App OIDC",
+        "add-group": "Aggiungi Gruppo",
+        "client-id": "ID Client",
+        "auth-method": "Metodo di Autenticazione",
+        "client-secret": "Segereto Client",
+        "redirect-url": "Nuovo URL Redirect",
+        "response-types": "Tipi di Risposta",
+        "grant-types": "Tipi di Concessione",
+        "postlogout-url": "URL PostLogout",
+        "backchannel-logout-url": "URL Backchannel Logout",
+        "allowed-groups": "Gruppi Autorizzati",
+        "redirect-urls": "URL di Redirect:"
+      },
+      "actions": {
+        "choose-logo": "Carica logo",
+        "replace-logo": "Rimpiazza logo",
+        "cancel-logo": "Cancella upload",
+        "remove-logo": "Rimuovi logo"
+      },
+      "hints": {
+        "pkce-required": "PKCE Richiesto con questo Metodo di Autenticazione.",
+        "not-required": "Non richiesto per l'attuale Metodo di Autenticazione.",
+        "postlogout-redirect": "URL di redirect post-logout permesso dopo che il client ha eseguito il logout.",
+        "backchannel-logout": "Endpoint del client notificato quando l'utente da logout."
+      },
+      "checkboxes": {
+        "skip-consent": "Salta Consenso",
+        "mfa-required": "MFA Richiesta",
+        "hide-from-home": "Nascondi dalla Home"
+      },
+      "tooltips": {
+        "skip-consent": "Salta la conferma dell'utente per questa app.",
+        "mfa-required": "Gli utenti dovranno usare MFA per accedere a quest'app.",
+        "copy-client-id": "Copia ID Client",
+        "copy-secret": "Copia Segreto",
+        "hide-from-home": "Nascondi l'app OIDC dalla Homepage."
+      },
+      "messages": {
+        "client-id-copied": "ID Client copiato negli appunti.",
+        "secret-copied": "Segreto copiato negli appunti.",
+        "logo-invalid-file": "Scegli un'immagine PNG, JPG o WebP non più grande di 2 MB.",
+        "logo-save-failed": "I campi del client sono stati salvati, ma il cambiamento del logo non è andato a buon fine.",
+        "updated": "Client aggiornato.",
+        "created": "Client creato.",
+        "update-failed": "Impossibile aggiornare l'app.",
+        "create-failed": "Impossibile creare l'app.",
+        "load-failed": "Errore nel caricare i Dettagli dell'App OIDC.",
+        "deleted": "App cancellata.",
+        "delete-failed": "Impossibile cancellare l'app."
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere cancellare quest'app?"
+      }
+    },
+    "domains": {
+      "empty-state": "Nessun Dominio.",
+      "actions": {
+        "create": "Crea Dominio ProxyAuth"
+      },
+      "columns": {
+        "domain": "Domini",
+        "allowed-groups": "Gruppi Autorizzati"
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere rimuovere il dominio '{{name}}'?"
+      },
+      "messages": {
+        "deleted": "Il dominio è stato cancellato.",
+        "delete-failed": "Impossibile cancellare il dominio."
+      }
+    },
+    "domain": {
+      "titles": {
+        "update": "Aggiorna Dominio ProxyAuth",
+        "create": "Crea Dominio ProxyAuth"
+      },
+      "labels": {
+        "domain": "Dominio",
+        "max-session-length": "Età Massima Sessione (Minuti)",
+        "add-group": "Aggiungi Gruppo",
+        "allowed-groups": "Gruppi Autorizzati:"
+      },
+      "placeholders": {
+        "domain": "esempio: *.tuo.dominio.com/percorso/"
+      },
+      "sections": {
+        "domain-help": "Aiuto Dominio"
+      },
+      "hints": {
+        "no-re-auth": "Campo vuoto significa nessuna riautenticazione richiesta."
+      },
+      "help-text": {
+        "0": "Il dominio non dovrebbe includere il protocollo, può includere un percorso e una porta, e supporta wildcard (*) in qualsiasi posizione.",
+        "1": "<b>esempio.dominio.com/api/alive</b> controllerà solo gli accessi a un singolo endpoint.",
+        "2": "<b>esempio.dominio.com/api/*</b> controllerà gli accessi per tutti gli endpoint sotto /api."
+      },
+      "messages": {
+        "updated": "Dominio aggiornato.",
+        "created": "Dominio creto.",
+        "update-failed": "Impossibile aggiornare il dominio.",
+        "create-failed": "Impossibile creare il dominio.",
+        "load-failed": "Errore nel caricare il dominio ProxyAuth.",
+        "deleted": "Dominio cancellato.",
+        "delete-failed": "Impossibile cancellare il dominio."
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere cancellare questo dominio?"
+      },
+      "actions": {
+        "back": "Domini ProxyAuth"
+      }
+    },
+    "password-resets": {
+      "labels": {
+        "create-link": "Crea un Link di Reset della Password"
+      },
+      "tooltips": {
+        "send-email": "Invia Email A {{email}}",
+        "copy-link": "Copia Link",
+        "delete": "Cancella"
+      },
+      "messages": {
+        "link-copied": "Link di Reset copiato negli appunti.",
+        "sent": "Link di reset della password inviato a {{email}}.",
+        "load-failed": "Impossibile recuperare i link di reset della password.",
+        "created": "Link di reset della password creato.",
+        "create-failed": "Impossibile creare il link di reset della password.",
+        "deleted": "Link di reset della password cancellato.",
+        "delete-failed": "Impossibile cancellare il link di reset della password.",
+        "send-failed": "Impossibile inviare il link di reset della password."
+      },
+      "columns": {
+        "username": "Username",
+        "expires-in": "Scade In"
+      },
+      "empty-state": "Nessun Reset della Password.",
+      "dialogs": {
+        "delete": "Sei sicuro di volere cancellare questo link di reset della password?"
+      }
+    },
+    "emails": {
+      "empty-state": "Nessuna Email Inviata.",
+      "actions": {
+        "send-test": "Email Email di Prova"
+      },
+      "tooltips": {
+        "preview": "Anteprima",
+        "view-user": "Vedi Utente"
+      },
+      "columns": {
+        "sent": "Inviato",
+        "to": "A",
+        "type": "Tipo"
+      },
+      "messages": {
+        "load-failed": "Impossibile recuperare Email Inviate.",
+        "test-sent": "Email di Prova Inviata.",
+        "test-failed": "Impossibile Inviare Email di Prova."
+      },
+      "dialogs": {
+        "send-test": "Invia Email di Prova"
+      }
+    },
+    "groups": {
+      "empty-state": "Nessun Gruppo.",
+      "actions": {
+        "create": "Crea Gruppo"
+      },
+      "columns": {
+        "name": "Nome Gruppo"
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere rimuovere il gruppo '{{name}}'?"
+      },
+      "messages": {
+        "deleted": "Il gruppo è stato cancellato.",
+        "delete-failed": "Impossibile cancellare il gruppo."
+      }
+    },
+    "group": {
+      "titles": {
+        "update": "Aggiorna Gruppo",
+        "create": "Crea Gruppo"
+      },
+      "labels": {
+        "name": "Nome",
+        "add-user": "Aggiungi Utente",
+        "users": "Utenti:",
+        "custom-claims": "Claim Personalizzati",
+        "claim": "Claim",
+        "value": "Valore",
+        "no-custom-claims": "Nessun claim personalizzato configurato."
+      },
+      "checkboxes": {
+        "mfa-required": "MFA Richiesta",
+        "auto-assign": "Assegna Automaticamente"
+      },
+      "tooltips": {
+        "edit": "Modifica",
+        "remove": "Rimuovi"
+      },
+      "messages": {
+        "updated": "Gruppo aggiornato.",
+        "created": "Gruppo creato.",
+        "update-failed": "Impossibile aggiornare il gruppo.",
+        "create-failed": "Impossibile creare il gruppo.",
+        "load-failed": "Errore nel caricare il gruppo.",
+        "deleted": "Gruppo cancellato.",
+        "delete-failed": "Impossibile cancellare il gruppo."
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere cancellare questo gruppo?"
+      },
+      "actions": {
+        "back": "Gruppi"
+      }
+    },
+    "invitations": {
+      "empty-state": "Nessun invito.",
+      "actions": {
+        "create": "Crea Invito"
+      },
+      "columns": {
+        "username": "Username",
+        "email": "Email",
+        "expires-in": "Scade In",
+        "access-expires": "Accesso Scaduto"
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere cancellare l'invito per '{{name}}'?"
+      },
+      "messages": {
+        "deleted": "L'invito è stato cancellato.",
+        "delete-failed": "Impossibile cancellare l'invito."
+      }
+    },
+    "invitation": {
+      "titles": {
+        "update": "Aggiorna Invito",
+        "create": "Crea Invito"
+      },
+      "labels": {
+        "invite-link": "Link Invito",
+        "username": "Username",
+        "email": "Email",
+        "name": "Nome",
+        "add-group": "Aggiungi Gruppo",
+        "security-groups": "Gruppi di Sicurezza:",
+        "user-expiration-date": "Data di Scadenza dell'Accesso",
+        "user-expiration-time": "Ora di Scadenza dell'Accesso",
+        "custom-claims": "Claim Personalizzati",
+        "claim": "Claim",
+        "value": "Valore",
+        "no-custom-claims": "Nessun claim personalizzato configurato.",
+        "applied": "Applicato",
+        "group": "Gruppi"
+      },
+      "tooltips": {
+        "copy-invite-link": "Copia Link Invito",
+        "unsaved-changes": "Hai dei cambiamenti non salvati.",
+        "send-to": "Invia invito a: {{email}}",
+        "edit": "Modifica",
+        "remove": "Rimuovi"
+      },
+      "messages": {
+        "link-copied": "Link d'invito copiato negli appunti.",
+        "email-not-verified": "Impossibile inviare per email il link d'invito, connessione email non verificata.",
+        "no-email": "Impossibile inviare per email l'invito, l'invito non include un indirizzo email.",
+        "sent": "Invito inviato a {{email}}.",
+        "updated": "Invito aggiornato.",
+        "created": "Invito creato.",
+        "update-failed": "Impossibile aggiornare l'invito.",
+        "create-failed": "Impossibile creare l'invito.",
+        "load-failed": "Errore nel caricare l'invito.",
+        "group-add-failed": "Errore nell'aggiungere il gruppo.",
+        "send-failed": "Impossibile inviare l'invito.",
+        "deleted": "Invito cancellato.",
+        "delete-failed": "Impossibile cancellare l'invito."
+      },
+      "actions": {
+        "send": "Invia Invito",
+        "back": "Inviti"
+      },
+      "checkboxes": {
+        "email-verified": "Email Verificata"
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di volere cancella questo invito?"
+      }
+    },
+    "claims": {
+      "actions": {
+        "create": "Crea Claim",
+        "back": "Claim Personalizzati"
+      },
+      "empty-state": "Nessun Claim Personalizzato.",
+      "columns": {
+        "claim": "Claim"
+      },
+      "dialogs": {
+        "delete": "Sei sicuro di voler rimuovere il claim personalizzato '{{name}}'?"
+      },
+      "messages": {
+        "deleted": "Claim personalizzato cancellato.",
+        "delete-failed": "Impossibile cancellare claim personalizzato."
+      }
+    },
+    "claim": {
+      "titles": {
+        "update": "Aggiorna Claim Personalizzato",
+        "create": "Crea Claim Personalizzato"
+      },
+      "labels": {
+        "name": "Nome",
+        "user-claims": "Utenti",
+        "username": "Username",
+        "value": "Valore",
+        "no-user-claims": "Nessun Claim Utente",
+        "no-group-claims": "Nessun Claim Gruppo",
+        "group-name": "Gruppo",
+        "group-claims": "Gruppi",
+        "invitation-claims": "Inviti",
+        "invitation": "Invita",
+        "no-invitation-claims": "Nessu Claim Invito"
+      },
+      "tooltips": {
+        "edit": "Modifica",
+        "remove": "Rimuovi"
+      },
+      "messages": {
+        "updated": "Claim personalizzato aggiornato.",
+        "created": "Claim personalizzato creato.",
+        "update-failed": "Impossibile aggiornare claim personalizzato.",
+        "create-failed": "Impossibile creare claim personalizzato.",
+        "load-failed": "Errore nel caricare claim personalizzato.",
+        "deleted": "Claim personalizzato cancellato.",
+        "delete-failed": "Impossibile cancellare claim personalizzato."
+      },
+      "dialogs": {
+        "delete": "Se sicuro di volere cancellare questo claim personalizzato?",
+        "add-user-claim": "Aggiungi Claim Utente",
+        "edit-user-claim": "Modifica Claim Utente",
+        "add-group-claim": "Aggiungi Claim Gruppo",
+        "edit-group-claim": "Modifica Claim Gruppo",
+        "add-invite-claim": "Aggiungi Claim Invito",
+        "edit-invite-claim": "Modifica Claim Invito"
+      }
+    }
+  },
+  "components": {
+    "header": {
+      "actions": {
+        "login": "Login",
+        "sign-up": "Registrati"
+      }
+    },
+    "copy-field": {
+      "messages": {
+        "copied": "{{label}} copiato negli appunti."
+      }
+    },
+    "oidc-info": {
+      "title": "Informazioni OIDC",
+      "labels": {
+        "issuer": "Endpoint Gestore OIDC",
+        "well-known": "Endpoint Well-Known ",
+        "authorization": "Endpoint Autorizzazione",
+        "token": "Endpoint Token",
+        "userinfo": "Endpoint UserInfo",
+        "logout": "Endpoint Logout",
+        "jwks": "Endpoint JWKS"
+      },
+      "actions": {
+        "all-info": "Tutte le Informazioni"
+      }
+    },
+    "password-input": {
+      "labels": {
+        "new-password": "Nuova Password",
+        "old-password": "Vecchia Password",
+        "confirm-password": "Conferma Password"
+      }
+    },
+    "totp-input": {
+      "title": "Questo attiverà l'Autenticazione Multi-Fattore sul tuo account.",
+      "labels": {
+        "secret": "Secret:"
+      },
+      "text": {
+        "enter-token": "Inserisci il Token dell'Autenticatore per Continuare"
+      },
+      "tooltips": {
+        "copy-secret": "Copia segreto negli appunti."
+      },
+      "messages": {
+        "copied-secret": "Segreto copiato negli appunti."
+      }
+    },
+    "theme-toggle": {
+      "options": {
+        "system": "Sistema",
+        "light": "Chiaro",
+        "dark": "Scuro"
+      }
+    },
+    "email-input": {
+      "message": {
+        "default": "Per favore inserisci un indirizzo email qui sotto."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Cacella"
+        },
+        "confirm": {
+          "label": "Conferma"
+        }
+      }
+    },
+    "totp-register": {
+      "title": "Aggiungi Autenticatore",
+      "actions": {
+        "cancel": {
+          "label": "Cacella"
+        }
+      },
+      "messages": {
+        "enable-failed": "Impossibile attivare l'Autenticazione Multi-Fattore.",
+        "add-failed": "Impossibile aggiungere l'autenticatore.",
+        "info-failed": "Impossibile recuperare le informazioni dell'autenticatore."
+      }
+    },
+    "passkey-edit": {
+      "title": "Modifica Nome Passkey",
+      "message": {
+        "default": "Inserisci un nome per questa passkey."
+      },
+      "actions": {
+        "cancel": {
+          "label": "Cacella"
+        },
+        "save": {
+          "label": "Salva"
+        }
+      }
+    },
+    "confirm": {
+      "instructions": "Per confermare, digitare <b>{{requiredText}}</b> nel campo sottostante.",
+      "actions": {
+        "cancel": {
+          "label": "Cacella"
+        },
+        "confirm": {
+          "label": "Conferma"
+        }
+      }
+    },
+    "option-value-dialog": {
+      "actions": {
+        "cancel": {
+          "label": "Cacella"
+        },
+        "save": {
+          "label": "Salva"
+        }
+      },
+      "labels": {
+        "value": "Valore"
+      }
+    },
+    "common": {
+      "or": "o",
+      "messages": {
+        "session-failed": "Impossibile creare la sessione.",
+        "user-not-found": "Utente non trovato.",
+        "passkey-already-registered": "Passkey già registrata.",
+        "invalid-code": "Codice inserito non valido.",
+        "register-passkey-failed": "Impossibile registrare la passkey.",
+        "verification-email-sent": "Email di verifica inviata.",
+        "email-updated": "Email aggiornata.",
+        "email-update-failed": "Impossibile aggiornare l'email.",
+        "something-went-wrong": "Qualcosa è andato storto."
+      }
+    },
+    "paginator": {
+      "items-per-page": "Elementi per pagina:",
+      "next-page": "Pagina successiva",
+      "previous-page": "Pagina precedente",
+      "first-page": "Prima pagina",
+      "last-page": "Ultima pagina",
+      "range": "{{start}} – {{end}} di {{length}}",
+      "range-empty": "0 di {{length}}"
+    },
+    "snackbar": {
+      "ok": "Ok"
+    }
+  },
+  "user-expired": {
+    "title": "Accesso all'Account Scaduto",
+    "content": "L'accesso al tuo account è scaduto, per favore contatta un amministratore per estendere il tuo accesso.",
+    "actions": {
+      "login": "Login",
+      "try-again": "Prova Nuovamente"
+    }
+  },
+  "passkey-name": {
+    "title": "Nome Passkey",
+    "prompt": "Scegliere un nome per la nuova passkey?",
+    "actions": {
+      "skip": {
+        "label": "Salta"
+      },
+      "save": {
+        "label": "Salva"
+      }
+    }
+  }
+}
