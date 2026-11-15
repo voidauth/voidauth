@@ -6,7 +6,7 @@ import { filter } from 'rxjs'
 import { HeaderComponent } from './components/header/header.component'
 import { MaterialModule } from './material-module'
 import { UserService } from './services/user.service'
-import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
+import type { CurrentUserPrivateDetails } from '@shared/api-response/UserDetails'
 import { SpinnerService } from './services/spinner.service'
 import { getCurrentHost } from './services/config.service'
 import { TranslationService } from './services/translation.service'
@@ -19,7 +19,7 @@ import { TranslationService } from './services/translation.service'
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  user?: CurrentUserDetails
+  user?: CurrentUserPrivateDetails
   host = getCurrentHost()
   showPageBackground = signal(false)
 
@@ -48,7 +48,7 @@ export class AppComponent implements OnInit {
   async ngOnInit() {
     try {
       this.spinnerService.show()
-      this.user = await this.userService.getMyUser()
+      this.user = await this.userService.getMyPrivateUser()
     } catch (_e) {
       // user just isn't logged in
     } finally {
