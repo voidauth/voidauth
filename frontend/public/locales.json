@@ -6,5 +6,6 @@
   { "code": "de-DE", "display": "Deutsch" },
   { "code": "nl-NL", "display": "Nederlands" },
   { "code": "ru-RU", "display": "Русский" },
-  { "code": "pt-BR", "display": "Português (Brasil)" }
+  { "code": "pt-BR", "display": "Português (Brasil)" },
+  { "code": "it-IT", "display": "Italiano" }
 ]
