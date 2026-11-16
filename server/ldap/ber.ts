@@ -132,12 +132,12 @@ export function readLength(buffer: Buffer, offset: number) {
       return
     }
 
-    value = (value << 8) | byte
+    value = (value * 256) + byte
   }
 
-  // Prevent too large length values from being processed
-  if (value > MAX_FRAME_SIZE) {
-    return
+  // Prevent too large (or small) length values from being processed
+  if (value < 0 || value > MAX_FRAME_SIZE) {
+    throw new Error('Invalid BER length')
   }
 
   return { bytes: 1 + byteCount, value }

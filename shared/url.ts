@@ -37,9 +37,10 @@ export function urlFromWildcardHref(input: string) {
   // escape any URLPattern special characters, except wildcards which will be replaced with regex equivalent
   // the wildcard replacement is never actually run, but it should be equivalent and non-representable after the
   // previous regex escape (it would have been escaped)
-  const escaped = input.replaceAll(/([.*:+?^${}()|[\]\\])/g, '\\$1').replaceAll(/\\\*/g, () => {
-    return `(.{0,})`
-  })
+  const escaped = input.replaceAll(/([.*:+?^${}()|[\]\\])/g, '\\$1')
+    .replaceAll(/\\\*/g, () => {
+      return `(.{0,})`
+    })
   let parsedPattern: URLPattern
   try {
     parsedPattern = new URLPattern(escaped)
@@ -121,33 +122,27 @@ function matchComponent(patternComp?: string, candidateComp?: string, caseSensit
   return patternComp === candidateComp
 }
 
-export function hrefIsWildcardMatch(pattern: string, candidate: string) {
-  if (!candidate) {
-    return false
-  }
-
+export function hrefIsWildcardMatch(pattern: string, candidate: URL) {
   const patternUrl = urlFromWildcardHref(pattern)
-  const candidateUrl = urlFromWildcardHref(candidate)
-  if (!patternUrl || !candidateUrl) {
+  if (!patternUrl) {
     return false
   }
 
   return (
-    matchComponent(patternUrl.protocol, candidateUrl.protocol, false)
-    && matchComponent(patternUrl.username, candidateUrl.username)
-    && matchComponent(patternUrl.password, candidateUrl.password)
-    && matchComponent(patternUrl.hostname, candidateUrl.hostname, false)
-    && matchComponent(patternUrl.port, candidateUrl.port)
-    && matchComponent(patternUrl.pathname, candidateUrl.pathname)
-    && matchComponent(patternUrl.search, candidateUrl.search)
-    && matchComponent(patternUrl.hash, candidateUrl.hash)
+    matchComponent(patternUrl.protocol, candidate.protocol, false)
+    && matchComponent(patternUrl.username, candidate.username)
+    && matchComponent(patternUrl.password, candidate.password)
+    && matchComponent(patternUrl.hostname, candidate.hostname, false)
+    && matchComponent(patternUrl.port, candidate.port)
+    && matchComponent(patternUrl.pathname, candidate.pathname)
+    && matchComponent(patternUrl.search, candidate.search)
+    && matchComponent(patternUrl.hash, candidate.hash)
   )
 }
 
-export function domainIsWildcardMatch(pattern: string, candidate: string) {
+export function domainIsWildcardMatch(pattern: string, candidate: URL) {
   const patternUrl = urlFromWildcardDomain(pattern)
-  const candidateUrl = urlFromWildcardDomain(candidate)
-  if (!patternUrl || !candidateUrl) {
+  if (!patternUrl) {
     return false
   }
 
@@ -157,9 +152,9 @@ export function domainIsWildcardMatch(pattern: string, candidate: string) {
   }
 
   return (
-    matchComponent(patternUrl.hostname, candidateUrl.hostname, false)
-    && matchComponent(patternUrl.port, candidateUrl.port)
-    && matchComponent(patternUrl.pathname, candidateUrl.pathname)
+    matchComponent(patternUrl.hostname, candidate.hostname, false)
+    && matchComponent(patternUrl.port, candidate.port)
+    && matchComponent(patternUrl.pathname, candidate.pathname)
   )
 }
 

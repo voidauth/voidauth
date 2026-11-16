@@ -685,6 +685,10 @@ export function getSessionDomain(): string | undefined {
 export function sessionDomainReaches(hostName: string): boolean {
   const targetDomain = getBaseDomain(hostName)
   const sessionDomain = getSessionDomain()
+  if (!sessionDomain) {
+    return hostName === appUrl().hostname
+  }
+
   // Add dot to start of sessionDomain if it doesn't already have one, to prevent false positives
   const dotSD = sessionDomain && !sessionDomain.startsWith('.') ? '.' + sessionDomain : sessionDomain
   return targetDomain === sessionDomain || !!(dotSD && hostName.endsWith(dotSD))
