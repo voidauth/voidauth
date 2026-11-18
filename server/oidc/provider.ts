@@ -554,20 +554,24 @@ async function createProvider(): Promise<Provider> {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { redirectUriAllowed, postLogoutRedirectUriAllowed } = nextProvider.Client.prototype
   nextProvider.Client.prototype.redirectUriAllowed = function newRedirectUriAllowed(redirectUri) {
+    const redirectURL = URL.parse(redirectUri)
+
+    if (!redirectURL) {
+      // Call the default redirectUriAllowed function
+      return redirectUriAllowed.call(this, redirectUri)
+    }
+
     if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {
       // auth_internal_client redirect_uri is allowed if hostname is reachable by session domain
-      const redirectURL = URL.parse(redirectUri)
-      return !!redirectURL && sessionDomainReaches(redirectURL.hostname)
+      return sessionDomainReaches(redirectURL.hostname)
     }
 
     // proxyauth_internal_client redirect_uri is formatted like proxyauth callback
     // and proxyauth_url redirect can be reached by session domain
     if (Provider.ctx?.oidc.params?.client_id === 'proxyauth_internal_client') {
-      const redirectURL = URL.parse(redirectUri)
-      const proxyAuthURLParam = redirectURL?.searchParams.get('proxyauth_url')
+      const proxyAuthURLParam = redirectURL.searchParams.get('proxyauth_url')
       const proxyAuthURL = proxyAuthURLParam ? URL.parse(proxyAuthURLParam) : null
-      return !!redirectURL
-        && sessionDomainReaches(redirectURL.hostname)
+      return sessionDomainReaches(redirectURL.hostname)
         && redirectURL.pathname.endsWith('/api/proxyauth_cb')
         && !!proxyAuthURL
         && sessionDomainReaches(proxyAuthURL.hostname)
@@ -575,7 +579,7 @@ async function createProvider(): Promise<Provider> {
 
     // Check if any client redirectUris are a wildcard match
     if (this.redirectUris?.some((r: string) => {
-      return r.includes('*') && hrefIsWildcardMatch(r, redirectUri)
+      return r.includes('*') && hrefIsWildcardMatch(r, redirectURL)
     })) {
       return true
     }
@@ -585,8 +589,9 @@ async function createProvider(): Promise<Provider> {
   }
   nextProvider.Client.prototype.postLogoutRedirectUriAllowed = function newPostLogoutRedirectUriAllowed(postLogoutRedirectUri: string) {
     // Check if any client postLogoutRedirectUris are a wildcard match
-    if (this.postLogoutRedirectUris?.some((r: string) => {
-      return r.includes('*') && hrefIsWildcardMatch(r, postLogoutRedirectUri)
+    const postLogoutRedirectURL = URL.parse(postLogoutRedirectUri)
+    if (postLogoutRedirectURL && this.postLogoutRedirectUris?.some((r: string) => {
+      return r.includes('*') && hrefIsWildcardMatch(r, postLogoutRedirectURL)
     })) {
       return true
     }
