@@ -13,13 +13,18 @@ export async function getInvitations() {
     .orderBy(db().ref('expiresAt').withSchema(TABLES.INVITATION), 'desc')
 }
 
-export async function getInvitation(id: string) {
+export async function getInvitation(id: string, challenge: string) {
+  return await db().select().table<Invitation>(TABLES.INVITATION)
+    .where({ id, challenge }).andWhere(db().ref('expiresAt').withSchema(TABLES.INVITATION), '>=', new Date()).first()
+}
+
+async function getInvitationOnly(id: string) {
   return await db().select().table<Invitation>(TABLES.INVITATION)
     .where({ id }).andWhere(db().ref('expiresAt').withSchema(TABLES.INVITATION), '>=', new Date()).first()
 }
 
 export async function getInvitationDetails(id: string) {
-  const invitation = await getInvitation(id)
+  const invitation = await getInvitationOnly(id)
   if (!invitation) {
     return
   }

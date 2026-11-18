@@ -370,10 +370,11 @@ router.post('/register',
       return
     }
 
-    const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
-    const invitationValid = !!(invitation && invitation.challenge === registration.challenge)
+    const invitation = registration.inviteId && registration.challenge
+      ? await getInvitation(registration.inviteId, registration.challenge)
+      : null
 
-    if (!invitationValid && !appConfig.SIGNUP) {
+    if (!invitation && !appConfig.SIGNUP) {
       res.sendStatus(400)
       return
     }
@@ -387,7 +388,7 @@ router.post('/register',
       name: invitation?.name || registration.name,
       email: invitation?.email || registration.email,
       passwordHash,
-      approved: invitationValid, // invited users are approved by default
+      approved: !!invitation, // invited users are approved by default
       expiresAt: invitation?.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
       emailVerified: !!invitation?.email && invitation.emailVerified,
       mfaRequired: !!invitation?.mfaRequired,
@@ -414,7 +415,7 @@ router.post('/register',
 
     const assignedGroupIds: Pick<Group, 'id' | 'createdBy' | 'updatedBy'>[] = []
     const assignedCustomClaims: InvitationCustomClaim[] = []
-    if (invitationValid) {
+    if (invitation) {
       const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP).where({ invitationId: invitation.id })
       assignedGroupIds.push(...inviteGroups.map(g => ({ id: g.groupId, createdBy: g.createdBy, updatedBy: g.updatedBy })))
       const inviteCustomClaims = await db().select()
@@ -451,7 +452,7 @@ router.post('/register',
       await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(userCustomClaims)
     }
 
-    if (invitationValid) {
+    if (invitation) {
       await transferInvitationAvatar(invitation.id, user.id)
       const deleted = await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
       if (!deleted) {
@@ -497,9 +498,11 @@ router.post('/register/passkey/start',
 
     // check open signup or valid invitation
     // Make sure that if invitation, it is valid
-    const invitation = invite.inviteId ? await getInvitation(invite.inviteId) : null
-    const invitationValid = !!(invitation && invitation.challenge === invite.challenge)
-    if (!invitationValid && !appConfig.SIGNUP) {
+    const invitation = invite.inviteId && invite.challenge
+      ? await getInvitation(invite.inviteId, invite.challenge)
+      : null
+
+    if (!invitation && !appConfig.SIGNUP) {
       res.sendStatus(400)
       return
     }
@@ -537,10 +540,11 @@ router.post('/register/passkey/end',
       return
     }
 
-    const invitation = registration.inviteId ? await getInvitation(registration.inviteId) : null
-    const invitationValid = !!(invitation && invitation.challenge === registration.challenge)
+    const invitation = registration.inviteId && registration.challenge
+      ? await getInvitation(registration.inviteId, registration.challenge)
+      : null
 
-    if (!invitationValid && !appConfig.SIGNUP) {
+    if (!invitation && !appConfig.SIGNUP) {
       res.sendStatus(400)
       return
     }
@@ -559,7 +563,7 @@ router.post('/register/passkey/end',
       username: invitation?.username || registration.username,
       name: invitation?.name || registration.name,
       email: invitation?.email || registration.email,
-      approved: invitationValid, // invited users are approved by default
+      approved: !!invitation, // invited users are approved by default
       expiresAt: invitation?.userExpiresAt ? new Date(invitation.userExpiresAt) : null,
       emailVerified: !!invitation?.email && invitation.emailVerified,
       mfaRequired: !!invitation?.mfaRequired,
@@ -586,7 +590,7 @@ router.post('/register/passkey/end',
 
     const assignedGroupIds: Pick<Group, 'id' | 'createdBy' | 'updatedBy'>[] = []
     const assignedCustomClaims: InvitationCustomClaim[] = []
-    if (invitationValid) {
+    if (invitation) {
       const inviteGroups = await db().select().table<InvitationGroup>(TABLES.INVITATION_GROUP).where({ invitationId: invitation.id })
       assignedGroupIds.push(...inviteGroups.map(g => ({ id: g.groupId, createdBy: g.createdBy, updatedBy: g.updatedBy })))
       const inviteCustomClaims = await db().select()
@@ -623,7 +627,7 @@ router.post('/register/passkey/end',
       await db().table<UserCustomClaim>(TABLES.USER_CUSTOM_CLAIM).insert(userCustomClaims)
     }
 
-    if (invitationValid) {
+    if (invitation) {
       await transferInvitationAvatar(invitation.id, user.id)
       const deleted = await db().table<Invitation>(TABLES.INVITATION).delete().where({ id: invitation.id })
       if (!deleted) {

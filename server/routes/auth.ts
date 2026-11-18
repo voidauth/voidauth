@@ -46,8 +46,8 @@ authRouter.get('/invitation/:id/:challenge',
     },
   }), async (req, res) => {
     const { id, challenge } = req.params
-    const invite = await getInvitation(id)
-    if (!invite || invite.challenge !== challenge) {
+    const invite = await getInvitation(id, challenge)
+    if (!invite) {
       res.sendStatus(404)
       return
     }

@@ -153,6 +153,7 @@ publicRouter.post('/reset_password/passkey/end',
     }
 
     await db().table<PasswordReset>(TABLES.PASSWORD_RESET).delete().where({ id: passwordReset.id })
+    await endUserSessions(user.id)
 
     const { verification, currentOptions } = await getRegistrationInfo(user.id, body)
 

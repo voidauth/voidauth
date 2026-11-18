@@ -6,12 +6,17 @@ import { ADMIN_GROUP, REDIRECT_PATHS } from '@shared/constants'
 import { loginFactors } from '@shared/user'
 import { getSession } from '../oidc/provider'
 import { logger } from './logger'
-import { convertUrlToDomain } from '@shared/url'
+import { convertUrlToDomain, hasAmbiguousUrlPath } from '@shared/url'
 
 // proxy auth common
 export async function proxyAuth(url: URL, method: 'forward-auth' | 'auth-request', req: Request, res: Response) {
   const formattedUrl = convertUrlToDomain(url)
   const redirCode = method === 'auth-request' ? 401 : 302
+
+  if (hasAmbiguousUrlPath(url)) {
+    res.status(400).send({ message: 'Ambiguous path in ProxyAuth request.' })
+    return
+  }
 
   // should not block access to itself
   const appURL = appUrl()
