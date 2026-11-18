@@ -122,9 +122,42 @@ function matchComponent(patternComp?: string, candidateComp?: string, caseSensit
   return patternComp === candidateComp
 }
 
+export function hasAmbiguousUrlPath(url: URL) {
+  // Split the pathname into segments and check them
+  return url.pathname.split('/').some((segment) => {
+    let decodedSegment: string
+    try {
+      // Check for malformed percent-encoding
+      // If the segment contains a '%' character that is not followed by two hex digits
+      if (/%(?![0-9a-f]{2})/i.test(segment)) {
+        return true
+      }
+
+      // Decode the segment until it stays the same
+      // catches double encoded segments
+      decodedSegment = segment
+      while (/%[0-9a-f]{2}/i.test(decodedSegment)) {
+        decodedSegment = decodeURIComponent(decodedSegment)
+      }
+    } catch {
+      return true
+    }
+
+    // Check for ambiguous segments
+    if (decodedSegment.includes('/')
+      || decodedSegment.includes('\\')
+      || decodedSegment.includes(';')) {
+      return true
+    }
+
+    // Check for traveling segments
+    return decodedSegment === '.' || decodedSegment === '..'
+  })
+}
+
 export function hrefIsWildcardMatch(pattern: string, candidate: URL) {
   const patternUrl = urlFromWildcardHref(pattern)
-  if (!patternUrl) {
+  if (!patternUrl || hasAmbiguousUrlPath(candidate)) {
     return false
   }
 
@@ -142,7 +175,7 @@ export function hrefIsWildcardMatch(pattern: string, candidate: URL) {
 
 export function domainIsWildcardMatch(pattern: string, candidate: URL) {
   const patternUrl = urlFromWildcardDomain(pattern)
-  if (!patternUrl) {
+  if (!patternUrl || hasAmbiguousUrlPath(candidate)) {
     return false
   }
 

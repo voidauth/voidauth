@@ -8,7 +8,7 @@ import { getCookieKeys, getJWKs, makeKeysValid } from '../db/key'
 import { interactionPolicy } from 'oidc-provider'
 import { isExpired, isUnapproved, isUnverifiedEmail, loginFactors, type amrFactor } from '@shared/user'
 import assert from 'assert'
-import { hrefIsWildcardMatch, wildcardRedirect } from '@shared/url'
+import { hasAmbiguousUrlPath, hrefIsWildcardMatch, wildcardRedirect } from '@shared/url'
 import type { IncomingMessage, ServerResponse } from 'http'
 import { getProxyAuthWithCache } from '../db/proxyAuth'
 import { RESPONSE_TYPES } from '@shared/api-request/admin/ClientUpsert'
@@ -559,6 +559,10 @@ async function createProvider(): Promise<Provider> {
     if (!redirectURL) {
       // Call the default redirectUriAllowed function
       return redirectUriAllowed.call(this, redirectUri)
+    }
+
+    if (hasAmbiguousUrlPath(redirectURL)) {
+      return false
     }
 
     if (Provider.ctx?.oidc.params?.client_id === 'auth_internal_client') {

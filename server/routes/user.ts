@@ -117,7 +117,7 @@ userRouter.patch('/email',
     }
 
     if (!appConfig.EMAIL_VERIFICATION || !user.hasEmail) {
-      await db().table<User>(TABLES.USER).update({ email }).where({ id: user.id })
+      await db().table<User>(TABLES.USER).update({ email, emailVerified: false }).where({ id: user.id })
     }
 
     res.send({ sentVerification })
