@@ -12,6 +12,7 @@
     "frontend:watch": "cd frontend && npm run watch",
     "postinstall": "husky",
     "lint": "eslint",
+    "test": "node --import tsx --test \"server/**/*.test.ts\"",
     "prettier": "prettier --write \"**/*\""
   },
   "author": "Derek Paschal",

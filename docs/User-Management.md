@@ -4,6 +4,9 @@ User management can be accessed by admins (users in the **auth_admins** group) i
 > [!IMPORTANT]
 > Users cannot be created, only invited. This means an end-user will always be able to choose their own password, though the admin can choose their username and initial profile settings.
 
+> [!NOTE]
+> Users can also be created from the command line with an existing password hash. See [Import Users](CLI-Commands.md#import-users) and [Migrating From Authentik](Migrating-From-Authentik.md).
+
 ## Invitations
 The Invitation Create/Update page.
 

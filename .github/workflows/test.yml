@@ -72,3 +72,44 @@ jobs:
             type=registry,ref=voidauth/voidauth:latest
             type=registry,ref=voidauth/voidauth:edge
           cache-to: type=registry,mode=max,ref=voidauth/voidauth-cache:test
+
+  server-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Install
+        run: npm ci
+
+      - name: Test (sqlite)
+        run: npm test
+        env:
+          DB_ADAPTER: sqlite
+
+      - name: Test (postgres)
+        run: npm test
+        env:
+          DB_ADAPTER: postgres
+          DB_HOST: localhost
