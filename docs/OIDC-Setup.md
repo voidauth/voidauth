@@ -72,3 +72,5 @@ All the configurable variables can be found below:
 | CLIENT_GRANT_TYPES      | authorization_code, refresh_token | authorization_code, implicit, refresh_token   |
 | CLIENT_POST_LOGOUT_URLS |                                   |                                               |
 | CLIENT_SKIP_CONSENT     | false                             | true, false                                   |
+| CLIENT_REQUIRE_MFA      | false                             | true, false                                   |
+| CLIENT_HIDE_FROM_HOME   | false                             | true, false                                   |

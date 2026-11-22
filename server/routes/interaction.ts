@@ -106,7 +106,7 @@ router.get('/', async (req, res) => {
       return
     } else if (prompt.reasons.includes('user_mfa_required')) {
       // User has MFA required, direct them to MFA page
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}?reason=user`)
       return
     } else if (prompt.reasons.includes('user_email_not_validated')) {
       // User does not have a validated email and needs one
@@ -131,7 +131,7 @@ router.get('/', async (req, res) => {
 
     if (prompt.reasons.includes('client_mfa_required')) {
       // client requires mfa
-      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}`)
+      res.redirect(`${appConfig.APP_URL}/${REDIRECT_PATHS.MFA}?reason=client`)
       return
     }
 

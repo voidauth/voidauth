@@ -342,8 +342,8 @@ function registerClientVariable(clients: Map<string, ClientResponse>,
       case 'CLIENT_SKIP_CONSENT':
         client.skip_consent = validateClientVar(value, zod.stringbool())
         break
-      case 'CLIENT_MFA_REQUIRED':
-        client.mfa_required = validateClientVar(value, zod.stringbool())
+      case 'CLIENT_REQUIRE_MFA':
+        client.require_mfa = validateClientVar(value, zod.stringbool())
         break
       case 'CLIENT_HIDE_FROM_HOME':
         client.hide_from_home = validateClientVar(value, zod.stringbool())

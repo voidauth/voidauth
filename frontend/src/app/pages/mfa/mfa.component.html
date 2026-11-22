@@ -1,8 +1,15 @@
 <span style="flex-grow: 1"></span>
-<mat-card class="form-card" style="width: auto">
+<mat-card class="form-card" style="max-width: var(--form-thin-max-width)">
   <mat-card-content>
     <h2 style="text-align: center">{{ "mfa.title" | translate }}</h2>
     <form>
+      <small style="text-align: center; margin-top: 0px">
+        @if (reason() === "client") {
+          {{ "mfa.reason.client" | translate }}
+        } @else {
+          {{ "mfa.reason.user" | translate }}
+        }
+      </small>
       <app-totp-input
         style="width: 100%"
         [uri]="uri()"
@@ -12,28 +19,26 @@
         (codeFinished)="totpVerify($event)"
       ></app-totp-input>
 
+      <app-text-divider text="{{ 'components.common.or' | translate }}" disabled></app-text-divider>
+
       @if (passkeySupport?.enabled) {
         <!-- Passkey option if user has passkeys that would help -->
         @if (
           (user?.hasPasskeys && (!user.mfaRequired || !user.amr.includes("webauthn"))) ||
           (user?.hasVerifyPasskeys && !user.amr.includes("webauthn_v"))
         ) {
-          <app-text-divider text="{{ 'components.common.or' | translate }}" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyLogin()">
             {{ "mfa.actions.use-passkey" | translate: { platformName: passkeySupport.platformName ?? ("passkey-title" | translate) } }}
             <mat-icon fontSet="material-icons-round" matSuffix>{{ passkeySupport.platformIcon ?? "key" }}</mat-icon>
           </button>
         }
         @if (user?.isPrivilegedForPasskeyCreate) {
-          <app-text-divider text="{{ 'components.common.or' | translate }}" disabled></app-text-divider>
           <button mat-flat-button type="button" (click)="passkeyRegister()">
             {{ "mfa.actions.register-passkey" | translate }}
             <mat-icon fontSet="material-icons-round" matSuffix>key</mat-icon>
           </button>
         }
       }
-
-      <app-text-divider text="{{ 'components.common.or' | translate }}" disabled></app-text-divider>
 
       <button mat-button (click)="cancelMfa()" type="button">{{ "mfa.actions.back" | translate }}</button>
     </form>
