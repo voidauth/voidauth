@@ -41,11 +41,9 @@ export function imageUpload(fieldName: 'avatar' | 'logo', actor: 'user' | 'admin
       }
 
       const user = req.user
-      if (user?.isAdmin) {
-        actor = 'admin'
-      }
+      const effectiveActor = user?.isAdmin ? 'admin' : actor
 
-      if (fieldName === 'avatar' && actor === 'user' && appConfig.DISABLE_USER_AVATAR_UPLOADS) {
+      if (fieldName === 'avatar' && effectiveActor === 'user' && appConfig.DISABLE_USER_AVATAR_UPLOADS) {
         res.sendStatus(404)
         return
       }

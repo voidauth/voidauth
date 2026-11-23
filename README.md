@@ -41,7 +41,7 @@ Features:
 - 📖 LDAP Directory Server
 - 👤 User and Groups Management
 - 📨 User Self-Registration and Invitations
-- 🎨 Customizable (Logo, Title, Theme Color, Email Templates)
+- 🎨 Customizable (Logo, Title, Theme Color, Background Image, Email Templates)
 - 🔑 Multi-factor Authentication, Passkeys, and Passkey-Only Accounts
 - 📧 Secure Password Reset with Email Verification
 - 🔒 Encryption-At-Rest with Postgres or SQLite Database

@@ -841,9 +841,11 @@ adminRouter.post('/users/delete',
     }
 
     for (const userId of users) {
+      await endUserSessions(userId)
       await deleteUserAvatar(userId)
     }
     const count = await db().table<User>(TABLES.USER).delete().whereIn('id', users)
+    await db().table<OIDCPayload>(TABLES.OIDC_PAYLOADS).delete().whereIn('accountId', users)
 
     if (!count) {
       res.sendStatus(404)
