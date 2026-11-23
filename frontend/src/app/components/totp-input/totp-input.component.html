@@ -9,16 +9,14 @@
     <img style="border-radius: 4px" width="240" height="240" [src]="qrcodeData" />
 
     <div style="text-align: center">
-      <small
-        ><b>{{ "components.totp-input.labels.secret" | translate }}</b></small
-      >
       @if (secret(); as secretValue) {
         <div style="display: flex; flex-direction: row; align-items: center; justify-content: center">
-          <p>
-            <b>{{ secretValue }}</b>
-          </p>
+          <small style="margin-left: 8px">
+            {{ secretValue }}
+          </small>
           <button
             class="field-suffix"
+            style="margin-left: 4px"
             type="button"
             mat-icon-button
             matSuffix

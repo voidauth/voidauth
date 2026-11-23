@@ -145,7 +145,7 @@
 
       <mat-divider class="disabled"></mat-divider>
 
-      <h2 style="margin-top: -16px">{{ "settings.sections.security.passkeys.title" | translate }}</h2>
+      <h2 style="margin-top: -16px; text-align: center">{{ "settings.sections.security.passkeys.title" | translate }}</h2>
 
       @if (!passkeys.data.length) {
         <p style="text-align: center">{{ "settings.sections.security.passkeys.noPasskeys" | translate }}</p>
@@ -207,7 +207,7 @@
 
       <mat-divider class="disabled"></mat-divider>
 
-      <h2 style="margin-top: -16px">{{ "settings.sections.security.mfa.title" | translate }}</h2>
+      <h2 style="margin-top: -16px; text-align: center">{{ "settings.sections.security.mfa.title" | translate }}</h2>
 
       <p style="text-align: center">
         @if (user?.mfaRequired) {

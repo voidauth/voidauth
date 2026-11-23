@@ -115,6 +115,10 @@
       "passkey-mfa-only": "Only Passkeys that require MFA will satisfy MFA requirements.",
       "passkey-failed": "Could not authenticate with passkey.",
       "try-logout": "Something went wrong. Try logout from dropdown menu in header."
+    },
+    "reason": {
+      "user": "Login requires MFA",
+      "client": "Resource requires MFA"
     }
   },
   "registration": {

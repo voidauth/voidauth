@@ -13,7 +13,7 @@ import { HttpErrorResponse } from '@angular/common/http'
 import type { CurrentUserDetails } from '@shared/api-response/UserDetails'
 import { UserService } from '../../services/user.service'
 import { WebAuthnError } from '@simplewebauthn/browser'
-import { Router } from '@angular/router'
+import { ActivatedRoute, Router } from '@angular/router'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
 
 @Component({
@@ -31,6 +31,7 @@ export class MfaComponent implements OnInit {
   secret = signal<string | undefined>(undefined)
   uri = signal<string | undefined>(undefined)
   lockedUntil = signal<Date | null>(null)
+  reason = signal<string | undefined>(undefined)
 
   private configService = inject(ConfigService)
   private translateService = inject(TranslateService)
@@ -40,11 +41,13 @@ export class MfaComponent implements OnInit {
   private authService = inject(AuthService)
   private userService = inject(UserService)
   private router = inject(Router)
+  private route = inject(ActivatedRoute)
 
   async ngOnInit() {
     this.spinnerService.show()
     this.disabled.set(true)
     try {
+      this.reason.set(this.route.snapshot.queryParamMap.get('reason') ?? undefined)
       try {
         this.user = await this.userService.getMyUser()
       } catch (_e) {
@@ -55,7 +58,7 @@ export class MfaComponent implements OnInit {
       this.config = await this.configService.getConfig()
 
       // User does not have a totp, but should be able to register one
-      if (this.user && (!this.user.hasTotp || !this.user.mfaRequired) && this.user.isPrivilegedForTotpCreate) {
+      if (this.user?.isPrivilegedForTotpCreate && (!this.user.hasTotp || !this.user.mfaRequired)) {
         try {
           const { secret, uri } = await this.authService.registerTotp()
           this.secret.set(secret)
