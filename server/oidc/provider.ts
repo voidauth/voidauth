@@ -137,31 +137,40 @@ loginPromptPolicy.checks.add(new Check('user_mfa_required',
 ))
 
 const consentPromptPolicy = modifiedInteractionPolicy.get('consent') as interactionPolicy.Prompt
+
+async function assertClientGroupAccess(clientId: string | undefined, accountId: string | undefined) {
+  if (!clientId || !accountId) {
+    return
+  }
+
+  const client = await getClient(clientId)
+  if (!client?.groups.length) {
+    return
+  }
+
+  const user = await getUserById(accountId)
+  if (user && (user.groups.some(g => g.name === ADMIN_GROUP) || user.groups.some(g => client.groups.includes(g.name)))) {
+    return
+  }
+
+  const error: errors.OIDCProviderError = {
+    statusCode: 403,
+    error: 'user_group_missing',
+    error_description: 'missing any security group that would give access to the resource',
+    allow_redirect: false,
+    status: 403,
+    expose: true,
+    name: 'user_group_missing',
+    message: 'user_group_missing',
+  }
+  throw error
+}
+
 consentPromptPolicy.checks.add(new Check('user_group_missing',
   'missing any security group that would give access to the resource',
   'user_group_missing', async (ctx) => {
     const { oidc } = ctx
-    if (oidc.client?.clientId && oidc.account?.accountId) {
-      const client = await getClient(oidc.client.clientId)
-      if (client?.groups.length) {
-        const user = await getUserById(oidc.account.accountId)
-        if (user && !user.groups.some(g => g.name === ADMIN_GROUP) && !user.groups.some(g => client.groups.includes(g.name))) {
-          // Throw oidc error
-          const error: errors.OIDCProviderError = {
-            statusCode: 403,
-            error: 'user_group_missing',
-            error_description: 'missing any security group that would give access to the resource',
-            allow_redirect: false,
-            status: 403,
-            expose: true,
-            name: 'user_group_missing',
-            message: 'user_group_missing',
-          }
-          throw error
-        }
-      }
-    }
-
+    await assertClientGroupAccess(oidc.client?.clientId, oidc.account?.accountId)
     return Check.NO_NEED_TO_PROMPT
   },
 ))
@@ -422,6 +431,17 @@ async function getNextConfig() {
         return false
       }
       return code.scopes.has('offline_access') || (client.applicationType === 'web' && client.clientAuthMethod === 'none')
+    },
+    loadExistingGrant: async (ctx) => {
+      const { oidc } = ctx
+      await assertClientGroupAccess(oidc.client?.clientId, oidc.session?.accountId)
+      const grantId = oidc.result?.consent?.grantId || (oidc.client && oidc.session?.grantIdFor(oidc.client.clientId))
+      return grantId ? oidc.provider.Grant.find(grantId) : undefined
+    },
+    extraTokenClaims: async (ctx, token) => {
+      const accountId = 'accountId' in token ? token.accountId : undefined
+      await assertClientGroupAccess(ctx.oidc.client?.clientId, accountId)
+      return undefined
     },
     renderError: (ctx, out, _error) => {
     // If ctx status is 403, redirect to forbidden page instead
