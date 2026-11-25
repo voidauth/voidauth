@@ -14,6 +14,7 @@
   * [Email Templates](Email-Templates.md)
   * [CLI Commands](CLI-Commands.md)
   * [Database Migration](DB-Migration.md)
+  * [Migrating From Authentik](Migrating-From-Authentik.md)
   * [Troubleshooting](Troubleshooting.md)
 - Contributing
   * [Translations](Contributing-Translations.md)
